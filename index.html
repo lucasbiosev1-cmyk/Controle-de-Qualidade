@@ -5712,18 +5712,43 @@ let _empAprovarId = null;
 async function carregarEntradasMP() {
     try {
         const dados = await dbGetAll('entradas_mp');
-        // 'CONCLUÍDA' era um status atribuído automaticamente por lógica removida.
-        // Qualquer registro que ainda venha com esse status é tratado como EM ANÁLISE,
-        // preservando apenas APROVADA e REPROVADA (ações manuais).
+
+        // Mapa dos registros atualmente em memória (status atual local)
+        const localMap = {};
+        entradasMP.forEach(e => { localMap[e.id] = e; });
+
+        // Hierarquia de status: REPROVADA > APROVADA > EM ANÁLISE
+        const pesoStatus = s => s === 'REPROVADA' ? 3 : s === 'APROVADA' ? 2 : 1;
+
         const corrigidos = [];
-        for (const e of dados) {
+        const merged = dados.map(e => {
+            // Corrigir status legado CONCLUÍDA
             if (e.status === 'CONCLUÍDA') {
                 e.status = 'EM ANÁLISE';
-                try { await dbUpsertOne('entradas_mp', e); } catch(err) {}
                 corrigidos.push(e.id);
             }
+            // Se existe versão local com status de maior peso (já aprovado/reprovado aqui),
+            // E a versão local é mais recente (alteradoEm) OU o banco não tem alteradoEm,
+            // preservar o status local — o banco pode estar desatualizado
+            const local = localMap[e.id];
+            if (local && pesoStatus(local.status) > pesoStatus(e.status)) {
+                const localTs = local.alteradoEm ? new Date(local.alteradoEm).getTime() : 0;
+                const bancoTs = e.alteradoEm ? new Date(e.alteradoEm).getTime() : 0;
+                if (localTs >= bancoTs) {
+                    e.status = local.status;
+                    e.alteradoEm = local.alteradoEm;
+                }
+            }
+            return e;
+        });
+
+        // Gravar correções de CONCLUÍDA no banco
+        for (const id of corrigidos) {
+            const reg = merged.find(e => e.id === id);
+            if (reg) { try { await dbUpsertOne('entradas_mp', reg); } catch(err) {} }
         }
-        entradasMP = dados;
+
+        entradasMP = merged;
     } catch(e) {
         entradasMP = JSON.parse(localStorage.getItem('entradas_mp') || '[]');
     }
@@ -5988,6 +6013,7 @@ async function acaoEntradaMP(novoStatus) {
     const idx = entradasMP.findIndex(e => e.id === _empAprovarId);
     if (idx < 0) return;
     entradasMP[idx].status = novoStatus;
+    entradasMP[idx].alteradoEm = new Date().toISOString();
     try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e){}
     _empAprovarId = null;
     exibirTabelaEMP();
