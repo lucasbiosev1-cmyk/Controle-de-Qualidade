@@ -2780,7 +2780,7 @@ let USUARIOS = {};
 
 async function _carregarUsuariosSupabase() {
     try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/sys_users?select=*`, {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/usu%C3%A1rios_do_sistema?select=*`, {
             headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
         });
         const lista = await res.json();
@@ -2789,7 +2789,7 @@ async function _carregarUsuariosSupabase() {
         lista.forEach(u => {
             let perms = {};
             try { perms = typeof u.col_perms === 'string' ? JSON.parse(u.col_perms) : (u.col_perms || {}); } catch(e) {}
-            if (u.col_login) mapa[u.col_login] = { nome: u.col_name, senha: u.col_pass, perfil: u.col_role, ativo: u.col_active, perms };
+            if (u.col_login) mapa[u.col_login] = { nome: u.nome_da_coluna, senha: u.col_pass, perfil: u.função_coluna, ativo: u.col_ativo, perms };
         });
         USUARIOS = mapa;
     } catch(e) { console.error('Erro ao carregar usuários:', e); USUARIOS = {}; }
@@ -2798,13 +2798,13 @@ async function _carregarUsuariosSupabase() {
 async function _salvarUsuarioSupabase(login, dados) {
     const payload = {
         col_login: login,
-        col_name: dados.nome,
+        nome_da_coluna: dados.nome,
         col_pass: dados.senha,
-        col_role: dados.perfil,
-        col_active: true,
+        função_coluna: dados.perfil,
+        col_ativo: true,
         col_perms: JSON.stringify(dados.perms || {})
     };
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/sys_users`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/usu%C3%A1rios_do_sistema`, {
         method: 'POST',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
         body: JSON.stringify(payload)
@@ -2816,9 +2816,9 @@ async function _salvarUsuarioSupabase(login, dados) {
 }
 
 async function _atualizarUsuarioSupabase(login, dados) {
-    const payload = { col_name: dados.nome, col_perms: JSON.stringify(dados.perms || {}) };
+    const payload = { nome_da_coluna: dados.nome, col_perms: JSON.stringify(dados.perms || {}) };
     if (dados.senha) payload.col_pass = dados.senha;
-    await fetch(`${SUPABASE_URL}/rest/v1/sys_users?col_login=eq.${login}`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/usu%C3%A1rios_do_sistema?col_login=eq.${login}`, {
         method: 'PATCH',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -2826,7 +2826,7 @@ async function _atualizarUsuarioSupabase(login, dados) {
 }
 
 async function _deletarUsuarioSupabase(login) {
-    await fetch(`${SUPABASE_URL}/rest/v1/sys_users?col_login=eq.${login}`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/usu%C3%A1rios_do_sistema?col_login=eq.${login}`, {
         method: 'DELETE',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
     });
@@ -5463,7 +5463,7 @@ function rolarTabela(containerId, direcao) {
 // SUPABASE — camada de persistência em nuvem
 // ===================================================
 const SUPABASE_URL = 'https://kponpocjqxtlclxuokkd.supabase.co';
-const SUPABASE_KEY = 'sb_secret_2wADM01uSRn_DRb6EBFf4Q_2cRlr9qE';
+const SUPABASE_KEY = 'sb_publishable_bpQ1ttls9SmFpXhKHH-ReQ_nYQZRvCE';
 
 async function sbFetch(table, method='GET', body=null, params='') {
     const url = `${SUPABASE_URL}/rest/v1/${table}${params}`;
