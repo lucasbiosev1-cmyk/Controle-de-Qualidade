@@ -848,7 +848,7 @@
                 <div class="agronor-brand">
                     <div>
                         <div class="agronor-name">AGRONOR <span style="color:#c0392b;font-size:22px;">ALIMENTOS</span></div>
-                        <div class="agronor-sub">Laboratório Controle de Qualidade</div>
+                        <div class="agronor-sub">Laboratório Controle da Qualidade</div>
                     </div>
                 </div>
                 <h1>Acesso ao Portal de<br>Laboratório Agronor</h1>
@@ -3171,9 +3171,20 @@ let _empPollingInterval = null;
 
 async function atualizarEntradasMP(btn) {
     if (btn) { btn.textContent = '⏳ Atualizando...'; btn.disabled = true; }
+    const antesQtd = entradasMP.length;
     await carregarEntradasMP();
     exibirTabelaEMP();
-    if (btn) { btn.textContent = '🔄 ATUALIZAR'; btn.disabled = false; }
+    if (btn) {
+        btn.disabled = false;
+        if (entradasMP.length === 0 && antesQtd > 0) {
+            btn.textContent = '⚠️ ERRO — dados mantidos';
+            btn.style.background = '#e74c3c';
+            setTimeout(() => { btn.textContent = '🔄 ATUALIZAR'; btn.style.background = '#3498db'; }, 3000);
+        } else {
+            btn.textContent = '✓ Atualizado';
+            setTimeout(() => { btn.textContent = '🔄 ATUALIZAR'; }, 2000);
+        }
+    }
 }
 
 function _empIniciarPolling() {
@@ -5713,6 +5724,10 @@ let _empAprovarId = null;
 async function carregarEntradasMP() {
     try {
         const dados = await dbGetAll('entradas_mp');
+        // Nunca substituir dados existentes por lista vazia (pode ser falha silenciosa do banco)
+        if (!dados || dados.length === 0) {
+            if (entradasMP.length > 0) return; // mantém o que está em memória
+        }
         // Corrigir status legado CONCLUÍDA (atribuído automaticamente em versão anterior)
         for (const e of dados) {
             if (e.status === 'CONCLUÍDA') {
@@ -5722,7 +5737,8 @@ async function carregarEntradasMP() {
         }
         entradasMP = dados;
     } catch(e) {
-        entradasMP = JSON.parse(localStorage.getItem('entradas_mp') || '[]');
+        // Em caso de erro, mantém o que está em memória
+        console.warn('carregarEntradasMP: erro ao buscar do banco, mantendo dados locais.', e);
     }
 }
 
