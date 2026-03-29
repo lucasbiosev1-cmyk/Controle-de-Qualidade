@@ -2714,15 +2714,21 @@ async function _carregarUsuariosSupabase() {
         const mapa = {};
         lista.forEach(u => {
             let perms = {};
-            try { perms = typeof u.usr_perms === 'string' ? JSON.parse(u.usr_perms) : (u.usr_perms || {}); } catch(e) {}
-            mapa[u.usr_login] = { nome: u.usr_nome, senha: u.usr_senha, perfil: u.usr_perfil, ativo: u.usr_ativo, perms };
+            const login  = u["login_usuário"] || u.usr_login || '';
+            const nome   = u["nome_usuário"]  || u.usr_nome  || '';
+            const senha  = u.usr_senha  || '';
+            const perfil = u.usr_perfil || '';
+            const ativo  = u.usr_ativo  !== undefined ? u.usr_ativo : true;
+            const permsR = u.usr_perms  || '{}';
+            try { perms = typeof permsR === 'string' ? JSON.parse(permsR) : (permsR || {}); } catch(e) {}
+            if (login) mapa[login] = { nome, senha, perfil, ativo, perms };
         });
         USUARIOS = mapa;
     } catch(e) { console.error('Erro ao carregar usuários:', e); USUARIOS = {}; }
 }
 
 async function _salvarUsuarioSupabase(login, dados) {
-    const payload = { usr_login: login, usr_nome: dados.nome, usr_senha: dados.senha, usr_perfil: dados.perfil, usr_ativo: dados.ativo !== false, usr_perms: JSON.stringify(dados.perms || {}) };
+    const payload = { "login_usu\u00e1rio": login, "nome_usu\u00e1rio": dados.nome, usr_senha: dados.senha, usr_perfil: dados.perfil, usr_ativo: dados.ativo !== false, usr_perms: JSON.stringify(dados.perms || {}) };
     await fetch(`${SUPABASE_URL}/rest/v1/sys_users`, {
         method: 'POST',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
@@ -2731,9 +2737,9 @@ async function _salvarUsuarioSupabase(login, dados) {
 }
 
 async function _atualizarUsuarioSupabase(login, dados) {
-    const payload = { usr_nome: dados.nome, usr_perms: JSON.stringify(dados.perms || {}) };
+    const payload = { "nome_usu\u00e1rio": dados.nome, usr_perms: JSON.stringify(dados.perms || {}) };
     if (dados.senha) payload.usr_senha = dados.senha;
-    await fetch(`${SUPABASE_URL}/rest/v1/sys_users?usr_login=eq.${login}`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/sys_users?login_usu%C3%A1rio=eq.${login}`, {
         method: 'PATCH',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -2741,7 +2747,7 @@ async function _atualizarUsuarioSupabase(login, dados) {
 }
 
 async function _deletarUsuarioSupabase(login) {
-    await fetch(`${SUPABASE_URL}/rest/v1/sys_users?usr_login=eq.${login}`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/sys_users?login_usu%C3%A1rio=eq.${login}`, {
         method: 'DELETE',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
     });
