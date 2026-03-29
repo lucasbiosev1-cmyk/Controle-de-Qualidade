@@ -848,7 +848,7 @@
                 <div class="agronor-brand">
                     <div>
                         <div class="agronor-name">AGRONOR <span style="color:#c0392b;font-size:22px;">ALIMENTOS</span></div>
-                        <div class="agronor-sub">Laboratório de Qualidade</div>
+                        <div class="agronor-sub">Laboratório Controle de Qualidade</div>
                     </div>
                 </div>
                 <h1>Acesso ao Portal de<br>Laboratório Agronor</h1>
@@ -2235,7 +2235,8 @@
                     <select id="filterStatusEMP">
                         <option value="">TODOS</option>
                         <option value="EM ANÁLISE">EM ANÁLISE</option>
-                        <option value="CONCLUÍDA">CONCLUÍDA</option>
+                        <option value="APROVADA">APROVADA</option>
+                        <option value="REPROVADA">REPROVADA</option>
                     </select>
                 </div>
                 <div style="display:flex;gap:5px;">
@@ -5710,15 +5711,25 @@ let _empAprovarId = null;
 
 async function carregarEntradasMP() {
     try {
-        entradasMP = await dbGetAll('entradas_mp');
+        const dados = await dbGetAll('entradas_mp');
+        // 'CONCLUÍDA' era um status atribuído automaticamente por lógica removida.
+        // Qualquer registro que ainda venha com esse status é tratado como EM ANÁLISE,
+        // preservando apenas APROVADA e REPROVADA (ações manuais).
+        const corrigidos = [];
+        for (const e of dados) {
+            if (e.status === 'CONCLUÍDA') {
+                e.status = 'EM ANÁLISE';
+                try { await dbUpsertOne('entradas_mp', e); } catch(err) {}
+                corrigidos.push(e.id);
+            }
+        }
+        entradasMP = dados;
     } catch(e) {
         entradasMP = JSON.parse(localStorage.getItem('entradas_mp') || '[]');
     }
 }
 
 function _empStatusBadge(status) {
-    if (status === 'CONCLUÍDA')
-        return '<span style="background:#d5f4e6;color:#27ae60;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">✅ CONCLUÍDA</span>';
     if (status === 'APROVADA')
         return '<span style="background:#d5f4e6;color:#27ae60;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">✅ APROVADA</span>';
     if (status === 'REPROVADA')
@@ -5776,7 +5787,7 @@ function exibirTabelaEMP(lista) {
         if (temAcao) {
             if (podeAprovar && (r.status === 'EM ANÁLISE'))
                 acoes += `<button class="btn-action" style="background:#27ae60;color:white;" onclick="abrirModalAprovarEMP(${r.id})">✅ Apr/Rep</button> `;
-            if (podeEditar && r.status !== 'CONCLUÍDA')
+            if (podeEditar && r.status === 'EM ANÁLISE')
                 acoes += `<button class="btn-action btn-edit" onclick="editarEntradaMP(${r.id})">✏️</button> `;
             if (podeExcluir)
                 acoes += `<button class="btn-action btn-delete" onclick="excluirEntradaMP(${r.id})">🗑️</button>`;
