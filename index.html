@@ -1223,7 +1223,7 @@
                 <!-- CORPO CENTRAL -->
                 <div class="rel-capa-corpo">
                   <div class="rel-capa-eyebrow">Relatório Gerencial</div>
-                  <div class="rel-capa-titulo">QUALIDADE</div>
+                  <div class="rel-capa-titulo">DA QUALIDADE</div>
                   <div class="rel-capa-subtitulo">Análise &amp; Resultados</div>
                   <div class="rel-capa-linha"></div>
 
@@ -2714,7 +2714,7 @@ async function _carregarUsuariosSupabase() {
         const mapa = {};
         lista.forEach(u => {
             let perms = {};
-            try { perms = typeof u.perms === 'string' ? JSON.parse(u.perms) : (u.perms || {}); } catch(e) {}
+            try { perms = typeof u.permanentes === 'string' ? JSON.parse(u.permanentes) : (u.permanentes || {}); } catch(e) {}
             mapa[u.login] = { nome: u.nome, senha: u.senha, perfil: u.perfil, ativo: u.ativo, perms };
         });
         USUARIOS = mapa;
@@ -2722,7 +2722,7 @@ async function _carregarUsuariosSupabase() {
 }
 
 async function _salvarUsuarioSupabase(login, dados) {
-    const payload = { login, nome: dados.nome, senha: dados.senha, perfil: dados.perfil, ativo: dados.ativo !== false, perms: JSON.stringify(dados.perms || {}) };
+    const payload = { login, nome: dados.nome, senha: dados.senha, perfil: dados.perfil, ativo: dados.ativo !== false, permanentes: JSON.stringify(dados.perms || {}) };
     await fetch(`${SUPABASE_URL}/rest/v1/usuarios`, {
         method: 'POST',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
@@ -2731,7 +2731,7 @@ async function _salvarUsuarioSupabase(login, dados) {
 }
 
 async function _atualizarUsuarioSupabase(login, dados) {
-    const payload = { nome: dados.nome, perms: JSON.stringify(dados.perms || {}) };
+    const payload = { nome: dados.nome, permanentes: JSON.stringify(dados.perms || {}) };
     if (dados.senha) payload.senha = dados.senha;
     await fetch(`${SUPABASE_URL}/rest/v1/usuarios?login=eq.${login}`, {
         method: 'PATCH',
@@ -7858,7 +7858,7 @@ function _bkAutoAtualizarStatus() {
                         <span style="font-size:40px;">💾</span>
                         <div>
                             <div style="color:white;font-size:17px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;">Backup Automático</div>
-                            <div style="color:rgba(255,255,255,0.75);font-size:12px;margin-top:3px;">Sistema Controle de Qualidade</div>
+                            <div style="color:rgba(255,255,255,0.75);font-size:12px;margin-top:3px;">Sistema de Controle de Qualidade</div>
                         </div>
                     </div>
                     <div style="padding:26px;">
