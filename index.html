@@ -6134,9 +6134,14 @@ function onSelectRacao(modulo, panel) {
 function buildSelectHTML(modulo, lista, labelField, keyField, icone) {
     const opts = lista.map(i => {
         const key = (keyField==='key' ? i.key : i.racoes[0]).replace(/ /g,'_');
-        // Para rações com formulações múltiplas, adiciona optgroup
+        // Para rações com formulações múltiplas, adiciona optgroup com cada formulação
         if (i.formulacoes && i.formulacoes.length>1) {
             return `<optgroup label="── ${i.label} ──">${i.formulacoes.map(f=>`<option value="${f.replace(/ /g,'_')}">${f}</option>`).join('')}</optgroup>`;
+        }
+        // Para rações com formulação única, mostra o nome completo da formulação
+        if (i.formulacoes && i.formulacoes.length===1) {
+            const f = i.formulacoes[0];
+            return `<optgroup label="── ${i.label} ──"><option value="${f.replace(/ /g,'_')}">${f}</option></optgroup>`;
         }
         return `<option value="${key}">${i[labelField]||i.label||i.key}</option>`;
     }).join('');
