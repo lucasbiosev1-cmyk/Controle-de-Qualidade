@@ -2246,6 +2246,7 @@
             </div>
             <div style="margin-bottom:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                 <button class="btn btn-primary" id="btnCadastroEMP" onclick="abrirModalEMP()">+ REGISTRAR ENTRADA</button>
+                <button onclick="atualizarEntradasMP(this)" style="background:#3498db;color:white;border:none;border-radius:4px;padding:8px 16px;font-size:12px;font-weight:bold;cursor:pointer;" title="Buscar registros mais recentes do servidor">🔄 ATUALIZAR</button>
                 <span style="font-weight:bold;text-transform:uppercase;">Total de registros: <span id="totalRegistrosEMP">0</span></span>
                 <span style="margin-left:auto;display:flex;gap:6px;align-items:center;">
                     <button class="btn-scroll-tabela" onclick="rolarTabela('tabelaEMPContainer',-1)">&#8592;</button>
@@ -3168,15 +3169,15 @@ function _navegarParaPrimeiraAbaPermitida() {
 
 let _empPollingInterval = null;
 
+async function atualizarEntradasMP(btn) {
+    if (btn) { btn.textContent = '⏳ Atualizando...'; btn.disabled = true; }
+    await carregarEntradasMP();
+    exibirTabelaEMP();
+    if (btn) { btn.textContent = '🔄 ATUALIZAR'; btn.disabled = false; }
+}
+
 function _empIniciarPolling() {
-    _empPararPolling();
-    _empPollingInterval = setInterval(async () => {
-        // Só atualiza se a aba de entradas estiver visível
-        const abaEMP = document.getElementById('aba-entradaMP');
-        if (!abaEMP || !abaEMP.classList.contains('active')) return;
-        await carregarEntradasMP();
-        exibirTabelaEMP();
-    }, 30000); // 30 segundos
+    // Polling removido — atualização feita ao clicar na aba ou pelo botão de atualizar
 }
 
 function _empPararPolling() {
@@ -5712,43 +5713,14 @@ let _empAprovarId = null;
 async function carregarEntradasMP() {
     try {
         const dados = await dbGetAll('entradas_mp');
-
-        // Mapa dos registros atualmente em memória (status atual local)
-        const localMap = {};
-        entradasMP.forEach(e => { localMap[e.id] = e; });
-
-        // Hierarquia de status: REPROVADA > APROVADA > EM ANÁLISE
-        const pesoStatus = s => s === 'REPROVADA' ? 3 : s === 'APROVADA' ? 2 : 1;
-
-        const corrigidos = [];
-        const merged = dados.map(e => {
-            // Corrigir status legado CONCLUÍDA
+        // Corrigir status legado CONCLUÍDA (atribuído automaticamente em versão anterior)
+        for (const e of dados) {
             if (e.status === 'CONCLUÍDA') {
                 e.status = 'EM ANÁLISE';
-                corrigidos.push(e.id);
+                try { await dbUpsertOne('entradas_mp', e); } catch(err) {}
             }
-            // Se existe versão local com status de maior peso (já aprovado/reprovado aqui),
-            // E a versão local é mais recente (alteradoEm) OU o banco não tem alteradoEm,
-            // preservar o status local — o banco pode estar desatualizado
-            const local = localMap[e.id];
-            if (local && pesoStatus(local.status) > pesoStatus(e.status)) {
-                const localTs = local.alteradoEm ? new Date(local.alteradoEm).getTime() : 0;
-                const bancoTs = e.alteradoEm ? new Date(e.alteradoEm).getTime() : 0;
-                if (localTs >= bancoTs) {
-                    e.status = local.status;
-                    e.alteradoEm = local.alteradoEm;
-                }
-            }
-            return e;
-        });
-
-        // Gravar correções de CONCLUÍDA no banco
-        for (const id of corrigidos) {
-            const reg = merged.find(e => e.id === id);
-            if (reg) { try { await dbUpsertOne('entradas_mp', reg); } catch(err) {} }
         }
-
-        entradasMP = merged;
+        entradasMP = dados;
     } catch(e) {
         entradasMP = JSON.parse(localStorage.getItem('entradas_mp') || '[]');
     }
