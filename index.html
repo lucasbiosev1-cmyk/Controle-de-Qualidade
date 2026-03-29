@@ -838,9 +838,9 @@
     </div>
 
     <div class="nav-tabs" style="flex-wrap:wrap;">
-        <button class="nav-tab active" onclick="trocarAba('producao', this)">🌾 Produção</button>
-        <button class="nav-tab" onclick="trocarAba('classificacao', this)">🌽 Classificação</button>
-        <button class="nav-tab" onclick="trocarAba('materiaPrima', this)">🧪 Matéria Prima</button>
+        <button class="nav-tab active" id="tabProducao" onclick="trocarAba('producao', this)">🌾 Produção</button>
+        <button class="nav-tab" id="tabClassificacao" onclick="trocarAba('classificacao', this)">🌽 Classificação</button>
+        <button class="nav-tab" id="tabMateriaPrima" onclick="trocarAba('materiaPrima', this)">🧪 Matéria Prima</button>
         <button class="nav-tab" id="tabRelatorio" onclick="trocarAba('relatorio', this)">📊 Rel. Produção</button>
         <button class="nav-tab" id="tabRelClass" onclick="trocarAba('relClass', this)">📊 Rel. Classificação</button>
         <button class="nav-tab" id="tabRanking" onclick="trocarAba('ranking', this)">🏆 Ranking</button>
@@ -2855,6 +2855,14 @@ function aplicarPermissoes() {
     document.getElementById('thAcaoProd').style.display  = podeCadastro ? 'table-cell' : 'none';
     document.getElementById('thAcaoClass').style.display = podeCadastro ? 'table-cell' : 'none';
     document.getElementById('thAcaoMP').style.display    = podeCadastro ? 'table-cell' : 'none';
+
+    // Abas principais — visíveis só com permissão de cadastro
+    const _tabProd = document.getElementById('tabProducao');
+    const _tabClass = document.getElementById('tabClassificacao');
+    const _tabMP    = document.getElementById('tabMateriaPrima');
+    if (_tabProd) _tabProd.style.display = podeCadastro ? 'inline-block' : 'none';
+    if (_tabClass) _tabClass.style.display = podeCadastro ? 'inline-block' : 'none';
+    if (_tabMP)    _tabMP.style.display    = podeCadastro ? 'inline-block' : 'none';
 
     // Aba Configurações — visível se tiver qualquer permissão de config
     const temConfig = isAdmin || perms.backup || perms.memoria || perms.parametros || perms.whatsapp;
