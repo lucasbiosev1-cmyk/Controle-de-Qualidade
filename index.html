@@ -848,7 +848,7 @@
                 <div class="agronor-brand">
                     <div>
                         <div class="agronor-name">AGRONOR <span style="color:#c0392b;font-size:22px;">ALIMENTOS</span></div>
-                        <div class="agronor-sub">Laboratório Controle de Qualidade</div>
+                        <div class="agronor-sub">Laboratório de Qualidade</div>
                     </div>
                 </div>
                 <h1>Acesso ao Portal de<br>Laboratório Agronor</h1>
@@ -906,6 +906,7 @@
         <button class="nav-tab" id="tabRelClass" onclick="trocarAba('relClass', this)">📊 Rel. Classificação</button>
         <button class="nav-tab" id="tabRanking" onclick="trocarAba('ranking', this)">🏆 Ranking</button>
         <button class="nav-tab" id="tabBoletim" onclick="trocarAba('boletim', this)">📋 Boletim Industrial</button>
+        <button class="nav-tab" id="tabEntradaMP" onclick="trocarAba('entradaMP', this)">📥 Entrada Mat. Prima</button>
         <button class="nav-tab" id="tabConfiguracoes" onclick="trocarAba('configuracoes', this)">⚙️ Configurações</button>
     </div>
 
@@ -2216,7 +2217,157 @@
         </div>
     </div>
 
-    <!-- ===== MODAL ATUALIZAR ESCOPO ===== -->
+    <!-- ===== ABA ENTRADA DE MATÉRIA PRIMA ===== -->
+    <div id="aba-entradaMP" class="tab-content">
+        <div class="container">
+            <div class="msg-sucesso" id="msgSucessoEMP"></div>
+            <div class="msg-erro" id="msgErroEMP"></div>
+            <div class="filtros">
+                <div class="form-group"><label>Filtrar por NF:</label><input type="text" id="filterNFEMP" placeholder="NÚMERO DA NOTA"></div>
+                <div class="form-group"><label>Data Início:</label><input type="date" id="filterDataInicioEMP"></div>
+                <div class="form-group"><label>Data Fim:</label><input type="date" id="filterDataFimEMP"></div>
+                <div class="form-group">
+                    <label>Fornecedor:</label>
+                    <input type="text" id="filterFornecedorEMP" placeholder="FORNECEDOR">
+                </div>
+                <div class="form-group">
+                    <label>Status:</label>
+                    <select id="filterStatusEMP">
+                        <option value="">TODOS</option>
+                        <option value="EM ANÁLISE">EM ANÁLISE</option>
+                        <option value="CONCLUÍDA">CONCLUÍDA</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:5px;">
+                    <button class="btn-filtrar" onclick="aplicarFiltrosEMP()">FILTRAR</button>
+                    <button class="btn-limpar" onclick="limparFiltrosEMP()">LIMPAR</button>
+                </div>
+            </div>
+            <div style="margin-bottom:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <button class="btn btn-primary" id="btnCadastroEMP" onclick="abrirModalEMP()">+ REGISTRAR ENTRADA</button>
+                <span style="font-weight:bold;text-transform:uppercase;">Total de registros: <span id="totalRegistrosEMP">0</span></span>
+                <span style="margin-left:auto;display:flex;gap:6px;align-items:center;">
+                    <button class="btn-scroll-tabela" onclick="rolarTabela('tabelaEMPContainer',-1)">&#8592;</button>
+                    <button class="btn-scroll-tabela" onclick="rolarTabela('tabelaEMPContainer', 1)">&#8594;</button>
+                </span>
+            </div>
+            <div class="tabela-container" id="tabelaEMPContainer">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>DATA</th><th>HORA</th><th>FORNECEDOR</th><th>MATÉRIA PRIMA</th><th>NOTA FISCAL</th>
+                            <th>USUÁRIO</th><th>STATUS</th><th id="thAcaoEMP">AÇÃO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaEntradaMP"><tr><td colspan="8" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL ENTRADA DE MATÉRIA PRIMA ===== -->
+    <div id="modalCadastroEMP" class="modal">
+        <div class="modal-content" style="max-width:600px;">
+            <div class="modal-header">
+                <h2 id="modalTituloEMP">📥 Registrar Entrada de Matéria Prima</h2>
+                <button class="close" onclick="fecharModalEMP()">&times;</button>
+            </div>
+            <div class="form-wrapper">
+                <form id="formCadastroEMP" onsubmit="return false;">
+                    <input type="hidden" id="cadIdEMP">
+                    <div class="form-section">
+                        <h3>Dados da Entrada</h3>
+                        <div class="form-grid form-grid-2">
+                            <div class="form-group required"><label>Data</label><input type="text" id="cadDataEMP" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)"></div>
+                            <div class="form-group required"><label>Hora</label><input type="text" id="cadHoraEMP" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" required oninput="mascaraHora(this)"></div>
+                        </div>
+                        <div class="form-grid form-grid-2">
+                            <div class="form-group required"><label>Fornecedor</label><input type="text" id="cadFornecedorEMP" required></div>
+                            <div class="form-group required">
+                                <label>Matéria Prima</label>
+                                <div style="display:flex;gap:5px;align-items:flex-start;">
+                                    <select id="cadMateriaEMP" style="flex:1;padding:5px;border:1px solid #bdc3c7;border-radius:4px;font-size:11px;text-transform:uppercase;" required>
+                                        <option value="">SELECIONE...</option>
+                                        <option value="FARELO DE SOJA">FARELO DE SOJA</option>
+                                        <option value="SOJA EXTRUSADA DOSADOR">SOJA EXTRUSADA DOSADOR</option>
+                                        <option value="SOJA INTEGRAL EXTRUSADA">SOJA INTEGRAL EXTRUSADA</option>
+                                        <option value="FARINHA DE CARNE E OSSO">FARINHA DE CARNE E OSSO</option>
+                                        <option value="SAL MOÍDO">SAL MOÍDO</option>
+                                        <option value="MILHO">MILHO</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-grid form-grid-2">
+                            <div class="form-group required">
+                                <label>Número da Nota Fiscal <span style="color:#e74c3c;font-size:9px;">(principal — usada na liberação)</span></label>
+                                <input type="text" id="cadNFEMP" required style="text-transform:uppercase;">
+                            </div>
+                            <div id="wrapNF2EMP" style="display:none;" class="form-group">
+                                <label>Nota Fiscal 2 <span style="color:#888;font-size:9px;">(complementar)</span></label>
+                                <input type="text" id="cadNF2EMP" placeholder="NF COMPLEMENTAR" style="text-transform:uppercase;">
+                            </div>
+                        </div>
+                        <div style="margin-bottom:10px;">
+                            <button type="button" id="btnAddNF2EMP" onclick="toggleNF2EMP()" style="background:none;border:1px dashed #bdc3c7;color:#888;border-radius:4px;padding:3px 10px;font-size:10px;cursor:pointer;transition:all 0.2s;" title="Adicionar segunda nota fiscal">＋ 2ª NF</button>
+                        </div>
+                        <div class="form-grid form-grid-2">
+                            <div class="form-group">
+                                <label>Usuário Responsável</label>
+                                <input type="text" id="cadUsuarioEMP" readonly style="background:#f0f3f8;color:#555;">
+                            </div>
+                            <div class="form-group">
+                                <label>Status</label>
+                                <input type="text" value="EM ANÁLISE" readonly style="background:#fff8e1;color:#b7770d;font-weight:bold;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-buttons">
+                        <button type="button" class="btn-salvar" onclick="salvarEntradaMP(event)">Salvar</button>
+                        <button type="button" class="btn-limpar-form" onclick="limparFormularioEMP()">Limpar</button>
+                        <button type="button" class="btn-cancelar" onclick="fecharModalEMP()">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL APROVAR/REPROVAR ENTRADA ===== -->
+    <div id="modalAprovarEMP" style="display:none;position:fixed;z-index:2000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
+        <div style="background:white;border-radius:8px;width:420px;max-width:95%;box-shadow:0 8px 32px rgba(0,0,0,0.25);overflow:hidden;">
+            <div style="background:linear-gradient(to right,#0a1e7f,#1a3a9f);padding:16px 20px;display:flex;align-items:center;gap:10px;">
+                <span style="font-size:20px;">✅</span>
+                <div style="color:white;font-size:14px;font-weight:bold;text-transform:uppercase;">Aprovar / Reprovar Entrada</div>
+            </div>
+            <div style="padding:20px;">
+                <p style="font-size:13px;color:#444;margin-bottom:16px;">NF: <strong id="modalAprovarNF"></strong> — Fornecedor: <strong id="modalAprovarForn"></strong></p>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <button onclick="acaoEntradaMP('APROVADA')"
+                        style="background:#27ae60;color:white;padding:12px 16px;border:none;border-radius:6px;font-size:13px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:10px;">
+                        <span style="font-size:18px;">✅</span>
+                        <div>
+                            <div>Aprovar Entrada</div>
+                            <div style="font-size:11px;font-weight:normal;opacity:0.85;">Confirma o recebimento e libera para análise</div>
+                        </div>
+                    </button>
+                    <button onclick="acaoEntradaMP('REPROVADA')"
+                        style="background:#e74c3c;color:white;padding:12px 16px;border:none;border-radius:6px;font-size:13px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:10px;">
+                        <span style="font-size:18px;">❌</span>
+                        <div>
+                            <div>Reprovar Entrada</div>
+                            <div style="font-size:11px;font-weight:normal;opacity:0.85;">Rejeita o lote recebido</div>
+                        </div>
+                    </button>
+                    <button onclick="document.getElementById('modalAprovarEMP').style.display='none'"
+                        style="background:#ecf0f1;color:#555;padding:10px 16px;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:bold;">
+                        ✕ Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <div id="modalAtualizarEscopo" style="display:none;position:fixed;z-index:2000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
         <div style="background:white;border-radius:8px;padding:0;width:420px;max-width:95%;box-shadow:0 8px 32px rgba(0,0,0,0.25);overflow:hidden;">
             <div style="background:linear-gradient(to right,#1a3a9f,#2980b9);padding:16px 20px;display:flex;align-items:center;gap:10px;">
@@ -2552,8 +2703,11 @@
                     <div class="form-grid form-grid-4">
                         <div class="form-group required"><label>Data</label><input type="text" id="cadDataMP" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)"></div>
                         <div class="form-group"><label>Hora</label><input type="text" id="cadHoraMP" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" oninput="mascaraHora(this)"></div>
+                    </div>
+                    <div class="form-grid form-grid-2">
+                        <div class="form-group required"><label>Fornecedor</label><input type="text" id="cadFornecedorMP" required></div>
                         <div class="form-group required">
-                            <label>Produto</label>
+                            <label>Matéria Prima</label>
                             <div style="display:flex;gap:5px;align-items:flex-start;">
                                 <select id="cadProdutoMP" style="flex:1;padding:5px;border:1px solid #bdc3c7;border-radius:4px;font-size:10px;text-transform:uppercase;" required>
                                     <option value="">SELECIONE...</option>
@@ -2569,8 +2723,17 @@
                         </div>
                     </div>
                     <div class="form-grid form-grid-2">
-                        <div class="form-group required"><label>Fornecedor</label><input type="text" id="cadFornecedorMP" required></div>
-                        <div class="form-group"><label>Nota Fiscal</label><input type="text" id="cadNFMP"></div>
+                        <div class="form-group required">
+                            <label>Nota Fiscal <span style="color:#e74c3c;font-size:9px;">(principal — usada na liberação)</span></label>
+                            <input type="text" id="cadNFMP" required placeholder="NF PRINCIPAL" style="text-transform:uppercase;">
+                        </div>
+                        <div id="wrapNF2MP" style="display:none;" class="form-group">
+                            <label>Nota Fiscal 2 <span style="color:#888;font-size:9px;">(complementar)</span></label>
+                            <input type="text" id="cadNF2MP" placeholder="NF COMPLEMENTAR" style="text-transform:uppercase;">
+                        </div>
+                    </div>
+                    <div style="margin-top:4px;">
+                        <button type="button" id="btnAddNF2MP" onclick="toggleNF2MP()" style="background:none;border:1px dashed #bdc3c7;color:#888;border-radius:4px;padding:3px 10px;font-size:10px;cursor:pointer;transition:all 0.2s;" title="Adicionar segunda nota fiscal">＋ 2ª NF</button>
                     </div>
                 </div>
                 <div class="form-section">
@@ -2746,13 +2909,17 @@ function aplicarTema(tema) {
 // whatsapp    → acessa alerta WhatsApp
 
 const PERMS_DISPONIVEIS = [
-    { key: 'cadastro',   label: 'Cadastro',        icon: '✏️',  desc: 'Adicionar, editar e excluir registros' },
-    { key: 'relatorios', label: 'Relatórios',       icon: '📊',  desc: 'Acessar relatórios e ranking' },
-    { key: 'boletim',    label: 'Boletim',          icon: '📋',  desc: 'Visualizar boletim industrial' },
-    { key: 'parametros', label: 'Parâmetros',       icon: '⚙️',  desc: 'Configurar parâmetros e limites' },
-    { key: 'backup',     label: 'Backup',           icon: '💾',  desc: 'Exportar/importar backups' },
-    { key: 'memoria',    label: 'Memória',          icon: '🗄️',  desc: 'Monitorar armazenamento' },
-    { key: 'whatsapp',   label: 'Alerta WhatsApp',  icon: '📲',  desc: 'Enviar alertas pelo WhatsApp' },
+    { key: 'cadastro',       label: 'Cadastro',             icon: '✏️',  desc: 'Adicionar, editar e excluir registros' },
+    { key: 'relatorios',     label: 'Relatórios',           icon: '📊',  desc: 'Acessar relatórios e ranking' },
+    { key: 'boletim',        label: 'Boletim',              icon: '📋',  desc: 'Visualizar boletim industrial' },
+    { key: 'parametros',     label: 'Parâmetros',           icon: '⚙️',  desc: 'Configurar parâmetros e limites' },
+    { key: 'backup',         label: 'Backup',               icon: '💾',  desc: 'Exportar/importar backups' },
+    { key: 'memoria',        label: 'Memória',              icon: '🗄️',  desc: 'Monitorar armazenamento' },
+    { key: 'whatsapp',       label: 'Alerta WhatsApp',      icon: '📲',  desc: 'Enviar alertas pelo WhatsApp' },
+    { key: 'entrada_mp',     label: 'Entrada Mat. Prima',   icon: '📥',  desc: 'Acessar aba de entrada de matéria prima' },
+    { key: 'entrada_excluir',label: 'Excluir Entradas',     icon: '🗑️',  desc: 'Excluir registros de entrada de matéria prima' },
+    { key: 'entrada_editar', label: 'Editar Entradas',      icon: '🔧',  desc: 'Modificar registros de entrada de matéria prima' },
+    { key: 'entrada_aprovar',label: 'Aprovar/Reprovar Ent.',icon: '✅',  desc: 'Aprovar ou reprovar entradas de matéria prima' },
 ];
 
 function _todasPerms() {
@@ -2887,6 +3054,7 @@ async function fazerLogin() {
                 ? '<span class="badge-perfil badge-admin">Admin</span>'
                 : '<span class="badge-perfil badge-usuario">Usuário</span>';
         aplicarPermissoes();
+        _navegarParaPrimeiraAbaPermitida();
         localStorage.removeItem('producoes');
         localStorage.removeItem('classificacoes');
         localStorage.removeItem('materias_primas');
@@ -2925,6 +3093,17 @@ function aplicarPermissoes() {
     if (_tabClass) _tabClass.style.display = podeCadastro ? 'inline-block' : 'none';
     if (_tabMP)    _tabMP.style.display    = podeCadastro ? 'inline-block' : 'none';
 
+    // Aba Entrada de Matéria Prima
+    const podeEntradaMP = isAdmin || perms.entrada_mp;
+    const tabEMP = document.getElementById('tabEntradaMP');
+    if (tabEMP) tabEMP.style.display = podeEntradaMP ? 'inline-block' : 'none';
+    // Botão de registrar entrada
+    const btnEMP = document.getElementById('btnCadastroEMP');
+    if (btnEMP) btnEMP.style.display = podeEntradaMP ? 'inline-block' : 'none';
+    // Coluna de ação
+    const thAcaoEMP = document.getElementById('thAcaoEMP');
+    if (thAcaoEMP) thAcaoEMP.style.display = (isAdmin || perms.entrada_excluir || perms.entrada_editar || perms.entrada_aprovar) ? 'table-cell' : 'none';
+
     // Aba Configurações — visível se tiver qualquer permissão de config
     const temConfig = isAdmin || perms.backup || perms.memoria || perms.parametros || perms.whatsapp;
     const tabCfg2 = document.getElementById('tabConfiguracoes');
@@ -2941,12 +3120,72 @@ function aplicarPermissoes() {
     const tabBol = document.getElementById('tabBoletim');
     if (tabBol) tabBol.style.display = (isAdmin || perms.boletim) ? 'inline-block' : 'none';
 
+    // Carrega entradas ao logar
+    if (podeEntradaMP) {
+        carregarEntradasMP().then(() => exibirTabelaEMP());
+        _empIniciarPolling();
+    }
+
     // Aba Usuários — só admin (controlado dentro de cfg)
     // (visibilidade do cfgBtn-usuarios controlado via trocarSubCfg)
 }
 
+function _navegarParaPrimeiraAbaPermitida() {
+    const isAdmin = perfilAtual === 'admin';
+    const user = USUARIOS[usuarioAtual] || {};
+    let perms = user.perms || {};
+    if (typeof perms === 'string') { try { perms = JSON.parse(perms); } catch(e) { perms = {}; } }
+
+    // Mapa de abas na ordem de prioridade: [id do tab btn, id da aba conteúdo, condição de acesso]
+    const abas = [
+        { tabId: 'tabProducao',      abaId: 'producao',      ok: isAdmin || perms.cadastro },
+        { tabId: 'tabClassificacao', abaId: 'classificacao', ok: isAdmin || perms.cadastro },
+        { tabId: 'tabMateriaPrima',  abaId: 'materiaPrima',  ok: isAdmin || perms.cadastro },
+        { tabId: 'tabEntradaMP',     abaId: 'entradaMP',     ok: isAdmin || perms.entrada_mp },
+        { tabId: 'tabRelatorio',     abaId: 'relatorio',     ok: isAdmin || perms.relatorios },
+        { tabId: 'tabRelClass',      abaId: 'relClass',      ok: isAdmin || perms.relatorios },
+        { tabId: 'tabRanking',       abaId: 'ranking',       ok: isAdmin || perms.relatorios },
+        { tabId: 'tabBoletim',       abaId: 'boletim',       ok: isAdmin || perms.boletim },
+        { tabId: 'tabConfiguracoes', abaId: 'configuracoes', ok: isAdmin || perms.backup || perms.memoria || perms.parametros || perms.whatsapp },
+    ];
+
+    // Remove active de tudo
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+    const primeira = abas.find(a => a.ok);
+    if (!primeira) return; // sem nenhuma permissão (não deve acontecer)
+
+    const tabEl = document.getElementById(primeira.tabId);
+    const abaEl = document.getElementById('aba-' + primeira.abaId);
+    if (tabEl) tabEl.classList.add('active');
+    if (abaEl) abaEl.classList.add('active');
+
+    // Se for relatório, inicializa
+    if (primeira.abaId === 'relatorio') inicializarRelatorio();
+}
+
+let _empPollingInterval = null;
+
+function _empIniciarPolling() {
+    _empPararPolling();
+    _empPollingInterval = setInterval(async () => {
+        // Só atualiza se a aba de entradas estiver visível
+        const abaEMP = document.getElementById('aba-entradaMP');
+        if (!abaEMP || !abaEMP.classList.contains('active')) return;
+        await carregarEntradasMP();
+        await _empAtualizarStatusConclusoes();
+        exibirTabelaEMP();
+    }, 30000); // 30 segundos
+}
+
+function _empPararPolling() {
+    if (_empPollingInterval) { clearInterval(_empPollingInterval); _empPollingInterval = null; }
+}
+
 function fazerLogout() {
     if (confirm('Tem certeza que deseja sair?')) {
+        _empPararPolling();
         perfilAtual  = null;
         usuarioAtual = null;
         document.getElementById('mainSystem').style.display  = 'none';
@@ -2978,6 +3217,7 @@ function trocarAba(aba, btn) {
     if (aba === 'relClass')  inicializarRelClass();
     if (aba === 'ranking')   inicializarRanking();
     if (aba === 'boletim')   inicializarBoletim();
+    if (aba === 'entradaMP') carregarEntradasMP().then(() => { _empAtualizarStatusConclusoes(); exibirTabelaEMP(); });
     if (aba === 'configuracoes') trocarSubCfg('parametros', document.getElementById('cfgBtn-parametros'));
 }
 
@@ -3409,6 +3649,7 @@ function salvarClassificacao(event) {
     // Salva no Supabase
     dbUpsertOne('classificacoes', r).catch(e => console.error('Erro ao salvar classificação:', e));
     fecharModalCadastroClass(); limparFormularioClass(); exibirTabelaClass();
+    setTimeout(_empHookAposRegistro, 800);
 }
 
 function exibirTabelaClass() {
@@ -3510,6 +3751,10 @@ function abrirModalCadastroMP() {
     document.getElementById('modalTituloMP').textContent = 'CADASTRO DE MATÉRIA PRIMA';
     document.getElementById('formCadastroMP').reset();
     document.getElementById('cadDataMP').value = dataHoje();
+    document.getElementById('cadNF2MP').value = '';
+    document.getElementById('wrapNF2MP').style.display = 'none';
+    const btn = document.getElementById('btnAddNF2MP');
+    if (btn) { btn.textContent='＋ 2ª NF'; btn.style.borderColor='#bdc3c7'; btn.style.color='#888'; }
     document.getElementById('modalCadastroMP').classList.add('show');
 }
 
@@ -3525,6 +3770,13 @@ function abrirModalEdicaoMP(id) {
     document.getElementById('cadProdutoMP').value                 = r.produto;
     document.getElementById('cadFornecedorMP').value              = r.fornecedor;
     document.getElementById('cadNFMP').value                      = r.nf;
+    // NF2
+    const nf2val = r.nf2 || '';
+    document.getElementById('cadNF2MP').value = nf2val;
+    const wrapNF2 = document.getElementById('wrapNF2MP');
+    const btnNF2  = document.getElementById('btnAddNF2MP');
+    if (nf2val) { wrapNF2.style.display=''; btnNF2.textContent='✕ Remover 2ª NF'; btnNF2.style.borderColor='#e74c3c'; btnNF2.style.color='#e74c3c'; }
+    else        { wrapNF2.style.display='none'; btnNF2.textContent='＋ 2ª NF'; btnNF2.style.borderColor='#bdc3c7'; btnNF2.style.color='#888'; }
     document.getElementById('cadUmidadeMP').value                 = r.umidade;
     document.getElementById('cadDensidadeMP').value               = r.densidade;
     document.getElementById('cadExtratoMP').value                 = r.extrato||0;
@@ -3557,6 +3809,10 @@ function fecharModalCadastroMP() {
 function limparFormularioMP() {
     document.getElementById('formCadastroMP').reset();
     document.getElementById('cadDataMP').value = dataHoje();
+    document.getElementById('cadNF2MP').value = '';
+    document.getElementById('wrapNF2MP').style.display = 'none';
+    const btn = document.getElementById('btnAddNF2MP');
+    if (btn) { btn.textContent='＋ 2ª NF'; btn.style.borderColor='#bdc3c7'; btn.style.color='#888'; }
 }
 
 function salvarMateriaPrima(event) {
@@ -3564,13 +3820,31 @@ function salvarMateriaPrima(event) {
     const data       = dataParaISO(document.getElementById('cadDataMP').value);
     const produto    = document.getElementById('cadProdutoMP').value;
     const fornecedor = document.getElementById('cadFornecedorMP').value.trim();
+    const nf         = (document.getElementById('cadNFMP').value||'').trim().toUpperCase();
     if (!data || !produto || !fornecedor) {
         mostrarErroMP('❌ PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS!'); return;
+    }
+    if (!nf) {
+        mostrarErroMP('❌ NOTA FISCAL É OBRIGATÓRIA!'); return;
+    }
+    // Verificar NF duplicada (ignora o próprio registro em edição)
+    const nfDuplicada = materiasPrimas.some(x => x.id !== idEdicaoMP && (x.nf||'').toUpperCase() === nf);
+    if (nfDuplicada) {
+        mostrarErroMP('❌ NOTA FISCAL "' + nf + '" JÁ CADASTRADA! VERIFIQUE OS REGISTROS EXISTENTES.'); return;
+    }
+    const nf2 = (document.getElementById('cadNF2MP').value||'').trim().toUpperCase();
+    // Verificar NF2 duplicada também
+    if (nf2) {
+        const nf2Duplicada = materiasPrimas.some(x => x.id !== idEdicaoMP && ((x.nf||'').toUpperCase() === nf2 || (x.nf2||'').toUpperCase() === nf2));
+        if (nf2Duplicada) {
+            mostrarErroMP('❌ NOTA FISCAL 2 "' + nf2 + '" JÁ CADASTRADA!'); return;
+        }
     }
     const r = {
         id: idEdicaoMP || Date.now(), data,
         hora:           document.getElementById('cadHoraMP').value,
-        produto: produto.toUpperCase(), fornecedor: fornecedor.toUpperCase(), nf: (document.getElementById('cadNFMP').value||'').toUpperCase(),
+        produto: produto.toUpperCase(), fornecedor: fornecedor.toUpperCase(), nf,
+        nf2,
         umidade:        parseFloat(document.getElementById('cadUmidadeMP').value)||0,
         densidade:      parseFloat(document.getElementById('cadDensidadeMP').value)||0,
         extrato:        parseFloat(document.getElementById('cadExtratoMP').value)||0,
@@ -3602,6 +3876,7 @@ function salvarMateriaPrima(event) {
     // Salva no Supabase
     dbUpsertOne('materias_primas', r).catch(e => console.error('Erro ao salvar matéria prima:', e));
     fecharModalCadastroMP(); limparFormularioMP(); exibirTabelaMP();
+    setTimeout(_empHookAposRegistro, 800);
 }
 
 function exibirTabelaMP() {
@@ -3618,7 +3893,7 @@ function exibirTabelaMP() {
             : '';
         return `<tr>
             <td>${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td><td style="text-transform:uppercase;">${r.hora}</td>
-            <td style="text-transform:uppercase;">${r.nf}</td>
+            <td style="text-transform:uppercase;">${r.nf}${r.nf2 ? '<br><span style="font-size:9px;color:#888;" title="NF Complementar">'+r.nf2+'</span>' : ''}</td>
             <td style="white-space:normal;text-align:left;min-width:150px;text-transform:uppercase;">${r.produto}</td>
             <td style="white-space:normal;text-align:left;min-width:150px;text-transform:uppercase;">${r.fornecedor}</td>
             <td${estiloFora(r.umidade,'mp',r.produto,'umidade',r.data)}>${r.umidade.toFixed(2)}</td>
@@ -3677,6 +3952,24 @@ function deletarMP(id) {
 
 function mostrarSucessoMP(t) { showMsg('msgSucessoMP', t, 3000); }
 function mostrarErroMP(t)    { showMsg('msgErroMP', t, 4000); }
+
+function toggleNF2MP() {
+    const wrap = document.getElementById('wrapNF2MP');
+    const btn  = document.getElementById('btnAddNF2MP');
+    if (wrap.style.display === 'none' || wrap.style.display === '') {
+        wrap.style.display = '';
+        btn.textContent = '✕ Remover 2ª NF';
+        btn.style.borderColor = '#e74c3c';
+        btn.style.color = '#e74c3c';
+        document.getElementById('cadNF2MP').focus();
+    } else {
+        wrap.style.display = 'none';
+        document.getElementById('cadNF2MP').value = '';
+        btn.textContent = '＋ 2ª NF';
+        btn.style.borderColor = '#bdc3c7';
+        btn.style.color = '#888';
+    }
+}
 
 // NOVA MATÉRIA PRIMA
 function abrirModalNovaMateria() {
@@ -5410,8 +5703,318 @@ function limparNovos(chave, label) {
 }
 
 // ===================================================
-// RANKING PDF
+// ENTRADA DE MATÉRIA PRIMA
 // ===================================================
+let entradasMP = [];
+let _empEditandoId = null;
+let _empAprovarId = null;
+
+async function carregarEntradasMP() {
+    try {
+        entradasMP = await dbGetAll('entradas_mp');
+    } catch(e) {
+        entradasMP = JSON.parse(localStorage.getItem('entradas_mp') || '[]');
+    }
+}
+
+function _empStatusBadge(status) {
+    if (status === 'CONCLUÍDA')
+        return '<span style="background:#d5f4e6;color:#27ae60;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">✅ CONCLUÍDA</span>';
+    if (status === 'APROVADA')
+        return '<span style="background:#d5f4e6;color:#27ae60;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">✅ APROVADA</span>';
+    if (status === 'REPROVADA')
+        return '<span style="background:#fadbd8;color:#e74c3c;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">❌ REPROVADA</span>';
+    return '<span style="background:#fff8e1;color:#b7770d;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">⏳ EM ANÁLISE</span>';
+}
+
+function _empVerificarConclusao(entrada) {
+    // Verifica se a NF existe em classificacoes ou materiasPrimas
+    const nf = (entrada.nf || '').toString().trim().toUpperCase();
+    if (!nf) return false;
+    const emClass = classificacoes.some(r => (r.nf||'').toString().trim().toUpperCase() === nf);
+    const emMP    = materiasPrimas.some(r => (r.nf||'').toString().trim().toUpperCase() === nf);
+    return emClass || emMP;
+}
+
+async function _empAtualizarStatusConclusoes() {
+    let alterou = false;
+    for (let i = 0; i < entradasMP.length; i++) {
+        const e = entradasMP[i];
+        if (e.status === 'EM ANÁLISE' || e.status === 'APROVADA') {
+            if (_empVerificarConclusao(e)) {
+                entradasMP[i].status = 'CONCLUÍDA';
+                try { await dbUpsertOne('entradas_mp', entradasMP[i]); } catch(err) {}
+                alterou = true;
+            }
+        }
+    }
+    if (alterou) exibirTabelaEMP();
+}
+
+function exibirTabelaEMP(lista) {
+    if (!lista) lista = entradasMP;
+
+    // Filtra
+    const nf       = (document.getElementById('filterNFEMP')?.value || '').trim().toUpperCase();
+    const di       = document.getElementById('filterDataInicioEMP')?.value || '';
+    const df       = document.getElementById('filterDataFimEMP')?.value || '';
+    const forn     = (document.getElementById('filterFornecedorEMP')?.value || '').trim().toUpperCase();
+    const statusF  = document.getElementById('filterStatusEMP')?.value || '';
+
+    let dados = lista.filter(r => {
+        if (nf && !(r.nf||'').toUpperCase().includes(nf)) return false;
+        if (di && r.data < di) return false;
+        if (df && r.data > df) return false;
+        if (forn && !(r.fornecedor||'').toUpperCase().includes(forn)) return false;
+        if (statusF && r.status !== statusF) return false;
+        return true;
+    });
+
+    document.getElementById('totalRegistrosEMP').textContent = dados.length;
+
+    const isAdmin = perfilAtual === 'admin';
+    const user = USUARIOS[usuarioAtual] || {};
+    let perms = user.perms || {};
+    if (typeof perms === 'string') { try { perms = JSON.parse(perms); } catch(e) { perms = {}; } }
+    const podeExcluir  = isAdmin || perms.entrada_excluir;
+    const podeEditar   = isAdmin || perms.entrada_editar;
+    const podeAprovar  = isAdmin || perms.entrada_aprovar;
+    const temAcao = podeExcluir || podeEditar || podeAprovar;
+
+    const tbody = document.getElementById('tabelaEntradaMP');
+    if (!dados.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = dados.sort((a,b)=>{
+        const d = (b.data||'').localeCompare(a.data||'');
+        return d !== 0 ? d : (b.hora||'').localeCompare(a.hora||'');
+    }).map(r => {
+        const dataFmt = r.data ? new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR') : '-';
+        let acoes = '';
+        if (temAcao) {
+            if (podeAprovar && (r.status === 'EM ANÁLISE'))
+                acoes += `<button class="btn-action" style="background:#27ae60;color:white;" onclick="abrirModalAprovarEMP(${r.id})">✅ Apr/Rep</button> `;
+            if (podeEditar && r.status !== 'CONCLUÍDA')
+                acoes += `<button class="btn-action btn-edit" onclick="editarEntradaMP(${r.id})">✏️</button> `;
+            if (podeExcluir)
+                acoes += `<button class="btn-action btn-delete" onclick="excluirEntradaMP(${r.id})">🗑️</button>`;
+        }
+        return `<tr>
+            <td>${dataFmt}</td>
+            <td>${r.hora||'-'}</td>
+            <td style="text-align:center;font-weight:bold;text-transform:uppercase;">${r.fornecedor||'-'}</td>
+            <td style="text-align:center;text-transform:uppercase;">${r.materia||'-'}</td>
+            <td>${r.nf||'-'}${r.nf2 ? '<br><span style="font-size:9px;color:#888;" title="NF Complementar">'+r.nf2+'</span>' : ''}</td>
+            <td>${r.usuario||'-'}</td>
+            <td>${_empStatusBadge(r.status)}</td>
+            ${temAcao ? `<td>${acoes}</td>` : ''}
+        </tr>`;
+    }).join('');
+}
+
+function aplicarFiltrosEMP() { exibirTabelaEMP(); }
+function limparFiltrosEMP() {
+    ['filterNFEMP','filterFornecedorEMP'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    ['filterDataInicioEMP','filterDataFimEMP'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    const sel = document.getElementById('filterStatusEMP'); if(sel) sel.value='';
+    exibirTabelaEMP();
+}
+
+function abrirModalEMP() {
+    _empEditandoId = null;
+    document.getElementById('modalTituloEMP').textContent = '📥 Registrar Entrada de Matéria Prima';
+    document.getElementById('cadIdEMP').value = '';
+    document.getElementById('cadDataEMP').value = dataHoje();
+    const agora = new Date();
+    document.getElementById('cadHoraEMP').value = String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0');
+    document.getElementById('cadFornecedorEMP').value = '';
+    document.getElementById('cadMateriaEMP').value = '';
+    document.getElementById('cadNFEMP').value = '';
+    document.getElementById('cadNF2EMP').value = '';
+    document.getElementById('wrapNF2EMP').style.display = 'none';
+    const btnN2 = document.getElementById('btnAddNF2EMP');
+    if (btnN2) { btnN2.textContent='＋ 2ª NF'; btnN2.style.borderColor='#bdc3c7'; btnN2.style.color='#888'; }
+    // Sincronizar opções de matéria prima com o select do cadastro MP
+    _sincronizarOpcoesEMP();
+    const uNome = USUARIOS[usuarioAtual]?.nome || usuarioAtual || '';
+    document.getElementById('cadUsuarioEMP').value = uNome;
+    document.getElementById('modalCadastroEMP').classList.add('show');
+    setTimeout(() => document.getElementById('cadFornecedorEMP').focus(), 100);
+}
+
+function _sincronizarOpcoesEMP() {
+    const origem = document.getElementById('cadProdutoMP');
+    const destino = document.getElementById('cadMateriaEMP');
+    if (!origem || !destino) return;
+    const valorAtual = destino.value;
+    destino.innerHTML = '<option value="">SELECIONE...</option>';
+    Array.from(origem.options).forEach(opt => {
+        if (opt.value && opt.value !== '') {
+            const o = document.createElement('option');
+            o.value = opt.value; o.text = opt.text;
+            destino.appendChild(o);
+        }
+    });
+    destino.value = valorAtual;
+}
+
+function toggleNF2EMP() {
+    const wrap = document.getElementById('wrapNF2EMP');
+    const btn  = document.getElementById('btnAddNF2EMP');
+    if (wrap.style.display === 'none' || wrap.style.display === '') {
+        wrap.style.display = '';
+        btn.textContent = '✕ Remover 2ª NF';
+        btn.style.borderColor = '#e74c3c';
+        btn.style.color = '#e74c3c';
+        document.getElementById('cadNF2EMP').focus();
+    } else {
+        wrap.style.display = 'none';
+        document.getElementById('cadNF2EMP').value = '';
+        btn.textContent = '＋ 2ª NF';
+        btn.style.borderColor = '#bdc3c7';
+        btn.style.color = '#888';
+    }
+}
+
+function editarEntradaMP(id) {
+    const entrada = entradasMP.find(e => e.id === id);
+    if (!entrada) return;
+    _empEditandoId = id;
+    document.getElementById('modalTituloEMP').textContent = '✏️ Editar Entrada de Matéria Prima';
+    document.getElementById('cadIdEMP').value = id;
+    document.getElementById('cadDataEMP').value = dataParaDisplay(entrada.data);
+    document.getElementById('cadHoraEMP').value = entrada.hora || '';
+    document.getElementById('cadFornecedorEMP').value = entrada.fornecedor || '';
+    _sincronizarOpcoesEMP();
+    document.getElementById('cadMateriaEMP').value = entrada.materia || '';
+    document.getElementById('cadNFEMP').value = entrada.nf || '';
+    const nf2val = entrada.nf2 || '';
+    document.getElementById('cadNF2EMP').value = nf2val;
+    const wrapNF2 = document.getElementById('wrapNF2EMP');
+    const btnNF2  = document.getElementById('btnAddNF2EMP');
+    if (nf2val) { wrapNF2.style.display=''; btnNF2.textContent='✕ Remover 2ª NF'; btnNF2.style.borderColor='#e74c3c'; btnNF2.style.color='#e74c3c'; }
+    else        { wrapNF2.style.display='none'; btnNF2.textContent='＋ 2ª NF'; btnNF2.style.borderColor='#bdc3c7'; btnNF2.style.color='#888'; }
+    document.getElementById('cadUsuarioEMP').value = entrada.usuario || '';
+    document.getElementById('modalCadastroEMP').classList.add('show');
+}
+
+function fecharModalEMP() {
+    document.getElementById('modalCadastroEMP').classList.remove('show');
+    _empEditandoId = null;
+}
+
+function limparFormularioEMP() {
+    document.getElementById('cadDataEMP').value = dataHoje();
+    document.getElementById('cadHoraEMP').value = '';
+    document.getElementById('cadFornecedorEMP').value = '';
+    document.getElementById('cadMateriaEMP').value = '';
+    document.getElementById('cadNFEMP').value = '';
+    document.getElementById('cadNF2EMP').value = '';
+    document.getElementById('wrapNF2EMP').style.display = 'none';
+    const btn = document.getElementById('btnAddNF2EMP');
+    if (btn) { btn.textContent='＋ 2ª NF'; btn.style.borderColor='#bdc3c7'; btn.style.color='#888'; }
+}
+
+async function salvarEntradaMP(event) {
+    if (event) event.preventDefault();
+    const data      = dataParaISO(document.getElementById('cadDataEMP').value);
+    const hora      = document.getElementById('cadHoraEMP').value.trim();
+    const fornecedor= document.getElementById('cadFornecedorEMP').value.trim().toUpperCase();
+    const materia   = document.getElementById('cadMateriaEMP').value.trim().toUpperCase();
+    const nf        = document.getElementById('cadNFEMP').value.trim().toUpperCase();
+    const nf2       = (document.getElementById('cadNF2EMP').value||'').trim().toUpperCase();
+    const usuario   = USUARIOS[usuarioAtual]?.nome || usuarioAtual || '';
+
+    if (!data)      { mostrarMsgEMP('erro','Informe a data.'); return; }
+    if (!fornecedor){ mostrarMsgEMP('erro','Informe o fornecedor.'); return; }
+    if (!materia)   { mostrarMsgEMP('erro','Selecione a matéria prima.'); return; }
+    if (!nf)        { mostrarMsgEMP('erro','Informe o número da nota fiscal.'); return; }
+
+    // Verificar NF duplicada
+    const nfDup = entradasMP.some(e => e.id !== _empEditandoId && (e.nf||'').toUpperCase() === nf);
+    if (nfDup) { mostrarMsgEMP('erro','❌ Nota Fiscal "' + nf + '" já cadastrada!'); return; }
+    if (nf2) {
+        const nf2Dup = entradasMP.some(e => e.id !== _empEditandoId && ((e.nf||'').toUpperCase() === nf2 || (e.nf2||'').toUpperCase() === nf2));
+        if (nf2Dup) { mostrarMsgEMP('erro','❌ Nota Fiscal 2 "' + nf2 + '" já cadastrada!'); return; }
+    }
+
+    if (_empEditandoId) {
+        const idx = entradasMP.findIndex(e => e.id === _empEditandoId);
+        if (idx >= 0) {
+            entradasMP[idx] = { ...entradasMP[idx], data, hora, fornecedor, materia, nf, nf2 };
+            try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e){}
+        }
+        mostrarMsgEMP('sucesso','✅ Entrada atualizada com sucesso!');
+    } else {
+        // Verifica se NF já existe nas abas de análise para já marcar concluída
+        const nfUp = nf.toUpperCase();
+        const emClass = classificacoes.some(r => (r.nf||'').toString().trim().toUpperCase() === nfUp);
+        const emMP    = materiasPrimas.some(r => (r.nf||'').toString().trim().toUpperCase() === nfUp);
+        const statusInicial = (emClass || emMP) ? 'CONCLUÍDA' : 'EM ANÁLISE';
+
+        const novaEntrada = {
+            id: Date.now(),
+            data, hora, fornecedor, materia, nf, nf2,
+            usuario,
+            status: statusInicial,
+            criadoEm: new Date().toISOString()
+        };
+        entradasMP.push(novaEntrada);
+        try { await dbUpsertOne('entradas_mp', novaEntrada); } catch(e){}
+        mostrarMsgEMP('sucesso','✅ Entrada registrada com sucesso! Status: ' + statusInicial);
+    }
+
+    fecharModalEMP();
+    exibirTabelaEMP();
+}
+
+function mostrarMsgEMP(tipo, msg) {
+    const sid = tipo === 'sucesso' ? 'msgSucessoEMP' : 'msgErroEMP';
+    const hid = tipo === 'sucesso' ? 'msgErroEMP' : 'msgSucessoEMP';
+    document.getElementById(hid).classList.remove('show');
+    const el = document.getElementById(sid);
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+async function excluirEntradaMP(id) {
+    if (!confirm('Excluir este registro de entrada?')) return;
+    entradasMP = entradasMP.filter(e => e.id !== id);
+    try { await dbDeleteOne('entradas_mp', id); } catch(e){}
+    exibirTabelaEMP();
+    mostrarMsgEMP('sucesso','✅ Entrada excluída.');
+}
+
+function abrirModalAprovarEMP(id) {
+    const entrada = entradasMP.find(e => e.id === id);
+    if (!entrada) return;
+    _empAprovarId = id;
+    document.getElementById('modalAprovarNF').textContent = entrada.nf || '-';
+    document.getElementById('modalAprovarForn').textContent = entrada.fornecedor || '-';
+    document.getElementById('modalAprovarEMP').style.display = 'flex';
+}
+
+async function acaoEntradaMP(novoStatus) {
+    document.getElementById('modalAprovarEMP').style.display = 'none';
+    if (!_empAprovarId) return;
+    const idx = entradasMP.findIndex(e => e.id === _empAprovarId);
+    if (idx < 0) return;
+    entradasMP[idx].status = novoStatus;
+    try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e){}
+    _empAprovarId = null;
+    exibirTabelaEMP();
+    mostrarMsgEMP('sucesso', novoStatus === 'APROVADA' ? '✅ Entrada aprovada!' : '❌ Entrada reprovada!');
+}
+
+// Hook: sempre que salvar classificação ou matéria prima, verifica conclusões de entradas
+function _empHookAposRegistro() {
+    if (entradasMP && entradasMP.length) _empAtualizarStatusConclusoes();
+}
+
+
 function gerarPDFRanking() {
     const el  = document.getElementById('rankingConteudo');
     const opt = { margin:10, filename:'ranking-fornecedores-'+new Date().toISOString().split('T')[0]+'.pdf',
@@ -5427,6 +6030,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ativarNavegacaoEnter('formCadastroProd');
     ativarNavegacaoEnter('formCadastroClass');
     ativarNavegacaoEnter('formCadastroMP');
+    ativarNavegacaoEnter('formCadastroEMP');
     // Pré-abre o IndexedDB para acelerar primeiro acesso
     // Supabase mode - no local DB needed
     // Esconde abas de admin até login
@@ -5434,9 +6038,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const tabRC = document.getElementById('tabRelClass');
     const tabRK = document.getElementById('tabRanking');
     const tabBol = document.getElementById('tabBoletim');
+    const tabEMP = document.getElementById('tabEntradaMP');
     // tabConfiguracoes starts hidden until login
     const tabCfg3 = document.getElementById('tabConfiguracoes');
-    [tabCfg3,tabR,tabRC,tabRK,tabBol].forEach(t => { if(t) t.style.display='none'; });
+    [tabCfg3,tabR,tabRC,tabRK,tabBol,tabEMP].forEach(t => { if(t) t.style.display='none'; });
 });
 
 // ===================================================
