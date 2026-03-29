@@ -2711,32 +2711,12 @@ async function _carregarUsuariosSupabase() {
             headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
         });
         const lista = await res.json();
-        if (!Array.isArray(lista) || lista.length === 0) { USUARIOS = {}; return; }
-
-        // Detecta os nomes reais das colunas do primeiro registro
-        const sample = lista[0];
-        const keys = Object.keys(sample);
-        const colLogin  = keys.find(k => k.includes('login') || k === 'Conecte-se') || 'usr_login';
-        const colNome   = keys.find(k => k.includes('nome'))   || 'usr_nome';
-        const colSenha  = keys.find(k => k.includes('senha'))  || 'usr_senha';
-        const colPerfil = keys.find(k => k.includes('perfil')) || 'usr_perfil';
-        const colAtivo  = keys.find(k => k.includes('ativo'))  || 'usr_ativo';
-        const colPerms  = keys.find(k => k.includes('perm') || k.includes('manente')) || 'usr_perms';
-
-        // Salva mapeamento global para uso no PATCH/DELETE
-        window._supaColLogin = colLogin;
-
+        if (!Array.isArray(lista)) { USUARIOS = {}; return; }
         const mapa = {};
         lista.forEach(u => {
             let perms = {};
-            const login  = u[colLogin]  || '';
-            const nome   = u[colNome]   || '';
-            const senha  = u[colSenha]  || '';
-            const perfil = u[colPerfil] || '';
-            const ativo  = u[colAtivo]  !== undefined ? u[colAtivo] : true;
-            const permsR = u[colPerms]  || '{}';
-            try { perms = typeof permsR === 'string' ? JSON.parse(permsR) : (permsR || {}); } catch(e) {}
-            if (login) mapa[login] = { nome, senha, perfil, ativo, perms };
+            try { perms = typeof u.col_perms === 'string' ? JSON.parse(u.col_perms) : (u.col_perms || {}); } catch(e) {}
+            if (u.col_login) mapa[u.col_login] = { nome: u.col_name, senha: u.col_pass, perfil: u.col_role, ativo: u.col_active, perms };
         });
         USUARIOS = mapa;
     } catch(e) { console.error('Erro ao carregar usuários:', e); USUARIOS = {}; }
@@ -2744,12 +2724,12 @@ async function _carregarUsuariosSupabase() {
 
 async function _salvarUsuarioSupabase(login, dados) {
     const payload = {
-        "login_usu\u00e1rio": login,
-        "nome_usu\u00e1rio": dados.nome,
-        usr_senha: dados.senha,
-        usr_perfil: dados.perfil,
-        usr_ativo: true,
-        usr_perms: JSON.stringify(dados.perms || {})
+        col_login: login,
+        col_name: dados.nome,
+        col_pass: dados.senha,
+        col_role: dados.perfil,
+        col_active: true,
+        col_perms: JSON.stringify(dados.perms || {})
     };
     const res = await fetch(`${SUPABASE_URL}/rest/v1/sys_users`, {
         method: 'POST',
@@ -2763,10 +2743,9 @@ async function _salvarUsuarioSupabase(login, dados) {
 }
 
 async function _atualizarUsuarioSupabase(login, dados) {
-    const payload = { "nome_usu\u00e1rio": dados.nome, usr_perms: JSON.stringify(dados.perms || {}) };
-    if (dados.senha) payload.usr_senha = dados.senha;
-    const _colPatch = window._supaColLogin || 'usr_login';
-    await fetch(`${SUPABASE_URL}/rest/v1/sys_users?${encodeURIComponent(_colPatch)}=eq.${login}`, {
+    const payload = { col_name: dados.nome, col_perms: JSON.stringify(dados.perms || {}) };
+    if (dados.senha) payload.col_pass = dados.senha;
+    await fetch(`${SUPABASE_URL}/rest/v1/sys_users?col_login=eq.${login}`, {
         method: 'PATCH',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -2774,8 +2753,7 @@ async function _atualizarUsuarioSupabase(login, dados) {
 }
 
 async function _deletarUsuarioSupabase(login) {
-    const _colDel = window._supaColLogin || 'usr_login';
-    await fetch(`${SUPABASE_URL}/rest/v1/sys_users?${encodeURIComponent(_colDel)}=eq.${login}`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/sys_users?col_login=eq.${login}`, {
         method: 'DELETE',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
     });
