@@ -3174,7 +3174,6 @@ function _empIniciarPolling() {
         const abaEMP = document.getElementById('aba-entradaMP');
         if (!abaEMP || !abaEMP.classList.contains('active')) return;
         await carregarEntradasMP();
-        await _empAtualizarStatusConclusoes();
         exibirTabelaEMP();
     }, 30000); // 30 segundos
 }
@@ -3217,7 +3216,7 @@ function trocarAba(aba, btn) {
     if (aba === 'relClass')  inicializarRelClass();
     if (aba === 'ranking')   inicializarRanking();
     if (aba === 'boletim')   inicializarBoletim();
-    if (aba === 'entradaMP') carregarEntradasMP().then(() => { _empAtualizarStatusConclusoes(); exibirTabelaEMP(); });
+    if (aba === 'entradaMP') carregarEntradasMP().then(() => exibirTabelaEMP());
     if (aba === 'configuracoes') trocarSubCfg('parametros', document.getElementById('cfgBtn-parametros'));
 }
 
@@ -5727,28 +5726,9 @@ function _empStatusBadge(status) {
     return '<span style="background:#fff8e1;color:#b7770d;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">⏳ EM ANÁLISE</span>';
 }
 
-function _empVerificarConclusao(entrada) {
-    // Verifica se a NF existe em classificacoes ou materiasPrimas
-    const nf = (entrada.nf || '').toString().trim().toUpperCase();
-    if (!nf) return false;
-    const emClass = classificacoes.some(r => (r.nf||'').toString().trim().toUpperCase() === nf);
-    const emMP    = materiasPrimas.some(r => (r.nf||'').toString().trim().toUpperCase() === nf);
-    return emClass || emMP;
-}
-
 async function _empAtualizarStatusConclusoes() {
-    let alterou = false;
-    for (let i = 0; i < entradasMP.length; i++) {
-        const e = entradasMP[i];
-        if (e.status === 'EM ANÁLISE' || e.status === 'APROVADA') {
-            if (_empVerificarConclusao(e)) {
-                entradasMP[i].status = 'CONCLUÍDA';
-                try { await dbUpsertOne('entradas_mp', entradasMP[i]); } catch(err) {}
-                alterou = true;
-            }
-        }
-    }
-    if (alterou) exibirTabelaEMP();
+    // Removido: status não deve ser alterado automaticamente.
+    // A liberação é sempre manual via botão Aprovar/Reprovar.
 }
 
 function exibirTabelaEMP(lista) {
@@ -5948,22 +5928,16 @@ async function salvarEntradaMP(event) {
         }
         mostrarMsgEMP('sucesso','✅ Entrada atualizada com sucesso!');
     } else {
-        // Verifica se NF já existe nas abas de análise para já marcar concluída
-        const nfUp = nf.toUpperCase();
-        const emClass = classificacoes.some(r => (r.nf||'').toString().trim().toUpperCase() === nfUp);
-        const emMP    = materiasPrimas.some(r => (r.nf||'').toString().trim().toUpperCase() === nfUp);
-        const statusInicial = (emClass || emMP) ? 'CONCLUÍDA' : 'EM ANÁLISE';
-
         const novaEntrada = {
             id: Date.now(),
             data, hora, fornecedor, materia, nf, nf2,
             usuario,
-            status: statusInicial,
+            status: 'EM ANÁLISE',
             criadoEm: new Date().toISOString()
         };
         entradasMP.push(novaEntrada);
         try { await dbUpsertOne('entradas_mp', novaEntrada); } catch(e){}
-        mostrarMsgEMP('sucesso','✅ Entrada registrada com sucesso! Status: ' + statusInicial);
+        mostrarMsgEMP('sucesso','✅ Entrada registrada com sucesso!');
     }
 
     fecharModalEMP();
@@ -6011,7 +5985,7 @@ async function acaoEntradaMP(novoStatus) {
 
 // Hook: sempre que salvar classificação ou matéria prima, verifica conclusões de entradas
 function _empHookAposRegistro() {
-    if (entradasMP && entradasMP.length) _empAtualizarStatusConclusoes();
+    // Removido: status não é mais alterado automaticamente.
 }
 
 
