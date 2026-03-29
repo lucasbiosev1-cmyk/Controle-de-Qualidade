@@ -15,21 +15,82 @@
         #loginScreen {
             display: flex; align-items: center; justify-content: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #0a1e7f 0%, #1a3a9f 60%, #0d2b8a 100%);
+            background: linear-gradient(135deg, #e8e8e8 0%, #f5f5f0 40%, #dde8dd 100%);
+            position: relative; overflow: hidden;
         }
-        .login-box { background: white; border-radius: 8px; padding: 40px 36px; width: 360px; box-shadow: 0 10px 40px rgba(0,0,0,0.35); }
+        /* Fundo decorativo laboratório */
+        #loginScreen::before {
+            content: '';
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse at 15% 50%, rgba(180,210,180,0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 85% 30%, rgba(200,220,240,0.3) 0%, transparent 50%);
+            z-index: 0;
+        }
+        /* Moléculas decorativas */
+        #loginScreen::after {
+            content: '⬡ ⬡ ⬡';
+            position: absolute; top: 10%; left: 3%;
+            font-size: 40px; color: rgba(150,180,150,0.15);
+            letter-spacing: 20px; z-index: 0;
+        }
+        .login-wrapper {
+            display: flex; border-radius: 20px; overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+            width: 780px; max-width: 96vw; position: relative; z-index: 1;
+            min-height: 480px;
+        }
+        /* Painel esquerdo com trigo */
+        .login-panel-left {
+            width: 240px; flex-shrink: 0;
+            background: linear-gradient(160deg, rgba(220,235,215,0.9) 0%, rgba(200,225,200,0.85) 100%);
+            backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 30px 20px; position: relative; overflow: hidden;
+        }
+        .login-panel-left::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 400'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='1.5'%3E%3Cline x1='100' y1='380' x2='100' y2='50'/%3E%3Cellipse cx='100' cy='50' rx='18' ry='28'/%3E%3Cellipse cx='82' cy='90' rx='14' ry='22' transform='rotate(-20 82 90)'/%3E%3Cellipse cx='118' cy='90' rx='14' ry='22' transform='rotate(20 118 90)'/%3E%3Cellipse cx='72' cy='130' rx='12' ry='20' transform='rotate(-25 72 130)'/%3E%3Cellipse cx='128' cy='130' rx='12' ry='20' transform='rotate(25 128 130)'/%3E%3Cellipse cx='65' cy='168' rx='11' ry='18' transform='rotate(-28 65 168)'/%3E%3Cellipse cx='135' cy='168' rx='11' ry='18' transform='rotate(28 135 168)'/%3E%3Cellipse cx='70' cy='205' rx='10' ry='16' transform='rotate(-22 70 205)'/%3E%3Cellipse cx='130' cy='205' rx='10' ry='16' transform='rotate(22 130 205)'/%3E%3Ccircle cx='60' cy='300' r='4'/%3E%3Ccircle cx='80' cy='280' r='3'/%3E%3Ccircle cx='100' cy='310' r='5'/%3E%3Ccircle cx='120' cy='285' r='3'/%3E%3Ccircle cx='140' cy='305' r='4'/%3E%3Cpath d='M40 320 Q60 290 80 310 Q100 330 120 300 Q140 270 160 315'/%3E%3C/g%3E%3C/svg%3E") center/cover no-repeat;
+            opacity: 0.7;
+        }
+        /* Painel direito formulário */
+        .login-box {
+            flex: 1; background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(20px);
+            padding: 44px 40px; display: flex; flex-direction: column; justify-content: center;
+        }
         .login-logo { text-align: center; margin-bottom: 28px; }
-        .login-logo h1 { font-size: 20px; font-weight: bold; color: #0a1e7f; line-height: 1.3; }
-        .login-logo p { font-size: 11px; color: #888; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
-        .login-divider { width: 40px; height: 3px; background: #0a1e7f; margin: 12px auto; border-radius: 2px; }
-        .login-group { margin-bottom: 16px; }
-        .login-group label { display: block; font-size: 11px; font-weight: bold; color: #555; margin-bottom: 6px; text-transform: uppercase; }
-        .login-group input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; transition: border 0.2s; }
-        .login-group input:focus { outline: none; border-color: #0a1e7f; box-shadow: 0 0 0 3px rgba(10,30,127,0.1); }
-        .login-btn { width: 100%; padding: 11px; background: #0a1e7f; color: white; border: none; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; margin-top: 8px; text-transform: uppercase; letter-spacing: 0.5px; transition: background 0.2s; }
-        .login-btn:hover { background: #1a3a9f; }
-        .login-error { background: #fadbd8; color: #e74c3c; padding: 9px 12px; border-radius: 4px; font-size: 12px; margin-bottom: 14px; display: none; border-left: 4px solid #e74c3c; }
+        .login-logo .agronor-brand {
+            display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px;
+        }
+        .login-logo .agronor-icon {
+            width: 44px; height: 44px; background: #c0392b;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 22px; color: white; font-style: italic; font-weight: 900;
+            box-shadow: 0 3px 10px rgba(192,57,43,0.4);
+        }
+        .login-logo .agronor-name { font-size: 26px; font-weight: 900; color: #1a2a5e; letter-spacing: 1px; }
+        .login-logo .agronor-sub { font-size: 10px; font-weight: 700; color: #c0392b; letter-spacing: 3px; text-transform: uppercase; }
+        .login-logo h1 { font-size: 14px; font-weight: 700; color: #1a2a5e; margin-top: 18px; line-height: 1.4; text-transform: uppercase; letter-spacing: 0.5px; }
+        .login-divider { display: none; }
+        .login-logo p { display: none; }
+        .login-group { margin-bottom: 16px; position: relative; }
+        .login-group label { display: block; font-size: 11px; font-weight: 600; color: #444; margin-bottom: 6px; }
+        .login-group .input-wrap { position: relative; }
+        .login-group .input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 15px; color: #aaa; }
+        .login-group input { width: 100%; padding: 11px 12px 11px 36px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 13px; transition: all 0.2s; background: rgba(255,255,255,0.8); box-sizing: border-box; }
+        .login-group input:focus { outline: none; border-color: #c0392b; box-shadow: 0 0 0 3px rgba(192,57,43,0.1); }
+        .login-btn { width: 100%; padding: 13px; background: #c0392b; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(192,57,43,0.4); }
+        .login-btn:hover { background: #a93226; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(192,57,43,0.5); }
+        .login-footer { text-align: center; margin-top: 20px; font-size: 10px; color: #aaa; }
+        .login-error { background: #fadbd8; color: #e74c3c; padding: 9px 12px; border-radius: 6px; font-size: 12px; margin-bottom: 14px; display: none; border-left: 4px solid #e74c3c; }
         .login-error.show { display: block; }
+        @media (max-width: 600px) {
+            .login-wrapper { flex-direction: column; width: 95vw; }
+            .login-panel-left { display: none; }
+            .login-box { padding: 32px 24px; }
+        }
 
         /* ========== SISTEMA PRINCIPAL ========== */
         #mainSystem { display: none; }
@@ -680,11 +741,9 @@
         [data-theme="cinza"]{--cor-primaria:#2c3e50;--cor-primaria-hover:#34495e;--cor-secundaria:#1a252f;--cor-acento:#e67e22;--cor-acento-hover:#ca6f1e;--cor-filtrar:#7f8c8d;--cor-filtrar-hover:#616a6b;--cor-login-bg1:#2c3e50;--cor-login-bg2:#34495e;--cor-login-bg3:#1a252f;}
         [data-theme="vinho"]{--cor-primaria:#6d1a36;--cor-primaria-hover:#922b47;--cor-secundaria:#4a1228;--cor-acento:#c0392b;--cor-acento-hover:#a93226;--cor-filtrar:#8e44ad;--cor-filtrar-hover:#7d3c98;--cor-login-bg1:#6d1a36;--cor-login-bg2:#922b47;--cor-login-bg3:#4a1228;}
 
-        #loginScreen{background:linear-gradient(135deg,var(--cor-login-bg1) 0%,var(--cor-login-bg2) 60%,var(--cor-login-bg3) 100%)!important;}
-        .login-logo h1{color:var(--cor-primaria)!important;}
-        .login-divider{background:var(--cor-primaria)!important;}
-        .login-btn{background:var(--cor-primaria)!important;}
-        .login-btn:hover{background:var(--cor-primaria-hover)!important;}
+        /* tema de cores desativado no login — usa tema AGRONOR fixo */
+        .login-btn{background:#c0392b!important;}
+        .login-btn:hover{background:#a93226!important;}
         .header{background:linear-gradient(to right,var(--cor-primaria),var(--cor-primaria-hover))!important;}
         .nav-tabs{background:var(--cor-primaria-hover)!important;border-bottom-color:var(--cor-primaria)!important;}
         .nav-tab.active{border-bottom-color:var(--cor-acento)!important;}
@@ -794,22 +853,36 @@
 
 <!-- ========== TELA DE LOGIN ========== -->
 <div id="loginScreen" onclick="(function(){var el=document.documentElement;if(el.requestFullscreen)el.requestFullscreen();else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();else if(el.mozRequestFullScreen)el.mozRequestFullScreen();else if(el.msRequestFullscreen)el.msRequestFullscreen();})()">
-    <div class="login-box">
-        <div class="login-logo">
-            <h1>Registro Analíticos</h1>
-            <div class="login-divider"></div>
-            <p>Sistema de Controle de Qualidade</p>
+    <div class="login-wrapper">
+        <div class="login-panel-left"></div>
+        <div class="login-box">
+            <div class="login-logo">
+                <div class="agronor-brand">
+                    <div>
+                        <div class="agronor-name">AGRONOR <span style="color:#c0392b;font-size:22px;">ALIMENTOS</span></div>
+                        <div class="agronor-sub">Laboratório de Qualidade</div>
+                    </div>
+                </div>
+                <h1>Acesso ao Portal de<br>Laboratório Agronor</h1>
+            </div>
+            <div class="login-error" id="loginError">Usuário ou senha inválidos.</div>
+            <div class="login-group">
+                <label>Registro de Analista (ID)</label>
+                <div class="input-wrap">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="loginUser" placeholder="Registro de Analista (ID)" autocomplete="username">
+                </div>
+            </div>
+            <div class="login-group">
+                <label>Senha de Laboratório</label>
+                <div class="input-wrap">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="loginPass" placeholder="Senha de Laboratório" autocomplete="current-password">
+                </div>
+            </div>
+            <button class="login-btn" onclick="fazerLogin()">Entrar</button>
+            <div class="login-footer">© 2024 Agronor Alimentos. Todos os direitos reservados.</div>
         </div>
-        <div class="login-error" id="loginError">Usuário ou senha inválidos.</div>
-        <div class="login-group">
-            <label>Usuário</label>
-            <input type="text" id="loginUser" placeholder="Digite seu usuário" autocomplete="username">
-        </div>
-        <div class="login-group">
-            <label>Senha</label>
-            <input type="password" id="loginPass" placeholder="Digite sua senha" autocomplete="current-password">
-        </div>
-        <button class="login-btn" onclick="fazerLogin()">Entrar</button>
     </div>
 </div>
 
@@ -2699,6 +2772,12 @@ function _todasPerms() {
     PERMS_DISPONIVEIS.forEach(pd => p[pd.key] = true);
     return p;
 }
+
+// ============================================================
+// SUPABASE — credenciais (declaradas aqui para uso nas funções de usuários)
+// ============================================================
+const SUPABASE_URL = 'https://kponpocjqxtlclxuokkd.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_bpQ1ttls9SmFpXhKHH-ReQ_nYQZRvCE';
 
 // ============================================================
 // USUÁRIOS — armazenados no Supabase
@@ -5389,8 +5468,6 @@ function rolarTabela(containerId, direcao) {
 // ===================================================
 // SUPABASE — camada de persistência em nuvem
 // ===================================================
-const SUPABASE_URL = 'https://kponpocjqxtlclxuokkd.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_bpQ1ttls9SmFpXhKHH-ReQ_nYQZRvCE';
 
 async function sbFetch(table, method='GET', body=null, params='') {
     const url = `${SUPABASE_URL}/rest/v1/${table}${params}`;
