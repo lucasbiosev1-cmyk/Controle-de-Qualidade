@@ -30,24 +30,6 @@
         .login-btn:hover { background: #1a3a9f; }
         .login-error { background: #fadbd8; color: #e74c3c; padding: 9px 12px; border-radius: 4px; font-size: 12px; margin-bottom: 14px; display: none; border-left: 4px solid #e74c3c; }
         .login-error.show { display: block; }
-        .login-recupera-link { text-align:center; margin-top:12px; }
-        .login-recupera-link button { background:none; border:none; color:#999; font-size:11px; cursor:pointer; text-decoration:underline; padding:0; }
-        .login-recupera-link button:hover { color:#e74c3c; }
-        #modalRecupera { display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; }
-        #modalRecupera.show { display:flex; }
-        .recupera-box { background:white; border-radius:10px; width:380px; max-width:94vw; box-shadow:0 8px 32px rgba(0,0,0,0.35); overflow:hidden; }
-        .recupera-header { background:linear-gradient(to right,#e74c3c,#c0392b); color:white; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; }
-        .recupera-header h2 { font-size:15px; margin:0; }
-        .recupera-body { padding:20px; }
-        .recupera-body p { font-size:13px; color:#555; margin-bottom:14px; line-height:1.5; }
-        .recupera-body input { width:100%; padding:9px 12px; border:1px solid #ddd; border-radius:4px; font-size:13px; margin-bottom:10px; }
-        .recupera-body input:focus { outline:none; border-color:#e74c3c; box-shadow:0 0 0 3px rgba(231,76,60,0.12); }
-        .recupera-actions { display:flex; gap:8px; }
-        .btn-recupera-confirm { flex:1; padding:10px; background:#e74c3c; color:white; border:none; border-radius:4px; font-size:13px; font-weight:bold; cursor:pointer; }
-        .btn-recupera-confirm:hover { background:#c0392b; }
-        .btn-recupera-cancel { flex:1; padding:10px; background:#ecf0f1; color:#555; border:none; border-radius:4px; font-size:13px; font-weight:bold; cursor:pointer; }
-        .btn-recupera-cancel:hover { background:#bdc3c7; }
-        .recupera-sucesso { background:#d5f4e6; color:#1e8449; border-radius:6px; padding:12px; font-size:13px; font-weight:bold; text-align:center; margin-top:12px; display:none; }
 
         /* ========== SISTEMA PRINCIPAL ========== */
         #mainSystem { display: none; }
@@ -828,28 +810,6 @@
             <input type="password" id="loginPass" placeholder="Digite sua senha" autocomplete="current-password">
         </div>
         <button class="login-btn" onclick="fazerLogin()">Entrar</button>
-        <div class="login-recupera-link">
-            <button onclick="abrirRecuperaSenha()">🔑 Esqueci a senha do admin</button>
-        </div>
-    </div>
-</div>
-
-<!-- ===== MODAL RECUPERAÇÃO DE SENHA ===== -->
-<div id="modalRecupera">
-    <div class="recupera-box">
-        <div class="recupera-header">
-            <h2>🔑 Recuperar Senha do Admin</h2>
-            <button onclick="fecharRecuperaSenha()" style="background:none;border:none;color:white;font-size:22px;cursor:pointer;line-height:1;">✕</button>
-        </div>
-        <div class="recupera-body">
-            <p>Para confirmar a recuperação, digite a <strong>chave de segurança</strong> do sistema.</p>
-            <input type="password" id="recuperaChave" placeholder="Digite a chave de segurança" />
-            <div class="recupera-actions">
-                <button class="btn-recupera-cancel" onclick="fecharRecuperaSenha()">Cancelar</button>
-                <button class="btn-recupera-confirm" onclick="confirmarRecuperaSenha()">Redefinir Senha</button>
-            </div>
-            <div class="recupera-sucesso" id="recuperaSucesso">✅ Senha redefinida para <strong>admin123</strong></div>
-        </div>
     </div>
 </div>
 
@@ -2740,26 +2700,54 @@ function _todasPerms() {
     return p;
 }
 
-// Carrega usuários do localStorage ou usa padrão
-function _carregarUsuarios() {
-    const raw = localStorage.getItem('sys_usuarios_v1');
-    if (raw) {
-        try { return JSON.parse(raw); } catch(e) {}
-    }
-    // padrão inicial
-    return {
-        admin:   { senha: 'admin123', perfil: 'admin',   nome: 'Administrador', perms: _todasPerms() },
-        usuario: { senha: 'user123',  perfil: 'usuario', nome: 'Usuário',
-            perms: { cadastro:false, relatorios:true, boletim:true, parametros:false, backup:false, memoria:false, whatsapp:true }
-        }
-    };
+// ============================================================
+// USUÁRIOS — armazenados no Supabase
+// ============================================================
+let USUARIOS = {};
+
+async function _carregarUsuariosSupabase() {
+    try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?select=*`, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+        });
+        const lista = await res.json();
+        const mapa = {};
+        lista.forEach(u => {
+            let perms = {};
+            try { perms = typeof u.perms === 'string' ? JSON.parse(u.perms) : (u.perms || {}); } catch(e) {}
+            mapa[u.login] = { nome: u.nome, senha: u.senha, perfil: u.perfil, ativo: u.ativo, perms };
+        });
+        USUARIOS = mapa;
+    } catch(e) { console.error('Erro ao carregar usuários:', e); USUARIOS = {}; }
 }
 
-function _salvarUsuarios() {
-    localStorage.setItem('sys_usuarios_v1', JSON.stringify(USUARIOS));
+async function _salvarUsuarioSupabase(login, dados) {
+    const payload = { login, nome: dados.nome, senha: dados.senha, perfil: dados.perfil, ativo: dados.ativo !== false, perms: JSON.stringify(dados.perms || {}) };
+    await fetch(`${SUPABASE_URL}/rest/v1/usuarios`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify(payload)
+    });
 }
 
-let USUARIOS = _carregarUsuarios();
+async function _atualizarUsuarioSupabase(login, dados) {
+    const payload = { nome: dados.nome, perms: JSON.stringify(dados.perms || {}) };
+    if (dados.senha) payload.senha = dados.senha;
+    await fetch(`${SUPABASE_URL}/rest/v1/usuarios?login=eq.${login}`, {
+        method: 'PATCH',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+}
+
+async function _deletarUsuarioSupabase(login) {
+    await fetch(`${SUPABASE_URL}/rest/v1/usuarios?login=eq.${login}`, {
+        method: 'DELETE',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+}
+
+function _salvarUsuarios() {}
 let perfilAtual = null;
 
 // ===================================================
@@ -2803,55 +2791,16 @@ function ativarNavegacaoEnter(formId) {
 
 let usuarioAtual = null;
 
-// ===================================================
-// RECUPERAÇÃO DE SENHA DO ADMIN
-// ===================================================
-const CHAVE_RECUPERA = 'resetadmin2024';
-
-function abrirRecuperaSenha() {
-    document.getElementById('recuperaChave').value = '';
-    document.getElementById('recuperaSucesso').style.display = 'none';
-    document.getElementById('modalRecupera').classList.add('show');
-    setTimeout(() => document.getElementById('recuperaChave').focus(), 100);
-}
-
-function fecharRecuperaSenha() {
-    document.getElementById('modalRecupera').classList.remove('show');
-}
-
-function confirmarRecuperaSenha() {
-    const chave = document.getElementById('recuperaChave').value.trim();
-    if (chave !== CHAVE_RECUPERA) {
-        document.getElementById('recuperaChave').style.borderColor = '#e74c3c';
-        document.getElementById('recuperaChave').placeholder = '❌ Chave incorreta, tente novamente';
-        document.getElementById('recuperaChave').value = '';
-        setTimeout(() => {
-            document.getElementById('recuperaChave').style.borderColor = '#ddd';
-            document.getElementById('recuperaChave').placeholder = 'Digite a chave de segurança';
-        }, 2500);
-        return;
-    }
-    try {
-        const raw = localStorage.getItem('sys_usuarios_v1');
-        let usuarios = raw ? JSON.parse(raw) : {};
-        if (!usuarios['admin']) usuarios['admin'] = { perfil: 'admin', nome: 'Administrador' };
-        usuarios['admin'].senha = 'admin123';
-        localStorage.setItem('sys_usuarios_v1', JSON.stringify(usuarios));
-    } catch(e) {
-        localStorage.removeItem('sys_usuarios_v1');
-    }
-    document.getElementById('recuperaSucesso').style.display = 'block';
-    setTimeout(() => fecharRecuperaSenha(), 2800);
-}
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') fecharRecuperaSenha();
-});
-
-function fazerLogin() {
+async function fazerLogin() {
     const user = document.getElementById('loginUser').value.trim().toLowerCase();
     const pass = document.getElementById('loginPass').value;
     const err  = document.getElementById('loginError');
+    const btn  = document.querySelector('.login-btn');
+    btn.textContent = 'Verificando...';
+    btn.disabled = true;
+    await _carregarUsuariosSupabase();
+    btn.textContent = 'Entrar';
+    btn.disabled = false;
     if (USUARIOS[user] && USUARIOS[user].senha === pass) {
         perfilAtual  = USUARIOS[user].perfil;
         usuarioAtual = user;
@@ -5806,10 +5755,17 @@ const PARAM_STORAGE_KEY = 'sistema_parametros_v3';
 // snapshot cuja vigência seja <= D (o mais recente antes ou igual a D).
 // ─────────────────────────────────────────────────────────────────────────────
 
-function carregarParametros() {
+async function carregarParametros() {
     try {
-        const saved = localStorage.getItem(PARAM_STORAGE_KEY);
-        PARAMETROS = saved ? JSON.parse(saved) : {};
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/parametros?chave=eq.sistema_parametros_v3&select=valor`, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+        });
+        const lista = await res.json();
+        if (lista && lista.length > 0) {
+            PARAMETROS = JSON.parse(lista[0].valor);
+        } else {
+            PARAMETROS = {};
+        }
     } catch(e) { PARAMETROS = {}; }
 }
 
@@ -6007,7 +5963,17 @@ function salvarParametros() {
     hist.sort((a,b) => a.vigencia.localeCompare(b.vigencia));
     PARAMETROS[modulo][racaKey] = hist;
 
-    localStorage.setItem(PARAM_STORAGE_KEY, JSON.stringify(PARAMETROS));
+    // Salva no Supabase
+    fetch(`${SUPABASE_URL}/rest/v1/parametros`, {
+        method: 'POST',
+        headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify({ chave: 'sistema_parametros_v3', valor: JSON.stringify(PARAMETROS), atualizado_em: new Date().toISOString() })
+    });
     exibirTabelaProd(); exibirTabelaClass(); exibirTabelaMP();
 
     const dFmt = tempTudo
@@ -6021,7 +5987,10 @@ function salvarParametros() {
 function resetarParametros() {
     if (!confirm('Restaurar TODOS os parâmetros para os valores padrão?\nTodo o histórico de vigências será apagado.')) return;
     PARAMETROS = {};
-    localStorage.removeItem(PARAM_STORAGE_KEY);
+    fetch(`${SUPABASE_URL}/rest/v1/parametros?chave=eq.sistema_parametros_v3`, {
+        method: 'DELETE',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
     renderizarTabelasParametros();
     exibirTabelaProd(); exibirTabelaClass(); exibirTabelaMP();
     showMsg('msgSucessoParam','✓ Parâmetros restaurados para os valores padrão.',3000);
@@ -6254,14 +6223,9 @@ function onSelectRacao(modulo, panel) {
 function buildSelectHTML(modulo, lista, labelField, keyField, icone) {
     const opts = lista.map(i => {
         const key = (keyField==='key' ? i.key : i.racoes[0]).replace(/ /g,'_');
-        // Para rações com formulações múltiplas, adiciona optgroup com cada formulação
+        // Para rações com formulações múltiplas, adiciona optgroup
         if (i.formulacoes && i.formulacoes.length>1) {
             return `<optgroup label="── ${i.label} ──">${i.formulacoes.map(f=>`<option value="${f.replace(/ /g,'_')}">${f}</option>`).join('')}</optgroup>`;
-        }
-        // Para rações com formulação única, mostra o nome completo da formulação
-        if (i.formulacoes && i.formulacoes.length===1) {
-            const f = i.formulacoes[0];
-            return `<optgroup label="── ${i.label} ──"><option value="${f.replace(/ /g,'_')}">${f}</option></optgroup>`;
         }
         return `<option value="${key}">${i[labelField]||i.label||i.key}</option>`;
     }).join('');
@@ -7446,9 +7410,10 @@ function _permLabel(key) {
     return p ? p : { key, label: key, icon: '🔑' };
 }
 
-function renderizarListaUsuarios() {
+async function renderizarListaUsuarios() {
     const container = document.getElementById('listaUsuarios');
     if (!container) return;
+    await _carregarUsuariosSupabase();
 
     const logins = Object.keys(USUARIOS);
     if (logins.length === 0) {
@@ -7604,24 +7569,16 @@ function salvarUsuario() {
     });
 
     if (editando) {
-        // Editar usuário existente
         USUARIOS[editando].nome = nome;
         if (senha) USUARIOS[editando].senha = senha;
-        // Não altera perfil de admin
-        if (USUARIOS[editando].perfil !== 'admin') {
-            USUARIOS[editando].perms = perms;
-        }
+        if (USUARIOS[editando].perfil !== 'admin') USUARIOS[editando].perms = perms;
+        _atualizarUsuarioSupabase(editando, { nome, senha: senha || USUARIOS[editando].senha, perms }).then(() => renderizarListaUsuarios());
     } else {
-        // Criar novo usuário
-        USUARIOS[loginRaw] = {
-            senha,
-            perfil: 'usuario',
-            nome,
-            perms
-        };
+        const novo = { senha, perfil: 'usuario', nome, perms, ativo: true };
+        USUARIOS[loginRaw] = novo;
+        _salvarUsuarioSupabase(loginRaw, novo).then(() => renderizarListaUsuarios());
     }
 
-    _salvarUsuarios();
     fecharModalUsuario();
     renderizarListaUsuarios();
 }
@@ -7637,8 +7594,7 @@ function deletarUsuario(login) {
     if (USUARIOS[login] && USUARIOS[login].perfil === 'admin') { alert('Não é possível remover o administrador principal.'); return; }
     if (!confirm(`Remover o usuário "${USUARIOS[login]?.nome || login}"?\nEsta ação não pode ser desfeita.`)) return;
     delete USUARIOS[login];
-    _salvarUsuarios();
-    renderizarListaUsuarios();
+    _deletarUsuarioSupabase(login).then(() => renderizarListaUsuarios());
 }
 
 // ============================================================
@@ -7902,7 +7858,7 @@ function _bkAutoAtualizarStatus() {
                         <span style="font-size:40px;">💾</span>
                         <div>
                             <div style="color:white;font-size:17px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;">Backup Automático</div>
-                            <div style="color:rgba(255,255,255,0.75);font-size:12px;margin-top:3px;">Sistema de Controle de Qualidade</div>
+                            <div style="color:rgba(255,255,255,0.75);font-size:12px;margin-top:3px;">Sistema Controle de Qualidade</div>
                         </div>
                     </div>
                     <div style="padding:26px;">
