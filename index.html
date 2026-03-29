@@ -2774,12 +2774,6 @@ function _todasPerms() {
 }
 
 // ============================================================
-// SUPABASE — credenciais (declaradas aqui para uso nas funções de usuários)
-// ============================================================
-const SUPABASE_URL = 'https://kponpocjqxtlclxuokkd.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_bpQ1ttls9SmFpXhKHH-ReQ_nYQZRvCE';
-
-// ============================================================
 // USUÁRIOS — armazenados no Supabase
 // ============================================================
 let USUARIOS = {};
@@ -5468,6 +5462,8 @@ function rolarTabela(containerId, direcao) {
 // ===================================================
 // SUPABASE — camada de persistência em nuvem
 // ===================================================
+const SUPABASE_URL = 'https://kponpocjqxtlclxuokkd.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_bpQ1ttls9SmFpXhKHH-ReQ_nYQZRvCE';
 
 async function sbFetch(table, method='GET', body=null, params='') {
     const url = `${SUPABASE_URL}/rest/v1/${table}${params}`;
