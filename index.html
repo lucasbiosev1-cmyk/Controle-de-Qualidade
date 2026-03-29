@@ -33,7 +33,6 @@
         .login-recupera-link { text-align:center; margin-top:12px; }
         .login-recupera-link button { background:none; border:none; color:#999; font-size:11px; cursor:pointer; text-decoration:underline; padding:0; }
         .login-recupera-link button:hover { color:#e74c3c; }
-        /* Modal recuperação */
         #modalRecupera { display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; }
         #modalRecupera.show { display:flex; }
         .recupera-box { background:white; border-radius:10px; width:380px; max-width:94vw; box-shadow:0 8px 32px rgba(0,0,0,0.35); overflow:hidden; }
@@ -65,6 +64,14 @@
         .nav-tab { padding: 10px 22px; color: rgba(255,255,255,0.7); cursor: pointer; font-size: 13px; font-weight: bold; border: none; background: none; border-bottom: 3px solid transparent; margin-bottom: -3px; transition: all 0.2s; text-transform: uppercase; }
         .nav-tab:hover { color: white; background: rgba(255,255,255,0.08); }
         .nav-tab.active { color: white; border-bottom: 3px solid #27ae60; background: rgba(255,255,255,0.1); }
+        /* ===== SUB-ABAS DE CONFIGURAÇÕES ===== */
+        .cfg-sub-tabs { display:flex; flex-wrap:wrap; gap:4px; padding:14px 20px 0; background:#f0f3f8; border-bottom:2px solid #bdc3c7; }
+        .cfg-sub-tab { padding:9px 20px; border:none; border-radius:6px 6px 0 0; background:#dce3ef; color:#34495e; font-size:12px; font-weight:bold; cursor:pointer; text-transform:uppercase; letter-spacing:0.3px; transition:all 0.2s; border-bottom:3px solid transparent; margin-bottom:-2px; }
+        .cfg-sub-tab:hover { background:#c8d3e8; color:#1a2a6c; }
+        .cfg-sub-tab.cfg-sub-tab-active { background:white; color:#0a1e7f; border-bottom:3px solid #27ae60; box-shadow:0 -2px 6px rgba(0,0,0,0.08); }
+        .cfg-sub-panels { background:white; }
+        .cfg-sub-panel { display:none; }
+        .cfg-sub-panel.cfg-sub-panel-active { display:block; }
 
         /* CONTEÚDO DAS ABAS */
         .tab-content { display: none; padding: 20px; }
@@ -874,15 +881,11 @@
         <button class="nav-tab active" onclick="trocarAba('producao', this)">🌾 Produção</button>
         <button class="nav-tab" onclick="trocarAba('classificacao', this)">🌽 Classificação</button>
         <button class="nav-tab" onclick="trocarAba('materiaPrima', this)">🧪 Matéria Prima</button>
-        <button class="nav-tab" id="tabParametros" onclick="trocarAba('parametros', this)">⚙️ Parâmetros</button>
         <button class="nav-tab" id="tabRelatorio" onclick="trocarAba('relatorio', this)">📊 Rel. Produção</button>
         <button class="nav-tab" id="tabRelClass" onclick="trocarAba('relClass', this)">📊 Rel. Classificação</button>
         <button class="nav-tab" id="tabRanking" onclick="trocarAba('ranking', this)">🏆 Ranking</button>
         <button class="nav-tab" id="tabBoletim" onclick="trocarAba('boletim', this)">📋 Boletim Industrial</button>
-        <button class="nav-tab" id="tabWhatsapp" onclick="trocarAba('alertaWhatsApp', this)">📲 Alerta WhatsApp</button>
-        <button class="nav-tab" id="tabBackup" onclick="trocarAba('backup', this)">💾 Backup</button>
-        <button class="nav-tab" id="tabMemoria" onclick="trocarAba('memoria', this)">🗄️ Memória</button>
-        <button class="nav-tab" id="tabUsuarios" onclick="trocarAba('usuarios', this)">👥 Usuários</button>
+        <button class="nav-tab" id="tabConfiguracoes" onclick="trocarAba('configuracoes', this)">⚙️ Configurações</button>
     </div>
 
     <!-- ===== ABA PRODUÇÃO ===== -->
@@ -1260,7 +1263,7 @@
                 <!-- CORPO CENTRAL -->
                 <div class="rel-capa-corpo">
                   <div class="rel-capa-eyebrow">Relatório Gerencial</div>
-                  <div class="rel-capa-titulo">DA QUALIDADE</div>
+                  <div class="rel-capa-titulo">QUALIDADE</div>
                   <div class="rel-capa-subtitulo">Análise &amp; Resultados</div>
                   <div class="rel-capa-linha"></div>
 
@@ -1655,7 +1658,20 @@
     </div><!-- fim aba-ranking -->
 
     <!-- ===== ABA PARÂMETROS ===== -->
-    <div id="aba-parametros" class="tab-content">
+    <!-- ===== ABA CONFIGURAÇÕES (agrupa: Parâmetros, Backup, Memória, Usuários, Alerta WhatsApp) ===== -->
+    <div id="aba-configuracoes" class="tab-content">
+        <div style="max-width:1200px;margin:0 auto;padding:10px 0;">
+            <!-- Sub-abas internas -->
+            <div class="cfg-sub-tabs">
+            <button class="cfg-sub-tab cfg-sub-tab-active" id="cfgBtn-parametros" onclick="trocarSubCfg('parametros', this)">⚙️ Parâmetros</button>
+            <button class="cfg-sub-tab" id="cfgBtn-backup" onclick="trocarSubCfg('backup', this)">💾 Backup</button>
+            <button class="cfg-sub-tab" id="cfgBtn-memoria" onclick="trocarSubCfg('memoria', this)">🗄️ Memória</button>
+            <button class="cfg-sub-tab" id="cfgBtn-usuarios" onclick="trocarSubCfg('usuarios', this)">👥 Usuários</button>
+            <button class="cfg-sub-tab" id="cfgBtn-alertaWhatsApp" onclick="trocarSubCfg('alertaWhatsApp', this)">📲 Alerta WhatsApp</button>
+            </div>
+            <!-- Painéis -->
+            <div class="cfg-sub-panels">
+            <div id="cfg-panel-parametros" class="cfg-sub-panel cfg-sub-panel-active" data-aba="aba-parametros">
         <div style="max-width:1200px;margin:0 auto;padding:10px 0;">
             <div class="container" style="margin-bottom:20px;">
 
@@ -1709,10 +1725,9 @@
 
             </div>
         </div>
-    </div><!-- fim aba-parametros -->
 
-    <!-- ===== ABA BACKUP ===== -->
-    <div id="aba-backup" class="tab-content">
+            </div>
+            <div id="cfg-panel-backup" class="cfg-sub-panel" data-aba="aba-backup">
         <div style="max-width:820px;margin:0 auto;padding:10px 0;">
 
             <!-- BACKUP AUTOMÁTICO CONFIG -->
@@ -1931,10 +1946,9 @@
             </div>
 
         </div>
-    </div><!-- fim aba-backup -->
 
-    <!-- ===== ABA MEMÓRIA (ADMIN) ===== -->
-    <div id="aba-memoria" class="tab-content">
+            </div>
+            <div id="cfg-panel-memoria" class="cfg-sub-panel" data-aba="aba-memoria">
         <div style="max-width:860px;margin:0 auto;padding:10px 0;">
             <div class="container" style="margin-bottom:20px;">
                 <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #34495e;">
@@ -1950,7 +1964,7 @@
                 <div id="memAlerta" style="display:none;background:#fadbd8;border:1px solid #e74c3c;border-radius:6px;padding:14px;margin-bottom:16px;border-left:5px solid #e74c3c;">
                     <div style="font-size:14px;font-weight:bold;color:#c0392b;">⚠️ ATENÇÃO: Espaço de armazenamento baixo!</div>
                     <div id="memAlertaTxt" style="font-size:12px;color:#c0392b;margin-top:4px;"></div>
-                    <button onclick="trocarAba('backup', document.getElementById('tabBackup'))" style="margin-top:10px;background:#e74c3c;color:white;padding:7px 16px;border:none;border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;text-transform:uppercase;">💾 Ir para Backup agora</button>
+                    <button onclick="trocarAba('backup', null)" style="margin-top:10px;background:#e74c3c;color:white;padding:7px 16px;border:none;border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;text-transform:uppercase;">💾 Ir para Backup agora</button>
                 </div>
 
                 <!-- BARRA DE USO TOTAL -->
@@ -2018,10 +2032,9 @@
                 </div>
             </div>
         </div>
-    </div><!-- fim aba-memoria -->
 
-    <!-- ===== ABA USUÁRIOS ===== -->
-    <div id="aba-usuarios" class="tab-content">
+            </div>
+            <div id="cfg-panel-usuarios" class="cfg-sub-panel" data-aba="aba-usuarios">
         <div style="max-width:900px;margin:0 auto;">
             <div class="user-panel-header" style="margin-bottom:0;border-radius:8px 8px 0 0;">
                 <span style="font-size:30px;">👥</span>
@@ -2039,7 +2052,112 @@
                 <div id="listaUsuarios"></div>
             </div>
         </div>
-    </div><!-- fim aba-usuarios -->
+
+            </div>
+            <div id="cfg-panel-alertaWhatsApp" class="cfg-sub-panel" data-aba="aba-alertaWhatsApp">
+        <div style="max-width:720px;margin:0 auto;padding:10px 0;">
+
+            <!-- HEADER -->
+            <div style="background:linear-gradient(to right,#25D366,#128C7E);color:white;padding:18px 24px;border-radius:8px 8px 0 0;">
+                <div style="font-size:16px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;">Gerar Alerta WhatsApp</div>
+                <div style="font-size:11px;opacity:0.85;margin-top:2px;">Gere e envie alertas de qualidade via WhatsApp</div>
+            </div>
+
+            <div style="background:white;border-radius:0 0 8px 8px;box-shadow:0 2px 8px rgba(0,0,0,0.12);padding:20px 24px;">
+
+                <!-- NÚMERO DESTINO -->
+                <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #eee;">
+                    <label style="font-size:11px;font-weight:bold;color:#555;text-transform:uppercase;display:block;margin-bottom:5px;">Numero Destino (opcional)</label>
+                    <input type="text" id="wappNumero" placeholder="5547999999999"
+                        style="width:260px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                    <div style="font-size:10px;color:#999;margin-top:4px;">Com codigo do pais e DDD, sem espacos. Ex: 5598999999999</div>
+                </div>
+
+                <!-- BLOCO PRODUCAO -->
+                <div style="background:#f4f7ff;border:1px solid #d0dbf5;border-radius:6px;padding:14px 16px;margin-bottom:16px;">
+                    <div style="font-size:12px;font-weight:bold;color:#0a1e7f;text-transform:uppercase;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid #0a1e7f;">Producao</div>
+
+                    <div style="display:flex;gap:14px;margin-bottom:12px;flex-wrap:wrap;">
+                        <div>
+                            <label style="font-size:10px;font-weight:bold;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Data Inicio</label>
+                            <input type="date" id="wappDataInicioProd" style="padding:6px 9px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
+                        </div>
+                        <div>
+                            <label style="font-size:10px;font-weight:bold;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Data Fim</label>
+                            <input type="date" id="wappDataFimProd" style="padding:6px 9px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
+                        </div>
+                    </div>
+
+                    <div style="font-size:10px;font-weight:bold;color:#555;text-transform:uppercase;margin-bottom:6px;">Campos para incluir no alerta</div>
+                    <div class="wapp-campos" id="wappCamposProd"></div>
+                </div>
+
+                <!-- BLOCO MATERIA PRIMA -->
+                <div style="background:#f4fbf6;border:1px solid #b7dfc5;border-radius:6px;padding:14px 16px;margin-bottom:16px;">
+                    <div style="font-size:12px;font-weight:bold;color:#1a6b35;text-transform:uppercase;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid #27ae60;">Materia Prima</div>
+
+                    <div style="display:flex;gap:14px;margin-bottom:12px;flex-wrap:wrap;">
+                        <div>
+                            <label style="font-size:10px;font-weight:bold;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Data Inicio</label>
+                            <input type="date" id="wappDataInicioMP" style="padding:6px 9px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
+                        </div>
+                        <div>
+                            <label style="font-size:10px;font-weight:bold;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Data Fim</label>
+                            <input type="date" id="wappDataFimMP" style="padding:6px 9px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
+                        </div>
+                    </div>
+
+                    <div style="font-size:10px;font-weight:bold;color:#555;text-transform:uppercase;margin-bottom:6px;">Campos para incluir no alerta</div>
+                    <div class="wapp-campos" id="wappCamposMP"></div>
+
+                    <!-- SILOS UMIDADE -->
+                    <div style="margin-top:10px;padding-top:10px;border-top:1px dashed #b7dfc5;">
+                        <div style="font-size:10px;font-weight:bold;color:#1a6b35;text-transform:uppercase;margin-bottom:6px;">Umidade dos Silos — exibir independente do parametro</div>
+                        <div style="display:flex;flex-direction:column;gap:5px;">
+                            <label class="wapp-campo-item">
+                                <input type="checkbox" id="wchk_silo_milho01" checked style="cursor:pointer;width:14px;height:14px;">
+                                Milho Estoque 01
+                            </label>
+                            <label class="wapp-campo-item">
+                                <input type="checkbox" id="wchk_silo_milho02" checked style="cursor:pointer;width:14px;height:14px;">
+                                Milho Estoque 02
+                            </label>
+                            <label class="wapp-campo-item">
+                                <input type="checkbox" id="wchk_silo_soja01" checked style="cursor:pointer;width:14px;height:14px;">
+                                Soja Estoque 01
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PREVIEW -->
+                <div style="margin-bottom:16px;">
+                    <div style="font-size:11px;font-weight:bold;color:#555;text-transform:uppercase;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #eee;">Pre-visualizacao da Mensagem</div>
+                    <div id="wappPreview" class="wapp-preview">
+                        <span class="wapp-preview-vazio">Clique em "Gerar Mensagem" para visualizar</span>
+                    </div>
+                </div>
+
+                <!-- BOTÕES DE AÇÃO -->
+                <div class="wapp-actions">
+                    <button class="btn-wapp-gerar" onclick="gerarMensagemWhatsApp()">Gerar Mensagem</button>
+                    <button class="btn-wapp-copiar" onclick="copiarMensagemWhatsApp()">Copiar</button>
+                    <button class="btn-wapp-enviar" onclick="enviarWhatsApp()">Abrir WhatsApp</button>
+                </div>
+
+            </div>
+        </div>
+
+            </div>
+            </div>
+        </div>
+    </div><!-- fim aba-configuracoes -->
+
+    <!-- ===== ABA BACKUP ===== -->
+
+    <!-- ===== ABA MEMÓRIA (ADMIN) ===== -->
+
+    <!-- ===== ABA USUÁRIOS ===== -->
 
     <!-- ===== MODAL ADICIONAR/EDITAR USUÁRIO ===== -->
     <div id="modalUsuario" class="modal-usuario">
@@ -2227,100 +2345,6 @@
     </div><!-- fim aba-boletim -->
 
     <!-- ===== ABA ALERTA WHATSAPP ===== -->
-    <div id="aba-alertaWhatsApp" class="tab-content">
-        <div style="max-width:720px;margin:0 auto;padding:10px 0;">
-
-            <!-- HEADER -->
-            <div style="background:linear-gradient(to right,#25D366,#128C7E);color:white;padding:18px 24px;border-radius:8px 8px 0 0;">
-                <div style="font-size:16px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;">Gerar Alerta WhatsApp</div>
-                <div style="font-size:11px;opacity:0.85;margin-top:2px;">Gere e envie alertas de qualidade via WhatsApp</div>
-            </div>
-
-            <div style="background:white;border-radius:0 0 8px 8px;box-shadow:0 2px 8px rgba(0,0,0,0.12);padding:20px 24px;">
-
-                <!-- NÚMERO DESTINO -->
-                <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #eee;">
-                    <label style="font-size:11px;font-weight:bold;color:#555;text-transform:uppercase;display:block;margin-bottom:5px;">Numero Destino (opcional)</label>
-                    <input type="text" id="wappNumero" placeholder="5547999999999"
-                        style="width:260px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
-                    <div style="font-size:10px;color:#999;margin-top:4px;">Com codigo do pais e DDD, sem espacos. Ex: 5598999999999</div>
-                </div>
-
-                <!-- BLOCO PRODUCAO -->
-                <div style="background:#f4f7ff;border:1px solid #d0dbf5;border-radius:6px;padding:14px 16px;margin-bottom:16px;">
-                    <div style="font-size:12px;font-weight:bold;color:#0a1e7f;text-transform:uppercase;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid #0a1e7f;">Producao</div>
-
-                    <div style="display:flex;gap:14px;margin-bottom:12px;flex-wrap:wrap;">
-                        <div>
-                            <label style="font-size:10px;font-weight:bold;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Data Inicio</label>
-                            <input type="date" id="wappDataInicioProd" style="padding:6px 9px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
-                        </div>
-                        <div>
-                            <label style="font-size:10px;font-weight:bold;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Data Fim</label>
-                            <input type="date" id="wappDataFimProd" style="padding:6px 9px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
-                        </div>
-                    </div>
-
-                    <div style="font-size:10px;font-weight:bold;color:#555;text-transform:uppercase;margin-bottom:6px;">Campos para incluir no alerta</div>
-                    <div class="wapp-campos" id="wappCamposProd"></div>
-                </div>
-
-                <!-- BLOCO MATERIA PRIMA -->
-                <div style="background:#f4fbf6;border:1px solid #b7dfc5;border-radius:6px;padding:14px 16px;margin-bottom:16px;">
-                    <div style="font-size:12px;font-weight:bold;color:#1a6b35;text-transform:uppercase;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid #27ae60;">Materia Prima</div>
-
-                    <div style="display:flex;gap:14px;margin-bottom:12px;flex-wrap:wrap;">
-                        <div>
-                            <label style="font-size:10px;font-weight:bold;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Data Inicio</label>
-                            <input type="date" id="wappDataInicioMP" style="padding:6px 9px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
-                        </div>
-                        <div>
-                            <label style="font-size:10px;font-weight:bold;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Data Fim</label>
-                            <input type="date" id="wappDataFimMP" style="padding:6px 9px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
-                        </div>
-                    </div>
-
-                    <div style="font-size:10px;font-weight:bold;color:#555;text-transform:uppercase;margin-bottom:6px;">Campos para incluir no alerta</div>
-                    <div class="wapp-campos" id="wappCamposMP"></div>
-
-                    <!-- SILOS UMIDADE -->
-                    <div style="margin-top:10px;padding-top:10px;border-top:1px dashed #b7dfc5;">
-                        <div style="font-size:10px;font-weight:bold;color:#1a6b35;text-transform:uppercase;margin-bottom:6px;">Umidade dos Silos — exibir independente do parametro</div>
-                        <div style="display:flex;flex-direction:column;gap:5px;">
-                            <label class="wapp-campo-item">
-                                <input type="checkbox" id="wchk_silo_milho01" checked style="cursor:pointer;width:14px;height:14px;">
-                                Milho Estoque 01
-                            </label>
-                            <label class="wapp-campo-item">
-                                <input type="checkbox" id="wchk_silo_milho02" checked style="cursor:pointer;width:14px;height:14px;">
-                                Milho Estoque 02
-                            </label>
-                            <label class="wapp-campo-item">
-                                <input type="checkbox" id="wchk_silo_soja01" checked style="cursor:pointer;width:14px;height:14px;">
-                                Soja Estoque 01
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PREVIEW -->
-                <div style="margin-bottom:16px;">
-                    <div style="font-size:11px;font-weight:bold;color:#555;text-transform:uppercase;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #eee;">Pre-visualizacao da Mensagem</div>
-                    <div id="wappPreview" class="wapp-preview">
-                        <span class="wapp-preview-vazio">Clique em "Gerar Mensagem" para visualizar</span>
-                    </div>
-                </div>
-
-                <!-- BOTÕES DE AÇÃO -->
-                <div class="wapp-actions">
-                    <button class="btn-wapp-gerar" onclick="gerarMensagemWhatsApp()">Gerar Mensagem</button>
-                    <button class="btn-wapp-copiar" onclick="copiarMensagemWhatsApp()">Copiar</button>
-                    <button class="btn-wapp-enviar" onclick="enviarWhatsApp()">Abrir WhatsApp</button>
-                </div>
-
-            </div>
-        </div>
-    </div><!-- fim aba-alertaWhatsApp -->
 
     </div>
 
@@ -2782,7 +2806,7 @@ let usuarioAtual = null;
 // ===================================================
 // RECUPERAÇÃO DE SENHA DO ADMIN
 // ===================================================
-const CHAVE_RECUPERA = 'resetadmin2024'; // chave de segurança fixa
+const CHAVE_RECUPERA = 'resetadmin2024';
 
 function abrirRecuperaSenha() {
     document.getElementById('recuperaChave').value = '';
@@ -2807,20 +2831,14 @@ function confirmarRecuperaSenha() {
         }, 2500);
         return;
     }
-    // Redefine senha do admin no localStorage
     try {
         const raw = localStorage.getItem('sys_usuarios_v1');
-        let usuarios = raw ? JSON.parse(raw) : null;
-        if (usuarios && usuarios['admin']) {
-            usuarios['admin'].senha = 'admin123';
-        } else {
-            // se não existe, cria a estrutura padrão do admin
-            if (!usuarios) usuarios = {};
-            usuarios['admin'] = { senha: 'admin123', perfil: 'admin', nome: 'Administrador' };
-        }
+        let usuarios = raw ? JSON.parse(raw) : {};
+        if (!usuarios['admin']) usuarios['admin'] = { perfil: 'admin', nome: 'Administrador' };
+        usuarios['admin'].senha = 'admin123';
         localStorage.setItem('sys_usuarios_v1', JSON.stringify(usuarios));
     } catch(e) {
-        localStorage.removeItem('sys_usuarios_v1'); // força reset completo
+        localStorage.removeItem('sys_usuarios_v1');
     }
     document.getElementById('recuperaSucesso').style.display = 'block';
     setTimeout(() => fecharRecuperaSenha(), 2800);
@@ -2875,12 +2893,10 @@ function aplicarPermissoes() {
     document.getElementById('thAcaoClass').style.display = podeCadastro ? 'table-cell' : 'none';
     document.getElementById('thAcaoMP').style.display    = podeCadastro ? 'table-cell' : 'none';
 
-    // Backup
-    document.getElementById('tabBackup').style.display  = (isAdmin || perms.backup)  ? 'inline-block' : 'none';
-    // Memória
-    document.getElementById('tabMemoria').style.display = (isAdmin || perms.memoria) ? 'inline-block' : 'none';
-    // Parâmetros
-    document.getElementById('tabParametros').style.display = (isAdmin || perms.parametros) ? 'inline-block' : 'none';
+    // Aba Configurações — visível se tiver qualquer permissão de config
+    const temConfig = isAdmin || perms.backup || perms.memoria || perms.parametros || perms.whatsapp;
+    const tabCfg2 = document.getElementById('tabConfiguracoes');
+    if (tabCfg2) tabCfg2.style.display = temConfig ? 'inline-block' : 'none';
 
     // Relatórios
     const podeRel = isAdmin || perms.relatorios;
@@ -2893,12 +2909,8 @@ function aplicarPermissoes() {
     const tabBol = document.getElementById('tabBoletim');
     if (tabBol) tabBol.style.display = (isAdmin || perms.boletim) ? 'inline-block' : 'none';
 
-    // WhatsApp
-    const tabWa = document.getElementById('tabWhatsapp');
-    if (tabWa) tabWa.style.display = (isAdmin || perms.whatsapp) ? 'inline-block' : 'none';
-
-    // Aba Usuários — só admin
-    document.getElementById('tabUsuarios').style.display = isAdmin ? 'inline-block' : 'none';
+    // Aba Usuários — só admin (controlado dentro de cfg)
+    // (visibilidade do cfgBtn-usuarios controlado via trocarSubCfg)
 }
 
 function fazerLogout() {
@@ -2917,19 +2929,38 @@ function fazerLogout() {
 // NAVEGAÇÃO
 // ===================================================
 function trocarAba(aba, btn) {
-    if (aba === 'parametros') { setTimeout(renderizarTabelasParametros, 0); }
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    // Abas que agora vivem dentro de Configurações → redireciona
+    const cfgAbas = ['parametros','backup','memoria','usuarios','alertaWhatsApp'];
+    if (cfgAbas.includes(aba)) {
+        document.getElementById('aba-configuracoes').classList.add('active');
+        const tabCfg = document.getElementById('tabConfiguracoes');
+        if (tabCfg) tabCfg.classList.add('active');
+        trocarSubCfg(aba, document.getElementById('cfgBtn-' + aba));
+        return;
+    }
     document.getElementById('aba-' + aba).classList.add('active');
     btn.classList.add('active');
     if (aba === 'relatorio') inicializarRelatorio();
     if (aba === 'relClass')  inicializarRelClass();
     if (aba === 'ranking')   inicializarRanking();
-    if (aba === 'backup')    inicializarBackup();
-    if (aba === 'memoria')   atualizarMemoria();
     if (aba === 'boletim')   inicializarBoletim();
-    if (aba === 'alertaWhatsApp') inicializarAbaWhatsApp();
-    if (aba === 'usuarios')  renderizarListaUsuarios();
+    if (aba === 'configuracoes') trocarSubCfg('parametros', document.getElementById('cfgBtn-parametros'));
+}
+
+function trocarSubCfg(subAba, btn) {
+    document.querySelectorAll('.cfg-sub-tab').forEach(t => t.classList.remove('cfg-sub-tab-active'));
+    document.querySelectorAll('.cfg-sub-panel').forEach(p => p.classList.remove('cfg-sub-panel-active'));
+    const panel = document.getElementById('cfg-panel-' + subAba);
+    if (panel) panel.classList.add('cfg-sub-panel-active');
+    if (btn) btn.classList.add('cfg-sub-tab-active');
+    // Inicializar a sub-aba conforme necessário
+    if (subAba === 'parametros')     setTimeout(renderizarTabelasParametros, 0);
+    if (subAba === 'backup')         inicializarBackup();
+    if (subAba === 'memoria')        atualizarMemoria();
+    if (subAba === 'alertaWhatsApp') inicializarAbaWhatsApp();
+    if (subAba === 'usuarios')       renderizarListaUsuarios();
 }
 
 // ===================================================
@@ -5367,16 +5398,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Pré-abre o IndexedDB para acelerar primeiro acesso
     // Supabase mode - no local DB needed
     // Esconde abas de admin até login
-    const tabB = document.getElementById('tabBackup');
-    const tabM = document.getElementById('tabMemoria');
-    const tabU = document.getElementById('tabUsuarios');
-    const tabP = document.getElementById('tabParametros');
     const tabR = document.getElementById('tabRelatorio');
     const tabRC = document.getElementById('tabRelClass');
     const tabRK = document.getElementById('tabRanking');
     const tabBol = document.getElementById('tabBoletim');
-    const tabWa  = document.getElementById('tabWhatsapp');
-    [tabB,tabM,tabU,tabP,tabR,tabRC,tabRK,tabBol,tabWa].forEach(t => { if(t) t.style.display='none'; });
+    // tabConfiguracoes starts hidden until login
+    const tabCfg3 = document.getElementById('tabConfiguracoes');
+    [tabCfg3,tabR,tabRC,tabRK,tabBol].forEach(t => { if(t) t.style.display='none'; });
 });
 
 // ===================================================
@@ -6226,9 +6254,14 @@ function onSelectRacao(modulo, panel) {
 function buildSelectHTML(modulo, lista, labelField, keyField, icone) {
     const opts = lista.map(i => {
         const key = (keyField==='key' ? i.key : i.racoes[0]).replace(/ /g,'_');
-        // Para rações com formulações múltiplas, adiciona optgroup
+        // Para rações com formulações múltiplas, adiciona optgroup com cada formulação
         if (i.formulacoes && i.formulacoes.length>1) {
             return `<optgroup label="── ${i.label} ──">${i.formulacoes.map(f=>`<option value="${f.replace(/ /g,'_')}">${f}</option>`).join('')}</optgroup>`;
+        }
+        // Para rações com formulação única, mostra o nome completo da formulação
+        if (i.formulacoes && i.formulacoes.length===1) {
+            const f = i.formulacoes[0];
+            return `<optgroup label="── ${i.label} ──"><option value="${f.replace(/ /g,'_')}">${f}</option></optgroup>`;
         }
         return `<option value="${key}">${i[labelField]||i.label||i.key}</option>`;
     }).join('');
