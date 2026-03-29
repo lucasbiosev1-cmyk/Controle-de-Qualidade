@@ -18,7 +18,6 @@
             background: linear-gradient(135deg, #e8e8e8 0%, #f5f5f0 40%, #dde8dd 100%);
             position: relative; overflow: hidden;
         }
-        /* Fundo decorativo laboratório */
         #loginScreen::before {
             content: '';
             position: absolute; inset: 0;
@@ -27,7 +26,6 @@
                 radial-gradient(ellipse at 85% 30%, rgba(200,220,240,0.3) 0%, transparent 50%);
             z-index: 0;
         }
-        /* Moléculas decorativas */
         #loginScreen::after {
             content: '⬡ ⬡ ⬡';
             position: absolute; top: 10%; left: 3%;
@@ -40,7 +38,6 @@
             width: 780px; max-width: 96vw; position: relative; z-index: 1;
             min-height: 480px;
         }
-        /* Painel esquerdo com trigo */
         .login-panel-left {
             width: 240px; flex-shrink: 0;
             background: linear-gradient(160deg, rgba(220,235,215,0.9) 0%, rgba(200,225,200,0.85) 100%);
@@ -54,27 +51,18 @@
             background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 400'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='1.5'%3E%3Cline x1='100' y1='380' x2='100' y2='50'/%3E%3Cellipse cx='100' cy='50' rx='18' ry='28'/%3E%3Cellipse cx='82' cy='90' rx='14' ry='22' transform='rotate(-20 82 90)'/%3E%3Cellipse cx='118' cy='90' rx='14' ry='22' transform='rotate(20 118 90)'/%3E%3Cellipse cx='72' cy='130' rx='12' ry='20' transform='rotate(-25 72 130)'/%3E%3Cellipse cx='128' cy='130' rx='12' ry='20' transform='rotate(25 128 130)'/%3E%3Cellipse cx='65' cy='168' rx='11' ry='18' transform='rotate(-28 65 168)'/%3E%3Cellipse cx='135' cy='168' rx='11' ry='18' transform='rotate(28 135 168)'/%3E%3Cellipse cx='70' cy='205' rx='10' ry='16' transform='rotate(-22 70 205)'/%3E%3Cellipse cx='130' cy='205' rx='10' ry='16' transform='rotate(22 130 205)'/%3E%3Ccircle cx='60' cy='300' r='4'/%3E%3Ccircle cx='80' cy='280' r='3'/%3E%3Ccircle cx='100' cy='310' r='5'/%3E%3Ccircle cx='120' cy='285' r='3'/%3E%3Ccircle cx='140' cy='305' r='4'/%3E%3Cpath d='M40 320 Q60 290 80 310 Q100 330 120 300 Q140 270 160 315'/%3E%3C/g%3E%3C/svg%3E") center/cover no-repeat;
             opacity: 0.7;
         }
-        /* Painel direito formulário */
         .login-box {
             flex: 1; background: rgba(255,255,255,0.92);
             backdrop-filter: blur(20px);
             padding: 44px 40px; display: flex; flex-direction: column; justify-content: center;
         }
         .login-logo { text-align: center; margin-bottom: 28px; }
-        .login-logo .agronor-brand {
-            display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px;
-        }
-        .login-logo .agronor-icon {
-            width: 44px; height: 44px; background: #c0392b;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 22px; color: white; font-style: italic; font-weight: 900;
-            box-shadow: 0 3px 10px rgba(192,57,43,0.4);
-        }
+        .login-logo .agronor-brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px; }
         .login-logo .agronor-name { font-size: 26px; font-weight: 900; color: #1a2a5e; letter-spacing: 1px; }
         .login-logo .agronor-sub { font-size: 10px; font-weight: 700; color: #c0392b; letter-spacing: 3px; text-transform: uppercase; }
         .login-logo h1 { font-size: 14px; font-weight: 700; color: #1a2a5e; margin-top: 18px; line-height: 1.4; text-transform: uppercase; letter-spacing: 0.5px; }
-        .login-divider { display: none; }
         .login-logo p { display: none; }
+        .login-divider { display: none; }
         .login-group { margin-bottom: 16px; position: relative; }
         .login-group label { display: block; font-size: 11px; font-weight: 600; color: #444; margin-bottom: 6px; }
         .login-group .input-wrap { position: relative; }
@@ -741,7 +729,7 @@
         [data-theme="cinza"]{--cor-primaria:#2c3e50;--cor-primaria-hover:#34495e;--cor-secundaria:#1a252f;--cor-acento:#e67e22;--cor-acento-hover:#ca6f1e;--cor-filtrar:#7f8c8d;--cor-filtrar-hover:#616a6b;--cor-login-bg1:#2c3e50;--cor-login-bg2:#34495e;--cor-login-bg3:#1a252f;}
         [data-theme="vinho"]{--cor-primaria:#6d1a36;--cor-primaria-hover:#922b47;--cor-secundaria:#4a1228;--cor-acento:#c0392b;--cor-acento-hover:#a93226;--cor-filtrar:#8e44ad;--cor-filtrar-hover:#7d3c98;--cor-login-bg1:#6d1a36;--cor-login-bg2:#922b47;--cor-login-bg3:#4a1228;}
 
-        /* tema de cores desativado no login — usa tema AGRONOR fixo */
+        #loginScreen{background:linear-gradient(135deg,#e8e8e8 0%,#f5f5f0 40%,#dde8dd 100%)!important;}
         .login-btn{background:#c0392b!important;}
         .login-btn:hover{background:#a93226!important;}
         .header{background:linear-gradient(to right,var(--cor-primaria),var(--cor-primaria-hover))!important;}
@@ -867,17 +855,17 @@
             </div>
             <div class="login-error" id="loginError">Usuário ou senha inválidos.</div>
             <div class="login-group">
-                <label>Registro de Analista (ID)</label>
+                <label>Usuário</label>
                 <div class="input-wrap">
                     <span class="input-icon">👤</span>
-                    <input type="text" id="loginUser" placeholder="Registro de Analista (ID)" autocomplete="username">
+                    <input type="text" id="loginUser" placeholder="Digite seu usuário" autocomplete="username">
                 </div>
             </div>
             <div class="login-group">
-                <label>Senha de Laboratório</label>
+                <label>Senha</label>
                 <div class="input-wrap">
                     <span class="input-icon">🔒</span>
-                    <input type="password" id="loginPass" placeholder="Senha de Laboratório" autocomplete="current-password">
+                    <input type="password" id="loginPass" placeholder="Digite sua senha" autocomplete="current-password">
                 </div>
             </div>
             <button class="login-btn" onclick="fazerLogin()">Entrar</button>
@@ -2780,7 +2768,7 @@ let USUARIOS = {};
 
 async function _carregarUsuariosSupabase() {
     try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/usu%C3%A1rios_do_sistema?select=*`, {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/sys_users?select=*`, {
             headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
         });
         const lista = await res.json();
@@ -2789,7 +2777,7 @@ async function _carregarUsuariosSupabase() {
         lista.forEach(u => {
             let perms = {};
             try { perms = typeof u.col_perms === 'string' ? JSON.parse(u.col_perms) : (u.col_perms || {}); } catch(e) {}
-            if (u.col_login) mapa[u.col_login] = { nome: u.nome_da_coluna, senha: u.col_pass, perfil: u.função_coluna, ativo: u.col_ativo, perms };
+            if (u.col_login) mapa[u.col_login] = { nome: u.col_name, senha: u.col_pass, perfil: u.col_role, ativo: u.col_active, perms };
         });
         USUARIOS = mapa;
     } catch(e) { console.error('Erro ao carregar usuários:', e); USUARIOS = {}; }
@@ -2798,13 +2786,13 @@ async function _carregarUsuariosSupabase() {
 async function _salvarUsuarioSupabase(login, dados) {
     const payload = {
         col_login: login,
-        nome_da_coluna: dados.nome,
+        col_name: dados.nome,
         col_pass: dados.senha,
-        função_coluna: dados.perfil,
-        col_ativo: true,
+        col_role: dados.perfil,
+        col_active: true,
         col_perms: JSON.stringify(dados.perms || {})
     };
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/usu%C3%A1rios_do_sistema`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/sys_users`, {
         method: 'POST',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
         body: JSON.stringify(payload)
@@ -2816,9 +2804,9 @@ async function _salvarUsuarioSupabase(login, dados) {
 }
 
 async function _atualizarUsuarioSupabase(login, dados) {
-    const payload = { nome_da_coluna: dados.nome, col_perms: JSON.stringify(dados.perms || {}) };
+    const payload = { col_name: dados.nome, col_perms: JSON.stringify(dados.perms || {}) };
     if (dados.senha) payload.col_pass = dados.senha;
-    await fetch(`${SUPABASE_URL}/rest/v1/usu%C3%A1rios_do_sistema?col_login=eq.${login}`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/sys_users?col_login=eq.${login}`, {
         method: 'PATCH',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -2826,7 +2814,7 @@ async function _atualizarUsuarioSupabase(login, dados) {
 }
 
 async function _deletarUsuarioSupabase(login) {
-    await fetch(`${SUPABASE_URL}/rest/v1/usu%C3%A1rios_do_sistema?col_login=eq.${login}`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/sys_users?col_login=eq.${login}`, {
         method: 'DELETE',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
     });
