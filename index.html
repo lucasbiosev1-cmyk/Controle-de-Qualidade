@@ -1644,9 +1644,9 @@
                 <div id="rkCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;"></div>
 
                 <!-- GRÁFICO BARRAS RANKING -->
-                <div class="grafico-container" style="margin-bottom:20px;">
+                <div class="grafico-container" style="margin-bottom:20px;overflow:hidden;max-width:100%;">
                     <div class="grafico-title" id="rkGraficoTitulo">AVARIADOS TOTAIS POR FORNECEDOR (%)</div>
-                    <canvas id="rkGrafico" style="max-height:320px;"></canvas>
+                    <canvas id="rkGrafico" style="max-width:100%;height:320px;"></canvas>
                 </div>
 
                 <!-- TABELA RANKING -->
@@ -3219,6 +3219,12 @@ function fazerLogout() {
 function trocarAba(aba, btn) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    // Mostrar/esconder botão WhatsApp fixo apenas em abas relevantes
+    const wappBtn = document.getElementById('btnWappFixo');
+    if (wappBtn) {
+        const abaComWapp = ['producao','classificacao','relatorio','relClass','ranking'];
+        wappBtn.style.display = abaComWapp.includes(aba) ? 'flex' : 'none';
+    }
     // Abas que agora vivem dentro de Configurações → redireciona
     const cfgAbas = ['parametros','backup','memoria','usuarios','alertaWhatsApp'];
     if (cfgAbas.includes(aba)) {
@@ -4990,7 +4996,7 @@ function aplicarFiltrosRanking() {
         },
         options: {
             indexAxis: 'y',
-            responsive: true, maintainAspectRatio: true,
+            responsive: true, maintainAspectRatio: false,
             plugins: {
                 legend: { display: false },
                 tooltip: {
@@ -7782,14 +7788,30 @@ function imprimirBoletim() {
         <style>
             * { margin:0; padding:0; box-sizing:border-box; }
             html, body { width:210mm; background: white; font-family: Arial, sans-serif; }
-            .bol-capa { background: linear-gradient(135deg,#0a1e7f,#0a1e7f,#1a3a9f); color:white; padding:40px 30px; text-align:center; border-bottom:6px solid #1a5490; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-            .bol-capa h1 { font-size:26px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; }
-            .bol-capa h2 { font-size:13px; opacity:0.8; margin-bottom:28px; }
-            .bol-capa-stats { display:flex; gap:20px; justify-content:center; margin:18px 0; flex-wrap:wrap; }
-            .bol-capa-stat { text-align:center; background:rgba(255,255,255,0.12); padding:12px 18px; border-radius:8px; min-width:100px; border-left:4px solid #2a9fd8; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-            .bol-capa-stat .n { font-size:26px; font-weight:bold; }
-            .bol-capa-stat .l { font-size:9px; opacity:0.75; text-transform:uppercase; margin-top:4px; }
-            .bol-capa-period { font-size:11px; opacity:0.75; margin-top:12px; background:rgba(255,255,255,0.1); padding:6px 18px; border-radius:20px; display:inline-block; }
+            /* ===== ESTILOS DA CAPA (rel-capa) ===== */
+            .rel-capa { width:210mm; min-height:297mm; background:#fff; display:flex; flex-direction:column; font-family:Arial,sans-serif; box-sizing:border-box; position:relative; page-break-after:always; overflow:hidden; }
+            .rel-capa-topo { background:linear-gradient(135deg,#0a1e7f 0%,#0d2b9e 55%,#061060 100%); padding:18mm 20mm 14mm; display:flex; align-items:center; justify-content:space-between; position:relative; flex-shrink:0; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .rel-capa-topo::after { content:''; position:absolute; right:0; top:0; bottom:0; width:28mm; background:repeating-linear-gradient(-55deg,transparent,transparent 5px,rgba(255,255,255,0.045) 5px,rgba(255,255,255,0.045) 10px); pointer-events:none; }
+            .rel-capa-topo-logo { display:flex; align-items:center; gap:5mm; }
+            .rel-capa-topo-logo svg { width:56mm; flex-shrink:0; }
+            .rel-capa-topo-divider { width:1px; height:14mm; background:rgba(255,255,255,0.25); margin:0 5mm; flex-shrink:0; }
+            .rel-capa-topo-empresa { color:rgba(255,255,255,0.75); font-size:8px; letter-spacing:2.5px; text-transform:uppercase; line-height:1.8; }
+            .rel-capa-topo-empresa strong { display:block; font-size:11px; color:#fff; letter-spacing:1px; font-weight:900; }
+            .rel-capa-topo-badge { background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.22); border-radius:4px; padding:3mm 6mm; color:rgba(255,255,255,0.85); font-size:8px; letter-spacing:2px; text-transform:uppercase; text-align:right; line-height:1.7; flex-shrink:0; }
+            .rel-capa-topo-badge strong { display:block; font-size:13px; color:#fff; letter-spacing:0; font-weight:900; }
+            .rel-capa-acento { height:4px; background:linear-gradient(to right,#cc2222 0%,#e74c3c 60%,#ff6b6b 100%); flex-shrink:0; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .rel-capa-corpo { flex:1; display:flex; flex-direction:column; justify-content:center; align-items:flex-start; padding:14mm 20mm; position:relative; overflow:hidden; }
+            .rel-capa-eyebrow { font-size:9px; font-weight:700; color:#cc2222; letter-spacing:4px; text-transform:uppercase; margin-bottom:5mm; }
+            .rel-capa-titulo { font-size:36px; font-weight:900; color:#0a1e7f; text-transform:uppercase; letter-spacing:-0.5px; line-height:1; margin-bottom:3mm; }
+            .rel-capa-subtitulo { font-size:18px; font-weight:300; color:#34495e; text-transform:uppercase; letter-spacing:3px; margin-bottom:10mm; }
+            .rel-capa-linha { width:20mm; height:3px; background:linear-gradient(to right,#cc2222,#0a1e7f); border-radius:2px; margin-bottom:12mm; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .rel-capa-ficha { background:#f4f6fb; border:1px solid #dce4f5; border-left:4px solid #0a1e7f; border-radius:5px; padding:6mm 9mm; display:grid; grid-template-columns:auto 1fr; gap:3.5mm 6mm; width:100%; max-width:155mm; box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .rel-capa-ficha .rc-rot { font-size:7.5px; font-weight:700; color:#8899bb; text-transform:uppercase; letter-spacing:1.5px; white-space:nowrap; padding-top:1px; }
+            .rel-capa-ficha .rc-val { font-size:10px; font-weight:700; color:#1a1a2e; }
+            .rel-capa-rodape { flex-shrink:0; padding:5mm 20mm; border-top:1px solid #e5e9f2; display:flex; align-items:center; justify-content:space-between; background:#fafbfe; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .rel-capa-rodape .rd-left { font-size:7.5px; color:#aab; letter-spacing:2px; text-transform:uppercase; }
+            .rel-capa-rodape .rd-right { font-size:7.5px; color:#aab; }
+            /* ===== ESTILOS DO BOLETIM ===== */
             .bol-secao-header { background:#34495e; color:white; padding:10px 20px; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; border-top:4px solid #0a1e7f; page-break-before:always; -webkit-print-color-adjust:exact; print-color-adjust:exact; display:flex; align-items:center; gap:8px; }
             .bol-secao-sub { background:#4a6070; color:rgba(255,255,255,0.85); padding:5px 20px; font-size:9px; display:flex; justify-content:space-between; -webkit-print-color-adjust:exact; print-color-adjust:exact; flex-wrap:wrap; gap:4px; }
             .bol-grupo-header { background:#eaf0fb; border-left:4px solid #0a1e7f; padding:7px 14px; font-size:10px; font-weight:bold; color:#0a1e7f; text-transform:uppercase; margin-top:10px; page-break-inside:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact; display:flex; align-items:center; gap:8px; }
@@ -7823,7 +7845,7 @@ function imprimirBoletim() {
     </div>
     
     <!-- ===== BOTÃO FIXO WHATSAPP ===== -->
-    <button class="btn-wapp-fixo" onclick="abrirModalWhatsApp()">
+    <button class="btn-wapp-fixo" id="btnWappFixo" onclick="abrirModalWhatsApp()" style="display:none;">
         📲 Alerta WhatsApp
     </button>
 
