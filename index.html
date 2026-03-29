@@ -91,10 +91,15 @@
         .header-user span { font-weight: bold; }
 
         /* NAVEGAÇÃO */
-        .nav-tabs { background: #1a3a9f; display: flex; gap: 2px; padding: 0 20px; border-bottom: 3px solid #0a1e7f; }
-        .nav-tab { padding: 10px 22px; color: rgba(255,255,255,0.7); cursor: pointer; font-size: 13px; font-weight: bold; border: none; background: none; border-bottom: 3px solid transparent; margin-bottom: -3px; transition: all 0.2s; text-transform: uppercase; }
+        .nav-tabs { background: #1a3a9f; display: flex; gap: 1px; padding: 0 10px; border-bottom: 3px solid #0a1e7f; flex-wrap: nowrap; overflow-x: auto; }
+        .nav-tabs::-webkit-scrollbar { height: 3px; }
+        .nav-tabs::-webkit-scrollbar-track { background: #0a1e7f; }
+        .nav-tabs::-webkit-scrollbar-thumb { background: #27ae60; border-radius: 3px; }
+        .nav-tab { padding: 9px 12px; color: rgba(255,255,255,0.7); cursor: pointer; font-size: 11.5px; font-weight: bold; border: none; background: none; border-bottom: 3px solid transparent; margin-bottom: -3px; transition: all 0.2s; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
         .nav-tab:hover { color: white; background: rgba(255,255,255,0.08); }
         .nav-tab.active { color: white; border-bottom: 3px solid #27ae60; background: rgba(255,255,255,0.1); }
+        .nav-tab-icon-only { padding: 9px 10px; font-size: 16px; }
+        .nav-tab-icon-only .nav-tab-label { display: none; }
         /* ===== SUB-ABAS DE CONFIGURAÇÕES ===== */
         .cfg-sub-tabs { display:flex; flex-wrap:wrap; gap:4px; padding:14px 20px 0; background:#f0f3f8; border-bottom:2px solid #bdc3c7; }
         .cfg-sub-tab { padding:9px 20px; border:none; border-radius:6px 6px 0 0; background:#dce3ef; color:#34495e; font-size:12px; font-weight:bold; cursor:pointer; text-transform:uppercase; letter-spacing:0.3px; transition:all 0.2s; border-bottom:3px solid transparent; margin-bottom:-2px; }
@@ -898,7 +903,7 @@
         </div>
     </div>
 
-    <div class="nav-tabs" style="flex-wrap:wrap;">
+    <div class="nav-tabs">
         <button class="nav-tab active" id="tabProducao" onclick="trocarAba('producao', this)">🌾 Produção</button>
         <button class="nav-tab" id="tabClassificacao" onclick="trocarAba('classificacao', this)">🌽 Classificação</button>
         <button class="nav-tab" id="tabMateriaPrima" onclick="trocarAba('materiaPrima', this)">🧪 Matéria Prima</button>
@@ -906,8 +911,8 @@
         <button class="nav-tab" id="tabRelClass" onclick="trocarAba('relClass', this)">📊 Rel. Classificação</button>
         <button class="nav-tab" id="tabRanking" onclick="trocarAba('ranking', this)">🏆 Ranking</button>
         <button class="nav-tab" id="tabBoletim" onclick="trocarAba('boletim', this)">📋 Boletim Industrial</button>
-        <button class="nav-tab" id="tabEntradaMP" onclick="trocarAba('entradaMP', this)">📥 Entrada Mat. Prima</button>
-        <button class="nav-tab" id="tabConfiguracoes" onclick="trocarAba('configuracoes', this)">⚙️ Configurações</button>
+        <button class="nav-tab" id="tabEntradaMP" onclick="trocarAba('entradaMP', this)" title="Entrada Mat. Prima">📥 Entrada MP</button>
+        <button class="nav-tab nav-tab-icon-only" id="tabConfiguracoes" onclick="trocarAba('configuracoes', this)" title="Configurações">⚙️</button>
     </div>
 
     <!-- ===== ABA PRODUÇÃO ===== -->
@@ -1646,29 +1651,29 @@
 
                 <!-- TABELA RANKING -->
                 <div class="secao-title" style="margin-bottom:10px;">RANKING DETALHADO POR FORNECEDOR</div>
-                <div class="tabela-container">
-                    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                <div class="tabela-container" style="overflow-x:auto;width:100%;">
+                    <table style="width:100%;min-width:1200px;border-collapse:collapse;font-size:11px;table-layout:auto;">
                         <thead>
                             <tr style="background:#34495e;color:white;">
-                                <th style="padding:8px 6px;text-align:center;width:50px;">POS.</th>
-                                <th style="padding:8px 10px;text-align:left;">FORNECEDOR</th>
-                                <th style="padding:8px;">REG.</th>
-                                <th style="padding:8px;" id="rkThCriterio">AVARIADOS<br>MÉD.%</th>
-                                <th style="padding:8px;">QUEIMADO<br>MÉD.%</th>
-                                <th style="padding:8px;">ARDIDO<br>MÉD.%</th>
-                                <th style="padding:8px;">MOFADO<br>MÉD.%</th>
-                                <th style="padding:8px;">FERMENT.<br>MÉD.%</th>
-                                <th style="padding:8px;">CHOCHO<br>MÉD.%</th>
-                                <th style="padding:8px;">GESSADO<br>MÉD.%</th>
-                                <th style="padding:8px;">GERMINADO<br>MÉD.%</th>
-                                <th style="padding:8px;">PICADO<br>MÉD.%</th>
-                                <th style="padding:8px;">ESVERDEADO<br>MÉD.%</th>
-                                <th style="padding:8px;">CARUNCHO<br>MÉD.%</th>
-                                <th style="padding:8px;">QUEBRADO<br>MÉD.%</th>
-                                <th style="padding:8px;">IMPUREZA<br>MÉD.%</th>
-                                <th style="padding:8px;">UMIDADE<br>MÉD.%</th>
-                                <th style="padding:8px;">CONFORM.</th>
-                                <th style="padding:8px;">STATUS</th>
+                                <th style="padding:8px 6px;text-align:center;width:46px;white-space:nowrap;">POS.</th>
+                                <th style="padding:8px 10px;text-align:left;min-width:110px;">FORNECEDOR</th>
+                                <th style="padding:8px;white-space:nowrap;">REG.</th>
+                                <th style="padding:8px;white-space:nowrap;" id="rkThCriterio">AVARIADOS<br>MÉD.%</th>
+                                <th style="padding:8px;white-space:nowrap;">QUEIMADO<br>MÉD.%</th>
+                                <th style="padding:8px;white-space:nowrap;">ARDIDO<br>MÉD.%</th>
+                                <th style="padding:8px;white-space:nowrap;">MOFADO<br>MÉD.%</th>
+                                <th style="padding:8px;white-space:nowrap;">FERMENT.<br>MÉD.%</th>
+                                <th style="padding:8px;white-space:nowrap;">CHOCHO<br>MÉD.%</th>
+                                <th style="padding:8px;white-space:nowrap;">GESSADO<br>MÉD.%</th>
+                                <th style="padding:8px;white-space:nowrap;">GERMINADO<br>MÉD.%</th>
+                                <th style="padding:8px;white-space:nowrap;">PICADO<br>MÉD.%</th>
+                                <th style="padding:8px;white-space:nowrap;">ESVERDEADO<br>MÉD.%</th>
+                                <th style="padding:8px;white-space:nowrap;">CARUNCHO<br>MÉD.%</th>
+                                <th style="padding:8px;white-space:nowrap;">QUEBRADO<br>MÉD.%</th>
+                                <th style="padding:8px;white-space:nowrap;">IMPUREZA<br>MÉD.%</th>
+                                <th style="padding:8px;white-space:nowrap;">UMIDADE<br>MÉD.%</th>
+                                <th style="padding:8px;white-space:nowrap;">CONFORM.</th>
+                                <th style="padding:8px;white-space:nowrap;">STATUS</th>
                             </tr>
                         </thead>
                         <tbody id="rkTbody"></tbody>
@@ -5014,25 +5019,25 @@ function aplicarFiltrosRanking() {
             : '<span class="badge badge-nao-conforme">ATENÇÃO</span>';
         const f = (v,d=2) => v.toFixed(d);
         return `<tr style="background:${bg};">
-            <td style="padding:8px;text-align:center;font-size:16px;font-weight:bold;color:${posColor};">${pos}</td>
-            <td style="padding:8px 10px;font-weight:bold;text-transform:uppercase;border-left:4px solid ${posColor};">${s.fornecedor}</td>
-            <td style="padding:8px;text-align:center;">${s.n}</td>
-            <td style="padding:8px;text-align:center;font-weight:bold;color:${mediaColor};">${f(s.media)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.queimado)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.ardido)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.mofado)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.fermentando)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.chocho)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.gessado)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.germinado)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.picado)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.esverdeado)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.carunchado)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.quebrado)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.impureza)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.umidade,2)}</td>
-            <td style="padding:8px;text-align:center;font-weight:bold;color:${confColor};">${s.pctConf.toFixed(1)}%<br><span style="font-size:9px;font-weight:normal;">${s.conformes}/${s.n}</span></td>
-            <td style="padding:8px;text-align:center;">${status}</td>
+            <td style="padding:8px;text-align:center;font-size:16px;font-weight:bold;color:${posColor};white-space:nowrap;">${pos}</td>
+            <td style="padding:8px 10px;font-weight:bold;text-transform:uppercase;border-left:4px solid ${posColor};min-width:110px;">${s.fornecedor}</td>
+            <td style="padding:8px;text-align:center;white-space:nowrap;">${s.n}</td>
+            <td style="padding:8px;text-align:center;font-weight:bold;color:${mediaColor};white-space:nowrap;">${f(s.media)}</td>
+            <td style="padding:8px;text-align:center;white-space:nowrap;">${f(s.queimado)}</td>
+            <td style="padding:8px;text-align:center;white-space:nowrap;">${f(s.ardido)}</td>
+            <td style="padding:8px;text-align:center;white-space:nowrap;">${f(s.mofado)}</td>
+            <td style="padding:8px;text-align:center;white-space:nowrap;">${f(s.fermentando)}</td>
+            <td style="padding:8px;text-align:center;white-space:nowrap;">${f(s.chocho)}</td>
+            <td style="padding:8px;text-align:center;white-space:nowrap;">${f(s.gessado)}</td>
+            <td style="padding:8px;text-align:center;white-space:nowrap;">${f(s.germinado)}</td>
+            <td style="padding:8px;text-align:center;white-space:nowrap;">${f(s.picado)}</td>
+            <td style="padding:8px;text-align:center;white-space:nowrap;">${f(s.esverdeado)}</td>
+            <td style="padding:8px;text-align:center;white-space:nowrap;">${f(s.carunchado)}</td>
+            <td style="padding:8px;text-align:center;white-space:nowrap;">${f(s.quebrado)}</td>
+            <td style="padding:8px;text-align:center;white-space:nowrap;">${f(s.impureza)}</td>
+            <td style="padding:8px;text-align:center;white-space:nowrap;">${f(s.umidade,2)}</td>
+            <td style="padding:8px;text-align:center;font-weight:bold;color:${confColor};white-space:nowrap;">${s.pctConf.toFixed(1)}%<br><span style="font-size:9px;font-weight:normal;">${s.conformes}/${s.n}</span></td>
+            <td style="padding:8px;text-align:center;white-space:nowrap;">${status}</td>
         </tr>`;
     }).join('') || '<tr><td colspan="21" style="text-align:center;padding:20px;color:#999;">Nenhum registro no período</td></tr>';
 
@@ -7260,27 +7265,58 @@ function gerarBoletim() {
     let html = '';
 
     // ---- CAPA ----
-    html += `<div class="bol-capa">
-        <div style="display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:6px;">
-            <div style="width:54px;height:54px;background:rgba(255,255,255,0.15);border-radius:6px;border:2px solid rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:28px;">🏭</div>
-            <div style="text-align:left;">
-                <div style="font-size:22px;font-weight:900;letter-spacing:3px;text-transform:uppercase;line-height:1.1;">AGRONOR ALIMENTOS</div>
-                <div style="font-size:10px;letter-spacing:2px;opacity:0.75;text-transform:uppercase;margin-top:3px;">Nutrição Animal · Qualidade Industrial</div>
-            </div>
+    const dataEmissao = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    html += `<div class="rel-capa" style="page-break-after:always;">
+
+      <!-- FAIXA SUPERIOR AZUL -->
+      <div class="rel-capa-topo">
+        <div class="rel-capa-topo-logo">
+          <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="36" cy="38" r="28" fill="#cc2222"/>
+            <circle cx="36" cy="38" r="23" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+            <text x="36" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="32" fill="white">A</text>
+            <text x="76" y="36" font-family="Arial" font-weight="900" font-size="28" fill="white" letter-spacing="1.5">AGRONOR</text>
+            <line x1="76" y1="43" x2="254" y2="43" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+            <text x="76" y="58" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
+          </svg>
+          <div class="rel-capa-topo-divider"></div>
+          <div class="rel-capa-topo-empresa">
+            <strong>Sistema Analítico</strong>
+            Controle de Qualidade
+          </div>
         </div>
-        <div style="width:80%;height:1px;background:rgba(255,255,255,0.25);margin:14px auto 16px;"></div>
-        <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-left:5px solid #2a9fd8;padding:10px 24px;display:inline-block;margin-bottom:14px;">
-            <div style="font-size:16px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">BOLETIM INDUSTRIAL ANALÍTICO</div>
-            <div style="font-size:10px;opacity:0.7;margin-top:3px;letter-spacing:1px;">CONTROLE DE QUALIDADE — LABORATÓRIO</div>
+        <div class="rel-capa-topo-badge">
+          Emitido em<br>
+          <strong>${dataEmissao}</strong>
         </div>
-        <div class="bol-capa-stats">
-            ${incProd  ? `<div class="bol-capa-stat"><div class="n">${nProd}</div><div class="l">🌾 Produção</div></div>` : ''}
-            ${incClass ? `<div class="bol-capa-stat"><div class="n">${nClass}</div><div class="l">🌽 Classificação</div></div>` : ''}
-            ${incMP    ? `<div class="bol-capa-stat"><div class="n">${nMP}</div><div class="l">🧪 Matéria Prima</div></div>` : ''}
-            <div class="bol-capa-stat"><div class="n">${nTotal}</div><div class="l">📊 Total Registros</div></div>
+      </div>
+
+      <!-- BARRA DE ACENTO VERMELHA -->
+      <div class="rel-capa-acento"></div>
+
+      <!-- CORPO CENTRAL -->
+      <div class="rel-capa-corpo">
+        <div class="rel-capa-eyebrow">Boletim Industrial Analítico</div>
+        <div class="rel-capa-titulo">DA QUALIDADE</div>
+        <div class="rel-capa-subtitulo">Análise &amp; Resultados</div>
+        <div class="rel-capa-linha"></div>
+
+        <div class="rel-capa-ficha">
+          <span class="rc-rot">Unidade</span>
+          <span class="rc-val">Fábrica de Ração BR 316, Auto do Bode</span>
+          <span class="rc-rot">Período</span>
+          <span class="rc-val">${periodoStr}</span>
+          <span class="rc-rot">Registros</span>
+          <span class="rc-val">${nTotal} registros no total${incProd ? ' · ' + nProd + ' Produção' : ''}${incClass ? ' · ' + nClass + ' Classificação' : ''}${incMP ? ' · ' + nMP + ' Mat. Prima' : ''}</span>
         </div>
-        <div class="bol-capa-period">📅 Período: ${periodoStr}</div>
-        <div style="font-size:9px;opacity:0.5;margin-top:12px;letter-spacing:0.5px;">Emitido em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+      </div>
+
+      <!-- RODAPÉ -->
+      <div class="rel-capa-rodape">
+        <span class="rd-left">Agronor Alimentos · Sistema de Controle Analítico</span>
+        <span class="rd-right">Documento gerado automaticamente</span>
+      </div>
+
     </div>`;
 
     // ---- SEÇÃO PRODUÇÃO ----
