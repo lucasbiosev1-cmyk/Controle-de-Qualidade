@@ -95,6 +95,30 @@
         .nav-tab { padding: 10px 22px; color: rgba(255,255,255,0.7); cursor: pointer; font-size: 13px; font-weight: bold; border: none; background: none; border-bottom: 3px solid transparent; margin-bottom: -3px; transition: all 0.2s; text-transform: uppercase; }
         .nav-tab:hover { color: white; background: rgba(255,255,255,0.08); }
         .nav-tab.active { color: white; border-bottom: 3px solid #27ae60; background: rgba(255,255,255,0.1); }
+        /* ===== MENU DROPDOWN ===== */
+        .nav-dropdown { position:relative; display:inline-flex; align-items:stretch; }
+        .nav-dropdown-btn { display:flex; align-items:center; gap:4px; white-space:nowrap; }
+        .nav-dropdown-menu {
+            display:none; position:absolute; top:100%; left:0; z-index:2000;
+            background:#1a3a9f; min-width:200px; border-radius:0 0 6px 6px;
+            box-shadow:0 6px 16px rgba(0,0,0,0.35); border-top:2px solid #27ae60;
+        }
+        .nav-dropdown.open .nav-dropdown-menu { display:block; }
+        .nav-dropdown-item {
+            display:block; width:100%; padding:10px 18px; background:none; border:none;
+            color:rgba(255,255,255,0.85); font-size:12px; font-weight:bold; cursor:pointer;
+            text-align:left; text-transform:uppercase; letter-spacing:0.3px;
+            transition:background 0.15s; border-bottom:1px solid rgba(255,255,255,0.08);
+        }
+        .nav-dropdown-item:hover { background:rgba(255,255,255,0.12); color:white; }
+        .nav-dropdown-item.active { background:rgba(39,174,96,0.2); color:#27ae60; }
+        .nav-dropdown-btn.active { border-bottom:3px solid #27ae60 !important; background:rgba(255,255,255,0.1) !important; color:white !important; }
+
+        /* ===== CAPA PADRÃO IMPRESSÃO ===== */
+        .rel-capa-wrap { display:none; }
+        .rel-capa-wrap-rc { display:none; }
+        .rel-capa-wrap-rk { display:none; }
+        .rel-capa-wrap-bol { display:none; }
         /* ===== SUB-ABAS DE CONFIGURAÇÕES ===== */
         .cfg-sub-tabs { display:flex; flex-wrap:wrap; gap:4px; padding:14px 20px 0; background:#f0f3f8; border-bottom:2px solid #bdc3c7; }
         .cfg-sub-tab { padding:9px 20px; border:none; border-radius:6px 6px 0 0; background:#dce3ef; color:#34495e; font-size:12px; font-weight:bold; cursor:pointer; text-transform:uppercase; letter-spacing:0.3px; transition:all 0.2s; border-bottom:3px solid transparent; margin-bottom:-2px; }
@@ -549,10 +573,16 @@
 
         @media print {
             .rel-capa-wrap { display: block !important; }
-            .rel-capa,
-            .rel-capa-topo,
-            .rel-capa-acento,
-            .rel-capa-ficha { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .rel-capa-wrap-rc  { display: block !important; }
+            .rel-capa-wrap-rk  { display: block !important; }
+            .rel-capa-wrap-bol { display: block !important; }
+            .rel-capa, .rel-capa-topo, .rel-capa-acento, .rel-capa-ficha { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            /* Ocultar controles na impressão */
+            .nav-tabs, .nav-dropdown, header, .header, .rel-filtros,
+            #aba-relatorio > .relatorio-container > div:first-child { display:none !important; }
+            /* Garantir margens A4 */
+            @page { size: A4 portrait; margin: 10mm 8mm 12mm 8mm; }
+            body { margin:0; padding:0; }
         }
         /* ===== RELATÓRIO ===== */
 
@@ -898,15 +928,32 @@
         </div>
     </div>
 
-    <div class="nav-tabs" style="flex-wrap:wrap;">
-        <button class="nav-tab active" id="tabProducao" onclick="trocarAba('producao', this)">🌾 Produção</button>
-        <button class="nav-tab" id="tabClassificacao" onclick="trocarAba('classificacao', this)">🌽 Classificação</button>
-        <button class="nav-tab" id="tabMateriaPrima" onclick="trocarAba('materiaPrima', this)">🧪 Matéria Prima</button>
-        <button class="nav-tab" id="tabRelatorio" onclick="trocarAba('relatorio', this)">📊 Rel. Produção</button>
-        <button class="nav-tab" id="tabRelClass" onclick="trocarAba('relClass', this)">📊 Rel. Classificação</button>
-        <button class="nav-tab" id="tabRanking" onclick="trocarAba('ranking', this)">🏆 Ranking</button>
-        <button class="nav-tab" id="tabBoletim" onclick="trocarAba('boletim', this)">📋 Boletim Industrial</button>
-        <button class="nav-tab" id="tabEntradaMP" onclick="trocarAba('entradaMP', this)">📥 Entrada Mat. Prima</button>
+    <div class="nav-tabs" style="flex-wrap:nowrap;align-items:stretch;padding:0;">
+        <!-- LANÇAMENTOS dropdown -->
+        <div class="nav-dropdown" id="ndLancamentos">
+            <button class="nav-tab nav-dropdown-btn" id="tabLancamentos" onclick="toggleDropdown('ndLancamentos')">
+                🌾 Lançamentos ▾
+            </button>
+            <div class="nav-dropdown-menu">
+                <button class="nav-dropdown-item" id="tabProducao" onclick="trocarAba('producao', this);closeDropdowns()">🌾 Produção</button>
+                <button class="nav-dropdown-item" id="tabMateriaPrima" onclick="trocarAba('materiaPrima', this);closeDropdowns()">🧪 Matéria Prima</button>
+                <button class="nav-dropdown-item" id="tabClassificacao" onclick="trocarAba('classificacao', this);closeDropdowns()">🌽 Classificação</button>
+            </div>
+        </div>
+        <!-- RELATÓRIOS dropdown -->
+        <div class="nav-dropdown" id="ndRelatorios">
+            <button class="nav-tab nav-dropdown-btn" id="tabRelatorios" onclick="toggleDropdown('ndRelatorios')">
+                📊 Relatórios ▾
+            </button>
+            <div class="nav-dropdown-menu">
+                <button class="nav-dropdown-item" id="tabRelatorio" onclick="trocarAba('relatorio', this);closeDropdowns()">📊 Rel. Produção</button>
+                <button class="nav-dropdown-item" id="tabRelClass" onclick="trocarAba('relClass', this);closeDropdowns()">📊 Rel. Classificação</button>
+                <button class="nav-dropdown-item" id="tabBoletim" onclick="trocarAba('boletim', this);closeDropdowns()">📋 Boletim Industrial</button>
+            </div>
+        </div>
+        <!-- ENTRADAS (cadastro MP) -->
+        <button class="nav-tab" id="tabEntradaMP" onclick="trocarAba('entradaMP', this)">📥 Entradas Mat. Prima</button>
+        <!-- CONFIGURAÇÕES -->
         <button class="nav-tab" id="tabConfiguracoes" onclick="trocarAba('configuracoes', this)">⚙️ Configurações</button>
     </div>
 
@@ -1407,6 +1454,66 @@
                 </div>
             </div>
 
+
+            <!-- DADOS DA CAPA -->
+            <div style="background:#eaf0fb;border:1px solid #c5d5f0;border-radius:6px;padding:10px 14px;margin-bottom:12px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+                <span style="font-size:11px;font-weight:bold;color:#0a1e7f;text-transform:uppercase;white-space:nowrap;">📄 Dados da Capa:</span>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <label style="font-size:11px;font-weight:bold;color:#444;">Unidade:</label>
+                    <input id="rcCapaUnidadeInput" type="text" value="Fábrica de Ração BR 316, Auto do Bode"
+                        style="font-size:11px;padding:4px 8px;border:1px solid #bcd;border-radius:4px;width:260px;"
+                        oninput="document.getElementById('rcCapaUnidade').textContent=this.value">
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <label style="font-size:11px;font-weight:bold;color:#444;">Responsável:</label>
+                    <input id="rcCapaRespInput" type="text" value="Lucas Lima"
+                        style="font-size:11px;padding:4px 8px;border:1px solid #bcd;border-radius:4px;width:160px;"
+                        oninput="document.getElementById('rcCapaResponsavel').textContent=this.value">
+                </div>
+            </div>
+
+            <!-- CAPA (só aparece na impressão/PDF) -->
+            <div class="rel-capa-wrap-rc" id="rel-capa-wrap-rc-el">
+              <div class="rel-capa">
+                <div class="rel-capa-topo">
+                  <div class="rel-capa-topo-logo">
+                    <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="36" cy="38" r="28" fill="#cc2222"/>
+                      <circle cx="36" cy="38" r="23" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+                      <text x="36" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="32" fill="white">A</text>
+                      <text x="76" y="36" font-family="Arial" font-weight="900" font-size="28" fill="white" letter-spacing="1.5">AGRONOR</text>
+                      <line x1="76" y1="43" x2="254" y2="43" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+                      <text x="76" y="58" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
+                    </svg>
+                    <div class="rel-capa-topo-divider"></div>
+                    <div class="rel-capa-topo-empresa">
+                      <strong>Sistema Analítico</strong>
+                      Controle de Qualidade
+                    </div>
+                  </div>
+                  <div class="rel-capa-topo-badge">Emitido em<br><strong id="rcCapaDataEmissao">—</strong></div>
+                </div>
+                <div class="rel-capa-acento"></div>
+                <div class="rel-capa-corpo">
+                  <div class="rel-capa-eyebrow">Relatório Gerencial</div>
+                  <div class="rel-capa-titulo">DE CLASSIFICAÇÃO</div>
+                  <div class="rel-capa-subtitulo">Análise &amp; Resultados</div>
+                  <div class="rel-capa-linha"></div>
+                  <div class="rel-capa-ficha">
+                    <span class="rc-rot">Unidade</span>
+                    <span class="rc-val" id="rcCapaUnidade">Fábrica de Ração BR 316, Auto do Bode</span>
+                    <span class="rc-rot">Responsável</span>
+                    <span class="rc-val" id="rcCapaResponsavel">Lucas Lima</span>
+                    <span class="rc-rot">Período</span>
+                    <span class="rc-val" id="rcCapaPeriodo">—</span>
+                  </div>
+                </div>
+                <div class="rel-capa-rodape">
+                  <span class="rd-left">Agronor Alimentos · Sistema de Controle Analítico</span>
+                  <span class="rd-right">Documento gerado automaticamente</span>
+                </div>
+              </div>
+            </div>
             <div id="relClassConteudo" style="background:white;border-radius:4px;padding:20px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
                 <div class="relatorio-title" id="rcTitulo">RELATÓRIO DE CLASSIFICAÇÃO</div>
                 <div class="relatorio-periodo" id="rcPeriodo"></div>
@@ -1584,7 +1691,7 @@
         <div class="relatorio-container">
 
             <div style="display:flex;gap:10px;justify-content:flex-end;margin-bottom:15px;">
-                <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR</button>
+                <button class="btn-print" onclick="imprimirRanking()">🖨️ IMPRIMIR</button>
                 <button class="btn-pdf" onclick="gerarPDFRanking()">📄 GERAR PDF</button>
             </div>
 
@@ -1631,6 +1738,66 @@
                 </div>
             </div>
 
+
+            <!-- DADOS DA CAPA -->
+            <div style="background:#eaf0fb;border:1px solid #c5d5f0;border-radius:6px;padding:10px 14px;margin-bottom:12px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+                <span style="font-size:11px;font-weight:bold;color:#0a1e7f;text-transform:uppercase;white-space:nowrap;">📄 Dados da Capa:</span>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <label style="font-size:11px;font-weight:bold;color:#444;">Unidade:</label>
+                    <input id="rkCapaUnidadeInput" type="text" value="Fábrica de Ração BR 316, Auto do Bode"
+                        style="font-size:11px;padding:4px 8px;border:1px solid #bcd;border-radius:4px;width:260px;"
+                        oninput="document.getElementById('rkCapaUnidade').textContent=this.value">
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <label style="font-size:11px;font-weight:bold;color:#444;">Responsável:</label>
+                    <input id="rkCapaRespInput" type="text" value="Lucas Lima"
+                        style="font-size:11px;padding:4px 8px;border:1px solid #bcd;border-radius:4px;width:160px;"
+                        oninput="document.getElementById('rkCapaResponsavel').textContent=this.value">
+                </div>
+            </div>
+
+            <!-- CAPA (só aparece na impressão/PDF) -->
+            <div class="rel-capa-wrap-rk" id="rel-capa-wrap-rk-el">
+              <div class="rel-capa">
+                <div class="rel-capa-topo">
+                  <div class="rel-capa-topo-logo">
+                    <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="36" cy="38" r="28" fill="#cc2222"/>
+                      <circle cx="36" cy="38" r="23" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+                      <text x="36" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="32" fill="white">A</text>
+                      <text x="76" y="36" font-family="Arial" font-weight="900" font-size="28" fill="white" letter-spacing="1.5">AGRONOR</text>
+                      <line x1="76" y1="43" x2="254" y2="43" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+                      <text x="76" y="58" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
+                    </svg>
+                    <div class="rel-capa-topo-divider"></div>
+                    <div class="rel-capa-topo-empresa">
+                      <strong>Sistema Analítico</strong>
+                      Controle de Qualidade
+                    </div>
+                  </div>
+                  <div class="rel-capa-topo-badge">Emitido em<br><strong id="rkCapaDataEmissao">—</strong></div>
+                </div>
+                <div class="rel-capa-acento"></div>
+                <div class="rel-capa-corpo">
+                  <div class="rel-capa-eyebrow">Relatório Gerencial</div>
+                  <div class="rel-capa-titulo">RANKING DE FORNECEDORES</div>
+                  <div class="rel-capa-subtitulo">Classificação &amp; Qualidade</div>
+                  <div class="rel-capa-linha"></div>
+                  <div class="rel-capa-ficha">
+                    <span class="rc-rot">Unidade</span>
+                    <span class="rc-val" id="rkCapaUnidade">Fábrica de Ração BR 316, Auto do Bode</span>
+                    <span class="rc-rot">Responsável</span>
+                    <span class="rc-val" id="rkCapaResponsavel">Lucas Lima</span>
+                    <span class="rc-rot">Período</span>
+                    <span class="rc-val" id="rkCapaPeriodo">—</span>
+                  </div>
+                </div>
+                <div class="rel-capa-rodape">
+                  <span class="rd-left">Agronor Alimentos · Sistema de Controle Analítico</span>
+                  <span class="rd-right">Documento gerado automaticamente</span>
+                </div>
+              </div>
+            </div>
             <div id="rankingConteudo" style="background:white;border-radius:4px;padding:20px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
                 <div class="relatorio-title" id="rkTitulo">RANKING DE FORNECEDORES — CLASSIFICAÇÃO</div>
                 <div class="relatorio-periodo" id="rkPeriodo"></div>
@@ -2481,6 +2648,66 @@
                 </div>
             </div>
 
+
+            <!-- DADOS DA CAPA -->
+            <div style="background:#eaf0fb;border:1px solid #c5d5f0;border-radius:6px;padding:10px 14px;margin-bottom:12px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+                <span style="font-size:11px;font-weight:bold;color:#0a1e7f;text-transform:uppercase;white-space:nowrap;">📄 Dados da Capa:</span>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <label style="font-size:11px;font-weight:bold;color:#444;">Unidade:</label>
+                    <input id="bolCapaUnidadeInput" type="text" value="Fábrica de Ração BR 316, Auto do Bode"
+                        style="font-size:11px;padding:4px 8px;border:1px solid #bcd;border-radius:4px;width:260px;"
+                        oninput="document.getElementById('bolCapaUnidade').textContent=this.value">
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <label style="font-size:11px;font-weight:bold;color:#444;">Responsável:</label>
+                    <input id="bolCapaRespInput" type="text" value="Lucas Lima"
+                        style="font-size:11px;padding:4px 8px;border:1px solid #bcd;border-radius:4px;width:160px;"
+                        oninput="document.getElementById('bolCapaResponsavel').textContent=this.value">
+                </div>
+            </div>
+
+            <!-- CAPA (só aparece na impressão/PDF) -->
+            <div class="rel-capa-wrap-bol" id="rel-capa-wrap-bol-el">
+              <div class="rel-capa">
+                <div class="rel-capa-topo">
+                  <div class="rel-capa-topo-logo">
+                    <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="36" cy="38" r="28" fill="#cc2222"/>
+                      <circle cx="36" cy="38" r="23" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+                      <text x="36" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="32" fill="white">A</text>
+                      <text x="76" y="36" font-family="Arial" font-weight="900" font-size="28" fill="white" letter-spacing="1.5">AGRONOR</text>
+                      <line x1="76" y1="43" x2="254" y2="43" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+                      <text x="76" y="58" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
+                    </svg>
+                    <div class="rel-capa-topo-divider"></div>
+                    <div class="rel-capa-topo-empresa">
+                      <strong>Sistema Analítico</strong>
+                      Controle de Qualidade
+                    </div>
+                  </div>
+                  <div class="rel-capa-topo-badge">Emitido em<br><strong id="bolCapaDataEmissao">—</strong></div>
+                </div>
+                <div class="rel-capa-acento"></div>
+                <div class="rel-capa-corpo">
+                  <div class="rel-capa-eyebrow">Boletim Industrial</div>
+                  <div class="rel-capa-titulo">ANALÍTICO</div>
+                  <div class="rel-capa-subtitulo">Produção &amp; Qualidade</div>
+                  <div class="rel-capa-linha"></div>
+                  <div class="rel-capa-ficha">
+                    <span class="rc-rot">Unidade</span>
+                    <span class="rc-val" id="bolCapaUnidade">Fábrica de Ração BR 316, Auto do Bode</span>
+                    <span class="rc-rot">Responsável</span>
+                    <span class="rc-val" id="bolCapaResponsavel">Lucas Lima</span>
+                    <span class="rc-rot">Período</span>
+                    <span class="rc-val" id="bolCapaPeriodo">—</span>
+                  </div>
+                </div>
+                <div class="rel-capa-rodape">
+                  <span class="rd-left">Agronor Alimentos · Sistema de Controle Analítico</span>
+                  <span class="rd-right">Documento gerado automaticamente</span>
+                </div>
+              </div>
+            </div>
             <!-- ÁREA DE PRÉVIA / CONTEÚDO DO BOLETIM -->
             <div id="boletimConteudo" style="background:white;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
                 <div style="padding:60px 40px;text-align:center;color:#bbb;">
@@ -3108,6 +3335,20 @@ function fazerLogout() {
 // ===================================================
 // NAVEGAÇÃO
 // ===================================================
+// ===== MENU DROPDOWN =====
+function toggleDropdown(id) {
+    const el = document.getElementById(id);
+    const isOpen = el.classList.contains('open');
+    closeDropdowns();
+    if (!isOpen) el.classList.add('open');
+}
+function closeDropdowns() {
+    document.querySelectorAll('.nav-dropdown').forEach(d => d.classList.remove('open'));
+}
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.nav-dropdown')) closeDropdowns();
+});
+
 function trocarAba(aba, btn) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -4316,6 +4557,10 @@ function aplicarFiltrosRelClass() {
     const diStr = new Date(di+'T00:00:00').toLocaleDateString('pt-BR');
     const dfStr = new Date(df+'T00:00:00').toLocaleDateString('pt-BR');
     document.getElementById('rcTitulo').textContent  = 'RELATÓRIO DE CLASSIFICAÇÃO — ' + tituloSel;
+    const _rcp = document.getElementById('rcCapaPeriodo');
+    const _rdi = document.getElementById('rcDataInicio')?.value;
+    const _rdf = document.getElementById('rcDataFim')?.value;
+    if(_rcp && _rdi && _rdf) _rcp.textContent = new Date(_rdi+'T12:00').toLocaleDateString('pt-BR')+' a '+new Date(_rdf+'T12:00').toLocaleDateString('pt-BR');
     document.getElementById('rcPeriodo').textContent = 'PERÍODO: ' + diStr + ' ATÉ ' + dfStr + '  |  ' + dados.length + ' registro(s)';
 
     // Cards resumo
@@ -4684,13 +4929,30 @@ function renderRCTabelaDetalhe(dados) {
     }).join('');
 }
 
-function imprimirRelClass() { window.print(); }
+function imprimirRelClass() {
+    const dt = new Date().toLocaleDateString('pt-BR');
+    const el = document.getElementById('rcCapaDataEmissao'); if(el) el.textContent = dt;
+    const di = document.getElementById('rcDataInicio')?.value;
+    const df = document.getElementById('rcDataFim')?.value;
+    const per = document.getElementById('rcCapaPeriodo');
+    if(per && di && df) per.textContent = new Date(di+'T12:00').toLocaleDateString('pt-BR')+' a '+new Date(df+'T12:00').toLocaleDateString('pt-BR');
+    const capa = document.getElementById('rel-capa-wrap-rc-el'); if(capa) capa.style.display='block';
+    window.print();
+    setTimeout(()=>{ if(capa) capa.style.display=''; }, 1200);
+}
 function gerarPDFClass() {
-    const el  = document.getElementById('relClassConteudo');
-    const opt = { margin:10, filename:'relatorio-classificacao-'+new Date().toISOString().split('T')[0]+'.pdf',
-                  image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2},
-                  jsPDF:{orientation:'portrait',unit:'mm',format:'a4'} };
-    html2pdf().set(opt).from(el).save();
+    const dt = new Date().toLocaleDateString('pt-BR');
+    const elD = document.getElementById('rcCapaDataEmissao'); if(elD) elD.textContent = dt;
+    const di = document.getElementById('rcDataInicio')?.value;
+    const df = document.getElementById('rcDataFim')?.value;
+    const per = document.getElementById('rcCapaPeriodo');
+    if(per && di && df) per.textContent = new Date(di+'T12:00').toLocaleDateString('pt-BR')+' a '+new Date(df+'T12:00').toLocaleDateString('pt-BR');
+    const capa = document.getElementById('rel-capa-wrap-rc-el'); if(capa) capa.style.display='block';
+    const el = document.getElementById('relClassConteudo');
+    const opt = { margin:0, filename:'relatorio-classificacao-'+new Date().toISOString().split('T')[0]+'.pdf',
+                  image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true},
+                  jsPDF:{orientation:'portrait',unit:'mm',format:'a4',compress:true} };
+    html2pdf().set(opt).from(el).save().then(()=>{ if(capa) capa.style.display=''; });
 }
 
 // ===================================================
@@ -4749,6 +5011,10 @@ function aplicarFiltrosRanking() {
     const dfStr = new Date(df+'T00:00:00').toLocaleDateString('pt-BR');
     const prodLabel = prodSel === 'all' ? 'TODOS OS PRODUTOS' : prodSel;
     document.getElementById('rkTitulo').textContent  = 'RANKING DE FORNECEDORES — ' + prodLabel;
+    const _rkp = document.getElementById('rkCapaPeriodo');
+    const _rkdi = document.getElementById('rkDataInicio')?.value;
+    const _rkdf = document.getElementById('rkDataFim')?.value;
+    if(_rkp && _rkdi && _rkdf) _rkp.textContent = new Date(_rkdi+'T12:00').toLocaleDateString('pt-BR')+' a '+new Date(_rkdf+'T12:00').toLocaleDateString('pt-BR');
     document.getElementById('rkPeriodo').textContent = 'PERÍODO: ' + diStr + ' ATÉ ' + dfStr + '  |  ' + base.length + ' registro(s)';
     document.getElementById('rkThCriterio').innerHTML = getRkNome(criterio).replace(' (%)', '<br>MÉD.%').replace(' (PPM)', '<br>MÉD.PPB').replace(' (PPB)', '<br>MÉD.PPB');
     document.getElementById('rkGraficoTitulo').textContent = getRkNome(criterio).toUpperCase() + ' POR FORNECEDOR';
@@ -5829,12 +6095,28 @@ async function atualizarStatusEMP(btn) {
 }
 
 
+function _preencherCapaRanking() {
+    const dt = new Date().toLocaleDateString('pt-BR');
+    const elD = document.getElementById('rkCapaDataEmissao'); if(elD) elD.textContent = dt;
+    const di = document.getElementById('rkDataInicio')?.value;
+    const df = document.getElementById('rkDataFim')?.value;
+    const per = document.getElementById('rkCapaPeriodo');
+    if(per && di && df) per.textContent = new Date(di+'T12:00').toLocaleDateString('pt-BR')+' a '+new Date(df+'T12:00').toLocaleDateString('pt-BR');
+}
+function imprimirRanking() {
+    _preencherCapaRanking();
+    const capa = document.getElementById('rel-capa-wrap-rk-el'); if(capa) capa.style.display='block';
+    window.print();
+    setTimeout(()=>{ if(capa) capa.style.display=''; }, 1200);
+}
 function gerarPDFRanking() {
-    const el  = document.getElementById('rankingConteudo');
-    const opt = { margin:10, filename:'ranking-fornecedores-'+new Date().toISOString().split('T')[0]+'.pdf',
-                  image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2},
-                  jsPDF:{orientation:'portrait',unit:'mm',format:'a4'} };
-    html2pdf().set(opt).from(el).save();
+    _preencherCapaRanking();
+    const capa = document.getElementById('rel-capa-wrap-rk-el'); if(capa) capa.style.display='block';
+    const el = document.getElementById('rankingConteudo');
+    const opt = { margin:0, filename:'ranking-fornecedores-'+new Date().toISOString().split('T')[0]+'.pdf',
+                  image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true},
+                  jsPDF:{orientation:'portrait',unit:'mm',format:'a4',compress:true} };
+    html2pdf().set(opt).from(el).save().then(()=>{ if(capa) capa.style.display=''; });
 }
 
 // ===================================================
@@ -7555,6 +7837,53 @@ function imprimirBoletim() {
     const janela = window.open('', '_blank', 'width=900,height=700');
     const dataEmissao = new Date().toLocaleDateString('pt-BR');
     const horaEmissao = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    const bolUnidade = document.getElementById('bolCapaUnidadeInput')?.value || 'Fábrica de Ração BR 316, Auto do Bode';
+    const bolResp    = document.getElementById('bolCapaRespInput')?.value || 'Lucas Lima';
+    const bolDi = document.getElementById('bolDataInicio')?.value || '';
+    const bolDf = document.getElementById('bolDataFim')?.value || '';
+    const bolPeriodo = (bolDi && bolDf)
+        ? new Date(bolDi+'T12:00').toLocaleDateString('pt-BR') + ' a ' + new Date(bolDf+'T12:00').toLocaleDateString('pt-BR') : '—';
+    const capaHTML = `
+    <div style="width:210mm;min-height:297mm;background:#fff;display:flex;flex-direction:column;font-family:Arial,sans-serif;box-sizing:border-box;page-break-after:always;overflow:hidden;">
+      <div style="background:linear-gradient(135deg,#0a1e7f 0%,#0d2b9e 55%,#061060 100%);padding:18mm 20mm 14mm;display:flex;align-items:center;justify-content:space-between;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+        <div style="display:flex;align-items:center;gap:5mm;">
+          <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg" style="width:56mm;flex-shrink:0;">
+            <circle cx="36" cy="38" r="28" fill="#cc2222"/>
+            <circle cx="36" cy="38" r="23" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+            <text x="36" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="32" fill="white">A</text>
+            <text x="76" y="36" font-family="Arial" font-weight="900" font-size="28" fill="white" letter-spacing="1.5">AGRONOR</text>
+            <line x1="76" y1="43" x2="254" y2="43" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+            <text x="76" y="58" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
+          </svg>
+          <div style="width:1px;height:14mm;background:rgba(255,255,255,0.25);margin:0 5mm;flex-shrink:0;"></div>
+          <div style="color:rgba(255,255,255,0.75);font-size:8px;letter-spacing:2.5px;text-transform:uppercase;line-height:1.8;">
+            <strong style="display:block;font-size:11px;color:#fff;font-weight:900;">Sistema Analítico</strong>Controle de Qualidade
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.22);border-radius:4px;padding:3mm 6mm;color:rgba(255,255,255,0.85);font-size:8px;letter-spacing:2px;text-transform:uppercase;text-align:right;line-height:1.7;flex-shrink:0;">
+          Emitido em<br><strong style="display:block;font-size:13px;color:#fff;font-weight:900;">${dataEmissao}</strong>
+        </div>
+      </div>
+      <div style="height:4px;background:linear-gradient(to right,#cc2222,#e74c3c,#ff6b6b);-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:14mm 20mm;overflow:hidden;">
+        <div style="font-size:9px;font-weight:700;color:#cc2222;letter-spacing:4px;text-transform:uppercase;margin-bottom:5mm;">Boletim Industrial</div>
+        <div style="font-size:36px;font-weight:900;color:#0a1e7f;text-transform:uppercase;letter-spacing:-0.5px;line-height:1;margin-bottom:3mm;">ANALÍTICO</div>
+        <div style="font-size:18px;font-weight:300;color:#34495e;text-transform:uppercase;letter-spacing:3px;margin-bottom:10mm;">Produção &amp; Qualidade</div>
+        <div style="width:20mm;height:3px;background:linear-gradient(to right,#cc2222,#0a1e7f);border-radius:2px;margin-bottom:12mm;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
+        <div style="background:#f4f6fb;border:1px solid #dce4f5;border-left:4px solid #0a1e7f;border-radius:5px;padding:6mm 9mm;display:grid;grid-template-columns:auto 1fr;gap:3.5mm 6mm;width:100%;max-width:155mm;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+          <span style="font-size:7.5px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;">Unidade</span>
+          <span style="font-size:10px;font-weight:700;color:#1a1a2e;">${bolUnidade}</span>
+          <span style="font-size:7.5px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;">Responsável</span>
+          <span style="font-size:10px;font-weight:700;color:#1a1a2e;">${bolResp}</span>
+          <span style="font-size:7.5px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;">Período</span>
+          <span style="font-size:10px;font-weight:700;color:#1a1a2e;">${bolPeriodo}</span>
+        </div>
+      </div>
+      <div style="flex-shrink:0;padding:5mm 20mm;border-top:1px solid #e5e9f2;display:flex;align-items:center;justify-content:space-between;background:#fafbfe;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+        <span style="font-size:7.5px;color:#aab;letter-spacing:2px;text-transform:uppercase;">Agronor Alimentos · Sistema de Controle Analítico</span>
+        <span style="font-size:7.5px;color:#aab;">Documento gerado automaticamente</span>
+      </div>
+    </div>`;
     janela.document.write(`<!DOCTYPE html><html lang="pt-BR"><head>
         <meta charset="UTF-8">
         <title>Boletim Industrial - Agronor Alimentos</title>
@@ -7596,6 +7925,7 @@ function imprimirBoletim() {
             .print-footer { display:none; position:fixed; bottom:0; left:0; right:0; background:#0a1e7f; color:white; font-size:7.5px; padding:4px 12px; text-align:center; border-top:3px solid #2a9fd8; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
         </style>
     </head><body>
+    ${capaHTML}
     ${conteudo.innerHTML}
     <div class="print-footer">
         <strong>AGRONOR ALIMENTOS</strong> &nbsp;&bull;&nbsp; Boletim Industrial Analítico &nbsp;&bull;&nbsp; Controle de Qualidade &nbsp;&bull;&nbsp; Emitido em: ${dataEmissao} às ${horaEmissao}
