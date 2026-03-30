@@ -4035,8 +4035,30 @@ function salvarMateriaPrima(event) {
     if (idEdicaoMP) {
         const idx = materiasPrimas.findIndex(x => x.id === idEdicaoMP);
         if (idx !== -1) { materiasPrimas[idx] = r; mostrarSucessoMP('✓ MATÉRIA PRIMA ATUALIZADA COM SUCESSO!'); }
+        // Persiste edição no localStorage para sobreviver a recarregamentos
+        const maxIdMat = Math.max(0, ...DADOS_PLANILHA.materias_primas.map(x => x.id));
+        if (r.id <= maxIdMat) {
+            // Registro da planilha base → salva em materias_editadas
+            const editRaw = localStorage.getItem('materias_editadas');
+            const editados = editRaw ? JSON.parse(editRaw) : [];
+            const editIdx = editados.findIndex(x => x.id === r.id);
+            if (editIdx !== -1) editados[editIdx] = r; else editados.push(r);
+            localStorage.setItem('materias_editadas', JSON.stringify(editados));
+        } else {
+            // Registro novo → atualiza em materias_novas
+            const novRaw = localStorage.getItem('materias_novas');
+            const novos = novRaw ? JSON.parse(novRaw) : [];
+            const novIdx = novos.findIndex(x => x.id === r.id);
+            if (novIdx !== -1) novos[novIdx] = r; else novos.push(r);
+            localStorage.setItem('materias_novas', JSON.stringify(novos));
+        }
     } else {
         materiasPrimas.push(r); mostrarSucessoMP('✓ MATÉRIA PRIMA SALVA COM SUCESSO!');
+        // Persiste novo registro no localStorage
+        const novRaw = localStorage.getItem('materias_novas');
+        const novos = novRaw ? JSON.parse(novRaw) : [];
+        novos.push(r);
+        localStorage.setItem('materias_novas', JSON.stringify(novos));
     }
     // Salva no Supabase
     dbUpsertOne('materias_primas', r).catch(e => console.error('Erro ao salvar matéria prima:', e));
