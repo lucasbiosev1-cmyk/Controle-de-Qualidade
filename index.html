@@ -2235,6 +2235,8 @@
                     <select id="filterStatusEMP">
                         <option value="">TODOS</option>
                         <option value="EM ANÁLISE">EM ANÁLISE</option>
+                        <option value="APROVADA">APROVADA</option>
+                        <option value="REPROVADA">REPROVADA</option>
                         <option value="CONCLUÍDA">CONCLUÍDA</option>
                     </select>
                 </div>
@@ -2245,6 +2247,7 @@
             </div>
             <div style="margin-bottom:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                 <button class="btn btn-primary" id="btnCadastroEMP" onclick="abrirModalEMP()">+ REGISTRAR ENTRADA</button>
+                <button onclick="atualizarStatusEMP(this)" style="background:#2980b9;color:white;border:none;border-radius:4px;padding:10px 18px;font-size:13px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:6px;" title="Recarrega os status do banco de dados">🔄 Atualizar Status</button>
                 <span style="font-weight:bold;text-transform:uppercase;">Total de registros: <span id="totalRegistrosEMP">0</span></span>
                 <span style="margin-left:auto;display:flex;gap:6px;align-items:center;">
                     <button class="btn-scroll-tabela" onclick="rolarTabela('tabelaEMPContainer',-1)">&#8592;</button>
@@ -2755,7 +2758,7 @@
                     </div>
                 </div>
                 <div class="form-buttons">
-                    <button type="button" class="btn-salvar" onclick="salvarMateriaPrima(event)">Salvar</button>
+                    <button type="button" id="btnSalvarMP" class="btn-salvar" onclick="salvarMateriaPrima(event)">Salvar</button>
                     <button type="button" class="btn-limpar-form" onclick="limparFormularioMP()">Limpar</button>
                     <button type="button" class="btn-cancelar" onclick="fecharModalCadastroMP()">Cancelar</button>
                 </div>
@@ -3656,6 +3659,8 @@ function abrirModalCadastroMP() {
     document.getElementById('modalTituloMP').textContent = 'CADASTRO DE MATÉRIA PRIMA';
     document.getElementById('formCadastroMP').reset();
     document.getElementById('cadDataMP').value = dataHoje();
+    const btnSalvarNew = document.getElementById('btnSalvarMP');
+    if (btnSalvarNew) { btnSalvarNew.textContent = 'Salvar'; btnSalvarNew.style.background = ''; }
     document.getElementById('modalCadastroMP').classList.add('show');
 }
 
@@ -3692,12 +3697,16 @@ function abrirModalEdicaoMP(id) {
     document.getElementById('cadAlimentacaoHzMP').value           = r.alimentacaoHz||0;
     document.getElementById('cadCalcioMP').value                  = r.calcio||0;
     document.getElementById('cadFosforoMP').value                 = r.fosforo||0;
+    const btnSalvar = document.getElementById('btnSalvarMP');
+    if (btnSalvar) { btnSalvar.textContent = '🔄 Atualizar'; btnSalvar.style.background = '#2980b9'; }
     document.getElementById('modalCadastroMP').classList.add('show');
 }
 
 function fecharModalCadastroMP() {
     document.getElementById('modalCadastroMP').classList.remove('show');
     idEdicaoMP = null;
+    const btnSalvar = document.getElementById('btnSalvarMP');
+    if (btnSalvar) { btnSalvar.textContent = 'Salvar'; btnSalvar.style.background = ''; }
 }
 
 function limparFormularioMP() {
@@ -5800,6 +5809,23 @@ async function acaoEntradaMP(novoStatus) {
 // Hook: sempre que salvar classificação ou matéria prima, verifica conclusões de entradas
 function _empHookAposRegistro() {
     if (entradasMP && entradasMP.length) _empAtualizarStatusConclusoes();
+}
+
+async function atualizarStatusEMP(btn) {
+    const textoOriginal = btn.innerHTML;
+    btn.innerHTML = '⏳ Atualizando...';
+    btn.disabled = true;
+    try {
+        entradasMP = await dbGetAll('entradas_mp');
+        await _empAtualizarStatusConclusoes();
+        exibirTabelaEMP();
+        mostrarMsgEMP('sucesso', '✅ Status atualizado com sucesso!');
+    } catch(e) {
+        mostrarMsgEMP('erro', '❌ Erro ao atualizar: ' + e.message);
+    } finally {
+        btn.innerHTML = textoOriginal;
+        btn.disabled = false;
+    }
 }
 
 
