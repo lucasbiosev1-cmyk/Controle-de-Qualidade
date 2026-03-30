@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Registro Analíticos</title>
+    <title>Sistema de Sistema Gestão da Qualidade</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -909,7 +909,7 @@
 
     <div class="header">
         <div class="header-left">
-            <h1>Registro Analíticos</h1>
+            <h1>Sistema Gestão da Qualidade</h1>
             <div class="header-user">
                 Usuário: <span id="nomeUsuario"></span>
                 &nbsp;|&nbsp;
@@ -5658,7 +5658,7 @@ function exportarBackup(tipo) {
         payload = {
             versao: '1.0',
             geradoEm: new Date().toISOString(),
-            sistema: 'Registro Analíticos',
+            sistema: 'Sistema Gestão da Qualidade',
             producoes,
             classificacoes,
             materias_primas: materiasPrimas,
@@ -5683,7 +5683,7 @@ function exportarBackup(tipo) {
             const m = rM.length ? rM.filter(r=>r.id>maxM) : (mRaw ? JSON.parse(mRaw) : []);
             const payload2 = {
                 versao: '1.0', geradoEm: new Date().toISOString(),
-                sistema: 'Registro Analíticos', tipo: 'novos',
+                sistema: 'Sistema Gestão da Qualidade', tipo: 'novos',
                 producoes: p, classificacoes: c, materias_primas: m,
             };
             const json  = JSON.stringify(payload2, null, 2);
@@ -8788,7 +8788,7 @@ function _bkAutoAtualizarStatus() {
                 const ts      = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
                 const payload = {
                     versao: '1.0', geradoEm: new Date().toISOString(),
-                    sistema: 'Registro Analíticos', backupAutomatico: true,
+                    sistema: 'Sistema Gestão da Qualidade', backupAutomatico: true,
                     producoes, classificacoes, materias_primas: materiasPrimas,
                 };
                 const total = (payload.producoes?.length||0)
