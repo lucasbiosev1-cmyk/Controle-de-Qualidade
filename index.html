@@ -116,9 +116,9 @@
 
         /* ===== CAPA PADRÃO IMPRESSÃO ===== */
         .rel-capa-wrap { display:none; }
-        .rel-capa-wrap-rc { display:none; }
-        .rel-capa-wrap-rk { display:none; }
-        .rel-capa-wrap-bol { display:none; }
+        .rel-capa-wrap-rc { display:none; width:100%; overflow-x:auto; }
+        .rel-capa-wrap-rk { display:none; width:100%; overflow-x:auto; }
+        .rel-capa-wrap-bol { display:none; width:100%; overflow-x:auto; }
         /* ===== SUB-ABAS DE CONFIGURAÇÕES ===== */
         .cfg-sub-tabs { display:flex; flex-wrap:wrap; gap:4px; padding:14px 20px 0; background:#f0f3f8; border-bottom:2px solid #bdc3c7; }
         .cfg-sub-tab { padding:9px 20px; border:none; border-radius:6px 6px 0 0; background:#dce3ef; color:#34495e; font-size:12px; font-weight:bold; cursor:pointer; text-transform:uppercase; letter-spacing:0.3px; transition:all 0.2s; border-bottom:3px solid transparent; margin-bottom:-2px; }
@@ -361,7 +361,7 @@
 
         /* --- Layout geral da capa A4 retrato --- */
         .rel-capa {
-            width: 210mm;
+            width: 100%;
             min-height: 297mm;
             background: #fff;
             display: flex;
@@ -576,6 +576,35 @@
             .rel-capa-wrap-rc  { display: block !important; }
             .rel-capa-wrap-rk  { display: block !important; }
             .rel-capa-wrap-bol { display: block !important; }
+            /* Capa ocupa 100% da página — remove constraints dos containers pai */
+            .rel-capa-wrap-rc, .rel-capa-wrap-rk, .rel-capa-wrap-bol {
+                display: block !important;
+                width: 100vw !important;
+                margin-left: calc(-1 * (100vw - 100%) / 2) !important;
+                overflow: visible !important;
+            }
+            .rel-capa {
+                width: 100% !important;
+                min-width: unset !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+            }
+            /* Zerando padding/margin dos containers pai na impressão */
+            #relClassConteudo, #rankingConteudo, #boletimConteudo, #relatorioConteudo {
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+            .relatorio-container {
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .tab-content {
+                padding: 0 !important;
+            }
             .rel-capa, .rel-capa-topo, .rel-capa-acento, .rel-capa-ficha { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             /* Ocultar controles na impressão */
             .nav-tabs, .nav-dropdown, header, .header, .rel-filtros,
@@ -1472,6 +1501,8 @@
                 </div>
             </div>
 
+            <div id="relClassConteudo" style="background:white;border-radius:4px;padding:20px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+
             <!-- CAPA (só aparece na impressão/PDF) -->
             <div class="rel-capa-wrap-rc" id="rel-capa-wrap-rc-el">
               <div class="rel-capa">
@@ -1514,7 +1545,7 @@
                 </div>
               </div>
             </div>
-            <div id="relClassConteudo" style="background:white;border-radius:4px;padding:20px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+
                 <div class="relatorio-title" id="rcTitulo">RELATÓRIO DE CLASSIFICAÇÃO</div>
                 <div class="relatorio-periodo" id="rcPeriodo"></div>
 
@@ -2425,11 +2456,11 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>DATA</th><th>HORA</th><th>FORNECEDOR</th><th>NOTA FISCAL</th>
-                            <th>USUÁRIO</th><th>STATUS</th><th id="thAcaoEMP">AÇÃO</th>
+                            <th style="text-align:center;">DATA</th><th style="text-align:center;">HORA</th><th style="text-align:center;">MATÉRIA PRIMA</th><th style="text-align:center;">FORNECEDOR</th><th style="text-align:center;">NOTA FISCAL</th>
+                            <th style="text-align:center;">USUÁRIO</th><th style="text-align:center;">STATUS</th><th id="thAcaoEMP" style="text-align:center;">AÇÃO</th>
                         </tr>
                     </thead>
-                    <tbody id="tabelaEntradaMP"><tr><td colspan="7" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
+                    <tbody id="tabelaEntradaMP"><tr><td colspan="8" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -2454,6 +2485,18 @@
                         <div class="form-grid form-grid-2">
                             <div class="form-group required"><label>Fornecedor</label><input type="text" id="cadFornecedorEMP" required></div>
                             <div class="form-group required"><label>Número da Nota Fiscal</label><input type="text" id="cadNFEMP" required></div>
+                        </div>
+                        <div class="form-group required" style="margin:0 0 12px 0;">
+                            <label>Matéria Prima</label>
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <select id="cadMateriaPrimaEMP" required style="flex:1;padding:8px 10px;border:1.5px solid #bdc3c7;border-radius:4px;font-size:13px;text-transform:uppercase;">
+                                    <option value="">SELECIONE...</option>
+                                </select>
+                                <button type="button" onclick="_empAdicionarMP()" title="Adicionar nova matéria prima"
+                                    style="padding:7px 12px;background:#27ae60;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:15px;line-height:1;">+</button>
+                                <button type="button" onclick="_empRemoverMP()" title="Remover matéria prima selecionada"
+                                    style="padding:7px 12px;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:15px;line-height:1;">−</button>
+                            </div>
                         </div>
                         <div class="form-grid form-grid-2">
                             <div class="form-group">
@@ -4472,29 +4515,372 @@ function renderDetalhe(dados, analise, analNome) {
     }).join('');
 }
 
+// ===================================================
+// HELPER: CAPA E JANELA DE IMPRESSÃO ISOLADA
+// (usada por Produção, Classificação e Ranking)
+// ===================================================
+function _gerarCapaHTML(dataEmissao, unidade, resp, periodo, titulo, subtitulo) {
+    return `
+    <div style="width:100%;height:100vh;background:#fff;display:flex;flex-direction:column;font-family:Arial,sans-serif;box-sizing:border-box;page-break-after:always;position:relative;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+      <!-- FAIXA SUPERIOR AZUL -->
+      <div style="background:linear-gradient(135deg,#0a1e7f 0%,#0d2b9e 55%,#061060 100%);padding:68px 76px 53px;display:flex;align-items:center;justify-content:space-between;position:relative;flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+        <!-- Listras decorativas -->
+        <div style="position:absolute;right:0;top:0;bottom:0;width:106px;background:repeating-linear-gradient(-55deg,transparent,transparent 5px,rgba(255,255,255,0.045) 5px,rgba(255,255,255,0.045) 10px);pointer-events:none;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
+        <!-- Logo + empresa -->
+        <div style="display:flex;align-items:center;gap:19px;">
+          <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg" style="width:212px;flex-shrink:0;">
+            <circle cx="36" cy="38" r="28" fill="#cc2222"/>
+            <circle cx="36" cy="38" r="23" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+            <text x="36" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="32" fill="white">A</text>
+            <text x="76" y="36" font-family="Arial" font-weight="900" font-size="28" fill="white" letter-spacing="1.5">AGRONOR</text>
+            <line x1="76" y1="43" x2="254" y2="43" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+            <text x="76" y="58" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
+          </svg>
+          <div style="width:1px;height:53px;background:rgba(255,255,255,0.25);margin:0 19px;flex-shrink:0;"></div>
+          <div style="color:rgba(255,255,255,0.75);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;line-height:1.8;">
+            <strong style="display:block;font-size:13px;color:#fff;font-weight:900;letter-spacing:1px;">Sistema Analítico</strong>Controle de Qualidade
+          </div>
+        </div>
+        <!-- Badge data -->
+        <div style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.22);border-radius:4px;padding:11px 23px;color:rgba(255,255,255,0.85);font-size:10px;letter-spacing:2px;text-transform:uppercase;text-align:right;line-height:1.7;flex-shrink:0;">
+          Emitido em<br><strong style="display:block;font-size:16px;color:#fff;font-weight:900;">${dataEmissao}</strong>
+        </div>
+      </div>
+      <!-- BARRA VERMELHA -->
+      <div style="height:4px;background:linear-gradient(to right,#cc2222,#e74c3c,#ff6b6b);flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
+      <!-- CORPO CENTRAL -->
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:53px 76px 68px;position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-76px;top:50%;transform:translateY(-50%);width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(10,30,127,0.055) 0%,transparent 70%);pointer-events:none;"></div>
+        <div style="position:absolute;right:68px;bottom:30px;width:151px;height:151px;border-radius:50%;background:radial-gradient(circle,rgba(204,34,34,0.05) 0%,transparent 70%);pointer-events:none;"></div>
+        <div style="font-size:12px;font-weight:700;color:#cc2222;letter-spacing:5px;text-transform:uppercase;margin-bottom:16px;">Relatório Gerencial</div>
+        <div style="font-size:56px;font-weight:900;color:#0a1e7f;text-transform:uppercase;letter-spacing:-1px;line-height:1;margin-bottom:10px;">${titulo}</div>
+        <div style="font-size:21px;font-weight:300;color:#34495e;text-transform:uppercase;letter-spacing:4px;margin-bottom:30px;">${subtitulo}</div>
+        <div style="width:76px;height:3px;background:linear-gradient(to right,#cc2222,#0a1e7f);border-radius:2px;margin-bottom:36px;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
+        <div style="background:#f4f6fb;border:1px solid #dce4f5;border-left:5px solid #0a1e7f;border-radius:5px;padding:20px 30px;display:grid;grid-template-columns:auto 1fr;gap:12px 22px;width:100%;max-width:580px;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+          <span style="font-size:9px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;padding-top:1px;">Unidade</span>
+          <span style="font-size:13px;font-weight:700;color:#1a1a2e;">${unidade}</span>
+          <span style="font-size:9px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;padding-top:1px;">Responsável</span>
+          <span style="font-size:13px;font-weight:700;color:#1a1a2e;">${resp}</span>
+          <span style="font-size:9px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;padding-top:1px;">Período</span>
+          <span style="font-size:13px;font-weight:700;color:#1a1a2e;">${periodo}</span>
+        </div>
+      </div>
+      <!-- RODAPÉ -->
+      <div style="flex-shrink:0;padding:22px 76px;border-top:1px solid #e5e9f2;display:flex;align-items:center;justify-content:space-between;background:#fafbfe;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+        <span style="font-size:10px;color:#aab;letter-spacing:2px;text-transform:uppercase;">Agronor Alimentos · Sistema de Controle Analítico</span>
+        <span style="font-size:10px;color:#aab;">Documento gerado automaticamente</span>
+      </div>
+    </div>`;
+}
+
+function _canvasParaImg(container) {
+    // Substitui cada <canvas> pelo seu snapshot PNG antes de copiar o innerHTML
+    container.querySelectorAll('canvas').forEach(cv => {
+        try {
+            const img = document.createElement('img');
+            img.src = cv.toDataURL('image/png');
+            img.style.cssText = cv.style.cssText;
+            img.style.maxWidth = '100%';
+            img.style.display = 'block';
+            // Preserva dimensões visuais
+            const w = cv.offsetWidth || cv.width;
+            const h = cv.offsetHeight || cv.height;
+            if (w) img.style.width  = w + 'px';
+            if (h) img.style.height = h + 'px';
+            cv.parentNode.replaceChild(img, cv);
+        } catch(e) { /* tainted canvas: ignora */ }
+    });
+}
+
+function _gerarHTMLParaPDF(titulo, capaHTML, conteudoHTML) {
+    // Template dedicado ao html2pdf: body 100% sem margens, capa ocupa folha inteira
+    return `<!DOCTYPE html><html lang="pt-BR"><head>
+        <meta charset="UTF-8">
+        <title>${titulo}</title>
+        <style>
+            * { margin:0; padding:0; box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            html, body { width:100%; background:white; font-family:Arial,sans-serif; }
+
+            /* Oculta capas DOM do sistema (vieram no innerHTML clonado) */
+            .rel-capa-wrap, .rel-capa-wrap-rc, .rel-capa-wrap-rk, .rel-capa-wrap-bol { display:none !important; }
+
+            /* A capa usa width:100%;height:100vh — garantir que não seja sobrescrito */
+            body > div:first-child { width:100% !important; height:100vh !important; page-break-after:always; }
+
+            /* Reset do container de conteúdo */
+            #relatorioConteudo, #relClassConteudo, #rankingConteudo {
+                background:white !important; box-shadow:none !important;
+                border-radius:0 !important; padding:16px 0 !important;
+            }
+
+            /* Controles de UI invisíveis */
+            #rcGraficoFiltros, #relGraficoFiltros, .rel-filtros,
+            .btn-print, .btn-pdf, .msg-info-rel, .btn-scroll-tabela { display:none !important; }
+
+            .relatorio-container { max-width:100%; margin:0; }
+            .relatorio-title { font-size:16px; font-weight:bold; text-transform:uppercase; color:#333; margin-bottom:8px; border-bottom:2px solid #34495e; padding-bottom:8px; text-align:center; }
+            .relatorio-periodo { font-size:11px; color:#666; text-align:center; margin-bottom:18px; text-transform:uppercase; }
+            .secao { margin-bottom:24px; page-break-inside:avoid; }
+            .secao-title { font-size:13px; font-weight:bold; text-transform:uppercase; color:#333; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #3498db; }
+            .stat-card { background:#f9f9f9; border:1px solid #ddd; border-radius:6px; padding:10px 8px; text-align:center; }
+            .stat-label { color:#666; font-size:9px; text-transform:uppercase; margin-bottom:3px; }
+            .stat-value { font-weight:bold; color:#333; font-size:12px; }
+            .stat-unit  { font-size:9px; color:#999; margin-top:2px; }
+            .stat-item  { font-size:10px; padding:6px; background:white; border-radius:3px; }
+            .grafico-container { background:white; border:1px solid #ddd; border-radius:4px; padding:14px; margin-bottom:18px; page-break-inside:avoid; break-inside:avoid; }
+            .grafico-title { font-size:12px; font-weight:bold; text-transform:uppercase; color:#333; margin-bottom:12px; }
+            .grafico-container img { max-width:100%; height:auto; display:block; margin:0 auto; }
+            .tabela-container { overflow-x:visible; margin-bottom:18px; border:1px solid #ddd; border-radius:4px; width:100%; }
+            table { width:100%; border-collapse:collapse; font-size:10px; table-layout:auto; }
+            table th { background:#34495e; color:white; padding:6px 4px; text-align:center; font-weight:bold; white-space:nowrap; font-size:9px; }
+            table td { padding:4px 3px; border-bottom:1px solid #ecf0f1; text-align:center; font-size:10px; }
+            table tr:nth-child(even) { background:#f9f9f9; }
+            .badge { display:inline-block; padding:2px 6px; border-radius:3px; font-size:10px; font-weight:bold; }
+            .badge-conforme     { background:#d5f4e6; color:#27ae60; }
+            .badge-nao-conforme { background:#fadbd8; color:#e74c3c; }
+            .fases-container { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px; }
+            .fase-card   { background:#f9f9f9; border:1px solid #ddd; border-radius:4px; padding:12px; }
+            .fase-title  { font-size:11px; font-weight:bold; text-transform:uppercase; color:#2a5298; margin-bottom:8px; }
+            .fase-stats  { font-size:10px; line-height:1.8; }
+            .fase-label  { color:#666; }
+            .fase-value  { font-weight:bold; color:#333; }
+            .racao-section { background:#f9f9f9; border:1px solid #ddd; border-radius:4px; padding:12px; margin-bottom:14px; page-break-inside:avoid; }
+            .racao-title   { font-size:11px; font-weight:bold; text-transform:uppercase; color:#2a5298; margin-bottom:8px; }
+            .racao-stats   { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+            .rk-card  { background:white; border:1px solid #ddd; border-radius:6px; padding:12px; text-align:center; }
+            .rk-valor { font-size:20px; font-weight:bold; }
+            .rk-label { font-size:9px; color:#666; text-transform:uppercase; margin-top:3px; }
+        </style>
+    </head><body>
+    ${capaHTML}
+    ${conteudoHTML}
+    </body></html>`;
+}
+
+function _gerarCapaHTMLParaPDF(dataEmissao, unidade, resp, periodo, titulo, subtitulo) {
+    // Igual a _gerarCapaHTML mas com width:100% para caber na folha do html2pdf
+    return `
+    <div style="width:100%;min-height:1057px;background:#fff;display:flex;flex-direction:column;font-family:Arial,sans-serif;box-sizing:border-box;page-break-after:always;position:relative;">
+      <div style="background:linear-gradient(135deg,#0a1e7f 0%,#0d2b9e 55%,#061060 100%);padding:68px 76px 53px;display:flex;align-items:center;justify-content:space-between;position:relative;flex-shrink:0;">
+        <div style="position:absolute;right:0;top:0;bottom:0;width:106px;background:repeating-linear-gradient(-55deg,transparent,transparent 5px,rgba(255,255,255,0.045) 5px,rgba(255,255,255,0.045) 10px);pointer-events:none;"></div>
+        <div style="display:flex;align-items:center;gap:19px;">
+          <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg" style="width:212px;flex-shrink:0;">
+            <circle cx="36" cy="38" r="28" fill="#cc2222"/>
+            <circle cx="36" cy="38" r="23" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+            <text x="36" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="32" fill="white">A</text>
+            <text x="76" y="36" font-family="Arial" font-weight="900" font-size="28" fill="white" letter-spacing="1.5">AGRONOR</text>
+            <line x1="76" y1="43" x2="254" y2="43" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+            <text x="76" y="58" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
+          </svg>
+          <div style="width:1px;height:53px;background:rgba(255,255,255,0.25);margin:0 19px;flex-shrink:0;"></div>
+          <div style="color:rgba(255,255,255,0.75);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;line-height:1.8;">
+            <strong style="display:block;font-size:13px;color:#fff;font-weight:900;letter-spacing:1px;">Sistema Analítico</strong>Controle de Qualidade
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.22);border-radius:4px;padding:11px 23px;color:rgba(255,255,255,0.85);font-size:10px;letter-spacing:2px;text-transform:uppercase;text-align:right;line-height:1.7;flex-shrink:0;">
+          Emitido em<br><strong style="display:block;font-size:16px;color:#fff;font-weight:900;">${dataEmissao}</strong>
+        </div>
+      </div>
+      <div style="height:4px;background:linear-gradient(to right,#cc2222,#e74c3c,#ff6b6b);flex-shrink:0;"></div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:53px 76px 68px;position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-76px;top:50%;transform:translateY(-50%);width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(10,30,127,0.055) 0%,transparent 70%);pointer-events:none;"></div>
+        <div style="position:absolute;right:68px;bottom:30px;width:151px;height:151px;border-radius:50%;background:radial-gradient(circle,rgba(204,34,34,0.05) 0%,transparent 70%);pointer-events:none;"></div>
+        <div style="font-size:11px;font-weight:700;color:#cc2222;letter-spacing:4px;text-transform:uppercase;margin-bottom:19px;">Relatório Gerencial</div>
+        <div style="font-size:48px;font-weight:900;color:#0a1e7f;text-transform:uppercase;letter-spacing:-0.5px;line-height:1;margin-bottom:11px;">${titulo}</div>
+        <div style="font-size:22px;font-weight:300;color:#34495e;text-transform:uppercase;letter-spacing:3px;margin-bottom:38px;">${subtitulo}</div>
+        <div style="width:76px;height:3px;background:linear-gradient(to right,#cc2222,#0a1e7f);border-radius:2px;margin-bottom:45px;"></div>
+        <div style="background:#f4f6fb;border:1px solid #dce4f5;border-left:4px solid #0a1e7f;border-radius:5px;padding:23px 34px;display:grid;grid-template-columns:auto 1fr;gap:13px 23px;width:100%;max-width:585px;box-sizing:border-box;">
+          <span style="font-size:9px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;padding-top:1px;">Unidade</span>
+          <span style="font-size:12px;font-weight:700;color:#1a1a2e;">${unidade}</span>
+          <span style="font-size:9px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;padding-top:1px;">Responsável</span>
+          <span style="font-size:12px;font-weight:700;color:#1a1a2e;">${resp}</span>
+          <span style="font-size:9px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;padding-top:1px;">Período</span>
+          <span style="font-size:12px;font-weight:700;color:#1a1a2e;">${periodo}</span>
+        </div>
+      </div>
+      <div style="flex-shrink:0;padding:19px 76px;border-top:1px solid #e5e9f2;display:flex;align-items:center;justify-content:space-between;background:#fafbfe;">
+        <span style="font-size:9px;color:#aab;letter-spacing:2px;text-transform:uppercase;">Agronor Alimentos · Sistema de Controle Analítico</span>
+        <span style="font-size:9px;color:#aab;">Documento gerado automaticamente</span>
+      </div>
+    </div>`;
+}
+
+function _gerarIframePDF(htmlCompleto, filename, onDone) {
+    // Extrai só o conteúdo do <body> do HTML gerado
+    const bodyMatch = htmlCompleto.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+    const bodyConteudo = bodyMatch ? bodyMatch[1] : htmlCompleto;
+
+    // Cria div temporário no documento principal (sem iframe, sem cross-origin)
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = [
+        'position:fixed',
+        'top:0',
+        'left:-9999px',
+        'width:794px',
+        'background:white',
+        'font-family:Arial,sans-serif',
+        'z-index:-1',
+        'overflow:visible'
+    ].join(';');
+    wrapper.innerHTML = bodyConteudo;
+
+    // Oculta capas DOM do sistema que vieram no clone
+    wrapper.querySelectorAll('.rel-capa-wrap,.rel-capa-wrap-rc,.rel-capa-wrap-rk,.rel-capa-wrap-bol').forEach(el => el.style.display='none');
+    // Remove padding/shadow dos containers
+    ['relatorioConteudo','relClassConteudo','rankingConteudo'].forEach(id => {
+        const el = wrapper.querySelector('#'+id);
+        if(el){ el.style.padding='16px 0'; el.style.boxShadow='none'; el.style.borderRadius='0'; }
+    });
+    // Oculta controles de UI
+    wrapper.querySelectorAll('#rcGraficoFiltros,#relGraficoFiltros,.btn-print,.btn-pdf,.msg-info-rel,.btn-scroll-tabela').forEach(el => el.style.display='none');
+
+    // Garante que a capa (primeiro filho) ocupe 100% da largura
+    const capaDivs = wrapper.querySelectorAll('div');
+    if(capaDivs.length > 0) {
+        // Encontra o div da capa (tem min-height:1057px no style inline)
+        wrapper.querySelectorAll('div').forEach(d => {
+            if(d.style.minHeight && d.style.minHeight.includes('1057')) {
+                d.style.width = '794px';
+            }
+        });
+    }
+
+    document.body.appendChild(wrapper);
+
+    setTimeout(() => {
+        const opt = {
+            margin: 0,
+            filename: filename,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, width: 794, windowWidth: 794, scrollX: 0, scrollY: 0 },
+            jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4', compress: true }
+        };
+        html2pdf().set(opt).from(wrapper).save().then(() => {
+            document.body.removeChild(wrapper);
+            if (onDone) onDone();
+        });
+    }, 400);
+}
+
+function _gerarJanelaImpressao(titulo, capaHTML, conteudoHTML) {
+    return `<!DOCTYPE html><html lang="pt-BR"><head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=794">
+        <title>${titulo}</title>
+        <style>
+            * { margin:0; padding:0; box-sizing:border-box; }
+            html { background:#ccc; }
+            body { width:100%; margin:0; background:white; font-family:Arial,sans-serif; }
+            @page { size:A4 portrait; margin:0; }
+            @media print {
+                html, body { background:white; width:100%; height:100%; margin:0; overflow:visible; }
+                * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            }
+
+            /* ── Oculta capas antigas do sistema que vêm no innerHTML ── */
+            .rel-capa-wrap, .rel-capa-wrap-rc, .rel-capa-wrap-rk, .rel-capa-wrap-bol { display:none !important; }
+
+            /* ── Reset do container ── */
+            #relatorioConteudo, #relClassConteudo, #rankingConteudo {
+                background:white !important; box-shadow:none !important;
+                border-radius:0 !important; padding:16px 0 !important;
+            }
+
+            /* ── Ocultar controles de UI ── */
+            #rcGraficoFiltros, #relGraficoFiltros, .rel-filtros,
+            .btn-print, .btn-pdf, .msg-info-rel, .btn-scroll-tabela { display:none !important; }
+
+            /* ── Layout geral ── */
+            .relatorio-container { max-width:100%; margin:0; }
+            .relatorio-title { font-size:16px; font-weight:bold; text-transform:uppercase; color:#333; margin-bottom:8px; border-bottom:2px solid #34495e; padding-bottom:8px; text-align:center; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .relatorio-periodo { font-size:11px; color:#666; text-align:center; margin-bottom:18px; text-transform:uppercase; }
+            .secao { margin-bottom:24px; page-break-inside:avoid; }
+            .secao-title { font-size:13px; font-weight:bold; text-transform:uppercase; color:#333; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #3498db; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+            /* ── Stat cards ── */
+            .stat-card { background:#f9f9f9; border:1px solid #ddd; border-radius:6px; padding:10px 8px; text-align:center; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .stat-label { color:#666; font-size:9px; text-transform:uppercase; margin-bottom:3px; }
+            .stat-value { font-weight:bold; color:#333; font-size:12px; }
+            .stat-unit  { font-size:9px; color:#999; margin-top:2px; }
+            .stat-item  { font-size:10px; padding:6px; background:white; border-radius:3px; }
+
+            /* ── Gráficos ── */
+            .grafico-container { background:white; border:1px solid #ddd; border-radius:4px; padding:14px; margin-bottom:18px; page-break-inside:avoid; break-inside:avoid; }
+            .grafico-title { font-size:12px; font-weight:bold; text-transform:uppercase; color:#333; margin-bottom:12px; }
+            .grafico-container img { max-width:100%; height:auto; display:block; margin:0 auto; }
+
+            /* ── Tabelas ── */
+            .tabela-container { overflow-x:visible; margin-bottom:18px; border:1px solid #ddd; border-radius:4px; width:100%; }
+            table { width:100%; border-collapse:collapse; font-size:10px; table-layout:auto; }
+            table th { background:#34495e; color:white; padding:6px 4px; text-align:center; font-weight:bold; white-space:nowrap; font-size:9px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            table td { padding:4px 3px; border-bottom:1px solid #ecf0f1; text-align:center; font-size:10px; }
+            table tr:nth-child(even) { background:#f9f9f9; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+            /* ── Badges ── */
+            .badge { display:inline-block; padding:2px 6px; border-radius:3px; font-size:10px; font-weight:bold; }
+            .badge-conforme     { background:#d5f4e6; color:#27ae60; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .badge-nao-conforme { background:#fadbd8; color:#e74c3c; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+            /* ── Fases / ração ── */
+            .fases-container { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px; }
+            .fase-card   { background:#f9f9f9; border:1px solid #ddd; border-radius:4px; padding:12px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .fase-title  { font-size:11px; font-weight:bold; text-transform:uppercase; color:#2a5298; margin-bottom:8px; }
+            .fase-stats  { font-size:10px; line-height:1.8; }
+            .fase-label  { color:#666; }
+            .fase-value  { font-weight:bold; color:#333; }
+            .racao-section { background:#f9f9f9; border:1px solid #ddd; border-radius:4px; padding:12px; margin-bottom:14px; page-break-inside:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .racao-title   { font-size:11px; font-weight:bold; text-transform:uppercase; color:#2a5298; margin-bottom:8px; }
+            .racao-stats   { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+
+            /* ── Ranking ── */
+            .rk-card  { background:white; border:1px solid #ddd; border-radius:6px; padding:12px; text-align:center; }
+            .rk-valor { font-size:20px; font-weight:bold; }
+            .rk-label { font-size:9px; color:#666; text-transform:uppercase; margin-top:3px; }
+        </style>
+    </head><body>
+    ${capaHTML}
+    ${conteudoHTML}
+    </body></html>`;
+}
+
 function imprimirRelatorio() {
-    const el = document.getElementById('relCapaDataEmissao');
-    if (el) el.textContent = new Date().toLocaleDateString('pt-BR');
-    window.print();
+    const conteudo = document.getElementById('relatorioConteudo');
+    if (!conteudo) { alert('Nenhum conteúdo para imprimir.'); return; }
+
+    // Clona para não alterar o DOM original, converte canvas → img
+    const clone = conteudo.cloneNode(true);
+    // Copia dados dos canvas originais para o clone
+    const originais = conteudo.querySelectorAll('canvas');
+    clone.querySelectorAll('canvas').forEach((cv, i) => {
+        try {
+            const img = document.createElement('img');
+            img.src = originais[i].toDataURL('image/png');
+            img.style.maxWidth = '100%'; img.style.display = 'block';
+            img.style.width  = (originais[i].offsetWidth  || originais[i].width)  + 'px';
+            img.style.height = (originais[i].offsetHeight || originais[i].height) + 'px';
+            cv.parentNode.replaceChild(img, cv);
+        } catch(e) {}
+    });
+
+    const dataEmissao = new Date().toLocaleDateString('pt-BR');
+    const unidade    = document.getElementById('relCapaUnidadeInput')?.value || 'Fábrica de Ração BR 316, Auto do Bode';
+    const resp       = document.getElementById('relCapaRespInput')?.value    || 'Lucas Lima';
+    const periodo    = document.getElementById('relCapaPeriodo')?.textContent || '—';
+
+    const capaHTML = _gerarCapaHTML(dataEmissao, unidade, resp, periodo, 'PRODUÇÃO', 'Análise &amp; Resultados');
+
+    const janela = window.open('', '_blank', 'width=900,height=700');
+    janela.document.write(_gerarJanelaImpressao(
+        'Relatório de Qualidade - Agronor Alimentos',
+        capaHTML,
+        clone.innerHTML
+    ));
+    janela.document.close();
+    setTimeout(() => { janela.focus(); janela.print(); }, 600);
 }
 
 function gerarPDF() {
-    const capa = document.getElementById('relCapaWrap');
-    const el   = document.getElementById('relatorioConteudo');
-    // Mostra capa temporariamente para o PDF
-    const elData = document.getElementById('relCapaDataEmissao');
-    if (elData) elData.textContent = new Date().toLocaleDateString('pt-BR');
-    capa.style.display = 'block';
-    const opt = {
-        margin: 0,
-        filename: 'relatorio-gerencial-qualidade-' + new Date().toISOString().split('T')[0] + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4', compress: true }
-    };
-    html2pdf().set(opt).from(el).save().then(() => {
-        capa.style.display = 'none';
-    });
+    imprimirRelatorio();
 }
 
 
@@ -4930,29 +5316,91 @@ function renderRCTabelaDetalhe(dados) {
 }
 
 function imprimirRelClass() {
-    const dt = new Date().toLocaleDateString('pt-BR');
-    const el = document.getElementById('rcCapaDataEmissao'); if(el) el.textContent = dt;
+    const conteudo = document.getElementById('relClassConteudo');
+    if (!conteudo) { alert('Nenhum conteúdo para imprimir.'); return; }
+
+    const clone = conteudo.cloneNode(true);
+    const originais = conteudo.querySelectorAll('canvas');
+    clone.querySelectorAll('canvas').forEach((cv, i) => {
+        try {
+            const img = document.createElement('img');
+            img.src = originais[i].toDataURL('image/png');
+            img.style.maxWidth = '100%'; img.style.display = 'block';
+            img.style.width  = (originais[i].offsetWidth  || originais[i].width)  + 'px';
+            img.style.height = (originais[i].offsetHeight || originais[i].height) + 'px';
+            cv.parentNode.replaceChild(img, cv);
+        } catch(e) {}
+    });
+
+    const dataEmissao = new Date().toLocaleDateString('pt-BR');
+    const unidade = document.getElementById('rcCapaUnidadeInput')?.value || 'Fábrica de Ração BR 316, Auto do Bode';
+    const resp    = document.getElementById('rcCapaRespInput')?.value    || 'Lucas Lima';
     const di = document.getElementById('rcDataInicio')?.value;
     const df = document.getElementById('rcDataFim')?.value;
-    const per = document.getElementById('rcCapaPeriodo');
-    if(per && di && df) per.textContent = new Date(di+'T12:00').toLocaleDateString('pt-BR')+' a '+new Date(df+'T12:00').toLocaleDateString('pt-BR');
-    const capa = document.getElementById('rel-capa-wrap-rc-el'); if(capa) capa.style.display='block';
-    window.print();
-    setTimeout(()=>{ if(capa) capa.style.display=''; }, 1200);
+    const periodo = (di && df)
+        ? new Date(di+'T12:00').toLocaleDateString('pt-BR') + ' a ' + new Date(df+'T12:00').toLocaleDateString('pt-BR')
+        : (document.getElementById('rcCapaPeriodo')?.textContent || '—');
+
+    const capaHTML = `
+    <div style="width:100%;height:100vh;background:#fff;display:flex;flex-direction:column;font-family:Arial,sans-serif;box-sizing:border-box;page-break-after:always;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+      <!-- FAIXA SUPERIOR AZUL -->
+      <div style="background:linear-gradient(135deg,#0a1e7f 0%,#0d2b9e 55%,#061060 100%);padding:68px 76px 53px;display:flex;align-items:center;justify-content:space-between;position:relative;flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+        <div style="position:absolute;right:0;top:0;bottom:0;width:106px;background:repeating-linear-gradient(-55deg,transparent,transparent 5px,rgba(255,255,255,0.045) 5px,rgba(255,255,255,0.045) 10px);pointer-events:none;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
+        <div style="display:flex;align-items:center;gap:19px;">
+          <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg" style="width:212px;flex-shrink:0;">
+            <circle cx="36" cy="38" r="28" fill="#cc2222"/>
+            <circle cx="36" cy="38" r="23" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+            <text x="36" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="32" fill="white">A</text>
+            <text x="76" y="36" font-family="Arial" font-weight="900" font-size="28" fill="white" letter-spacing="1.5">AGRONOR</text>
+            <line x1="76" y1="43" x2="254" y2="43" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+            <text x="76" y="58" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
+          </svg>
+          <div style="width:1px;height:53px;background:rgba(255,255,255,0.25);margin:0 19px;flex-shrink:0;"></div>
+          <div style="color:rgba(255,255,255,0.75);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;line-height:1.8;">
+            <strong style="display:block;font-size:13px;color:#fff;font-weight:900;letter-spacing:1px;">Sistema Analítico</strong>Controle de Qualidade
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.22);border-radius:4px;padding:11px 23px;color:rgba(255,255,255,0.85);font-size:10px;letter-spacing:2px;text-transform:uppercase;text-align:right;line-height:1.7;flex-shrink:0;">
+          Emitido em<br><strong style="display:block;font-size:16px;color:#fff;font-weight:900;">${dataEmissao}</strong>
+        </div>
+      </div>
+      <!-- BARRA VERMELHA -->
+      <div style="height:4px;background:linear-gradient(to right,#cc2222,#e74c3c,#ff6b6b);flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
+      <!-- CORPO CENTRAL -->
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:53px 76px 68px;position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-76px;top:50%;transform:translateY(-50%);width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(10,30,127,0.055) 0%,transparent 70%);pointer-events:none;"></div>
+        <div style="position:absolute;right:68px;bottom:30px;width:151px;height:151px;border-radius:50%;background:radial-gradient(circle,rgba(204,34,34,0.05) 0%,transparent 70%);pointer-events:none;"></div>
+        <div style="font-size:12px;font-weight:700;color:#cc2222;letter-spacing:5px;text-transform:uppercase;margin-bottom:16px;">Relatório Gerencial</div>
+        <div style="font-size:56px;font-weight:900;color:#0a1e7f;text-transform:uppercase;letter-spacing:-1px;line-height:1;margin-bottom:10px;">CLASSIFICAÇÃO</div>
+        <div style="font-size:21px;font-weight:300;color:#34495e;text-transform:uppercase;letter-spacing:4px;margin-bottom:30px;">Análise &amp; Resultados</div>
+        <div style="width:76px;height:3px;background:linear-gradient(to right,#cc2222,#0a1e7f);border-radius:2px;margin-bottom:36px;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
+        <div style="background:#f4f6fb;border:1px solid #dce4f5;border-left:5px solid #0a1e7f;border-radius:5px;padding:20px 30px;display:grid;grid-template-columns:auto 1fr;gap:12px 22px;width:100%;max-width:580px;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+          <span style="font-size:9px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;padding-top:1px;">Unidade</span>
+          <span style="font-size:13px;font-weight:700;color:#1a1a2e;">${unidade}</span>
+          <span style="font-size:9px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;padding-top:1px;">Responsável</span>
+          <span style="font-size:13px;font-weight:700;color:#1a1a2e;">${resp}</span>
+          <span style="font-size:9px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;padding-top:1px;">Período</span>
+          <span style="font-size:13px;font-weight:700;color:#1a1a2e;">${periodo}</span>
+        </div>
+      </div>
+      <!-- RODAPÉ -->
+      <div style="flex-shrink:0;padding:22px 76px;border-top:1px solid #e5e9f2;display:flex;align-items:center;justify-content:space-between;background:#fafbfe;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+        <span style="font-size:10px;color:#aab;letter-spacing:2px;text-transform:uppercase;">Agronor Alimentos · Sistema de Controle Analítico</span>
+        <span style="font-size:10px;color:#aab;">Documento gerado automaticamente</span>
+      </div>
+    </div>`;
+
+    const janela = window.open('', '_blank', 'width=900,height=700');
+    janela.document.write(_gerarJanelaImpressao(
+        'Relatório de Classificação - Agronor Alimentos',
+        capaHTML,
+        clone.innerHTML
+    ));
+    janela.document.close();
+    setTimeout(() => { janela.focus(); janela.print(); }, 600);
 }
 function gerarPDFClass() {
-    const dt = new Date().toLocaleDateString('pt-BR');
-    const elD = document.getElementById('rcCapaDataEmissao'); if(elD) elD.textContent = dt;
-    const di = document.getElementById('rcDataInicio')?.value;
-    const df = document.getElementById('rcDataFim')?.value;
-    const per = document.getElementById('rcCapaPeriodo');
-    if(per && di && df) per.textContent = new Date(di+'T12:00').toLocaleDateString('pt-BR')+' a '+new Date(df+'T12:00').toLocaleDateString('pt-BR');
-    const capa = document.getElementById('rel-capa-wrap-rc-el'); if(capa) capa.style.display='block';
-    const el = document.getElementById('relClassConteudo');
-    const opt = { margin:0, filename:'relatorio-classificacao-'+new Date().toISOString().split('T')[0]+'.pdf',
-                  image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true},
-                  jsPDF:{orientation:'portrait',unit:'mm',format:'a4',compress:true} };
-    html2pdf().set(opt).from(el).save().then(()=>{ if(capa) capa.style.display=''; });
+    imprimirRelClass();
 }
 
 // ===================================================
@@ -5912,7 +6360,7 @@ function exibirTabelaEMP(lista) {
 
     const tbody = document.getElementById('tabelaEntradaMP');
     if (!dados.length) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
         return;
     }
 
@@ -5931,13 +6379,14 @@ function exibirTabelaEMP(lista) {
                 acoes += `<button class="btn-action btn-delete" onclick="excluirEntradaMP(${r.id})">🗑️</button>`;
         }
         return `<tr>
-            <td>${dataFmt}</td>
-            <td>${r.hora||'-'}</td>
-            <td style="text-align:left;font-weight:bold;">${r.fornecedor||'-'}</td>
-            <td>${r.nf||'-'}</td>
-            <td>${r.usuario||'-'}</td>
-            <td>${_empStatusBadge(r.status)}</td>
-            ${temAcao ? `<td>${acoes}</td>` : ''}
+            <td style="text-align:center;">${dataFmt}</td>
+            <td style="text-align:center;">${r.hora||'-'}</td>
+            <td style="text-align:center;font-weight:bold;color:#0a1e7f;">${r.materia_prima||'-'}</td>
+            <td style="text-align:center;font-weight:bold;">${r.fornecedor||'-'}</td>
+            <td style="text-align:center;">${r.nf||'-'}</td>
+            <td style="text-align:center;">${r.usuario||'-'}</td>
+            <td style="text-align:center;">${_empStatusBadge(r.status)}</td>
+            ${temAcao ? `<td style="text-align:center;">${acoes}</td>` : ''}
         </tr>`;
     }).join('');
 }
@@ -5948,6 +6397,43 @@ function limparFiltrosEMP() {
     ['filterDataInicioEMP','filterDataFimEMP'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
     const sel = document.getElementById('filterStatusEMP'); if(sel) sel.value='';
     exibirTabelaEMP();
+}
+
+// ===== LISTA DE MATÉRIAS PRIMAS DO FORMULÁRIO DE ENTRADA =====
+const _EMP_MP_KEY = 'emp_lista_mp';
+const _EMP_MP_PADRAO = [
+    'CALCÁRIO FINO','CALCÁRIO GROSSO','FARELO DE SOJA','FARELO DE TRIGO',
+    'FARINHA DE CARNE E OSSO','MILHO','MILHO ESTOQUE 01','MILHO ESTOQUE 02',
+    'SAL MOÍDO','SOJA EXTRUSADA DOSADOR','SOJA INTEGRAL EXTRUSADA'
+];
+function _empGetListaMP() {
+    try { const r = localStorage.getItem(_EMP_MP_KEY); if(r){ const a=JSON.parse(r); if(Array.isArray(a)&&a.length) return a; } } catch(e){}
+    return [..._EMP_MP_PADRAO];
+}
+function _empPopularSelectMP(val) {
+    const sel = document.getElementById('cadMateriaPrimaEMP'); if(!sel) return;
+    const lista = _empGetListaMP();
+    sel.innerHTML = '<option value="">SELECIONE...</option>';
+    lista.forEach(mp => { const o=document.createElement('option'); o.value=o.textContent=mp; sel.appendChild(o); });
+    if(val) sel.value = val;
+}
+function _empAdicionarMP() {
+    const nome = prompt('Nome da nova Matéria Prima:'); if(!nome||!nome.trim()) return;
+    const n = nome.trim().toUpperCase();
+    const lista = _empGetListaMP();
+    if(lista.includes(n)){ alert('Já cadastrada.'); return; }
+    lista.push(n); lista.sort();
+    localStorage.setItem(_EMP_MP_KEY, JSON.stringify(lista));
+    _empPopularSelectMP(n);
+}
+function _empRemoverMP() {
+    const sel = document.getElementById('cadMateriaPrimaEMP');
+    if(!sel||!sel.value){ alert('Selecione uma matéria prima para remover.'); return; }
+    const nome = sel.value;
+    if(!confirm(`Remover "${nome}" da lista?`)) return;
+    const lista = _empGetListaMP().filter(mp=>mp!==nome);
+    localStorage.setItem(_EMP_MP_KEY, JSON.stringify(lista));
+    _empPopularSelectMP();
 }
 
 function abrirModalEMP() {
@@ -5961,6 +6447,7 @@ function abrirModalEMP() {
     document.getElementById('cadNFEMP').value = '';
     const uNome = USUARIOS[usuarioAtual]?.nome || usuarioAtual || '';
     document.getElementById('cadUsuarioEMP').value = uNome;
+    _empPopularSelectMP();
     document.getElementById('modalCadastroEMP').classList.add('show');
     setTimeout(() => document.getElementById('cadFornecedorEMP').focus(), 100);
 }
@@ -5976,6 +6463,7 @@ function editarEntradaMP(id) {
     document.getElementById('cadFornecedorEMP').value = entrada.fornecedor || '';
     document.getElementById('cadNFEMP').value = entrada.nf || '';
     document.getElementById('cadUsuarioEMP').value = entrada.usuario || '';
+    _empPopularSelectMP(entrada.materia_prima || '');
     document.getElementById('modalCadastroEMP').classList.add('show');
 }
 
@@ -5998,15 +6486,17 @@ async function salvarEntradaMP(event) {
     const fornecedor= document.getElementById('cadFornecedorEMP').value.trim().toUpperCase();
     const nf        = document.getElementById('cadNFEMP').value.trim().toUpperCase();
     const usuario   = USUARIOS[usuarioAtual]?.nome || usuarioAtual || '';
+    const materia_prima = (document.getElementById('cadMateriaPrimaEMP')?.value || '').trim().toUpperCase();
 
-    if (!data)      { mostrarMsgEMP('erro','Informe a data.'); return; }
-    if (!fornecedor){ mostrarMsgEMP('erro','Informe o fornecedor.'); return; }
-    if (!nf)        { mostrarMsgEMP('erro','Informe o número da nota fiscal.'); return; }
+    if (!data)        { mostrarMsgEMP('erro','Informe a data.'); return; }
+    if (!materia_prima){ mostrarMsgEMP('erro','Selecione a matéria prima.'); return; }
+    if (!fornecedor)  { mostrarMsgEMP('erro','Informe o fornecedor.'); return; }
+    if (!nf)          { mostrarMsgEMP('erro','Informe o número da nota fiscal.'); return; }
 
     if (_empEditandoId) {
         const idx = entradasMP.findIndex(e => e.id === _empEditandoId);
         if (idx >= 0) {
-            entradasMP[idx] = { ...entradasMP[idx], data, hora, fornecedor, nf };
+            entradasMP[idx] = { ...entradasMP[idx], data, hora, materia_prima, fornecedor, nf };
             try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e){}
         }
         mostrarMsgEMP('sucesso','✅ Entrada atualizada com sucesso!');
@@ -6019,7 +6509,7 @@ async function salvarEntradaMP(event) {
 
         const novaEntrada = {
             id: Date.now(),
-            data, hora, fornecedor, nf,
+            data, hora, materia_prima, fornecedor, nf,
             usuario,
             status: statusInicial,
             criado_em: new Date().toISOString()
@@ -6104,19 +6594,45 @@ function _preencherCapaRanking() {
     if(per && di && df) per.textContent = new Date(di+'T12:00').toLocaleDateString('pt-BR')+' a '+new Date(df+'T12:00').toLocaleDateString('pt-BR');
 }
 function imprimirRanking() {
-    _preencherCapaRanking();
-    const capa = document.getElementById('rel-capa-wrap-rk-el'); if(capa) capa.style.display='block';
-    window.print();
-    setTimeout(()=>{ if(capa) capa.style.display=''; }, 1200);
+    const conteudo = document.getElementById('rankingConteudo');
+    if (!conteudo) { alert('Nenhum conteúdo para imprimir.'); return; }
+
+    // Clona e converte canvas → img
+    const clone = conteudo.cloneNode(true);
+    const originais = conteudo.querySelectorAll('canvas');
+    clone.querySelectorAll('canvas').forEach((cv, i) => {
+        try {
+            const img = document.createElement('img');
+            img.src = originais[i].toDataURL('image/png');
+            img.style.maxWidth = '100%'; img.style.display = 'block';
+            img.style.width  = (originais[i].offsetWidth  || originais[i].width)  + 'px';
+            img.style.height = (originais[i].offsetHeight || originais[i].height) + 'px';
+            cv.parentNode.replaceChild(img, cv);
+        } catch(e) {}
+    });
+
+    const dataEmissao = new Date().toLocaleDateString('pt-BR');
+    const unidade = document.getElementById('rkCapaUnidade')?.textContent || 'Fábrica de Ração BR 316, Auto do Bode';
+    const resp    = document.getElementById('rkCapaResponsavel')?.textContent || 'Lucas Lima';
+    const di = document.getElementById('rkDataInicio')?.value;
+    const df = document.getElementById('rkDataFim')?.value;
+    const periodo = (di && df)
+        ? new Date(di+'T12:00').toLocaleDateString('pt-BR') + ' a ' + new Date(df+'T12:00').toLocaleDateString('pt-BR')
+        : (document.getElementById('rkCapaPeriodo')?.textContent || '—');
+
+    const capaHTML = _gerarCapaHTML(dataEmissao, unidade, resp, periodo, 'RANKING DE FORNECEDORES', 'Classificação &amp; Qualidade');
+
+    const janela = window.open('', '_blank', 'width=900,height=700');
+    janela.document.write(_gerarJanelaImpressao(
+        'Ranking de Fornecedores - Agronor Alimentos',
+        capaHTML,
+        clone.innerHTML
+    ));
+    janela.document.close();
+    setTimeout(() => { janela.focus(); janela.print(); }, 600);
 }
 function gerarPDFRanking() {
-    _preencherCapaRanking();
-    const capa = document.getElementById('rel-capa-wrap-rk-el'); if(capa) capa.style.display='block';
-    const el = document.getElementById('rankingConteudo');
-    const opt = { margin:0, filename:'ranking-fornecedores-'+new Date().toISOString().split('T')[0]+'.pdf',
-                  image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true},
-                  jsPDF:{orientation:'portrait',unit:'mm',format:'a4',compress:true} };
-    html2pdf().set(opt).from(el).save().then(()=>{ if(capa) capa.style.display=''; });
+    imprimirRanking();
 }
 
 // ===================================================
