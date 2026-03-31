@@ -11,68 +11,95 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #f5f5f5; }
 
-        /* ========== TELA DE LOGIN ========== */
+        /* ========== TELA DE LOGIN — CLEAN ========== */
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
         #loginScreen {
             display: flex; align-items: center; justify-content: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #e8e8e8 0%, #f5f5f0 40%, #dde8dd 100%);
+            background: #f0f0ee;
             position: relative; overflow: hidden;
+            font-family: 'Montserrat', Arial, sans-serif;
         }
-        #loginScreen::before {
-            content: '';
-            position: absolute; inset: 0;
-            background:
-                radial-gradient(ellipse at 15% 50%, rgba(180,210,180,0.3) 0%, transparent 50%),
-                radial-gradient(ellipse at 85% 30%, rgba(200,220,240,0.3) 0%, transparent 50%);
-            z-index: 0;
-        }
-        #loginScreen::after {
-            content: '⬡ ⬡ ⬡';
-            position: absolute; top: 10%; left: 3%;
-            font-size: 40px; color: rgba(150,180,150,0.15);
-            letter-spacing: 20px; z-index: 0;
-        }
+        #loginScreen::before { content: none; }
+        #loginScreen::after  { content: none; }
         .login-wrapper {
-            display: flex; border-radius: 20px; overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.18);
-            width: 780px; max-width: 96vw; position: relative; z-index: 1;
-            min-height: 480px;
+            display: flex; border-radius: 18px; overflow: hidden;
+            box-shadow: 0 4px 40px rgba(0,0,0,0.10);
+            width: 740px; max-width: 96vw; position: relative; z-index: 1;
+            min-height: 460px;
+            border: 0.5px solid #e2e2e0;
         }
+        /* PAINEL ESQUERDO — azul sólido, SEM ícone SVG */
         .login-panel-left {
-            width: 240px; flex-shrink: 0;
-            background: linear-gradient(160deg, rgba(220,235,215,0.9) 0%, rgba(200,225,200,0.85) 100%);
-            backdrop-filter: blur(10px);
-            display: flex; align-items: center; justify-content: center;
-            padding: 30px 20px; position: relative; overflow: hidden;
+            width: 220px; flex-shrink: 0;
+            background: #1a2a6e;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 40px 24px; position: relative; overflow: hidden;
         }
         .login-panel-left::before {
             content: '';
             position: absolute; inset: 0;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 400'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='1.5'%3E%3Cline x1='100' y1='380' x2='100' y2='50'/%3E%3Cellipse cx='100' cy='50' rx='18' ry='28'/%3E%3Cellipse cx='82' cy='90' rx='14' ry='22' transform='rotate(-20 82 90)'/%3E%3Cellipse cx='118' cy='90' rx='14' ry='22' transform='rotate(20 118 90)'/%3E%3Cellipse cx='72' cy='130' rx='12' ry='20' transform='rotate(-25 72 130)'/%3E%3Cellipse cx='128' cy='130' rx='12' ry='20' transform='rotate(25 128 130)'/%3E%3Cellipse cx='65' cy='168' rx='11' ry='18' transform='rotate(-28 65 168)'/%3E%3Cellipse cx='135' cy='168' rx='11' ry='18' transform='rotate(28 135 168)'/%3E%3Cellipse cx='70' cy='205' rx='10' ry='16' transform='rotate(-22 70 205)'/%3E%3Cellipse cx='130' cy='205' rx='10' ry='16' transform='rotate(22 130 205)'/%3E%3Ccircle cx='60' cy='300' r='4'/%3E%3Ccircle cx='80' cy='280' r='3'/%3E%3Ccircle cx='100' cy='310' r='5'/%3E%3Ccircle cx='120' cy='285' r='3'/%3E%3Ccircle cx='140' cy='305' r='4'/%3E%3Cpath d='M40 320 Q60 290 80 310 Q100 330 120 300 Q140 270 160 315'/%3E%3C/g%3E%3C/svg%3E") center/cover no-repeat;
-            opacity: 0.7;
+            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 1px, transparent 0, transparent 50%);
+            background-size: 18px 18px;
         }
+        .login-panel-left::after {
+            content: '';
+            position: absolute; bottom: 0; left: 0; right: 0; height: 4px;
+            background: #c0392b;
+        }
+        .login-panel-left-content {
+            position: relative; z-index: 1; text-align: center; color: rgba(255,255,255,0.45);
+            font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+            line-height: 2;
+        }
+        /* CAIXA DIREITA */
         .login-box {
-            flex: 1; background: rgba(255,255,255,0.92);
-            backdrop-filter: blur(20px);
-            padding: 44px 40px; display: flex; flex-direction: column; justify-content: center;
+            flex: 1; background: #ffffff;
+            padding: 48px 44px; display: flex; flex-direction: column; justify-content: center;
         }
-        .login-logo { text-align: center; margin-bottom: 28px; }
-        .login-logo .agronor-brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px; }
-        .login-logo .agronor-name { font-size: 26px; font-weight: 900; color: #1a2a5e; letter-spacing: 1px; }
-        .login-logo .agronor-sub { font-size: 10px; font-weight: 700; color: #c0392b; letter-spacing: 3px; text-transform: uppercase; }
-        .login-logo h1 { font-size: 14px; font-weight: 700; color: #1a2a5e; margin-top: 18px; line-height: 1.4; text-transform: uppercase; letter-spacing: 0.5px; }
+        /* Logo SVG dentro do login-box */
+        .login-logo { margin-bottom: 30px; }
+        .login-logo .agronor-brand { display: block; margin-bottom: 0; }
+        .login-logo .agronor-name  { display: none; }
+        .login-logo .agronor-sub   { display: none; }
+        .login-logo h1 {
+            font-size: 14px; font-weight: 700; color: #1a2a6e;
+            margin-top: 16px; line-height: 1.5; letter-spacing: 0.3px;
+        }
         .login-logo p { display: none; }
         .login-divider { display: none; }
+        /* Campos */
         .login-group { margin-bottom: 16px; position: relative; }
-        .login-group label { display: block; font-size: 11px; font-weight: 600; color: #444; margin-bottom: 6px; }
+        .login-group label {
+            display: block; font-size: 10px; font-weight: 700;
+            letter-spacing: 1.8px; text-transform: uppercase; color: #bbb; margin-bottom: 7px;
+        }
         .login-group .input-wrap { position: relative; }
-        .login-group .input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 15px; color: #aaa; }
-        .login-group input { width: 100%; padding: 11px 12px 11px 36px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 13px; transition: all 0.2s; background: rgba(255,255,255,0.8); box-sizing: border-box; }
-        .login-group input:focus { outline: none; border-color: #c0392b; box-shadow: 0 0 0 3px rgba(192,57,43,0.1); }
-        .login-btn { width: 100%; padding: 13px; background: #c0392b; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(192,57,43,0.4); }
-        .login-btn:hover { background: #a93226; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(192,57,43,0.5); }
-        .login-footer { text-align: center; margin-top: 20px; font-size: 10px; color: #aaa; }
-        .login-error { background: #fadbd8; color: #e74c3c; padding: 9px 12px; border-radius: 6px; font-size: 12px; margin-bottom: 14px; display: none; border-left: 4px solid #e74c3c; }
+        .login-group .input-icon { display: none; }
+        .login-group input {
+            width: 100%; padding: 12px 14px;
+            border: 1px solid #e5e5e3; border-radius: 9px;
+            font-size: 13px; font-family: 'Montserrat', Arial, sans-serif;
+            font-weight: 500; color: #222; background: #fafaf9;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            box-sizing: border-box;
+        }
+        .login-group input:focus { outline: none; border-color: #1a2a6e; box-shadow: 0 0 0 3px rgba(26,42,110,0.08); background: #fff; }
+        .login-btn {
+            width: 100%; padding: 13px; background: #c0392b; color: white;
+            border: none; border-radius: 9px; font-size: 11px; font-weight: 800;
+            cursor: pointer; margin-top: 4px; text-transform: uppercase; letter-spacing: 1.5px;
+            transition: background 0.15s, transform 0.1s;
+            font-family: 'Montserrat', Arial, sans-serif;
+            box-shadow: none;
+        }
+        .login-btn:hover { background: #a93226!important; transform: translateY(-1px); box-shadow: none; }
+        .login-footer { text-align: center; margin-top: 22px; font-size: 10px; color: #ccc; font-weight: 500; }
+        .login-error {
+            background: #fdf1f0; color: #c0392b; padding: 9px 12px;
+            border-radius: 6px; font-size: 11px; font-weight: 600;
+            margin-bottom: 14px; display: none; border-left: 3px solid #c0392b;
+        }
         .login-error.show { display: block; }
         @media (max-width: 600px) {
             .login-wrapper { flex-direction: column; width: 95vw; }
@@ -414,13 +441,13 @@
         .rel-capa-topo-empresa {
             color: rgba(255,255,255,0.75);
             font-size: 8px;
-            letter-spacing: 2.5px;
+            letter-spacing: 2,5px;
             text-transform: uppercase;
             line-height: 1.8;
         }
         .rel-capa-topo-empresa strong {
             display: block;
-            font-size: 11px;
+            font-size: 2px;
             color: #fff;
             letter-spacing: 1px;
             font-weight: 900;
@@ -497,7 +524,7 @@
             margin-bottom: 5mm;
         }
         .rel-capa-titulo {
-            font-size: 36px;
+            font-size: 56px;
             font-weight: 900;
             color: #0a1e7f;
             text-transform: uppercase;
@@ -506,7 +533,7 @@
             margin-bottom: 3mm;
         }
         .rel-capa-subtitulo {
-            font-size: 18px;
+            font-size: 21px;
             font-weight: 300;
             color: #34495e;
             text-transform: uppercase;
@@ -788,7 +815,7 @@
         [data-theme="cinza"]{--cor-primaria:#2c3e50;--cor-primaria-hover:#34495e;--cor-secundaria:#1a252f;--cor-acento:#e67e22;--cor-acento-hover:#ca6f1e;--cor-filtrar:#7f8c8d;--cor-filtrar-hover:#616a6b;--cor-login-bg1:#2c3e50;--cor-login-bg2:#34495e;--cor-login-bg3:#1a252f;}
         [data-theme="vinho"]{--cor-primaria:#6d1a36;--cor-primaria-hover:#922b47;--cor-secundaria:#4a1228;--cor-acento:#c0392b;--cor-acento-hover:#a93226;--cor-filtrar:#8e44ad;--cor-filtrar-hover:#7d3c98;--cor-login-bg1:#6d1a36;--cor-login-bg2:#922b47;--cor-login-bg3:#4a1228;}
 
-        #loginScreen{background:linear-gradient(135deg,#e8e8e8 0%,#f5f5f0 40%,#dde8dd 100%)!important;}
+        #loginScreen{background:#f0f0ee!important;}
         .login-btn{background:#c0392b!important;}
         .login-btn:hover{background:#a93226!important;}
         .header{background:linear-gradient(to right,var(--cor-primaria),var(--cor-primaria-hover))!important;}
@@ -895,80 +922,109 @@
         .badge-perm-on  { background: #d5f4e6; color: #1a7a45; border: 1px solid #a8d8a8; }
         .badge-perm-off { background: #f5f5f5; color: #aaa; border: 1px solid #e0e0e0; text-decoration: line-through; }
 
-        /* ========== TELA DE CAPA ========== */
+        /* ========== TELA DE CAPA — CLEAN DASHBOARD ========== */
         #abaCapa {
             min-height: calc(100vh - 96px);
-            background: linear-gradient(160deg, #0a1e7f 0%, #1a3a9f 40%, #0d2b5e 100%);
+            background: #f2f2f0;
             display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            position: relative; overflow: hidden; padding: 40px 20px;
+            position: relative; overflow: hidden; padding: 28px 28px 20px;
         }
-        #abaCapa::before {
-            content: '';
-            position: absolute; inset: 0;
-            background:
-                radial-gradient(ellipse at 20% 30%, rgba(39,174,96,0.12) 0%, transparent 55%),
-                radial-gradient(ellipse at 80% 70%, rgba(52,152,219,0.12) 0%, transparent 55%);
-            pointer-events: none;
-        }
-        #abaCapa::after {
-            content: '';
-            position: absolute; inset: 0;
-            background-image:
-                repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,0.02) 60px, rgba(255,255,255,0.02) 61px),
-                repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,0.02) 60px, rgba(255,255,255,0.02) 61px);
-            pointer-events: none;
-        }
-        .capa-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0; width: 100%; max-width: 780px; }
-        .capa-badge { background: rgba(39,174,96,0.18); border: 1px solid rgba(39,174,96,0.4); color: #27ae60; border-radius: 20px; padding: 5px 18px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 32px; }
-        .capa-logo-circle { width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04)); border: 2px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 52px; margin-bottom: 36px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
-        .capa-title { font-size: clamp(36px, 6vw, 64px); font-weight: 900; color: white; letter-spacing: 4px; line-height: 1; text-transform: uppercase; margin-bottom: 8px; }
-        .capa-title span { color: #e74c3c; }
-        .capa-sub { font-size: clamp(13px, 2vw, 17px); color: rgba(255,255,255,0.5); letter-spacing: 5px; text-transform: uppercase; font-weight: 400; margin-bottom: 52px; }
-        .capa-divider { width: 80px; height: 3px; background: linear-gradient(to right, transparent, #27ae60, transparent); border-radius: 2px; margin-bottom: 52px; }
-        .capa-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; width: 100%; margin-bottom: 52px; }
-        .capa-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 22px 16px; cursor: pointer; transition: all 0.25s; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .capa-card:hover { background: rgba(255,255,255,0.12); border-color: rgba(39,174,96,0.5); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
-        .capa-card-icon { font-size: 26px; }
-        .capa-card-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.75); text-transform: uppercase; letter-spacing: 0.8px; text-align: center; }
-        .capa-rodape { font-size: 12px; color: rgba(255,255,255,0.25); letter-spacing: 1.5px; text-transform: uppercase; }
-        .capa-rodape strong { color: rgba(255,255,255,0.45); font-weight: 600; }
-        @media (max-width: 600px) { .capa-cards { grid-template-columns: repeat(2, 1fr); } .capa-title { letter-spacing: 2px; } }
+        #abaCapa::before { content: none; }
+        #abaCapa::after  { content: none; }
+        /* Saudação */
+        .capa-welcome { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+        .capa-welcome-left h2 { font-size: 17px; font-weight: 800; color: #1a2a6e; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-welcome-left p  { font-size: 11px; color: #aaa; font-weight: 500; margin-top: 3px; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-welcome-date { font-size: 10px; font-weight: 600; color: #bbb; letter-spacing: .5px; text-transform: uppercase; font-family: 'Montserrat', Arial, sans-serif; }
+        /* KPIs */
+        .capa-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+        .capa-kpi { background: #fff; border-radius: 10px; border: 0.5px solid #e8e8e6; padding: 16px 18px; display: flex; flex-direction: column; gap: 5px; }
+        .capa-kpi-label { font-size: 9px; font-weight: 800; letter-spacing: 1.8px; text-transform: uppercase; color: #c0c0be; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-kpi-value { font-size: 22px; font-weight: 800; color: #1a2a6e; line-height: 1; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-kpi-sub { font-size: 10px; font-weight: 600; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-kpi-up   { color: #27ae60; }
+        .capa-kpi-down { color: #c0392b; }
+        .capa-kpi-bar  { height: 2px; background: #f0f0ee; border-radius: 2px; margin-top: 4px; overflow: hidden; }
+        .capa-kpi-bar-fill { height: 100%; border-radius: 2px; }
+        /* Seção título */
+        .capa-sec-title { font-size: 9.5px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #c0c0be; margin-bottom: 14px; font-family: 'Montserrat', Arial, sans-serif; }
+        /* Módulos */
+        .capa-inner { position: relative; z-index: 1; width: 100%; }
+        .capa-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; }
+        .capa-card { background: #fff; border-radius: 10px; border: 0.5px solid #e8e8e6; padding: 16px 18px; cursor: pointer; transition: all .18s; display: flex; align-items: center; gap: 14px; }
+        .capa-card:hover { border-color: #1a2a6e; box-shadow: 0 4px 16px rgba(26,42,110,0.08); transform: translateY(-1px); }
+        .capa-card-icon { width: 40px; height: 40px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; background: #eef2ff; }
+        .capa-card-info { flex: 1; }
+        .capa-card-label { font-size: 12px; font-weight: 700; color: #1a2a6e; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-card-desc  { font-size: 10px; color: #bbb; font-weight: 500; margin-top: 2px; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-card-arrow { font-size: 14px; color: #ddd; }
+        .capa-card:hover .capa-card-arrow { color: #1a2a6e; }
+        /* Painéis inferiores */
+        .capa-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .capa-panel { background: #fff; border-radius: 10px; border: 0.5px solid #e8e8e6; padding: 18px 20px; }
+        .capa-panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .capa-panel-head h3 { font-size: 11px; font-weight: 700; color: #1a2a6e; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-panel-see { font-size: 10px; font-weight: 700; color: #c0392b; background: none; border: none; cursor: pointer; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-act-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 0.5px solid #f4f4f2; }
+        .capa-act-row:last-child { border-bottom: none; }
+        .capa-act-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .dot-g { background: #27ae60; } .dot-b { background: #3498db; } .dot-a { background: #f39c12; } .dot-r { background: #e74c3c; }
+        .capa-act-text { flex: 1; font-size: 11px; color: #555; font-weight: 500; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-act-time { font-size: 10px; color: #ccc; font-weight: 500; white-space: nowrap; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-st-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 0.5px solid #f4f4f2; }
+        .capa-st-row:last-child { border-bottom: none; }
+        .capa-st-name { font-size: 11px; font-weight: 600; color: #555; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-st-pill { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 20px; letter-spacing: .5px; }
+        .pill-ok  { background: #edfaf4; color: #27ae60; }
+        .pill-att { background: #fef9ee; color: #e5a000; }
+        .pill-er  { background: #fef0ee; color: #c0392b; }
+        .capa-st-val { font-size: 11px; font-weight: 700; color: #1a2a6e; font-family: 'Montserrat', Arial, sans-serif; }
+        /* Rodapé capa */
+        .capa-rodape { font-size: 9px; color: #ccc; letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', Arial, sans-serif; margin-top: 14px; display: flex; justify-content: space-between; }
+        .capa-rodape strong { color: #bbb; font-weight: 600; }
+        /* ocultar elementos antigos */
+        .capa-badge, .capa-logo-circle, .capa-title, .capa-sub, .capa-divider { display: none !important; }
+        @media (max-width: 900px) { .capa-kpis { grid-template-columns: repeat(2,1fr); } .capa-cards { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 600px) { .capa-cards { grid-template-columns: 1fr; } .capa-bottom { grid-template-columns: 1fr; } .capa-kpis { grid-template-columns: repeat(2,1fr); } }
     </style>
 </head>
 <body>
 
 <!-- ========== TELA DE LOGIN ========== -->
-<div id="loginScreen" onclick="(function(){var el=document.documentElement;if(el.requestFullscreen)el.requestFullscreen();else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();else if(el.mozRequestFullScreen)el.mozRequestFullScreen();else if(el.msRequestFullscreen)el.msRequestFullscreen();})()">
+<div id="loginScreen">
     <div class="login-wrapper">
-        <div class="login-panel-left"></div>
+        <!-- Painel esquerdo: azul sólido, sem ícone, apenas texto de apoio -->
+        <div class="login-panel-left">
+            <div class="login-panel-left-content">
+                Laboratório<br>de Qualidade<br><br>
+                Sistema de<br>Gestão da<br>Qualidade
+            </div>
+        </div>
+        <!-- Painel direito: logo + formulário -->
         <div class="login-box">
             <div class="login-logo">
-                <div class="agronor-brand">
-                    <div>
-                        <div class="agronor-name">AGRONOR <span style="color:#c0392b;font-size:22px;">ALIMENTOS</span></div>
-                        <div class="agronor-sub">Laboratório de Qualidade</div>
-                    </div>
-                </div>
-                <h1>Acesso ao Portal de<br>Laboratório Agronor</h1>
+                <!-- Logo AGRONOR ALIMENTOS — SVG fiel ao original -->
+                <svg viewBox="0 0 200 68" width="180" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+                    <text x="0" y="44" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="34" fill="#1a2a6e" letter-spacing="1">AGRONOR</text>
+                    <text x="2" y="62" font-family="Montserrat,Arial,sans-serif" font-weight="700" font-size="11" fill="#c0392b" letter-spacing="5">ALIMENTOS</text>
+                </svg>
+                <h1>Acesso ao Portal de Laboratório</h1>
             </div>
             <div class="login-error" id="loginError">Usuário ou senha inválidos.</div>
             <div class="login-group">
                 <label>Usuário</label>
                 <div class="input-wrap">
-                    <span class="input-icon">👤</span>
                     <input type="text" id="loginUser" placeholder="Digite seu usuário" autocomplete="username">
                 </div>
             </div>
             <div class="login-group">
                 <label>Senha</label>
                 <div class="input-wrap">
-                    <span class="input-icon">🔒</span>
-                    <input type="password" id="loginPass" placeholder="Digite sua senha" autocomplete="current-password">
+                    <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
                 </div>
             </div>
             <button class="login-btn" onclick="fazerLogin()">Entrar</button>
-            <div class="login-footer">© 2024 Agronor Alimentos. Todos os direitos reservados.</div>
+            <div class="login-footer">© 2025 Agronor Alimentos — Todos os direitos reservados.</div>
         </div>
     </div>
 </div>
@@ -976,22 +1032,32 @@
 <!-- ========== SISTEMA PRINCIPAL ========== -->
 <div id="mainSystem">
 
-    <div class="header">
-        <div class="header-left">
-            <h1>Sistema Gestão da Qualidade</h1>
-            <div class="header-user">
-                Usuário: <span id="nomeUsuario"></span>
-                &nbsp;|&nbsp;
-                <span id="perfilBadge"></span>
-            </div>
+    <div class="header" style="padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;">
+        <div class="header-left" style="display:flex;align-items:center;gap:16px;">
+            <!-- Logo somente texto -->
+            <svg viewBox="0 0 160 44" width="140" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0;">
+                <text x="0" y="28" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="19" fill="#ffffff" letter-spacing=".5">AGRONOR</text>
+                <text x="1" y="40" font-family="Montserrat,Arial,sans-serif" font-weight="700" font-size="7" fill="#c0392b" letter-spacing="3.5">ALIMENTOS</text>
+            </svg>
+            <div style="width:1px;height:24px;background:rgba(255,255,255,0.15);"></div>
+            <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.55);letter-spacing:1.5px;text-transform:uppercase;font-family:'Montserrat',Arial,sans-serif;">Gestão da Qualidade</div>
         </div>
-        <div style="display:flex;align-items:center;gap:12px;">
+        <div style="display:flex;align-items:center;gap:14px;">
             <div class="theme-switcher">
-                <span class="theme-switcher-label">🎨</span>
                 <button class="theme-btn theme-btn-azul ativo" id="tbAzul"  onclick="aplicarTema('azul')"  title="Azul Clássico"></button>
                 <button class="theme-btn theme-btn-verde"      id="tbVerde" onclick="aplicarTema('verde')" title="Verde Floresta"></button>
                 <button class="theme-btn theme-btn-cinza"      id="tbCinza" onclick="aplicarTema('cinza')" title="Cinza Profissional"></button>
                 <button class="theme-btn theme-btn-vinho"      id="tbVinho" onclick="aplicarTema('vinho')" title="Vinho Executivo"></button>
+            </div>
+            <div style="width:1px;height:20px;background:rgba(255,255,255,0.15);"></div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <div style="width:28px;height:28px;border-radius:50%;background:#c0392b;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;" id="headerAvatar">U</div>
+                <div>
+                    <div class="header-user" style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">
+                        <span id="nomeUsuario"></span>
+                    </div>
+                    <span id="perfilBadge" style="font-size:9px;"></span>
+                </div>
             </div>
             <button class="btn-logout" onclick="fazerLogout()">Sair</button>
         </div>
@@ -1033,38 +1099,103 @@
     <div id="aba-capa" class="tab-content active">
         <div id="abaCapa">
             <div class="capa-inner">
-                <div class="capa-badge">Sistema de Gestão da Qualidade</div>
-                <div class="capa-logo-circle">🌾</div>
-                <div class="capa-title">AGRONOR <span>ALIMENTOS</span></div>
-                <div class="capa-sub">Laboratório de Qualidade</div>
-                <div class="capa-divider"></div>
-                <div class="capa-cards">
-                    <div class="capa-card" onclick="trocarAba('producao', document.getElementById('tabProducao'))">
-                        <div class="capa-card-icon">🌾</div>
-                        <div class="capa-card-label">Produção</div>
+
+                <!-- Saudação -->
+                <div class="capa-welcome">
+                    <div class="capa-welcome-left">
+                        <h2>Bem-vindo, <span id="capaNomeUsuario">Usuário</span> 👋</h2>
+                        <p>Aqui está o resumo do laboratório de hoje.</p>
                     </div>
-                    <div class="capa-card" onclick="trocarAba('materiaPrima', document.getElementById('tabMateriaPrima'))">
-                        <div class="capa-card-icon">🧪</div>
-                        <div class="capa-card-label">Matéria Prima</div>
+                    <div class="capa-welcome-date" id="capaDataHoje"></div>
+                </div>
+
+                <!-- KPIs -->
+                <div class="capa-kpis">
+                    <div class="capa-kpi">
+                        <div class="capa-kpi-label">Análises Hoje</div>
+                        <div class="capa-kpi-value" id="kpiAnalises">—</div>
+                        <div class="capa-kpi-sub capa-kpi-up">Registros do dia</div>
+                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" style="width:60%;background:#1a2a6e;"></div></div>
                     </div>
-                    <div class="capa-card" onclick="trocarAba('classificacao', document.getElementById('tabClassificacao'))">
-                        <div class="capa-card-icon">🌽</div>
-                        <div class="capa-card-label">Classificação</div>
+                    <div class="capa-kpi">
+                        <div class="capa-kpi-label">Conformidade</div>
+                        <div class="capa-kpi-value" id="kpiConformidade">—</div>
+                        <div class="capa-kpi-sub capa-kpi-up">Lotes conformes</div>
+                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiConfBar" style="width:90%;background:#27ae60;"></div></div>
                     </div>
-                    <div class="capa-card" onclick="trocarAba('relatorio', document.getElementById('tabRelatorio'))">
-                        <div class="capa-card-icon">📊</div>
-                        <div class="capa-card-label">Rel. Produção</div>
+                    <div class="capa-kpi">
+                        <div class="capa-kpi-label">Não Conformes</div>
+                        <div class="capa-kpi-value" id="kpiNaoConf">—</div>
+                        <div class="capa-kpi-sub capa-kpi-down">Requer atenção</div>
+                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiNaoConfBar" style="width:5%;background:#c0392b;"></div></div>
                     </div>
-                    <div class="capa-card" onclick="trocarAba('relMP', document.getElementById('tabRelMP'))">
-                        <div class="capa-card-icon">📋</div>
-                        <div class="capa-card-label">Rel. Mat. Prima</div>
-                    </div>
-                    <div class="capa-card" onclick="trocarAba('entradaMP', document.getElementById('tabEntradaMP'))">
-                        <div class="capa-card-icon">📥</div>
-                        <div class="capa-card-label">Entradas</div>
+                    <div class="capa-kpi">
+                        <div class="capa-kpi-label">Entradas MP</div>
+                        <div class="capa-kpi-value" id="kpiEntradas">—</div>
+                        <div class="capa-kpi-sub" style="color:#aaa;">Recebimentos</div>
+                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" style="width:50%;background:#f39c12;"></div></div>
                     </div>
                 </div>
-                <div class="capa-rodape">© 2025 &nbsp;<strong>Agronor Alimentos</strong>&nbsp; — Todos os direitos reservados</div>
+
+                <!-- Módulos -->
+                <div class="capa-sec-title">Módulos do sistema</div>
+                <div class="capa-cards">
+                    <div class="capa-card" onclick="trocarAba('producao', document.getElementById('tabProducao'))">
+                        <div class="capa-card-icon" style="background:#eef2ff;">🌾</div>
+                        <div class="capa-card-info">
+                            <div class="capa-card-label">Produção</div>
+                            <div class="capa-card-desc">Lançar e consultar lotes</div>
+                        </div>
+                        <span class="capa-card-arrow">›</span>
+                    </div>
+                    <div class="capa-card" onclick="trocarAba('materiaPrima', document.getElementById('tabMateriaPrima'))">
+                        <div class="capa-card-icon" style="background:#edfaf6;">🧪</div>
+                        <div class="capa-card-info">
+                            <div class="capa-card-label">Matéria Prima</div>
+                            <div class="capa-card-desc">Análises de MP recebida</div>
+                        </div>
+                        <span class="capa-card-arrow">›</span>
+                    </div>
+                    <div class="capa-card" onclick="trocarAba('classificacao', document.getElementById('tabClassificacao'))">
+                        <div class="capa-card-icon" style="background:#fef9ee;">🌽</div>
+                        <div class="capa-card-info">
+                            <div class="capa-card-label">Classificação</div>
+                            <div class="capa-card-desc">Grãos e insumos</div>
+                        </div>
+                        <span class="capa-card-arrow">›</span>
+                    </div>
+                    <div class="capa-card" onclick="trocarAba('relatorio', document.getElementById('tabRelatorio'))">
+                        <div class="capa-card-icon" style="background:#eef2ff;">📊</div>
+                        <div class="capa-card-info">
+                            <div class="capa-card-label">Rel. Produção</div>
+                            <div class="capa-card-desc">Relatórios por período</div>
+                        </div>
+                        <span class="capa-card-arrow">›</span>
+                    </div>
+                    <div class="capa-card" onclick="trocarAba('relMP', document.getElementById('tabRelMP'))">
+                        <div class="capa-card-icon" style="background:#fef0ee;">📋</div>
+                        <div class="capa-card-info">
+                            <div class="capa-card-label">Rel. Mat. Prima</div>
+                            <div class="capa-card-desc">Análise de qualidade MP</div>
+                        </div>
+                        <span class="capa-card-arrow">›</span>
+                    </div>
+                    <div class="capa-card" onclick="trocarAba('entradaMP', document.getElementById('tabEntradaMP'))">
+                        <div class="capa-card-icon" style="background:#f4f4f2;">📥</div>
+                        <div class="capa-card-info">
+                            <div class="capa-card-label">Entradas MP</div>
+                            <div class="capa-card-desc">Cadastro de recebimentos</div>
+                        </div>
+                        <span class="capa-card-arrow">›</span>
+                    </div>
+                </div>
+
+                <!-- Rodapé capa -->
+                <div class="capa-rodape">
+                    <span>© 2025 <strong>Agronor Alimentos</strong> — Uso interno</span>
+                    <span>Sistema de Gestão da Qualidade v2.0</span>
+                </div>
+
             </div>
         </div>
     </div>
@@ -1414,17 +1545,10 @@
                 <div class="rel-capa-topo">
                   <div class="rel-capa-topo-logo">
                     <!-- Logo Agronor SVG inline -->
-                    <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg">
-                      <!-- Círculo vermelho com A -->
-                      <circle cx="36" cy="38" r="28" fill="#cc2222"/>
-                      <circle cx="36" cy="38" r="23" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
-                      <text x="36" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="32" fill="white">A</text>
-                      <!-- AGRONOR -->
-                      <text x="76" y="36" font-family="Arial" font-weight="900" font-size="28" fill="white" letter-spacing="1.5">AGRONOR</text>
-                      <!-- Linha separadora -->
-                      <line x1="76" y1="43" x2="254" y2="43" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
-                      <!-- ALIMENTOS -->
-                      <text x="76" y="58" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
+                    <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+                      <text x="0" y="44" font-family="Arial" font-weight="900" font-size="32" fill="white" letter-spacing="1.5">AGRONOR</text>
+                      <line x1="0" y1="51" x2="178" y2="51" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+                      <text x="2" y="65" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
                     </svg>
                     <div class="rel-capa-topo-divider"></div>
                     <div class="rel-capa-topo-empresa">
@@ -1722,13 +1846,10 @@
               <div class="rel-capa">
                 <div class="rel-capa-topo">
                   <div class="rel-capa-topo-logo">
-                    <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="36" cy="38" r="28" fill="#cc2222"/>
-                      <circle cx="36" cy="38" r="23" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
-                      <text x="36" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="32" fill="white">A</text>
-                      <text x="76" y="36" font-family="Arial" font-weight="900" font-size="28" fill="white" letter-spacing="1.5">AGRONOR</text>
-                      <line x1="76" y1="43" x2="254" y2="43" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
-                      <text x="76" y="58" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
+                    <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+                      <text x="0" y="44" font-family="Arial" font-weight="900" font-size="32" fill="white" letter-spacing="1.5">AGRONOR</text>
+                      <line x1="0" y1="51" x2="178" y2="51" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+                      <text x="2" y="65" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
                     </svg>
                     <div class="rel-capa-topo-divider"></div>
                     <div class="rel-capa-topo-empresa">
@@ -1741,8 +1862,8 @@
                 <div class="rel-capa-acento"></div>
                 <div class="rel-capa-corpo">
                   <div class="rel-capa-eyebrow">Relatório Gerencial</div>
-                  <div class="rel-capa-titulo">DE CLASSIFICAÇÃO</div>
-                  <div class="rel-capa-subtitulo">Análise &amp; Resultados</div>
+                  <div class="rel-capa-subtitulo" style="font-size:21px;">Análise &amp; Resultados</div>
+                  <div class="rel-capa-subtitulo" style="font-size:21px;">Análise &amp; Resultados</div>
                   <div class="rel-capa-linha"></div>
                   <div class="rel-capa-ficha">
                     <span class="rc-rot">Unidade</span>
@@ -2006,13 +2127,10 @@
               <div class="rel-capa">
                 <div class="rel-capa-topo">
                   <div class="rel-capa-topo-logo">
-                    <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="36" cy="38" r="28" fill="#cc2222"/>
-                      <circle cx="36" cy="38" r="23" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
-                      <text x="36" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="32" fill="white">A</text>
-                      <text x="76" y="36" font-family="Arial" font-weight="900" font-size="28" fill="white" letter-spacing="1.5">AGRONOR</text>
-                      <line x1="76" y1="43" x2="254" y2="43" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
-                      <text x="76" y="58" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
+                    <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+                      <text x="0" y="44" font-family="Arial" font-weight="900" font-size="32" fill="white" letter-spacing="1.5">AGRONOR</text>
+                      <line x1="0" y1="51" x2="178" y2="51" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+                      <text x="2" y="65" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
                     </svg>
                     <div class="rel-capa-topo-divider"></div>
                     <div class="rel-capa-topo-empresa">
@@ -2916,13 +3034,10 @@
               <div class="rel-capa">
                 <div class="rel-capa-topo">
                   <div class="rel-capa-topo-logo">
-                    <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="36" cy="38" r="28" fill="#cc2222"/>
-                      <circle cx="36" cy="38" r="23" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
-                      <text x="36" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="32" fill="white">A</text>
-                      <text x="76" y="36" font-family="Arial" font-weight="900" font-size="28" fill="white" letter-spacing="1.5">AGRONOR</text>
-                      <line x1="76" y1="43" x2="254" y2="43" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
-                      <text x="76" y="58" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
+                    <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+                      <text x="0" y="44" font-family="Arial" font-weight="900" font-size="32" fill="white" letter-spacing="1.5">AGRONOR</text>
+                      <line x1="0" y1="51" x2="178" y2="51" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+                      <text x="2" y="65" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
                     </svg>
                     <div class="rel-capa-topo-divider"></div>
                     <div class="rel-capa-topo-empresa">
@@ -3491,6 +3606,23 @@ async function fazerLogin() {
             perfilAtual === 'admin'
                 ? '<span class="badge-perfil badge-admin">Admin</span>'
                 : '<span class="badge-perfil badge-usuario">Usuário</span>';
+        // Avatar com iniciais
+        const nomeCompleto = USUARIOS[user].nome || user;
+        const partes = nomeCompleto.trim().split(' ');
+        const iniciais = partes.length >= 2 ? (partes[0][0] + partes[partes.length-1][0]).toUpperCase() : nomeCompleto.slice(0,2).toUpperCase();
+        const avatarEl = document.getElementById('headerAvatar');
+        if (avatarEl) avatarEl.textContent = iniciais;
+        // Saudação na capa
+        const capaNome = document.getElementById('capaNomeUsuario');
+        if (capaNome) capaNome.textContent = partes[0] || nomeCompleto;
+        // Data na capa
+        const capaData = document.getElementById('capaDataHoje');
+        if (capaData) {
+            const agora = new Date();
+            const dias = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+            const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+            capaData.textContent = dias[agora.getDay()] + ', ' + agora.getDate() + ' de ' + meses[agora.getMonth()] + ' de ' + agora.getFullYear();
+        }
         aplicarPermissoes();
         localStorage.removeItem('producoes');
         localStorage.removeItem('classificacoes');
@@ -3500,6 +3632,23 @@ async function fazerLogin() {
             exibirTabelaClass();
             exibirTabelaMP();
             if (perfilAtual === 'admin') verificarEspacoAoIniciar();
+            // KPIs da capa
+            try {
+                const hoje = new Date().toISOString().slice(0,10);
+                const prodsHoje = (producoes||[]).filter(p=>p.data===hoje).length;
+                const mpHoje    = (materias_primas||[]).filter(p=>p.data===hoje).length;
+                const total     = (producoes||[]).length;
+                const conf      = (producoes||[]).filter(p=>p.status==='CONFORME').length;
+                const nconf     = (producoes||[]).filter(p=>p.status==='NÃO CONFORME'||p.status==='NAO CONFORME').length;
+                const entradas  = (materias_primas||[]).length;
+                const pct       = total > 0 ? Math.round(conf/total*100) : 0;
+                const kpiA = document.getElementById('kpiAnalises');     if(kpiA) kpiA.textContent = prodsHoje + mpHoje;
+                const kpiC = document.getElementById('kpiConformidade'); if(kpiC) kpiC.textContent = pct + '%';
+                const kpiN = document.getElementById('kpiNaoConf');      if(kpiN) kpiN.textContent = nconf;
+                const kpiE = document.getElementById('kpiEntradas');     if(kpiE) kpiE.textContent = entradas;
+                const barC = document.getElementById('kpiConfBar');      if(barC) barC.style.width = pct + '%';
+                const barN = document.getElementById('kpiNaoConfBar');   if(barN) barN.style.width = Math.min(nconf/Math.max(total,1)*100*3,100) + '%';
+            } catch(e) {}
         });
     } else {
         err.classList.add('show');
@@ -4742,13 +4891,10 @@ function _gerarCapaHTML(dataEmissao, unidade, resp, periodo, titulo, subtitulo) 
         <div style="position:absolute;right:0;top:0;bottom:0;width:106px;background:repeating-linear-gradient(-55deg,transparent,transparent 5px,rgba(255,255,255,0.045) 5px,rgba(255,255,255,0.045) 10px);pointer-events:none;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
         <!-- Logo + empresa -->
         <div style="display:flex;align-items:center;gap:19px;">
-          <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg" style="width:212px;flex-shrink:0;">
-            <circle cx="36" cy="38" r="28" fill="#cc2222"/>
-            <circle cx="36" cy="38" r="23" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
-            <text x="36" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="32" fill="white">A</text>
-            <text x="76" y="36" font-family="Arial" font-weight="900" font-size="28" fill="white" letter-spacing="1.5">AGRONOR</text>
-            <line x1="76" y1="43" x2="254" y2="43" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
-            <text x="76" y="58" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
+          <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg" style="width:180px;flex-shrink:0;">
+            <text x="0" y="44" font-family="Arial" font-weight="900" font-size="32" fill="white" letter-spacing="1.5">AGRONOR</text>
+            <line x1="0" y1="51" x2="178" y2="51" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+            <text x="2" y="65" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
           </svg>
           <div style="width:1px;height:53px;background:rgba(255,255,255,0.25);margin:0 19px;flex-shrink:0;"></div>
           <div style="color:rgba(255,255,255,0.75);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;line-height:1.8;">
@@ -4767,9 +4913,9 @@ function _gerarCapaHTML(dataEmissao, unidade, resp, periodo, titulo, subtitulo) 
         <div style="position:absolute;right:-76px;top:50%;transform:translateY(-50%);width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(10,30,127,0.055) 0%,transparent 70%);pointer-events:none;"></div>
         <div style="position:absolute;right:68px;bottom:30px;width:151px;height:151px;border-radius:50%;background:radial-gradient(circle,rgba(204,34,34,0.05) 0%,transparent 70%);pointer-events:none;"></div>
         <div style="font-size:12px;font-weight:700;color:#cc2222;letter-spacing:5px;text-transform:uppercase;margin-bottom:16px;">Relatório Gerencial</div>
-        <div style="font-size:56px;font-weight:900;color:#0a1e7f;text-transform:uppercase;letter-spacing:-1px;line-height:1;margin-bottom:10px;">${titulo}</div>
-        <div style="font-size:21px;font-weight:300;color:#34495e;text-transform:uppercase;letter-spacing:4px;margin-bottom:30px;">${subtitulo}</div>
-        <div style="width:76px;height:3px;background:linear-gradient(to right,#cc2222,#0a1e7f);border-radius:2px;margin-bottom:36px;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
+        <div style="font-size:36px;font-weight:900;color:#0a1e7f;text-transform:uppercase;letter-spacing:-1px;line-height:1;margin-bottom:10px;">${titulo}</div>
+        <div style="font-size:21px;font-weight:300;color:#34495e;text-transform:uppercase;letter-spacing:2px;margin-bottom:30px;">${subtitulo}</div>
+        <div style="width:76px;height:3px;background:linear-gradient(to right,#cc2222,#0a1e7f);border-radius:4px;margin-bottom:36px;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
         <div style="background:#f4f6fb;border:1px solid #dce4f5;border-left:5px solid #0a1e7f;border-radius:5px;padding:20px 30px;display:grid;grid-template-columns:auto 1fr;gap:12px 22px;width:100%;max-width:580px;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
           <span style="font-size:9px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;padding-top:1px;">Unidade</span>
           <span style="font-size:13px;font-weight:700;color:#1a1a2e;">${unidade}</span>
@@ -4878,13 +5024,10 @@ function _gerarCapaHTMLParaPDF(dataEmissao, unidade, resp, periodo, titulo, subt
       <div style="background:linear-gradient(135deg,#0a1e7f 0%,#0d2b9e 55%,#061060 100%);padding:68px 76px 53px;display:flex;align-items:center;justify-content:space-between;position:relative;flex-shrink:0;">
         <div style="position:absolute;right:0;top:0;bottom:0;width:106px;background:repeating-linear-gradient(-55deg,transparent,transparent 5px,rgba(255,255,255,0.045) 5px,rgba(255,255,255,0.045) 10px);pointer-events:none;"></div>
         <div style="display:flex;align-items:center;gap:19px;">
-          <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg" style="width:212px;flex-shrink:0;">
-            <circle cx="36" cy="38" r="28" fill="#cc2222"/>
-            <circle cx="36" cy="38" r="23" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
-            <text x="36" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="32" fill="white">A</text>
-            <text x="76" y="36" font-family="Arial" font-weight="900" font-size="28" fill="white" letter-spacing="1.5">AGRONOR</text>
-            <line x1="76" y1="43" x2="254" y2="43" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
-            <text x="76" y="58" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
+          <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg" style="width:180px;flex-shrink:0;">
+            <text x="0" y="44" font-family="Arial" font-weight="900" font-size="32" fill="white" letter-spacing="1.5">AGRONOR</text>
+            <line x1="0" y1="51" x2="178" y2="51" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+            <text x="2" y="65" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
           </svg>
           <div style="width:1px;height:53px;background:rgba(255,255,255,0.25);margin:0 19px;flex-shrink:0;"></div>
           <div style="color:rgba(255,255,255,0.75);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;line-height:1.8;">
@@ -5561,13 +5704,10 @@ function imprimirRelClass() {
       <div style="background:linear-gradient(135deg,#0a1e7f 0%,#0d2b9e 55%,#061060 100%);padding:68px 76px 53px;display:flex;align-items:center;justify-content:space-between;position:relative;flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
         <div style="position:absolute;right:0;top:0;bottom:0;width:106px;background:repeating-linear-gradient(-55deg,transparent,transparent 5px,rgba(255,255,255,0.045) 5px,rgba(255,255,255,0.045) 10px);pointer-events:none;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
         <div style="display:flex;align-items:center;gap:19px;">
-          <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg" style="width:212px;flex-shrink:0;">
-            <circle cx="36" cy="38" r="28" fill="#cc2222"/>
-            <circle cx="36" cy="38" r="23" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
-            <text x="36" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="32" fill="white">A</text>
-            <text x="76" y="36" font-family="Arial" font-weight="900" font-size="28" fill="white" letter-spacing="1.5">AGRONOR</text>
-            <line x1="76" y1="43" x2="254" y2="43" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
-            <text x="76" y="58" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
+          <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg" style="width:180px;flex-shrink:0;">
+            <text x="0" y="44" font-family="Arial" font-weight="900" font-size="32" fill="white" letter-spacing="1.5">AGRONOR</text>
+            <line x1="0" y1="51" x2="178" y2="51" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+            <text x="2" y="65" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
           </svg>
           <div style="width:1px;height:53px;background:rgba(255,255,255,0.25);margin:0 19px;flex-shrink:0;"></div>
           <div style="color:rgba(255,255,255,0.75);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;line-height:1.8;">
@@ -5584,10 +5724,10 @@ function imprimirRelClass() {
       <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:53px 76px 68px;position:relative;overflow:hidden;">
         <div style="position:absolute;right:-76px;top:50%;transform:translateY(-50%);width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(10,30,127,0.055) 0%,transparent 70%);pointer-events:none;"></div>
         <div style="position:absolute;right:68px;bottom:30px;width:151px;height:151px;border-radius:50%;background:radial-gradient(circle,rgba(204,34,34,0.05) 0%,transparent 70%);pointer-events:none;"></div>
-        <div style="font-size:12px;font-weight:700;color:#cc2222;letter-spacing:5px;text-transform:uppercase;margin-bottom:16px;">Relatório Gerencial</div>
-        <div style="font-size:56px;font-weight:900;color:#0a1e7f;text-transform:uppercase;letter-spacing:-1px;line-height:1;margin-bottom:10px;">CLASSIFICAÇÃO</div>
-        <div style="font-size:21px;font-weight:300;color:#34495e;text-transform:uppercase;letter-spacing:4px;margin-bottom:30px;">Análise &amp; Resultados</div>
-        <div style="width:76px;height:3px;background:linear-gradient(to right,#cc2222,#0a1e7f);border-radius:2px;margin-bottom:36px;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
+        <div style="font-size:18px;font-weight:700;color:#cc2222;letter-spacing:5px;text-transform:uppercase;margin-bottom:21px;">Relatório Gerencial</div>
+        <div style="font-size:56px;font-weight:900;color:#0a1e7f;text-transform:uppercase;letter-spacing:-1px;line-height:1;margin-bottom:15px;">DE CLASSIFICAÇÃO</div>
+        <div style="font-size:32px;font-weight:300;color:#34495e;text-transform:uppercase;letter-spacing:5px;margin-bottom:30px;">Análise &amp; Resultados</div>
+        <div style="width:76px;height:10px;background:linear-gradient(to right,#cc2222,#0a1e7f);border-radius:2px;margin-bottom:36px;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
         <div style="background:#f4f6fb;border:1px solid #dce4f5;border-left:5px solid #0a1e7f;border-radius:5px;padding:20px 30px;display:grid;grid-template-columns:auto 1fr;gap:12px 22px;width:100%;max-width:580px;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
           <span style="font-size:9px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;padding-top:1px;">Unidade</span>
           <span style="font-size:13px;font-weight:700;color:#1a1a2e;">${unidade}</span>
@@ -8561,13 +8701,10 @@ function imprimirBoletim() {
     <div style="width:210mm;min-height:297mm;background:#fff;display:flex;flex-direction:column;font-family:Arial,sans-serif;box-sizing:border-box;page-break-after:always;overflow:hidden;">
       <div style="background:linear-gradient(135deg,#0a1e7f 0%,#0d2b9e 55%,#061060 100%);padding:18mm 20mm 14mm;display:flex;align-items:center;justify-content:space-between;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
         <div style="display:flex;align-items:center;gap:5mm;">
-          <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg" style="width:56mm;flex-shrink:0;">
-            <circle cx="36" cy="38" r="28" fill="#cc2222"/>
-            <circle cx="36" cy="38" r="23" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
-            <text x="36" y="47" text-anchor="middle" font-family="Arial" font-weight="900" font-size="32" fill="white">A</text>
-            <text x="76" y="36" font-family="Arial" font-weight="900" font-size="28" fill="white" letter-spacing="1.5">AGRONOR</text>
-            <line x1="76" y1="43" x2="254" y2="43" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
-            <text x="76" y="58" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
+          <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg" style="width:48mm;flex-shrink:0;">
+            <text x="0" y="44" font-family="Arial" font-weight="900" font-size="32" fill="white" letter-spacing="1.5">AGRONOR</text>
+            <line x1="0" y1="51" x2="178" y2="51" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+            <text x="2" y="65" font-family="Arial" font-size="11" fill="rgba(255,255,255,0.6)" letter-spacing="5">ALIMENTOS</text>
           </svg>
           <div style="width:1px;height:14mm;background:rgba(255,255,255,0.25);margin:0 5mm;flex-shrink:0;"></div>
           <div style="color:rgba(255,255,255,0.75);font-size:8px;letter-spacing:2.5px;text-transform:uppercase;line-height:1.8;">
