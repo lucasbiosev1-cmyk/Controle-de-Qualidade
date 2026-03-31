@@ -1482,7 +1482,7 @@
                     <select id="rmpAnalise">
                         <option value="umidade">Umidade (%)</option>
                         <option value="proteina">Proteína (%)</option>
-                        <option value="solubilidade">Solubilidade Protéica (%)</option>
+                        <option value="solubil">Solubilidade Protéica (%)</option>
                         <option value="fibra">Fibra (%)</option>
                         <option value="densidade">Densidade</option>
                         <option value="mineral">Material Mineral (%)</option>
@@ -3094,10 +3094,10 @@
                 <div class="form-section">
                     <h3>Parâmetros Físico-Químicos</h3>
                     <div class="form-grid form-grid-4">
-                        <div class="form-group"><label>Extrato Etério (%)</label><input type="number" id="cadExtratoMP" step="0.01" value="0" min="0"></div>
                         <div class="form-group"><label>Proteína (%)</label><input type="number" id="cadProteinaMP" step="0.01" value="0" min="0"></div>
-                        <div class="form-group"><label>Fibra Bruta (%)</label><input type="number" id="cadFibraMP" step="0.01" value="0" min="0"></div>
                         <div class="form-group"><label>Solubilidade Protéica (%)</label><input type="number" id="cadSolubilMP" step="0.01" value="0" min="0"></div>
+                        <div class="form-group"><label>Fibra Bruta (%)</label><input type="number" id="cadFibraMP" step="0.01" value="0" min="0"></div>
+                        <div class="form-group"><label>Extrato Etério (%)</label><input type="number" id="cadExtratoMP" step="0.01" value="0" min="0"></div>
                         <div class="form-group"><label>Umidade (%)</label><input type="number" id="cadUmidadeMP" step="0.01" value="0" min="0"></div>
                         <div class="form-group"><label>Densidade</label><input type="number" id="cadDensidadeMP" step="0.01" value="0" min="0"></div>
                     </div>
@@ -3608,10 +3608,21 @@ function carregarTodos() {
         umidade:     +(r.umidade     * 100).toFixed(3),
     });
 
+    // Normaliza campos de matéria-prima garantindo que solubil e outros
+    // campos opcionais existam mesmo quando não salvos anteriormente
+    const normMat = r => ({
+        solubil: 0, extrato: 0, fibra: 0, mineral: 0, acidez: 0,
+        ureatica: 0, rancidez: 0, peroxido: 0, digestibilidade: 0,
+        granulo1: 0, granulo2: 0, granulo3: 0, granulo4: 0,
+        tempResfriador: 0, tempCanhao: 0, alimentacaoHz: 0, calcio: 0, fosforo: 0,
+        ...r,
+        solubil: parseFloat(r.solubil ?? r.solubilidade ?? 0) || 0,
+    });
+
     // Aplica edições sobre a planilha base (sobrescreve registros editados)
     const editProdMap  = Object.fromEntries(editProd.map(r => [r.id, r]));
     const editClassMap = Object.fromEntries(editClass.map(r => [r.id, r]));
-    const editMatMap   = Object.fromEntries(editMat.map(r => [r.id, r]));
+    const editMatMap   = Object.fromEntries(editMat.map(r => [r.id, normMat(r)]));
 
     const planProdFinal  = planProd.map(r  => editProdMap[r.id]  || r);
     const planClassFinal = planClass.map(r => editClassMap[r.id] ? editClassMap[r.id] : normClass(r));
@@ -3619,7 +3630,7 @@ function carregarTodos() {
 
     producoes      = [...planProdFinal,  ...novoProd];
     classificacoes = [...planClassFinal, ...novoClass];
-    materiasPrimas = [...planMatFinal,   ...novoMat];
+    materiasPrimas = [...planMatFinal,   ...novoMat.map(normMat)];
 }
 
 // ===================================================
@@ -6918,6 +6929,32 @@ async function carregarTodosAsync() {
         umidade:     +(r.umidade     * 100).toFixed(3),
     });
 
+    // Normaliza campos de matéria-prima garantindo que solubil e outros
+    // campos opcionais existam mesmo quando o Supabase não os retorna
+    const normMat = r => ({
+        solubil:         0,
+        extrato:         0,
+        fibra:           0,
+        mineral:         0,
+        acidez:          0,
+        ureatica:        0,
+        rancidez:        0,
+        peroxido:        0,
+        digestibilidade: 0,
+        granulo1:        0,
+        granulo2:        0,
+        granulo3:        0,
+        granulo4:        0,
+        tempResfriador:  0,
+        tempCanhao:      0,
+        alimentacaoHz:   0,
+        calcio:          0,
+        fosforo:         0,
+        ...r,
+        // garante que solubil seja numérico mesmo se vier como null/undefined
+        solubil: parseFloat(r.solubil ?? r.solubilidade ?? 0) || 0,
+    });
+
     // Registros do Supabase com id > max planilha = novos; <= max = edições
     const novoProd  = rawP.filter(r => r.id > maxIdProd);
     const novoClass = rawC.filter(r => r.id > maxIdClass);
@@ -6925,7 +6962,7 @@ async function carregarTodosAsync() {
 
     const editProdMap  = Object.fromEntries(rawP.filter(r => r.id <= maxIdProd).map(r => [r.id, r]));
     const editClassMap = Object.fromEntries(rawC.filter(r => r.id <= maxIdClass).map(r => [r.id, r]));
-    const editMatMap   = Object.fromEntries(rawM.filter(r => r.id <= maxIdMat).map(r => [r.id, r]));
+    const editMatMap   = Object.fromEntries(rawM.filter(r => r.id <= maxIdMat).map(r => [r.id, normMat(r)]));
 
     const planProdFinal  = planProd.map(r  => editProdMap[r.id]  || r);
     const planClassFinal = planClass.map(r => editClassMap[r.id] ? editClassMap[r.id] : normClass(r));
@@ -6933,7 +6970,7 @@ async function carregarTodosAsync() {
 
     producoes      = [...planProdFinal,  ...novoProd];
     classificacoes = [...planClassFinal, ...novoClass];
-    materiasPrimas = [...planMatFinal,   ...novoMat];
+    materiasPrimas = [...planMatFinal,   ...novoMat.map(normMat)];
 }
 
 // ===================================================
@@ -9530,7 +9567,7 @@ function aplicarFiltrosRelMP() {
     const ANALISE_LABELS_RMP = {
         umidade:        'Umidade (%)',
         proteina:       'Proteína (%)',
-        solubilidade:   'Solubilidade Protéica (%)',
+        solubil:        'Solubilidade Protéica (%)',
         fibra:          'Fibra (%)',
         densidade:      'Densidade',
         mineral:        'Material Mineral (%)',
@@ -9635,7 +9672,7 @@ function aplicarFiltrosRelMP() {
             <td style="padding:6px 10px;font-weight:bold;text-align:left;">${p}</td>
             <td style="padding:6px;text-align:center;">${regs.length}</td>
             <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMed(regs.map(r=>r.proteina||0)))}</td>
-            <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMed(regs.map(r=>r.solubilidade||0)))}</td>
+            <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMed(regs.map(r=>r.solubil||0)))}</td>
             <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMed(regs.map(r=>r.umidade||0)))}</td>
             <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMax(regs.map(r=>r.umidade||0)))}</td>
             <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMed(regs.map(r=>r.densidade||0)))}</td>
@@ -9660,7 +9697,7 @@ function aplicarFiltrosRelMP() {
             <td style="padding:5px 7px;text-align:left;">${r.fornecedor||'-'}</td>
             <td style="padding:5px 4px;text-align:center;">${r.nf||'-'}</td>
             <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.proteina)}</td>
-            <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.solubilidade)}</td>
+            <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.solubil)}</td>
             <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.fibra)}</td>
             <td style="padding:5px 4px;text-align:center;${(r.umidade||0)>14?'color:#e74c3c;font-weight:bold;':''}">${_rmpFmt(r.umidade)}</td>
             <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.densidade)}</td>
