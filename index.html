@@ -3614,9 +3614,12 @@ function carregarTodos() {
         solubil: 0, extrato: 0, fibra: 0, mineral: 0, acidez: 0,
         ureatica: 0, rancidez: 0, peroxido: 0, digestibilidade: 0,
         granulo1: 0, granulo2: 0, granulo3: 0, granulo4: 0,
-        tempResfriador: 0, tempCanhao: 0, alimentacaoHz: 0, calcio: 0, fosforo: 0,
+        temp_resfriador: 0, temp_canhao: 0, alimentacao_hz: 0, calcio: 0, fosforo: 0,
         ...r,
-        solubil: parseFloat(r.solubil ?? r.solubilidade ?? 0) || 0,
+        solubil:         parseFloat(r.solubil ?? r.solubilidade ?? 0) || 0,
+        temp_resfriador: parseFloat(r.temp_resfriador ?? r.tempResfriador ?? 0) || 0,
+        temp_canhao:     parseFloat(r.temp_canhao     ?? r.tempCanhao     ?? 0) || 0,
+        alimentacao_hz:  parseFloat(r.alimentacao_hz  ?? r.alimentacaoHz  ?? 0) || 0,
     });
 
     // Aplica edições sobre a planilha base (sobrescreve registros editados)
@@ -4107,9 +4110,9 @@ function abrirModalEdicaoMP(id) {
     document.getElementById('cadGranulo2MP').value                = r.granulo2||0;
     document.getElementById('cadGranulo3MP').value                = r.granulo3||0;
     document.getElementById('cadGranulo4MP').value                = r.granulo4||0;
-    document.getElementById('cadTempResfriadorMP').value          = r.tempResfriador||0;
-    document.getElementById('cadTempCanhaoMP').value              = r.tempCanhao||0;
-    document.getElementById('cadAlimentacaoHzMP').value           = r.alimentacaoHz||0;
+    document.getElementById('cadTempResfriadorMP').value          = r.temp_resfriador||0;
+    document.getElementById('cadTempCanhaoMP').value              = r.temp_canhao||0;
+    document.getElementById('cadAlimentacaoHzMP').value           = r.alimentacao_hz||0;
     document.getElementById('cadCalcioMP').value                  = r.calcio||0;
     document.getElementById('cadFosforoMP').value                 = r.fosforo||0;
     const btnSalvar = document.getElementById('btnSalvarMP');
@@ -4157,9 +4160,9 @@ function salvarMateriaPrima(event) {
         granulo2:       parseFloat(document.getElementById('cadGranulo2MP').value)||0,
         granulo3:       parseFloat(document.getElementById('cadGranulo3MP').value)||0,
         granulo4:       parseFloat(document.getElementById('cadGranulo4MP').value)||0,
-        tempResfriador: parseFloat(document.getElementById('cadTempResfriadorMP').value)||0,
-        tempCanhao:     parseFloat(document.getElementById('cadTempCanhaoMP').value)||0,
-        alimentacaoHz:  parseFloat(document.getElementById('cadAlimentacaoHzMP').value)||0,
+        temp_resfriador: parseFloat(document.getElementById('cadTempResfriadorMP').value)||0,
+        temp_canhao:     parseFloat(document.getElementById('cadTempCanhaoMP').value)||0,
+        alimentacao_hz:  parseFloat(document.getElementById('cadAlimentacaoHzMP').value)||0,
         calcio:         parseFloat(document.getElementById('cadCalcioMP').value)||0,
         fosforo:        parseFloat(document.getElementById('cadFosforoMP').value)||0
     };
@@ -4208,9 +4211,9 @@ function exibirTabelaMP() {
             <td>${(r.granulo2||0).toFixed(2)}</td>
             <td>${(r.granulo3||0).toFixed(2)}</td>
             <td>${(r.granulo4||0).toFixed(2)}</td>
-            <td>${(r.tempResfriador||0).toFixed(1)}</td>
-            <td>${(r.tempCanhao||0).toFixed(1)}</td>
-            <td>${(r.alimentacaoHz||0).toFixed(2)}</td>
+            <td>${(r.temp_resfriador||0).toFixed(1)}</td>
+            <td>${(r.temp_canhao||0).toFixed(1)}</td>
+            <td>${(r.alimentacao_hz||0).toFixed(2)}</td>
             <td>${(r.calcio||0).toFixed(2)}</td>
             <td>${(r.fosforo||0).toFixed(2)}</td>
             <td>${statusPorParametros(r, 'mp', r.produto, CAMPOS_MP, r.data)}</td>
@@ -6019,7 +6022,7 @@ function xlsxBuildMP(rows) {
         ['extrato','proteina','fibra','solubil','umidade','densidade','mineral','acidez',
          'ureatica','rancidez','peroxido','digestibilidade',
          'granulo1','granulo2','granulo3','granulo4',
-         'tempResfriador','tempCanhao','alimentacaoHz','calcio','fosforo'].forEach(c => {
+         'temp_resfriador','temp_canhao','alimentacao_hz','calcio','fosforo'].forEach(c => {
             obj[c] = xlsxParseNum(m[c]);
         });
         return obj;
@@ -6945,14 +6948,17 @@ async function carregarTodosAsync() {
         granulo2:        0,
         granulo3:        0,
         granulo4:        0,
-        tempResfriador:  0,
-        tempCanhao:      0,
-        alimentacaoHz:   0,
+        temp_resfriador:  0,
+        temp_canhao:      0,
+        alimentacao_hz:   0,
         calcio:          0,
         fosforo:         0,
         ...r,
         // garante que solubil seja numérico mesmo se vier como null/undefined
-        solubil: parseFloat(r.solubil ?? r.solubilidade ?? 0) || 0,
+        solubil:         parseFloat(r.solubil ?? r.solubilidade ?? 0) || 0,
+        temp_resfriador: parseFloat(r.temp_resfriador ?? r.tempResfriador ?? 0) || 0,
+        temp_canhao:     parseFloat(r.temp_canhao     ?? r.tempCanhao     ?? 0) || 0,
+        alimentacao_hz:  parseFloat(r.alimentacao_hz  ?? r.alimentacaoHz  ?? 0) || 0,
     });
 
     // Registros do Supabase com id > max planilha = novos; <= max = edições
