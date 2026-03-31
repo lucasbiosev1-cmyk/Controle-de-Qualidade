@@ -894,6 +894,46 @@
         .badge-perm { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: bold; margin: 2px; }
         .badge-perm-on  { background: #d5f4e6; color: #1a7a45; border: 1px solid #a8d8a8; }
         .badge-perm-off { background: #f5f5f5; color: #aaa; border: 1px solid #e0e0e0; text-decoration: line-through; }
+
+        /* ========== TELA DE CAPA ========== */
+        #abaCapa {
+            min-height: calc(100vh - 96px);
+            background: linear-gradient(160deg, #0a1e7f 0%, #1a3a9f 40%, #0d2b5e 100%);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            position: relative; overflow: hidden; padding: 40px 20px;
+        }
+        #abaCapa::before {
+            content: '';
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 30%, rgba(39,174,96,0.12) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 70%, rgba(52,152,219,0.12) 0%, transparent 55%);
+            pointer-events: none;
+        }
+        #abaCapa::after {
+            content: '';
+            position: absolute; inset: 0;
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,0.02) 60px, rgba(255,255,255,0.02) 61px),
+                repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,0.02) 60px, rgba(255,255,255,0.02) 61px);
+            pointer-events: none;
+        }
+        .capa-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0; width: 100%; max-width: 780px; }
+        .capa-badge { background: rgba(39,174,96,0.18); border: 1px solid rgba(39,174,96,0.4); color: #27ae60; border-radius: 20px; padding: 5px 18px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 32px; }
+        .capa-logo-circle { width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04)); border: 2px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 52px; margin-bottom: 36px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+        .capa-title { font-size: clamp(36px, 6vw, 64px); font-weight: 900; color: white; letter-spacing: 4px; line-height: 1; text-transform: uppercase; margin-bottom: 8px; }
+        .capa-title span { color: #e74c3c; }
+        .capa-sub { font-size: clamp(13px, 2vw, 17px); color: rgba(255,255,255,0.5); letter-spacing: 5px; text-transform: uppercase; font-weight: 400; margin-bottom: 52px; }
+        .capa-divider { width: 80px; height: 3px; background: linear-gradient(to right, transparent, #27ae60, transparent); border-radius: 2px; margin-bottom: 52px; }
+        .capa-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; width: 100%; margin-bottom: 52px; }
+        .capa-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 22px 16px; cursor: pointer; transition: all 0.25s; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .capa-card:hover { background: rgba(255,255,255,0.12); border-color: rgba(39,174,96,0.5); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+        .capa-card-icon { font-size: 26px; }
+        .capa-card-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.75); text-transform: uppercase; letter-spacing: 0.8px; text-align: center; }
+        .capa-rodape { font-size: 12px; color: rgba(255,255,255,0.25); letter-spacing: 1.5px; text-transform: uppercase; }
+        .capa-rodape strong { color: rgba(255,255,255,0.45); font-weight: 600; }
+        @media (max-width: 600px) { .capa-cards { grid-template-columns: repeat(2, 1fr); } .capa-title { letter-spacing: 2px; } }
     </style>
 </head>
 <body>
@@ -958,6 +998,8 @@
     </div>
 
     <div class="nav-tabs" style="flex-wrap:nowrap;align-items:stretch;padding:0;">
+        <!-- CAPA -->
+        <button class="nav-tab active" id="tabCapa" onclick="trocarAba('capa', this)">🏠 Início</button>
         <!-- LANÇAMENTOS dropdown -->
         <div class="nav-dropdown" id="ndLancamentos">
             <button class="nav-tab nav-dropdown-btn" id="tabLancamentos" onclick="toggleDropdown('ndLancamentos')">
@@ -987,8 +1029,48 @@
         <button class="nav-tab" id="tabConfiguracoes" onclick="trocarAba('configuracoes', this)">⚙️ Configurações</button>
     </div>
 
+    <!-- ===== ABA CAPA ===== -->
+    <div id="aba-capa" class="tab-content active">
+        <div id="abaCapa">
+            <div class="capa-inner">
+                <div class="capa-badge">Sistema de Gestão da Qualidade</div>
+                <div class="capa-logo-circle">🌾</div>
+                <div class="capa-title">AGRONOR <span>ALIMENTOS</span></div>
+                <div class="capa-sub">Laboratório de Qualidade</div>
+                <div class="capa-divider"></div>
+                <div class="capa-cards">
+                    <div class="capa-card" onclick="trocarAba('producao', document.getElementById('tabProducao'))">
+                        <div class="capa-card-icon">🌾</div>
+                        <div class="capa-card-label">Produção</div>
+                    </div>
+                    <div class="capa-card" onclick="trocarAba('materiaPrima', document.getElementById('tabMateriaPrima'))">
+                        <div class="capa-card-icon">🧪</div>
+                        <div class="capa-card-label">Matéria Prima</div>
+                    </div>
+                    <div class="capa-card" onclick="trocarAba('classificacao', document.getElementById('tabClassificacao'))">
+                        <div class="capa-card-icon">🌽</div>
+                        <div class="capa-card-label">Classificação</div>
+                    </div>
+                    <div class="capa-card" onclick="trocarAba('relatorio', document.getElementById('tabRelatorio'))">
+                        <div class="capa-card-icon">📊</div>
+                        <div class="capa-card-label">Rel. Produção</div>
+                    </div>
+                    <div class="capa-card" onclick="trocarAba('relMP', document.getElementById('tabRelMP'))">
+                        <div class="capa-card-icon">📋</div>
+                        <div class="capa-card-label">Rel. Mat. Prima</div>
+                    </div>
+                    <div class="capa-card" onclick="trocarAba('entradaMP', document.getElementById('tabEntradaMP'))">
+                        <div class="capa-card-icon">📥</div>
+                        <div class="capa-card-label">Entradas</div>
+                    </div>
+                </div>
+                <div class="capa-rodape">© 2025 &nbsp;<strong>Agronor Alimentos</strong>&nbsp; — Todos os direitos reservados</div>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== ABA PRODUÇÃO ===== -->
-    <div id="aba-producao" class="tab-content active">
+    <div id="aba-producao" class="tab-content">
         <div class="container">
             <div class="msg-sucesso" id="msgSucessoProd"></div>
             <div class="msg-erro" id="msgErroProd"></div>
@@ -3402,6 +3484,7 @@ async function fazerLogin() {
         err.classList.remove('show');
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('mainSystem').style.display  = 'block';
+        trocarAba('capa', document.getElementById('tabCapa'));
         carregarParametros();
         document.getElementById('nomeUsuario').textContent   = USUARIOS[user].nome;
         document.getElementById('perfilBadge').innerHTML =
@@ -3614,12 +3697,9 @@ function carregarTodos() {
         solubil: 0, extrato: 0, fibra: 0, mineral: 0, acidez: 0,
         ureatica: 0, rancidez: 0, peroxido: 0, digestibilidade: 0,
         granulo1: 0, granulo2: 0, granulo3: 0, granulo4: 0,
-        temp_resfriador: 0, temp_canhao: 0, alimentacao_hz: 0, calcio: 0, fosforo: 0,
+        tempResfriador: 0, tempCanhao: 0, alimentacaoHz: 0, calcio: 0, fosforo: 0,
         ...r,
-        solubil:         parseFloat(r.solubil ?? r.solubilidade ?? 0) || 0,
-        temp_resfriador: parseFloat(r.temp_resfriador ?? r.tempResfriador ?? 0) || 0,
-        temp_canhao:     parseFloat(r.temp_canhao     ?? r.tempCanhao     ?? 0) || 0,
-        alimentacao_hz:  parseFloat(r.alimentacao_hz  ?? r.alimentacaoHz  ?? 0) || 0,
+        solubil: parseFloat(r.solubil ?? r.solubilidade ?? 0) || 0,
     });
 
     // Aplica edições sobre a planilha base (sobrescreve registros editados)
@@ -4110,9 +4190,9 @@ function abrirModalEdicaoMP(id) {
     document.getElementById('cadGranulo2MP').value                = r.granulo2||0;
     document.getElementById('cadGranulo3MP').value                = r.granulo3||0;
     document.getElementById('cadGranulo4MP').value                = r.granulo4||0;
-    document.getElementById('cadTempResfriadorMP').value          = r.temp_resfriador||0;
-    document.getElementById('cadTempCanhaoMP').value              = r.temp_canhao||0;
-    document.getElementById('cadAlimentacaoHzMP').value           = r.alimentacao_hz||0;
+    document.getElementById('cadTempResfriadorMP').value          = r.tempResfriador||0;
+    document.getElementById('cadTempCanhaoMP').value              = r.tempCanhao||0;
+    document.getElementById('cadAlimentacaoHzMP').value           = r.alimentacaoHz||0;
     document.getElementById('cadCalcioMP').value                  = r.calcio||0;
     document.getElementById('cadFosforoMP').value                 = r.fosforo||0;
     const btnSalvar = document.getElementById('btnSalvarMP');
@@ -4160,9 +4240,9 @@ function salvarMateriaPrima(event) {
         granulo2:       parseFloat(document.getElementById('cadGranulo2MP').value)||0,
         granulo3:       parseFloat(document.getElementById('cadGranulo3MP').value)||0,
         granulo4:       parseFloat(document.getElementById('cadGranulo4MP').value)||0,
-        temp_resfriador: parseFloat(document.getElementById('cadTempResfriadorMP').value)||0,
-        temp_canhao:     parseFloat(document.getElementById('cadTempCanhaoMP').value)||0,
-        alimentacao_hz:  parseFloat(document.getElementById('cadAlimentacaoHzMP').value)||0,
+        tempResfriador: parseFloat(document.getElementById('cadTempResfriadorMP').value)||0,
+        tempCanhao:     parseFloat(document.getElementById('cadTempCanhaoMP').value)||0,
+        alimentacaoHz:  parseFloat(document.getElementById('cadAlimentacaoHzMP').value)||0,
         calcio:         parseFloat(document.getElementById('cadCalcioMP').value)||0,
         fosforo:        parseFloat(document.getElementById('cadFosforoMP').value)||0
     };
@@ -4211,9 +4291,9 @@ function exibirTabelaMP() {
             <td>${(r.granulo2||0).toFixed(2)}</td>
             <td>${(r.granulo3||0).toFixed(2)}</td>
             <td>${(r.granulo4||0).toFixed(2)}</td>
-            <td>${(r.temp_resfriador||0).toFixed(1)}</td>
-            <td>${(r.temp_canhao||0).toFixed(1)}</td>
-            <td>${(r.alimentacao_hz||0).toFixed(2)}</td>
+            <td>${(r.tempResfriador||0).toFixed(1)}</td>
+            <td>${(r.tempCanhao||0).toFixed(1)}</td>
+            <td>${(r.alimentacaoHz||0).toFixed(2)}</td>
             <td>${(r.calcio||0).toFixed(2)}</td>
             <td>${(r.fosforo||0).toFixed(2)}</td>
             <td>${statusPorParametros(r, 'mp', r.produto, CAMPOS_MP, r.data)}</td>
@@ -6022,7 +6102,7 @@ function xlsxBuildMP(rows) {
         ['extrato','proteina','fibra','solubil','umidade','densidade','mineral','acidez',
          'ureatica','rancidez','peroxido','digestibilidade',
          'granulo1','granulo2','granulo3','granulo4',
-         'temp_resfriador','temp_canhao','alimentacao_hz','calcio','fosforo'].forEach(c => {
+         'tempResfriador','tempCanhao','alimentacaoHz','calcio','fosforo'].forEach(c => {
             obj[c] = xlsxParseNum(m[c]);
         });
         return obj;
@@ -6948,17 +7028,14 @@ async function carregarTodosAsync() {
         granulo2:        0,
         granulo3:        0,
         granulo4:        0,
-        temp_resfriador:  0,
-        temp_canhao:      0,
-        alimentacao_hz:   0,
+        tempResfriador:  0,
+        tempCanhao:      0,
+        alimentacaoHz:   0,
         calcio:          0,
         fosforo:         0,
         ...r,
         // garante que solubil seja numérico mesmo se vier como null/undefined
-        solubil:         parseFloat(r.solubil ?? r.solubilidade ?? 0) || 0,
-        temp_resfriador: parseFloat(r.temp_resfriador ?? r.tempResfriador ?? 0) || 0,
-        temp_canhao:     parseFloat(r.temp_canhao     ?? r.tempCanhao     ?? 0) || 0,
-        alimentacao_hz:  parseFloat(r.alimentacao_hz  ?? r.alimentacaoHz  ?? 0) || 0,
+        solubil: parseFloat(r.solubil ?? r.solubilidade ?? 0) || 0,
     });
 
     // Registros do Supabase com id > max planilha = novos; <= max = edições
