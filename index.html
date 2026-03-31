@@ -977,6 +977,7 @@
             <div class="nav-dropdown-menu">
                 <button class="nav-dropdown-item" id="tabRelatorio" onclick="trocarAba('relatorio', this);closeDropdowns()">📊 Rel. Produção</button>
                 <button class="nav-dropdown-item" id="tabRelClass" onclick="trocarAba('relClass', this);closeDropdowns()">📊 Rel. Classificação</button>
+                <button class="nav-dropdown-item" id="tabRelMP" onclick="trocarAba('relMP', this);closeDropdowns()">🧪 Rel. Matéria Prima</button>
                 <button class="nav-dropdown-item" id="tabBoletim" onclick="trocarAba('boletim', this);closeDropdowns()">📋 Boletim Industrial</button>
             </div>
         </div>
@@ -1445,6 +1446,137 @@
             </div><!-- fim relatorioConteudo -->
         </div>
     </div><!-- fim aba-relatorio -->
+
+    <!-- ===== ABA RELATÓRIO MATÉRIA PRIMA ===== -->
+    <div id="aba-relMP" class="tab-content">
+        <div class="relatorio-container">
+
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-bottom:15px;">
+                <button class="btn-print" onclick="imprimirRelMP()">🖨️ IMPRIMIR</button>
+                <button class="btn-pdf"   onclick="imprimirRelMP()">📄 GERAR PDF</button>
+            </div>
+
+            <div class="rel-filtros" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
+                <div class="form-group">
+                    <label>DATA INÍCIO</label>
+                    <input type="date" id="rmpDataInicio">
+                </div>
+                <div class="form-group">
+                    <label>DATA FIM</label>
+                    <input type="date" id="rmpDataFim">
+                </div>
+                <div class="form-group">
+                    <label>PRODUTO</label>
+                    <select id="rmpProduto">
+                        <option value="all">TODOS OS PRODUTOS</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>FORNECEDOR</label>
+                    <select id="rmpFornecedor">
+                        <option value="all">TODOS OS FORNECEDORES</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>TIPO DE ANÁLISE</label>
+                    <select id="rmpAnalise">
+                        <option value="umidade">Umidade (%)</option>
+                        <option value="proteina">Proteína (%)</option>
+                        <option value="solubilidade">Solubilidade Protéica (%)</option>
+                        <option value="fibra">Fibra (%)</option>
+                        <option value="densidade">Densidade</option>
+                        <option value="mineral">Material Mineral (%)</option>
+                        <option value="acidez">Acidez</option>
+                        <option value="ureatica">Atividade Ureática</option>
+                        <option value="rancidez">Rancidez</option>
+                        <option value="peroxido">Peróxido</option>
+                        <option value="digestibilidade">Digestibilidade (%)</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:5px;align-items:flex-end;">
+                    <button class="btn-filtrar" onclick="aplicarFiltrosRelMP()">FILTRAR</button>
+                    <button class="btn-limpar"  onclick="limparFiltrosRelMP()">LIMPAR</button>
+                </div>
+            </div>
+
+            <div id="relMPConteudo" style="background:white;border-radius:4px;padding:20px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+
+                <div class="relatorio-title" id="rmpTitulo">RELATÓRIO DE MATÉRIA PRIMA</div>
+                <div class="relatorio-periodo" id="rmpPeriodo"></div>
+
+                <!-- CARDS RESUMO -->
+                <div id="rmpCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;"></div>
+
+                <!-- GRÁFICO ANÁLISE POR DIA -->
+                <div class="grafico-container" style="margin-bottom:20px;">
+                    <div class="grafico-title" id="rmpGraficoLinhaTitulo">EVOLUÇÃO DIÁRIA POR PRODUTO</div>
+                    <canvas id="rmpGraficoLinha" style="max-height:340px;min-height:240px;"></canvas>
+                </div>
+
+                <!-- GRÁFICO MÉDIA POR PRODUTO -->
+                <div class="grafico-container" style="margin-bottom:20px;">
+                    <div class="grafico-title" id="rmpGraficoBarTitulo">MÉDIA POR PRODUTO</div>
+                    <canvas id="rmpGraficoBar" style="max-height:280px;"></canvas>
+                </div>
+
+                <!-- TABELA RESUMO POR PRODUTO -->
+                <div style="margin-bottom:20px;">
+                    <div class="secao-title" style="margin-bottom:10px;">RESUMO ESTATÍSTICO POR PRODUTO</div>
+                    <div class="tabela-container">
+                    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                        <thead>
+                            <tr style="background:#34495e;color:white;">
+                                <th style="padding:7px 10px;text-align:left;">PRODUTO</th>
+                                <th style="padding:7px;text-align:center;">REG.</th>
+                                <th style="padding:7px;text-align:center;">PROTEÍNA<br>MÉD.%</th>
+                                <th style="padding:7px;text-align:center;">SOLUBIL.<br>MÉD.%</th>
+                                <th style="padding:7px;text-align:center;">UMIDADE<br>MÉD.%</th>
+                                <th style="padding:7px;text-align:center;">UMIDADE<br>MÁX.%</th>
+                                <th style="padding:7px;text-align:center;">DENSIDADE<br>MÉD.</th>
+                                <th style="padding:7px;text-align:center;">FIBRA<br>MÉD.%</th>
+                                <th style="padding:7px;text-align:center;">MINERAL<br>MÉD.%</th>
+                                <th style="padding:7px;text-align:center;">ACIDEZ<br>MÉD.</th>
+                                <th style="padding:7px;text-align:center;">URÉICA<br>MÉD.</th>
+                                <th style="padding:7px;text-align:center;">PERÓXIDO<br>MÉD.</th>
+                                <th style="padding:7px;text-align:center;">DIGESTIB.<br>MÉD.%</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rmpTbodyResumo"></tbody>
+                    </table>
+                    </div>
+                </div>
+
+                <!-- TABELA DETALHADA -->
+                <div class="secao-title" style="margin-bottom:10px;">REGISTROS DETALHADOS DO PERÍODO</div>
+                <div class="tabela-container">
+                <table style="width:100%;border-collapse:collapse;font-size:10px;">
+                    <thead>
+                        <tr style="background:#34495e;color:white;">
+                            <th style="padding:5px 7px;text-align:center;white-space:nowrap;">DATA</th>
+                            <th style="padding:5px 4px;text-align:center;white-space:nowrap;">HORA</th>
+                            <th style="padding:5px 7px;text-align:left;white-space:nowrap;">PRODUTO</th>
+                            <th style="padding:5px 7px;text-align:left;white-space:nowrap;">FORNECEDOR</th>
+                            <th style="padding:5px 4px;text-align:center;white-space:nowrap;">NF</th>
+                            <th style="padding:5px 4px;text-align:center;white-space:nowrap;">PROTEÍNA<br>%</th>
+                            <th style="padding:5px 4px;text-align:center;white-space:nowrap;">SOLUBIL.<br>%</th>
+                            <th style="padding:5px 4px;text-align:center;white-space:nowrap;">FIBRA<br>%</th>
+                            <th style="padding:5px 4px;text-align:center;white-space:nowrap;">UMIDADE<br>%</th>
+                            <th style="padding:5px 4px;text-align:center;white-space:nowrap;">DENSIDADE</th>
+                            <th style="padding:5px 4px;text-align:center;white-space:nowrap;">MINERAL<br>%</th>
+                            <th style="padding:5px 4px;text-align:center;white-space:nowrap;">ACIDEZ</th>
+                            <th style="padding:5px 4px;text-align:center;white-space:nowrap;">URÉICA</th>
+                            <th style="padding:5px 4px;text-align:center;white-space:nowrap;">RANCIDEZ</th>
+                            <th style="padding:5px 4px;text-align:center;white-space:nowrap;">PERÓXIDO</th>
+                            <th style="padding:5px 4px;text-align:center;white-space:nowrap;">DIGESTIB.<br>%</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rmpTbodyDetalhe"></tbody>
+                </table>
+                </div>
+
+            </div><!-- fim relMPConteudo -->
+        </div>
+    </div><!-- fim aba-relMP -->
 
     <!-- ===== ABA RELATÓRIO CLASSIFICAÇÃO ===== -->
     <div id="aba-relClass" class="tab-content">
@@ -2456,11 +2588,11 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="text-align:center;">DATA</th><th style="text-align:center;">HORA</th><th style="text-align:center;">MATÉRIA PRIMA</th><th style="text-align:center;">FORNECEDOR</th><th style="text-align:center;">NOTA FISCAL</th>
-                            <th style="text-align:center;">USUÁRIO</th><th style="text-align:center;">STATUS</th><th id="thAcaoEMP" style="text-align:center;">AÇÃO</th>
+                            <th>DATA</th><th>HORA</th><th>FORNECEDOR</th><th>NOTA FISCAL</th>
+                            <th>USUÁRIO</th><th>STATUS</th><th id="thAcaoEMP">AÇÃO</th>
                         </tr>
                     </thead>
-                    <tbody id="tabelaEntradaMP"><tr><td colspan="8" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
+                    <tbody id="tabelaEntradaMP"><tr><td colspan="7" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -2485,18 +2617,6 @@
                         <div class="form-grid form-grid-2">
                             <div class="form-group required"><label>Fornecedor</label><input type="text" id="cadFornecedorEMP" required></div>
                             <div class="form-group required"><label>Número da Nota Fiscal</label><input type="text" id="cadNFEMP" required></div>
-                        </div>
-                        <div class="form-group required" style="margin:0 0 12px 0;">
-                            <label>Matéria Prima</label>
-                            <div style="display:flex;gap:6px;align-items:center;">
-                                <select id="cadMateriaPrimaEMP" required style="flex:1;padding:8px 10px;border:1.5px solid #bdc3c7;border-radius:4px;font-size:13px;text-transform:uppercase;">
-                                    <option value="">SELECIONE...</option>
-                                </select>
-                                <button type="button" onclick="_empAdicionarMP()" title="Adicionar nova matéria prima"
-                                    style="padding:7px 12px;background:#27ae60;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:15px;line-height:1;">+</button>
-                                <button type="button" onclick="_empRemoverMP()" title="Remover matéria prima selecionada"
-                                    style="padding:7px 12px;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:15px;line-height:1;">−</button>
-                            </div>
                         </div>
                         <div class="form-grid form-grid-2">
                             <div class="form-group">
@@ -6360,7 +6480,7 @@ function exibirTabelaEMP(lista) {
 
     const tbody = document.getElementById('tabelaEntradaMP');
     if (!dados.length) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
         return;
     }
 
@@ -6379,14 +6499,13 @@ function exibirTabelaEMP(lista) {
                 acoes += `<button class="btn-action btn-delete" onclick="excluirEntradaMP(${r.id})">🗑️</button>`;
         }
         return `<tr>
-            <td style="text-align:center;">${dataFmt}</td>
-            <td style="text-align:center;">${r.hora||'-'}</td>
-            <td style="text-align:center;font-weight:bold;color:#0a1e7f;">${r.materia_prima||'-'}</td>
-            <td style="text-align:center;font-weight:bold;">${r.fornecedor||'-'}</td>
-            <td style="text-align:center;">${r.nf||'-'}</td>
-            <td style="text-align:center;">${r.usuario||'-'}</td>
-            <td style="text-align:center;">${_empStatusBadge(r.status)}</td>
-            ${temAcao ? `<td style="text-align:center;">${acoes}</td>` : ''}
+            <td>${dataFmt}</td>
+            <td>${r.hora||'-'}</td>
+            <td style="text-align:left;font-weight:bold;">${r.fornecedor||'-'}</td>
+            <td>${r.nf||'-'}</td>
+            <td>${r.usuario||'-'}</td>
+            <td>${_empStatusBadge(r.status)}</td>
+            ${temAcao ? `<td>${acoes}</td>` : ''}
         </tr>`;
     }).join('');
 }
@@ -6397,43 +6516,6 @@ function limparFiltrosEMP() {
     ['filterDataInicioEMP','filterDataFimEMP'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
     const sel = document.getElementById('filterStatusEMP'); if(sel) sel.value='';
     exibirTabelaEMP();
-}
-
-// ===== LISTA DE MATÉRIAS PRIMAS DO FORMULÁRIO DE ENTRADA =====
-const _EMP_MP_KEY = 'emp_lista_mp';
-const _EMP_MP_PADRAO = [
-    'CALCÁRIO FINO','CALCÁRIO GROSSO','FARELO DE SOJA','FARELO DE TRIGO',
-    'FARINHA DE CARNE E OSSO','MILHO','MILHO ESTOQUE 01','MILHO ESTOQUE 02',
-    'SAL MOÍDO','SOJA EXTRUSADA DOSADOR','SOJA INTEGRAL EXTRUSADA'
-];
-function _empGetListaMP() {
-    try { const r = localStorage.getItem(_EMP_MP_KEY); if(r){ const a=JSON.parse(r); if(Array.isArray(a)&&a.length) return a; } } catch(e){}
-    return [..._EMP_MP_PADRAO];
-}
-function _empPopularSelectMP(val) {
-    const sel = document.getElementById('cadMateriaPrimaEMP'); if(!sel) return;
-    const lista = _empGetListaMP();
-    sel.innerHTML = '<option value="">SELECIONE...</option>';
-    lista.forEach(mp => { const o=document.createElement('option'); o.value=o.textContent=mp; sel.appendChild(o); });
-    if(val) sel.value = val;
-}
-function _empAdicionarMP() {
-    const nome = prompt('Nome da nova Matéria Prima:'); if(!nome||!nome.trim()) return;
-    const n = nome.trim().toUpperCase();
-    const lista = _empGetListaMP();
-    if(lista.includes(n)){ alert('Já cadastrada.'); return; }
-    lista.push(n); lista.sort();
-    localStorage.setItem(_EMP_MP_KEY, JSON.stringify(lista));
-    _empPopularSelectMP(n);
-}
-function _empRemoverMP() {
-    const sel = document.getElementById('cadMateriaPrimaEMP');
-    if(!sel||!sel.value){ alert('Selecione uma matéria prima para remover.'); return; }
-    const nome = sel.value;
-    if(!confirm(`Remover "${nome}" da lista?`)) return;
-    const lista = _empGetListaMP().filter(mp=>mp!==nome);
-    localStorage.setItem(_EMP_MP_KEY, JSON.stringify(lista));
-    _empPopularSelectMP();
 }
 
 function abrirModalEMP() {
@@ -6447,7 +6529,6 @@ function abrirModalEMP() {
     document.getElementById('cadNFEMP').value = '';
     const uNome = USUARIOS[usuarioAtual]?.nome || usuarioAtual || '';
     document.getElementById('cadUsuarioEMP').value = uNome;
-    _empPopularSelectMP();
     document.getElementById('modalCadastroEMP').classList.add('show');
     setTimeout(() => document.getElementById('cadFornecedorEMP').focus(), 100);
 }
@@ -6463,7 +6544,6 @@ function editarEntradaMP(id) {
     document.getElementById('cadFornecedorEMP').value = entrada.fornecedor || '';
     document.getElementById('cadNFEMP').value = entrada.nf || '';
     document.getElementById('cadUsuarioEMP').value = entrada.usuario || '';
-    _empPopularSelectMP(entrada.materia_prima || '');
     document.getElementById('modalCadastroEMP').classList.add('show');
 }
 
@@ -6486,17 +6566,15 @@ async function salvarEntradaMP(event) {
     const fornecedor= document.getElementById('cadFornecedorEMP').value.trim().toUpperCase();
     const nf        = document.getElementById('cadNFEMP').value.trim().toUpperCase();
     const usuario   = USUARIOS[usuarioAtual]?.nome || usuarioAtual || '';
-    const materia_prima = (document.getElementById('cadMateriaPrimaEMP')?.value || '').trim().toUpperCase();
 
-    if (!data)        { mostrarMsgEMP('erro','Informe a data.'); return; }
-    if (!materia_prima){ mostrarMsgEMP('erro','Selecione a matéria prima.'); return; }
-    if (!fornecedor)  { mostrarMsgEMP('erro','Informe o fornecedor.'); return; }
-    if (!nf)          { mostrarMsgEMP('erro','Informe o número da nota fiscal.'); return; }
+    if (!data)      { mostrarMsgEMP('erro','Informe a data.'); return; }
+    if (!fornecedor){ mostrarMsgEMP('erro','Informe o fornecedor.'); return; }
+    if (!nf)        { mostrarMsgEMP('erro','Informe o número da nota fiscal.'); return; }
 
     if (_empEditandoId) {
         const idx = entradasMP.findIndex(e => e.id === _empEditandoId);
         if (idx >= 0) {
-            entradasMP[idx] = { ...entradasMP[idx], data, hora, materia_prima, fornecedor, nf };
+            entradasMP[idx] = { ...entradasMP[idx], data, hora, fornecedor, nf };
             try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e){}
         }
         mostrarMsgEMP('sucesso','✅ Entrada atualizada com sucesso!');
@@ -6509,7 +6587,7 @@ async function salvarEntradaMP(event) {
 
         const novaEntrada = {
             id: Date.now(),
-            data, hora, materia_prima, fornecedor, nf,
+            data, hora, fornecedor, nf,
             usuario,
             status: statusInicial,
             criado_em: new Date().toISOString()
@@ -9378,5 +9456,237 @@ function _bkAutoAtualizarStatus() {
         init();
     }
 })();
+
+// =====================================================================
+// RELATÓRIO DE MATÉRIA PRIMA
+// =====================================================================
+
+let _rmpChart1 = null;
+let _rmpChart2 = null;
+
+function _rmpMed(arr) {
+    const v = arr.filter(x => x > 0);
+    return v.length ? v.reduce((a,b)=>a+b,0)/v.length : 0;
+}
+function _rmpMax(arr) {
+    const v = arr.filter(x => x > 0);
+    return v.length ? Math.max(...v) : 0;
+}
+function _rmpFmt(v) {
+    return (v||0) > 0 ? (v).toFixed(2) : '-';
+}
+
+function _rmpPopularSelectProduto() {
+    const sel = document.getElementById('rmpProduto');
+    if (!sel) return;
+    const prods = [...new Set(materiasPrimas.map(r => r.produto).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="all">TODOS OS PRODUTOS</option>';
+    prods.forEach(p => {
+        const o = document.createElement('option');
+        o.value = o.textContent = p;
+        sel.appendChild(o);
+    });
+
+    // Popular select de fornecedores
+    const selForn = document.getElementById('rmpFornecedor');
+    if (!selForn) return;
+    const forns = [...new Set(materiasPrimas.map(r => r.fornecedor).filter(Boolean))].sort();
+    selForn.innerHTML = '<option value="all">TODOS OS FORNECEDORES</option>';
+    forns.forEach(f => {
+        const o = document.createElement('option');
+        o.value = o.textContent = f;
+        selForn.appendChild(o);
+    });
+}
+
+function limparFiltrosRelMP() {
+    const di = document.getElementById('rmpDataInicio');
+    const df = document.getElementById('rmpDataFim');
+    const pr = document.getElementById('rmpProduto');
+    const fo = document.getElementById('rmpFornecedor');
+    const an = document.getElementById('rmpAnalise');
+    if (di) di.value = '';
+    if (df) df.value = '';
+    if (pr) pr.value = 'all';
+    if (fo) fo.value = 'all';
+    if (an) an.value = 'umidade';
+    document.getElementById('rmpCards').innerHTML = '';
+    document.getElementById('rmpTbodyResumo').innerHTML = '';
+    document.getElementById('rmpTbodyDetalhe').innerHTML = '';
+    document.getElementById('rmpPeriodo').textContent = '';
+    document.getElementById('rmpTitulo').textContent = 'RELATÓRIO DE MATÉRIA PRIMA';
+    if (_rmpChart1) { _rmpChart1.destroy(); _rmpChart1 = null; }
+    if (_rmpChart2) { _rmpChart2.destroy(); _rmpChart2 = null; }
+}
+
+function aplicarFiltrosRelMP() {
+    const di   = document.getElementById('rmpDataInicio').value;
+    const df   = document.getElementById('rmpDataFim').value;
+    const prod = document.getElementById('rmpProduto').value;
+    const forn = document.getElementById('rmpFornecedor').value;
+    const analise = document.getElementById('rmpAnalise') ? document.getElementById('rmpAnalise').value : 'umidade';
+
+    // Mapa de labels para cada análise
+    const ANALISE_LABELS_RMP = {
+        umidade:        'Umidade (%)',
+        proteina:       'Proteína (%)',
+        solubilidade:   'Solubilidade Protéica (%)',
+        fibra:          'Fibra (%)',
+        densidade:      'Densidade',
+        mineral:        'Material Mineral (%)',
+        acidez:         'Acidez',
+        ureatica:       'Atividade Ureática',
+        rancidez:       'Rancidez',
+        peroxido:       'Peróxido',
+        digestibilidade:'Digestibilidade (%)'
+    };
+    const analiseLabel = ANALISE_LABELS_RMP[analise] || analise;
+
+    if (!di || !df) { alert('Informe o período (Data Início e Data Fim).'); return; }
+
+    let dados = materiasPrimas.filter(r => r.data >= di && r.data <= df);
+    if (prod !== 'all') dados = dados.filter(r => (r.produto||'') === prod);
+    if (forn && forn !== 'all') dados = dados.filter(r => (r.fornecedor||'') === forn);
+
+    const diStr = new Date(di+'T00:00:00').toLocaleDateString('pt-BR');
+    const dfStr = new Date(df+'T00:00:00').toLocaleDateString('pt-BR');
+    const tituloSel = prod === 'all' ? 'TODOS OS PRODUTOS' : prod;
+    const fornSel   = (!forn || forn === 'all') ? '' : ' | FORN.: ' + forn;
+    document.getElementById('rmpTitulo').textContent  = 'RELATÓRIO DE MATÉRIA PRIMA — ' + tituloSel;
+    document.getElementById('rmpPeriodo').textContent = 'PERÍODO: ' + diStr + ' ATÉ ' + dfStr + fornSel + '  |  ' + dados.length + ' registro(s)';
+
+    // CARDS
+    const umVals  = dados.map(r => r.umidade||0);
+    const denVals = dados.map(r => r.densidade||0);
+    const prods   = [...new Set(dados.map(r=>r.produto))];
+
+    document.getElementById('rmpCards').innerHTML = [
+        { icon:'📋', label:'REGISTROS',       value: dados.length,                        sub:'no período',              cor:'#2980b9' },
+        { icon:'🧪', label:'PRODUTOS',        value: prods.length,                        sub:'tipos diferentes',        cor:'#8e44ad' },
+        { icon:'💧', label:'UMIDADE MÉD.(%)', value: _rmpMed(umVals).toFixed(2)+'%',      sub:'máx: '+_rmpMax(umVals).toFixed(2)+'%', cor: _rmpMed(umVals)>14?'#e74c3c':'#27ae60' },
+        { icon:'⚖️', label:'DENSIDADE MÉD.', value: _rmpMed(denVals).toFixed(0),          sub:'média do período',        cor:'#e67e22' },
+    ].map(i=>`
+        <div style="background:#f9f9f9;border:1px solid #ddd;border-radius:6px;padding:14px;text-align:center;border-top:4px solid ${i.cor};">
+            <div style="font-size:20px;margin-bottom:4px;">${i.icon}</div>
+            <div style="font-size:10px;font-weight:bold;text-transform:uppercase;color:#666;margin-bottom:6px;">${i.label}</div>
+            <div style="font-size:20px;font-weight:bold;color:${i.cor};">${i.value}</div>
+            <div style="font-size:9px;color:#999;margin-top:4px;text-transform:uppercase;">${i.sub}</div>
+        </div>`).join('');
+
+    // GRÁFICO LINHA — análise selecionada por dia por produto
+    const CORES = ['#3498db','#27ae60','#e74c3c','#f39c12','#8e44ad','#1abc9c','#e67e22','#2c3e50'];
+    const diasSet = [...new Set(dados.map(r=>r.data))].sort();
+    if (_rmpChart1) { _rmpChart1.destroy(); _rmpChart1 = null; }
+    const ctx1 = document.getElementById('rmpGraficoLinha').getContext('2d');
+
+    // Atualizar título do gráfico de linha
+    const tituloLinha = document.getElementById('rmpGraficoLinhaTitulo');
+    if (tituloLinha) tituloLinha.textContent = analiseLabel.toUpperCase() + ' — EVOLUÇÃO DIÁRIA POR PRODUTO';
+
+    _rmpChart1 = new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: diasSet.map(d => new Date(d+'T00:00:00').toLocaleDateString('pt-BR')),
+            datasets: prods.map((p, i) => ({
+                label: p,
+                data: diasSet.map(d => {
+                    const regs = dados.filter(r=>r.data===d && r.produto===p);
+                    if (!regs.length) return null;
+                    return _rmpMed(regs.map(r=>parseFloat(r[analise])||0));
+                }),
+                borderColor: CORES[i % CORES.length],
+                backgroundColor: CORES[i % CORES.length]+'22',
+                borderWidth: 2, pointRadius: 3, tension: 0.3, spanGaps: true
+            }))
+        },
+        options: { responsive:true, plugins:{ legend:{ position:'bottom' } }, scales:{ y:{ title:{ display:true, text: analiseLabel } } } }
+    });
+
+    // GRÁFICO BARRAS — análise selecionada média por produto
+    if (_rmpChart2) { _rmpChart2.destroy(); _rmpChart2 = null; }
+    const ctx2 = document.getElementById('rmpGraficoBar').getContext('2d');
+
+    // Atualizar título do gráfico de barras
+    const tituloBar = document.getElementById('rmpGraficoBarTitulo');
+    if (tituloBar) tituloBar.textContent = analiseLabel.toUpperCase() + ' — MÉDIA POR PRODUTO';
+
+    _rmpChart2 = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: prods,
+            datasets: [{
+                label: analiseLabel + ' Média',
+                data: prods.map(p => {
+                    const regs = dados.filter(r=>r.produto===p);
+                    return _rmpMed(regs.map(r=>parseFloat(r[analise])||0));
+                }),
+                backgroundColor: prods.map((_,i) => CORES[i%CORES.length]+'bb'),
+                borderColor:     prods.map((_,i) => CORES[i%CORES.length]),
+                borderWidth: 1
+            }]
+        },
+        options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ title:{ display:true, text: analiseLabel } } } }
+    });
+
+    // TABELA RESUMO POR PRODUTO
+    document.getElementById('rmpTbodyResumo').innerHTML = prods.sort().map(p => {
+        const regs = dados.filter(r=>r.produto===p);
+        return `<tr style="border-bottom:1px solid #eee;">
+            <td style="padding:6px 10px;font-weight:bold;text-align:left;">${p}</td>
+            <td style="padding:6px;text-align:center;">${regs.length}</td>
+            <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMed(regs.map(r=>r.proteina||0)))}</td>
+            <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMed(regs.map(r=>r.solubilidade||0)))}</td>
+            <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMed(regs.map(r=>r.umidade||0)))}</td>
+            <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMax(regs.map(r=>r.umidade||0)))}</td>
+            <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMed(regs.map(r=>r.densidade||0)))}</td>
+            <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMed(regs.map(r=>r.fibra||0)))}</td>
+            <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMed(regs.map(r=>r.mineral||0)))}</td>
+            <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMed(regs.map(r=>r.acidez||0)))}</td>
+            <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMed(regs.map(r=>r.ureatica||0)))}</td>
+            <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMed(regs.map(r=>r.peroxido||0)))}</td>
+            <td style="padding:6px;text-align:center;">${_rmpFmt(_rmpMed(regs.map(r=>r.digestibilidade||0)))}</td>
+        </tr>`;
+    }).join('');
+
+    // TABELA DETALHADA
+    const sorted = [...dados].sort((a,b) => (b.data||'').localeCompare(a.data||'') || (b.hora||'').localeCompare(a.hora||''));
+    document.getElementById('rmpTbodyDetalhe').innerHTML = sorted.map((r,i) => {
+        const bg = i%2===0 ? '#fff' : '#f9f9f9';
+        const dataFmt = r.data ? new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR') : '-';
+        return `<tr style="background:${bg};border-bottom:1px solid #eee;">
+            <td style="padding:5px 7px;text-align:center;white-space:nowrap;">${dataFmt}</td>
+            <td style="padding:5px 4px;text-align:center;">${r.hora||'-'}</td>
+            <td style="padding:5px 7px;text-align:left;font-weight:bold;">${r.produto||'-'}</td>
+            <td style="padding:5px 7px;text-align:left;">${r.fornecedor||'-'}</td>
+            <td style="padding:5px 4px;text-align:center;">${r.nf||'-'}</td>
+            <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.proteina)}</td>
+            <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.solubilidade)}</td>
+            <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.fibra)}</td>
+            <td style="padding:5px 4px;text-align:center;${(r.umidade||0)>14?'color:#e74c3c;font-weight:bold;':''}">${_rmpFmt(r.umidade)}</td>
+            <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.densidade)}</td>
+            <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.mineral)}</td>
+            <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.acidez)}</td>
+            <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.ureatica)}</td>
+            <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.rancidez)}</td>
+            <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.peroxido)}</td>
+            <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.digestibilidade)}</td>
+        </tr>`;
+    }).join('');
+}
+
+function imprimirRelMP() {
+    window.print();
+}
+
+// Popular select de produtos ao trocar para a aba
+const _rmpOrigTrocarAba = typeof trocarAba === 'function' ? trocarAba : null;
+document.addEventListener('DOMContentLoaded', function() {
+    // Garante popular o select quando a aba é aberta
+    document.querySelectorAll('[onclick*="relMP"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            setTimeout(_rmpPopularSelectProduto, 100);
+        });
+    });
+});
 
 </script>
