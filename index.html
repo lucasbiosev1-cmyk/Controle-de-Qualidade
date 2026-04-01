@@ -4185,26 +4185,24 @@ function salvarProducao(event) {
     } else {
         producoes.push(r); mostrarSucessoProd('✓ Produção salva com sucesso!');
     }
-
-    // Persiste localmente como fallback (garante que a edição sobreviva ao recarregar)
-    const maxIdProdBase = Math.max(0, ...DADOS_PLANILHA.producoes.map(x => x.id));
+    // Persiste localmente IMEDIATAMENTE (garante que sobrevive ao recarregar)
+    const _maxIdBase = Math.max(0, ...DADOS_PLANILHA.producoes.map(x => x.id));
     try {
-        if (idEdicaoProd && r.id <= maxIdProdBase) {
-            // Edição de registro da planilha base → salva em producoes_editadas
-            const editados = JSON.parse(localStorage.getItem('producoes_editadas') || '[]');
-            const idx = editados.findIndex(x => x.id === r.id);
-            if (idx >= 0) editados[idx] = r; else editados.push(r);
-            localStorage.setItem('producoes_editadas', JSON.stringify(editados));
+        if (idEdicaoProd && r.id <= _maxIdBase) {
+            // Edição de registro da planilha base → producoes_editadas
+            const _ed = JSON.parse(localStorage.getItem('producoes_editadas') || '[]');
+            const _ei = _ed.findIndex(x => x.id === r.id);
+            if (_ei >= 0) _ed[_ei] = r; else _ed.push(r);
+            localStorage.setItem('producoes_editadas', JSON.stringify(_ed));
         } else {
-            // Registro novo → salva em producoes_novos
-            const novos = JSON.parse(localStorage.getItem('producoes_novos') || '[]');
-            const idx = novos.findIndex(x => x.id === r.id);
-            if (idx >= 0) novos[idx] = r; else novos.push(r);
-            localStorage.setItem('producoes_novos', JSON.stringify(novos));
+            // Registro novo → producoes_novos
+            const _nv = JSON.parse(localStorage.getItem('producoes_novos') || '[]');
+            const _ni = _nv.findIndex(x => x.id === r.id);
+            if (_ni >= 0) _nv[_ni] = r; else _nv.push(r);
+            localStorage.setItem('producoes_novos', JSON.stringify(_nv));
         }
-    } catch(e) { console.warn('Fallback localStorage falhou:', e); }
-
-    // Salva no Supabase (em segundo plano)
+    } catch(_e) { console.warn('localStorage indisponível:', _e); }
+    // Salva no Supabase em segundo plano
     dbUpsertOne('producoes', r).catch(e => console.error('Erro ao salvar produção:', e));
     sincronizarRacoesNovos();
     fecharModalCadastroProd(); limparFormularioProd(); exibirTabelaProd();
@@ -4269,14 +4267,13 @@ function deletarProd(id) {
     if (perfilAtual !== 'admin') return;
     if (confirm('Tem certeza que deseja deletar este registro?')) {
         producoes = producoes.filter(r => r.id !== id);
-        const maxBase = Math.max(...DADOS_PLANILHA.producoes.map(r=>r.id));
-        // Remove do localStorage também (producoes_novos e producoes_editadas)
+        // Remove do localStorage também
         try {
-            const novos = JSON.parse(localStorage.getItem('producoes_novos') || '[]').filter(r => r.id !== id);
-            localStorage.setItem('producoes_novos', JSON.stringify(novos));
-            const editados = JSON.parse(localStorage.getItem('producoes_editadas') || '[]').filter(r => r.id !== id);
-            localStorage.setItem('producoes_editadas', JSON.stringify(editados));
-        } catch(e) { console.warn('Erro ao limpar localStorage ao deletar:', e); }
+            const _nv = JSON.parse(localStorage.getItem('producoes_novos') || '[]').filter(r => r.id !== id);
+            localStorage.setItem('producoes_novos', JSON.stringify(_nv));
+            const _ed = JSON.parse(localStorage.getItem('producoes_editadas') || '[]').filter(r => r.id !== id);
+            localStorage.setItem('producoes_editadas', JSON.stringify(_ed));
+        } catch(_e) {}
         dbDeleteOne('producoes', id).catch(e => console.error('Erro ao deletar produção:', e));
         exibirTabelaProd(); mostrarSucessoProd('✓ Registro deletado!');
     }
@@ -7327,25 +7324,24 @@ async function carregarTodosAsync() {
         rawM = JSON.parse(localStorage.getItem('materias_novas') || '[]');
     }
 
-    // Sempre mescla com localStorage — garante que edições offline não se percam
-    // mesmo quando o Supabase está online mas o upsert de um registro base falhou
+    // SEMPRE mescla com localStorage — garante que edições e registros novos
+    // offline não se percam, mesmo quando o Supabase está online
     try {
-        const editadosLocal = JSON.parse(localStorage.getItem('producoes_editadas') || '[]');
-        if (editadosLocal.length) {
-            const idsSupabase = new Set(rawP.map(r => r.id));
-            // Adiciona edições locais que o Supabase não retornou
-            editadosLocal.forEach(r => { if (!idsSupabase.has(r.id)) rawP.push(r); });
-            // Sobrescreve registros do Supabase com versão local se existir nos dois
-            const editMap = Object.fromEntries(editadosLocal.map(r => [r.id, r]));
-            rawP = rawP.map(r => editMap[r.id] || r);
+        const _editados = JSON.parse(localStorage.getItem('producoes_editadas') || '[]');
+        const _novos    = JSON.parse(localStorage.getItem('producoes_novos')    || '[]');
+        const _maxBase  = Math.max(0, ...DADOS_PLANILHA.producoes.map(r => r.id));
+        if (_editados.length) {
+            const _editMap = Object.fromEntries(_editados.map(r => [r.id, r]));
+            // Sobrescreve com versão local se Supabase não tiver ou tiver versão antiga
+            rawP = rawP.map(r => _editMap[r.id] || r);
+            // Adiciona editados que não vieram do Supabase
+            _editados.forEach(r => { if (!rawP.find(x => x.id === r.id)) rawP.push(r); });
         }
-        const novosLocal = JSON.parse(localStorage.getItem('producoes_novos') || '[]');
-        if (novosLocal.length) {
-            const idsSupabase = new Set(rawP.map(r => r.id));
-            novosLocal.filter(r => r.id > maxIdProd && !idsSupabase.has(r.id))
-                      .forEach(r => rawP.push(r));
+        if (_novos.length) {
+            const _idsRawP = new Set(rawP.map(r => r.id));
+            _novos.filter(r => r.id > _maxBase && !_idsRawP.has(r.id)).forEach(r => rawP.push(r));
         }
-    } catch(e) { console.warn('Erro ao mesclar localStorage:', e); }
+    } catch(_e) { console.warn('Erro ao mesclar localStorage:', _e); }
 
     const normClass = r => ({
         ...r,
