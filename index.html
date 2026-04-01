@@ -2795,7 +2795,7 @@
                             <th>USUÁRIO</th><th>STATUS</th><th id="thAcaoEMP">AÇÃO</th>
                         </tr>
                     </thead>
-                    <tbody id="tabelaEntradaMP"><tr><td colspan="7" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
+                    <tbody id="tabelaEntradaMP"><tr><td colspan="8" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -2803,7 +2803,7 @@
 
     <!-- ===== MODAL ENTRADA DE MATÉRIA PRIMA ===== -->
     <div id="modalCadastroEMP" class="modal">
-        <div class="modal-content" style="max-width:600px;">
+        <div class="modal-content" style="max-width:640px;">
             <div class="modal-header">
                 <h2 id="modalTituloEMP">📥 Registrar Entrada de Matéria Prima</h2>
                 <button class="close" onclick="fecharModalEMP()">&times;</button>
@@ -2813,29 +2813,58 @@
                     <input type="hidden" id="cadIdEMP">
                     <div class="form-section">
                         <h3>Dados da Entrada</h3>
-                        <div class="form-grid form-grid-2">
-                            <div class="form-group required"><label>Data</label><input type="text" id="cadDataEMP" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)"></div>
-                            <div class="form-group required"><label>Hora</label><input type="text" id="cadHoraEMP" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" required oninput="mascaraHora(this)"></div>
-                        </div>
-                        <div class="form-grid form-grid-2">
-                            <div class="form-group required"><label>Matéria Prima</label>
-                                <select id="cadMateriaPrimaEMP" required style="padding:5px;border:1px solid #bdc3c7;border-radius:4px;font-size:10px;text-transform:uppercase;">
-                                    <option value="">SELECIONE...</option>
-                                </select>
+                        <!-- Data e Hora centralizados -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                            <div class="form-group required">
+                                <label>Data</label>
+                                <input type="text" id="cadDataEMP" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)" style="text-align:center;">
                             </div>
-                            <div class="form-group required"><label>Fornecedor</label><input type="text" id="cadFornecedorEMP" required></div>
+                            <div class="form-group required">
+                                <label>Hora</label>
+                                <input type="text" id="cadHoraEMP" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" required oninput="mascaraHora(this)" style="text-align:center;">
+                            </div>
                         </div>
-                        <div class="form-grid form-grid-2">
-                            <div class="form-group required"><label>Número da Nota Fiscal</label><input type="text" id="cadNFEMP" required></div>
+                        <!-- Matéria Prima com lista fixa + botões -->
+                        <div class="form-group required" style="margin-bottom:8px;">
+                            <label>Matéria Prima</label>
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <select id="cadMateriaPrimaEMP" required style="flex:1;padding:5px 8px;border:1px solid #bdc3c7;border-radius:4px;font-size:11px;text-transform:uppercase;font-weight:bold;">
+                                    <option value="">SELECIONE...</option>
+                                    <option>CALCÁRIO FINO</option>
+                                    <option>CALCÁRIO GROSSO</option>
+                                    <option>FARELO DE SOJA</option>
+                                    <option>FARELO DE TRIGO</option>
+                                    <option>FARINHA DE CARNE E OSSO</option>
+                                    <option>MILHO ESTOQUE 01</option>
+                                    <option>MILHO ESTOQUE 02</option>
+                                    <option>NUTRITINS</option>
+                                    <option>SOJA EXTRUSADA DOSADOR</option>
+                                    <option>SOJA INTEGRAL EXTRUSADA</option>
+                                </select>
+                                <button type="button" onclick="empAdicionarMP()" title="Adicionar matéria prima" style="background:#27ae60;color:white;border:none;border-radius:4px;width:28px;height:28px;font-size:18px;cursor:pointer;line-height:1;flex-shrink:0;">+</button>
+                                <button type="button" onclick="empRemoverMP()" title="Remover matéria prima selecionada" style="background:#e74c3c;color:white;border:none;border-radius:4px;width:28px;height:28px;font-size:20px;cursor:pointer;line-height:1;flex-shrink:0;">−</button>
+                            </div>
                         </div>
-                        <div class="form-grid form-grid-2">
+                        <!-- Fornecedor e NF -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                            <div class="form-group required">
+                                <label>Fornecedor</label>
+                                <input type="text" id="cadFornecedorEMP" required style="text-transform:uppercase;">
+                            </div>
+                            <div class="form-group required">
+                                <label>Número da Nota Fiscal</label>
+                                <input type="text" id="cadNFEMP" required style="text-align:center;">
+                            </div>
+                        </div>
+                        <!-- Usuário e Status -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
                             <div class="form-group">
                                 <label>Usuário Responsável</label>
-                                <input type="text" id="cadUsuarioEMP" readonly style="background:#f0f3f8;color:#555;">
+                                <input type="text" id="cadUsuarioEMP" readonly style="background:#f0f3f8;color:#555;text-align:center;">
                             </div>
                             <div class="form-group">
                                 <label>Status</label>
-                                <input type="text" value="EM ANÁLISE" readonly style="background:#fff8e1;color:#b7770d;font-weight:bold;">
+                                <input type="text" value="EM ANÁLISE" readonly style="background:#fff8e1;color:#b7770d;font-weight:bold;text-align:center;">
                             </div>
                         </div>
                     </div>
@@ -6778,6 +6807,41 @@ function limparFiltrosEMP() {
     exibirTabelaEMP();
 }
 
+// Lista fixa de matérias primas para o modal EMP
+const _EMP_MP_PADRAO = [
+    'CALCÁRIO FINO','CALCÁRIO GROSSO','FARELO DE SOJA','FARELO DE TRIGO',
+    'FARINHA DE CARNE E OSSO','MILHO ESTOQUE 01','MILHO ESTOQUE 02',
+    'NUTRITINS','SOJA EXTRUSADA DOSADOR','SOJA INTEGRAL EXTRUSADA'
+];
+let _empListaMP = [..._EMP_MP_PADRAO];
+
+function _empPopularSelectMP(valorAtual) {
+    const sel = document.getElementById('cadMateriaPrimaEMP');
+    if (!sel) return;
+    const val = valorAtual || sel.value || '';
+    sel.innerHTML = '<option value="">SELECIONE...</option>' +
+        _empListaMP.sort().map(m => `<option value="${m}"${m===val?' selected':''}>${m}</option>`).join('');
+    if (val) sel.value = val;
+}
+
+function empAdicionarMP() {
+    const nome = prompt('Digite o nome da nova matéria prima:');
+    if (!nome || !nome.trim()) return;
+    const nomeUp = nome.trim().toUpperCase();
+    if (_empListaMP.includes(nomeUp)) { alert('Já existe na lista!'); return; }
+    _empListaMP.push(nomeUp);
+    _empPopularSelectMP(nomeUp);
+}
+
+function empRemoverMP() {
+    const sel = document.getElementById('cadMateriaPrimaEMP');
+    const val = sel.value;
+    if (!val) { alert('Selecione uma matéria prima para remover.'); return; }
+    if (!confirm(`Remover "${val}" da lista?`)) return;
+    _empListaMP = _empListaMP.filter(m => m !== val);
+    _empPopularSelectMP('');
+}
+
 function abrirModalEMP() {
     _empEditandoId = null;
     document.getElementById('modalTituloEMP').textContent = '📥 Registrar Entrada de Matéria Prima';
@@ -6785,15 +6849,11 @@ function abrirModalEMP() {
     document.getElementById('cadDataEMP').value = dataHoje();
     const agora = new Date();
     document.getElementById('cadHoraEMP').value = String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0');
-    document.getElementById('cadMateriaPrimaEMP').value = '';
+    _empPopularSelectMP('');
     document.getElementById('cadFornecedorEMP').value = '';
     document.getElementById('cadNFEMP').value = '';
     const uNome = USUARIOS[usuarioAtual]?.nome || usuarioAtual || '';
     document.getElementById('cadUsuarioEMP').value = uNome;
-    // Popular select de matérias primas
-    const sel = document.getElementById('cadMateriaPrimaEMP');
-    const mps = [...new Set(materiasPrimas.map(r => r.produto).filter(Boolean))].sort();
-    sel.innerHTML = '<option value="">SELECIONE...</option>' + mps.map(m => `<option value="${m}">${m}</option>`).join('');
     document.getElementById('modalCadastroEMP').classList.add('show');
     setTimeout(() => document.getElementById('cadMateriaPrimaEMP').focus(), 100);
 }
@@ -6806,11 +6866,7 @@ function editarEntradaMP(id) {
     document.getElementById('cadIdEMP').value = id;
     document.getElementById('cadDataEMP').value = dataParaDisplay(entrada.data);
     document.getElementById('cadHoraEMP').value = entrada.hora || '';
-    // Popular select e selecionar valor atual
-    const sel = document.getElementById('cadMateriaPrimaEMP');
-    const mps = [...new Set(materiasPrimas.map(r => r.produto).filter(Boolean))].sort();
-    sel.innerHTML = '<option value="">SELECIONE...</option>' + mps.map(m => `<option value="${m}">${m}</option>`).join('');
-    sel.value = entrada.materia_prima || '';
+    _empPopularSelectMP(entrada.materia_prima || '');
     document.getElementById('cadFornecedorEMP').value = entrada.fornecedor || '';
     document.getElementById('cadNFEMP').value = entrada.nf || '';
     document.getElementById('cadUsuarioEMP').value = entrada.usuario || '';
@@ -6825,7 +6881,7 @@ function fecharModalEMP() {
 function limparFormularioEMP() {
     document.getElementById('cadDataEMP').value = dataHoje();
     document.getElementById('cadHoraEMP').value = '';
-    document.getElementById('cadMateriaPrimaEMP').value = '';
+    _empPopularSelectMP('');
     document.getElementById('cadFornecedorEMP').value = '';
     document.getElementById('cadNFEMP').value = '';
 }
