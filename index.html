@@ -1265,6 +1265,7 @@
                         <option value="POSTURA TECTRON R8">POSTURA TECTRON R8</option>
                         <option value="POSTURA TECTRON R9">POSTURA TECTRON R9</option>
                         <option value="POSTURA TECTRON R 10">POSTURA TECTRON R 10</option>
+                        <option value="POSTURA TECTRON R20">POSTURA TECTRON R20</option>
                         <option value="BEPEL CALCÁRIO FINO">BEPEL CALCÁRIO FINO</option>
                         <option value="BEPEL CALCÁRIO GROSSO">BEPEL CALCÁRIO GROSSO</option>
                     </select>
@@ -1537,6 +1538,10 @@
                             <option value="g:POSTURA MCASSAB R 10|POSTURA TECTRON R 10">POSTURA R10 — TODOS</option>
                             <option value="POSTURA MCASSAB R 10">POSTURA MCASSAB R 10</option>
                             <option value="POSTURA TECTRON R 10">POSTURA TECTRON R 10</option>
+                        </optgroup>
+                        <optgroup label="── POSTURA R20 ──">
+                            <option value="g:POSTURA TECTRON R20">POSTURA R20 — TODOS</option>
+                            <option value="POSTURA TECTRON R20">POSTURA TECTRON R20</option>
                         </optgroup>
                         <optgroup label="── CALCÁRIO ──">
                             <option value="g:BEPEL CALCÁRIO FINO|BEPEL CALCÁRIO GROSSO">CALCÁRIO — TODOS</option>
@@ -3133,21 +3138,57 @@
                         <div class="form-group"><label>Hora</label><input type="text" id="cadHoraProd" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" oninput="mascaraHora(this)" onchange="gerarLoteAutomatico()"></div>
                         <div class="form-group required">
                             <label>Ração</label>
-                            <select id="cadRacaoProdSelect" onchange="handleRacaoSelectChange(this)">
-                                <option value="">Selecione...</option>
-                                <option value="SOJA MOÍDA">SOJA MOÍDA</option>
-                                <option value="CORTE R1 WISIUM">CORTE R1 WISIUM</option>
-                                <option value="CORTE R2 WISIUM">CORTE R2 WISIUM</option>
-                                <option value="CORTE R3 MCASSAB">CORTE R3 MCASSAB</option>
-                                <option value="CORTE R4 WISIUM">CORTE R4 WISIUM</option>
-                                <option value="CORTE R5 WISIUM">CORTE R5 WISIUM</option>
-                                <option value="POSTURA MCASSAB R1">POSTURA MCASSAB R1</option>
-                                <option value="POSTURA MCASSAB R7">POSTURA MCASSAB R7</option>
-                                <option value="POSTURA TECTRON R8">POSTURA TECTRON R8</option>
-                                <option value="__nova__">➕ Nova Ração...</option>
-                            </select>
-                            <input type="text" id="cadRacaoProd" placeholder="Nome da ração" style="display:none;margin-top:5px;width:100%;padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:13px;text-transform:uppercase;">
-                            <button type="button" id="btnCancelarNovaRacao" onclick="cancelarNovaRacao()" style="display:none;margin-top:4px;font-size:11px;padding:3px 8px;background:#95a5a6;color:white;border:none;border-radius:3px;cursor:pointer;">✕ Cancelar</button>
+                            <div style="display:flex;align-items:center;gap:4px;">
+                                <select id="cadRacaoProdSelect" onchange="handleRacaoSelectChange(this)" style="flex:1;">
+                                    <option value="">Selecione...</option>
+                                    <optgroup label="── SOJA ──">
+                                        <option value="SOJA MOÍDA">SOJA MOÍDA</option>
+                                    </optgroup>
+                                    <optgroup label="── CORTE WISIUM ──">
+                                        <option value="CORTE R1 WISIUM">CORTE R1 WISIUM</option>
+                                        <option value="CORTE R2 WISIUM">CORTE R2 WISIUM</option>
+                                        <option value="CORTE R3 WISIUM">CORTE R3 WISIUM</option>
+                                        <option value="CORTE R4 WISIUM">CORTE R4 WISIUM</option>
+                                        <option value="CORTE R5 WISIUM">CORTE R5 WISIUM</option>
+                                    </optgroup>
+                                    <optgroup label="── CORTE MCASSAB ──">
+                                        <option value="CORTE R1 MCASSAB">CORTE R1 MCASSAB</option>
+                                        <option value="CORTE R2 MCASSAB">CORTE R2 MCASSAB</option>
+                                        <option value="CORTE R3 MCASSAB">CORTE R3 MCASSAB</option>
+                                        <option value="CORTE R4 MCASSAB">CORTE R4 MCASSAB</option>
+                                        <option value="CORTE R5 MCASSAB">CORTE R5 MCASSAB</option>
+                                    </optgroup>
+                                    <optgroup label="── POSTURA MCASSAB ──">
+                                        <option value="POSTURA MCASSAB R1">POSTURA MCASSAB R1</option>
+                                        <option value="POSTURA MCASSAB R2">POSTURA MCASSAB R2</option>
+                                        <option value="POSTURA MCASSAB R3">POSTURA MCASSAB R3</option>
+                                        <option value="POSTURA MCASSAB R5">POSTURA MCASSAB R5</option>
+                                        <option value="POSTURA MCASSAB R6">POSTURA MCASSAB R6</option>
+                                        <option value="POSTURA MCASSAB R7">POSTURA MCASSAB R7</option>
+                                        <option value="POSTURA MCASSAB R8">POSTURA MCASSAB R8</option>
+                                        <option value="POSTURA MCASSAB R9">POSTURA MCASSAB R9</option>
+                                        <option value="POSTURA MCASSAB R 10">POSTURA MCASSAB R 10</option>
+                                    </optgroup>
+                                    <optgroup label="── POSTURA TECTRON ──">
+                                        <option value="POSTURA TECTRON R7">POSTURA TECTRON R7</option>
+                                        <option value="POSTURA TECTRON R8">POSTURA TECTRON R8</option>
+                                        <option value="POSTURA TECTRON R9">POSTURA TECTRON R9</option>
+                                        <option value="POSTURA TECTRON R 10">POSTURA TECTRON R 10</option>
+                                        <option value="POSTURA TECTRON R20">POSTURA TECTRON R20</option>
+                                    </optgroup>
+                                    <optgroup label="── CALCÁRIO ──">
+                                        <option value="BEPEL CALCÁRIO GROSSO">BEPEL CALCÁRIO GROSSO</option>
+                                        <option value="BEPEL CALCÁRIO FINO">BEPEL CALCÁRIO FINO</option>
+                                    </optgroup>
+                                </select>
+                                <button type="button" onclick="abrirAdicionarRacao()" title="Adicionar ração" style="width:24px;height:24px;padding:0;background:#27ae60;color:white;border:none;border-radius:4px;cursor:pointer;font-size:16px;font-weight:bold;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
+                                <button type="button" onclick="removerRacaoSelecionada()" title="Remover ração selecionada" style="width:24px;height:24px;padding:0;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;font-size:16px;font-weight:bold;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;">−</button>
+                            </div>
+                            <input type="text" id="cadRacaoProd" placeholder="Digite o nome da nova ração" style="display:none;margin-top:5px;width:100%;padding:8px;border:1px solid #1a3a9f;border-radius:4px;font-size:13px;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+                            <div id="novaRacaoAcoes" style="display:none;margin-top:4px;gap:6px;">
+                                <button type="button" id="btnConfirmarNovaRacao" onclick="confirmarNovaRacao()" style="font-size:11px;padding:5px 12px;background:#27ae60;color:white;border:none;border-radius:3px;cursor:pointer;font-weight:bold;">✔ Confirmar</button>
+                                <button type="button" id="btnCancelarNovaRacao" onclick="cancelarNovaRacao()" style="font-size:11px;padding:5px 8px;background:#95a5a6;color:white;border:none;border-radius:3px;cursor:pointer;">✕ Cancelar</button>
+                            </div>
                         </div>
                         <div class="form-group required"><label>Lote (Automático)</label><input type="text" id="cadLoteProd" required readonly></div>
                     </div>
@@ -3824,6 +3865,28 @@ const DADOS_PLANILHA = {
     materias_primas: [{"id": 1, "data": "2026-01-02", "produto": "FARELO DE SOJA", "fornecedor": "BUNGE ALIMENTOS", "nf": "180745", "hora": "16:46", "proteina": 0.0, "fibra": 0.0, "umidade": 12.6, "densidade": 581.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 2, "data": "2026-01-02", "produto": "FARINHA DE CARNE E OSSO", "fornecedor": "FRIGOLIMA", "nf": "1391", "hora": "09:38", "proteina": 46.72, "fibra": 0.0, "umidade": 4.5, "densidade": 529.0, "mineral": 34.08, "acidez": 1.12, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 78.99}, {"id": 3, "data": "2026-01-02", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.3, "densidade": 458.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 4, "data": "2026-01-03", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.5, "densidade": 0.0, "mineral": 0.0, "acidez": 0.4, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 5, "data": "2026-01-03", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.4, "densidade": 451.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 6, "data": "2026-01-05", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.7, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 7, "data": "2026-01-05", "produto": "FARELO DE SOJA", "fornecedor": "BUNGE ALIMENTOS", "nf": "180791", "hora": "08:19", "proteina": 0.0, "fibra": 0.0, "umidade": 12.6, "densidade": 558.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 8, "data": "2026-01-05", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 3.7, "densidade": 452.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 9, "data": "2026-01-06", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.4, "densidade": 469.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 10, "data": "2026-01-07", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.1, "densidade": 455.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 11, "data": "2026-01-07", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "38728", "hora": "09:10", "proteina": 0.0, "fibra": 0.0, "umidade": 12.5, "densidade": 750.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 12, "data": "2026-01-07", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.1, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 13, "data": "2026-01-08", "produto": "FARELO DE SOJA", "fornecedor": "BUNGE ALIMENTOS", "nf": "180955", "hora": "10:45", "proteina": 0.0, "fibra": 0.0, "umidade": 10.5, "densidade": 612.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 14, "data": "2026-01-08", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.1, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 28.9, "digestibilidade": 0.0}, {"id": 15, "data": "2026-01-09", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.2, "densidade": 0.0, "mineral": 0.0, "acidez": 0.4, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 16, "data": "2026-01-09", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "38776", "hora": "09:12", "proteina": 0.0, "fibra": 0.0, "umidade": 11.9, "densidade": 660.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 17, "data": "2026-01-09", "produto": "FARELO DE SOJA", "fornecedor": "BUNGE ALIMENTOS", "nf": "181016", "hora": "08:55", "proteina": 0.0, "fibra": 0.0, "umidade": 12.3, "densidade": 698.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 18, "data": "2026-01-09", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "38741", "hora": "08:11", "proteina": 0.0, "fibra": 0.0, "umidade": 12.2, "densidade": 659.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 19, "data": "2026-01-09", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 3.8, "densidade": 441.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 20, "data": "2026-01-10", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.3, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 21, "data": "2026-01-12", "produto": "FARINHA DE CARNE E OSSO", "fornecedor": "PERNAMBUCO NUTRIÇÃO", "nf": "2794", "hora": "10:48", "proteina": 47.74, "fibra": 0.0, "umidade": 4.6, "densidade": 573.0, "mineral": 33.04, "acidez": 0.96, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 76.76}, {"id": 22, "data": "2026-01-12", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.5, "densidade": 452.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 23, "data": "2026-01-12", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "38814", "hora": "10:17", "proteina": 0.0, "fibra": 0.0, "umidade": 12.2, "densidade": 680.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 24, "data": "2026-01-12", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.6, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 25.52, "digestibilidade": 0.0}, {"id": 25, "data": "2026-01-12", "produto": "CALCÁRIO GROSSO", "fornecedor": "BEPEL", "nf": "28926", "hora": "14:51", "proteina": 0.0, "fibra": 0.0, "umidade": 0.0, "densidade": 0.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 26, "data": "2026-01-12", "produto": "CALCÁRIO FINO", "fornecedor": "BEPEL", "nf": "28926", "hora": "15:49", "proteina": 0.0, "fibra": 0.0, "umidade": 0.0, "densidade": 0.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 27, "data": "2026-01-13", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.5, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 28, "data": "2026-01-13", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.6, "densidade": 453.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 29, "data": "2026-01-14", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.5, "densidade": 452.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 30, "data": "2026-01-14", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.7, "densidade": 0.0, "mineral": 0.0, "acidez": 0.4, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 25.25, "digestibilidade": 0.0}, {"id": 31, "data": "2026-01-15", "produto": "FARELO DE SOJA", "fornecedor": "BUNGE ALIMENTOS", "nf": "181524", "hora": "17:04", "proteina": 0.0, "fibra": 0.0, "umidade": 11.9, "densidade": 580.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 32, "data": "2026-01-15", "produto": "FARELO DE SOJA", "fornecedor": "BUNGE ALIMENTOS", "nf": "181411", "hora": "08:20", "proteina": 0.0, "fibra": 0.0, "umidade": 12.8, "densidade": 659.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 33, "data": "2026-01-15", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.3, "densidade": 449.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 34, "data": "2026-01-15", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "38876", "hora": "13:46", "proteina": 0.0, "fibra": 0.0, "umidade": 13.0, "densidade": 631.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.04, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 35, "data": "2026-01-15", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.6, "densidade": 0.0, "mineral": 0.0, "acidez": 0.4, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 70.46, "digestibilidade": 0.0}, {"id": 36, "data": "2026-01-16", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "38964", "hora": "14:44", "proteina": 0.0, "fibra": 0.0, "umidade": 12.1, "densidade": 647.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 37, "data": "2026-01-16", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.0, "densidade": 446.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 38, "data": "2026-01-16", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.9, "densidade": 0.0, "mineral": 0.0, "acidez": 0.16, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 70.45, "digestibilidade": 0.0}, {"id": 39, "data": "2026-01-17", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.4, "densidade": 0.0, "mineral": 0.0, "acidez": 0.16, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 70.48, "digestibilidade": 0.0}, {"id": 40, "data": "2026-01-17", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.3, "densidade": 0.0, "mineral": 0.0, "acidez": 0.17, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 51.0, "digestibilidade": 0.0}, {"id": 41, "data": "2026-01-19", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.0, "densidade": 466.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 42, "data": "2026-01-20", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.6, "densidade": 0.0, "mineral": 0.0, "acidez": 0.17, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 62.98, "digestibilidade": 0.0}, {"id": 43, "data": "2026-01-20", "produto": "FARINHA DE CARNE E OSSO", "fornecedor": "PERNAMBUCO NUTRIÇÃO", "nf": "2839", "hora": "08:42", "proteina": 0.0, "fibra": 0.0, "umidade": 5.3, "densidade": 538.0, "mineral": 0.0, "acidez": 0.16, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 44, "data": "2026-01-20", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "128001", "hora": "08:23", "proteina": 0.0, "fibra": 0.0, "umidade": 12.4, "densidade": 644.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 45, "data": "2026-01-20", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "128012", "hora": "08:07", "proteina": 0.0, "fibra": 0.0, "umidade": 12.2, "densidade": 647.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 46, "data": "2026-01-20", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.5, "densidade": 451.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 47, "data": "2026-01-21", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 8.0, "densidade": 453.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 48, "data": "2026-01-21", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.0, "densidade": 0.0, "mineral": 0.0, "acidez": 4.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 49, "data": "2026-01-22", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.3, "densidade": 0.0, "mineral": 0.0, "acidez": 0.16, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 41.08, "digestibilidade": 0.0}, {"id": 50, "data": "2026-01-22", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.2, "densidade": 459.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 51, "data": "2026-01-23", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.1, "densidade": 0.0, "mineral": 0.0, "acidez": 0.16, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 22.3, "digestibilidade": 0.0}, {"id": 52, "data": "2026-01-23", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.4, "densidade": 471.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 53, "data": "2026-01-24", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.2, "densidade": 0.0, "mineral": 0.0, "acidez": 0.16, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 54, "data": "2026-01-26", "produto": "CALCÁRIO GROSSO", "fornecedor": "BEPEL", "nf": "29111", "hora": "08:20", "proteina": 0.0, "fibra": 0.0, "umidade": 0.0, "densidade": 0.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 55, "data": "2026-01-26", "produto": "CALCÁRIO FINO", "fornecedor": "BEPEL", "nf": "29111", "hora": "07:30", "proteina": 0.0, "fibra": 0.0, "umidade": 0.0, "densidade": 0.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 56, "data": "2026-01-26", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.5, "densidade": 0.0, "mineral": 0.0, "acidez": 0.16, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 57, "data": "2026-01-26", "produto": "FARINHA DE CARNE E OSSO", "fornecedor": "PERNAMBUCO NUTRIÇÃO", "nf": "2862", "hora": "13:36", "proteina": 43.85, "fibra": 0.0, "umidade": 6.0, "densidade": 506.0, "mineral": 37.52, "acidez": 0.5, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 74.65}, {"id": 58, "data": "2026-01-26", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "128438", "hora": "10:42", "proteina": 0.0, "fibra": 0.0, "umidade": 12.4, "densidade": 641.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 59, "data": "2026-01-26", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.4, "densidade": 482.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 60, "data": "2026-01-27", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "128445", "hora": "10:09", "proteina": 0.0, "fibra": 0.0, "umidade": 12.5, "densidade": 665.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 61, "data": "2026-01-27", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.6, "densidade": 0.0, "mineral": 0.0, "acidez": 0.24, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 20.07, "digestibilidade": 0.0}, {"id": 62, "data": "2026-01-27", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.2, "densidade": 450.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 63, "data": "2026-01-28", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.1, "densidade": 458.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 64, "data": "2026-01-28", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.6, "densidade": 0.0, "mineral": 0.0, "acidez": 0.26, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 65, "data": "2026-01-29", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "128495", "hora": "10:00", "proteina": 47.73, "fibra": 0.0, "umidade": 12.2, "densidade": 665.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 66, "data": "2026-01-29", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 36.42, "fibra": 0.0, "umidade": 4.2, "densidade": 458.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 67, "data": "2026-01-29", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.2, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 68, "data": "2026-01-30", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.1, "densidade": 0.0, "mineral": 0.0, "acidez": 0.24, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 69, "data": "2026-01-30", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.0, "densidade": 452.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.03, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 70, "data": "2026-01-30", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "128559", "hora": "08:28", "proteina": 46.71, "fibra": 0.0, "umidade": 13.2, "densidade": 601.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.29, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 71, "data": "2026-01-09", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "38777", "hora": "09:00", "proteina": 0.0, "fibra": 0.0, "umidade": 12.0, "densidade": 634.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 72, "data": "2026-02-02", "produto": "CALCÁRIO FINO", "fornecedor": "BEPEL", "nf": "29185", "hora": "10:08", "proteina": 0.0, "fibra": 0.0, "umidade": 0.0, "densidade": 0.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 73, "data": "2026-02-02", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.9, "densidade": 446.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 74, "data": "2026-02-02", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "128707", "hora": "08:45", "proteina": 0.0, "fibra": 0.0, "umidade": 12.2, "densidade": 655.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.05, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 75, "data": "2026-02-02", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "128783", "hora": "08:59", "proteina": 0.0, "fibra": 0.0, "umidade": 12.6, "densidade": 648.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 76, "data": "2026-02-02", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.2, "densidade": 0.0, "mineral": 0.0, "acidez": 0.24, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 35.36, "digestibilidade": 0.0}, {"id": 77, "data": "2026-02-03", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.3, "densidade": 0.0, "mineral": 0.0, "acidez": 0.16, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 4.89, "digestibilidade": 0.0}, {"id": 78, "data": "2026-02-03", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "39547", "hora": "14:20", "proteina": 0.0, "fibra": 0.0, "umidade": 13.2, "densidade": 654.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.03, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 79, "data": "2026-02-03", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.7, "densidade": 455.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.03, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 80, "data": "2026-02-04", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.5, "densidade": 452.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.03, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 81, "data": "2026-02-04", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.4, "densidade": 0.0, "mineral": 0.0, "acidez": 0.16, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 82, "data": "2026-02-05", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.8, "densidade": 0.0, "mineral": 0.0, "acidez": 0.16, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 26.36, "digestibilidade": 0.0}, {"id": 83, "data": "2026-02-05", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.5, "densidade": 458.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 84, "data": "2026-02-06", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "39626", "hora": "11:54", "proteina": 0.0, "fibra": 0.0, "umidade": 11.4, "densidade": 636.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 85, "data": "2026-02-06", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.3, "densidade": 468.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 86, "data": "2026-02-06", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.5, "densidade": 0.0, "mineral": 0.0, "acidez": 0.24, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 23.42, "digestibilidade": 0.0}, {"id": 87, "data": "2026-02-07", "produto": "FARINHA DE CARNE E OSSO", "fornecedor": "PERNAMBUCO NUTRIÇÃO", "nf": "2953", "hora": "08:52", "proteina": 0.0, "fibra": 0.0, "umidade": 5.6, "densidade": 528.0, "mineral": 38.48, "acidez": 0.26, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 88, "data": "2026-02-09", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "39755", "hora": "15:05", "proteina": 0.0, "fibra": 0.0, "umidade": 12.4, "densidade": 681.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.04, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 89, "data": "2026-02-02", "produto": "FARELO DE TRIGO", "fornecedor": "AL DE SOUSA OLIVEIRA", "nf": "351", "hora": "12:58", "proteina": 0.0, "fibra": 0.0, "umidade": 13.7, "densidade": 258.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 90, "data": "2026-02-09", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "129113", "hora": "09:37", "proteina": 0.0, "fibra": 0.0, "umidade": 12.3, "densidade": 691.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 91, "data": "2026-02-09", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.8, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 12.46, "digestibilidade": 0.0}, {"id": 92, "data": "2026-02-09", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.1, "densidade": 466.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.04, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 93, "data": "2026-02-10", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.3, "densidade": 440.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 94, "data": "2026-02-10", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.9, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 25.87, "digestibilidade": 0.0}, {"id": 95, "data": "2026-02-11", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.2, "densidade": 448.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 96, "data": "2026-02-11", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.6, "densidade": 0.0, "mineral": 0.0, "acidez": 0.24, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 64.0, "digestibilidade": 0.0}, {"id": 97, "data": "2026-02-12", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.1, "densidade": 465.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 98, "data": "2026-02-12", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.3, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 6.4, "digestibilidade": 0.0}, {"id": 99, "data": "2026-02-13", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.6, "densidade": 441.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 100, "data": "2026-02-13", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "129277", "hora": "09:26", "proteina": 0.0, "fibra": 0.0, "umidade": 13.4, "densidade": 630.0, "mineral": 6.95, "acidez": 0.0, "ureatica": 0.06, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 101, "data": "2026-02-13", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "39836", "hora": "10:34", "proteina": 0.0, "fibra": 0.0, "umidade": 12.6, "densidade": 662.0, "mineral": 7.02, "acidez": 0.0, "ureatica": 0.04, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 102, "data": "2026-02-13", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.2, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 103, "data": "2026-02-16", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.6, "densidade": 442.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 104, "data": "2026-02-16", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.6, "densidade": 0.0, "mineral": 0.0, "acidez": 0.24, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 105, "data": "2026-02-16", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "129464", "hora": "09:42", "proteina": 0.0, "fibra": 0.0, "umidade": 12.0, "densidade": 652.0, "mineral": 6.9, "acidez": 0.0, "ureatica": 0.03, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 106, "data": "2026-02-16", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "40018", "hora": "08:34", "proteina": 0.0, "fibra": 0.0, "umidade": 13.3, "densidade": 617.0, "mineral": 6.85, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 107, "data": "2026-02-16", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "39976", "hora": "07:26", "proteina": 0.0, "fibra": 0.0, "umidade": 12.6, "densidade": 641.0, "mineral": 6.96, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 108, "data": "2026-02-17", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.8, "densidade": 453.0, "mineral": 5.8, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 109, "data": "2026-02-17", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.0, "densidade": 0.0, "mineral": 0.0, "acidez": 0.24, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 21.52, "digestibilidade": 0.0}, {"id": 110, "data": "2026-02-19", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 6.1, "densidade": 458.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 111, "data": "2026-02-19", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "129595", "hora": "13:38", "proteina": 0.0, "fibra": 0.0, "umidade": 13.2, "densidade": 610.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 112, "data": "2026-02-19", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.7, "densidade": 0.0, "mineral": 0.0, "acidez": 0.24, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 17.05, "digestibilidade": 0.0}, {"id": 113, "data": "2026-02-20", "produto": "FARINHA DE CARNE E OSSO", "fornecedor": "PERNAMBUCO NUTRIÇÃO", "nf": "3012", "hora": "09:07", "proteina": 0.0, "fibra": 0.0, "umidade": 6.6, "densidade": 563.0, "mineral": 37.15, "acidez": 0.08, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 114, "data": "2026-02-20", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.6, "densidade": 457.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 115, "data": "2026-02-20", "produto": "MILHO ESTOQUE 01", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "15:01", "proteina": 0.0, "fibra": 0.0, "umidade": 0.0, "densidade": 0.0, "mineral": 1.35, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 116, "data": "2026-02-20", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.5, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 117, "data": "2026-02-23", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "40479", "hora": "08:26", "proteina": 0.0, "fibra": 0.0, "umidade": 13.1, "densidade": 645.0, "mineral": 6.92, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 118, "data": "2026-02-23", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.9, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 25.73, "digestibilidade": 0.0}, {"id": 119, "data": "2026-02-23", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.3, "densidade": 466.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 120, "data": "2026-02-23", "produto": "FARINHA DE CARNE E OSSO", "fornecedor": "PERNAMBUCO NUTRIÇÃO", "nf": "3014", "hora": "08:46", "proteina": 0.0, "fibra": 0.0, "umidade": 5.6, "densidade": 539.0, "mineral": 36.92, "acidez": 0.16, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 121, "data": "2026-02-24", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.4, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 22.88, "digestibilidade": 0.0}, {"id": 122, "data": "2026-02-24", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.6, "densidade": 469.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 123, "data": "2026-02-21", "produto": "FARELO DE TRIGO", "fornecedor": "ADILSON ROLIM", "nf": "71", "hora": "17:06", "proteina": 0.0, "fibra": 0.0, "umidade": 13.5, "densidade": 265.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 124, "data": "2026-02-25", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.4, "densidade": 449.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 125, "data": "2026-02-24", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "129781", "hora": "14:18", "proteina": 0.0, "fibra": 0.0, "umidade": 12.6, "densidade": 653.0, "mineral": 6.66, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 126, "data": "2026-02-25", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "40706", "hora": "09:44", "proteina": 0.0, "fibra": 0.0, "umidade": 12.8, "densidade": 646.0, "mineral": 6.71, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 127, "data": "2026-02-26", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "40745", "hora": "11:14", "proteina": 0.0, "fibra": 0.0, "umidade": 12.8, "densidade": 629.0, "mineral": 7.0, "acidez": 0.0, "ureatica": 0.03, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 128, "data": "2026-02-26", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "40794", "hora": "11:08", "proteina": 0.0, "fibra": 0.0, "umidade": 13.6, "densidade": 623.0, "mineral": 6.97, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 129, "data": "2026-02-26", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.2, "densidade": 461.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 130, "data": "2026-02-26", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "129905", "hora": "09:35", "proteina": 0.0, "fibra": 0.0, "umidade": 14.0, "densidade": 622.0, "mineral": 6.89, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 131, "data": "2026-02-26", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.3, "densidade": 0.0, "mineral": 0.0, "acidez": 0.48, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 7.46, "digestibilidade": 0.0}, {"id": 132, "data": "2026-02-27", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.5, "densidade": 0.0, "mineral": 0.0, "acidez": 0.48, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 11.2, "digestibilidade": 0.0}, {"id": 133, "data": "2026-02-27", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.3, "densidade": 461.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 134, "data": "2026-02-26", "produto": "FARINHA DE CARNE E OSSO", "fornecedor": "PERNAMBUCO NUTRIÇÃO", "nf": "3054", "hora": "13:43", "proteina": 0.0, "fibra": 0.0, "umidade": 6.3, "densidade": 537.0, "mineral": 35.9, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 135, "data": "2026-03-02", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 0.0, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 20.55, "digestibilidade": 0.0}, {"id": 136, "data": "2026-03-02", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.6, "densidade": 448.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 137, "data": "2026-03-02", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "40945", "hora": "08:47", "proteina": 0.0, "fibra": 0.0, "umidade": 13.2, "densidade": 602.0, "mineral": 6.88, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 138, "data": "2026-03-03", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.5, "densidade": 457.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.04, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 139, "data": "2026-03-03", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "130173", "hora": "14:55", "proteina": 0.0, "fibra": 0.0, "umidade": 13.2, "densidade": 646.0, "mineral": 6.43, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 140, "data": "2026-03-03", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.7, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 21.91, "digestibilidade": 0.0}, {"id": 141, "data": "2026-03-04", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.5, "densidade": 443.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 142, "data": "2026-01-29", "produto": "MILHO ESTOQUE 01", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "11:58", "proteina": 7.77, "fibra": 0.0, "umidade": 0.0, "densidade": 0.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 143, "data": "2026-03-05", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "41037", "hora": "08:47", "proteina": 0.0, "fibra": 0.0, "umidade": 12.9, "densidade": 643.0, "mineral": 7.1, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 144, "data": "2026-03-05", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.9, "densidade": 457.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 145, "data": "2026-03-05", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.6, "densidade": 0.0, "mineral": 0.0, "acidez": 0.24, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 27.83, "digestibilidade": 0.0}, {"id": 146, "data": "2026-03-05", "produto": "FARINHA DE CARNE E OSSO", "fornecedor": "FRIGOLIMA", "nf": "1511", "hora": "16:18", "proteina": 0.0, "fibra": 0.0, "umidade": 4.4, "densidade": 541.0, "mineral": 34.25, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 147, "data": "2026-03-06", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.3, "densidade": 435.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.03, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 148, "data": "2026-03-09", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.5, "densidade": 437.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 149, "data": "2026-03-09", "produto": "NUTRITINS", "fornecedor": "FARELO DE SOJA", "nf": "41273", "hora": "10:00", "proteina": 0.0, "fibra": 0.0, "umidade": 12.3, "densidade": 700.0, "mineral": 7.07, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 150, "data": "2026-03-09", "produto": "FARINHA DE CARNE E OSSO", "fornecedor": "PERNAMBUCO NUTRIÇÃO", "nf": "3095", "hora": "17:00", "proteina": 0.0, "fibra": 0.0, "umidade": 5.7, "densidade": 552.0, "mineral": 36.74, "acidez": 0.16, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 151, "data": "2026-03-07", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "41124", "hora": "08:51", "proteina": 0.0, "fibra": 0.0, "umidade": 13.4, "densidade": 672.0, "mineral": 6.51, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 152, "data": "2026-03-10", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.5, "densidade": 445.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 153, "data": "2026-03-10", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.5, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 19.62, "digestibilidade": 0.0}, {"id": 154, "data": "2026-03-11", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "41370", "hora": "10:24", "proteina": 0.0, "fibra": 0.0, "umidade": 13.3, "densidade": 617.0, "mineral": 7.35, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 155, "data": "2026-03-11", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.3, "densidade": 437.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 156, "data": "2026-03-11", "produto": "SOJA EXTRUSADA DOSADOR", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.4, "densidade": 0.0, "mineral": 0.0, "acidez": 0.32, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 23.72, "digestibilidade": 0.0}, {"id": 157, "data": "2026-03-12", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.1, "densidade": 442.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.02, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 158, "data": "2026-01-29", "produto": "MILHO ESTOQUE 02", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "06:52", "proteina": 6.65, "fibra": 0.0, "umidade": 0.0, "densidade": 0.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 159, "data": "2026-03-13", "produto": "FARINHA DE CARNE E OSSO", "fornecedor": "PERNAMBUCO NUTRIÇÃO", "nf": "3127", "hora": "15:58", "proteina": 0.0, "fibra": 0.0, "umidade": 5.6, "densidade": 510.0, "mineral": 35.94, "acidez": 0.16, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 160, "data": "2026-03-13", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "41564", "hora": "10:52", "proteina": 0.0, "fibra": 0.0, "umidade": 13.1, "densidade": 657.0, "mineral": 7.15, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 161, "data": "2026-03-13", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.4, "densidade": 471.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 162, "data": "2026-03-13", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "130794", "hora": "09:03", "proteina": 0.0, "fibra": 0.0, "umidade": 13.6, "densidade": 647.0, "mineral": 7.18, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 163, "data": "2026-03-14", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.6, "densidade": 445.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.01, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 164, "data": "2026-03-16", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.6, "densidade": 463.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 165, "data": "2026-03-16", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "41595", "hora": "10:00", "proteina": 0.0, "fibra": 0.0, "umidade": 12.9, "densidade": 659.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 166, "data": "2026-03-17", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.1, "densidade": 442.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 167, "data": "2026-03-18", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.6, "densidade": 439.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 168, "data": "2026-03-18", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "41693", "hora": "11:13", "proteina": 0.0, "fibra": 0.0, "umidade": 12.6, "densidade": 689.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 169, "data": "2026-03-19", "produto": "FARELO DE SOJA", "fornecedor": "ADM DO BRASIL", "nf": "131190", "hora": "16:19", "proteina": 0.0, "fibra": 0.0, "umidade": 12.7, "densidade": 676.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 170, "data": "2026-03-19", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "41760", "hora": "15:09", "proteina": 0.0, "fibra": 0.0, "umidade": 12.6, "densidade": 687.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 171, "data": "2026-03-20", "produto": "FARELO DE SOJA", "fornecedor": "NUTRITINS", "nf": "41782", "hora": "15:14", "proteina": 0.0, "fibra": 0.0, "umidade": 13.0, "densidade": 663.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}, {"id": 172, "data": "2026-03-20", "produto": "SOJA INTEGRAL EXTRUSADA", "fornecedor": "FÁBRICA AGRONOR", "nf": "", "hora": "08:00", "proteina": 0.0, "fibra": 0.0, "umidade": 4.6, "densidade": 422.0, "mineral": 0.0, "acidez": 0.0, "ureatica": 0.0, "rancidez": 0.0, "peroxido": 0.0, "digestibilidade": 0.0}]
 };
 
+// ===================================================
+// PERSISTÊNCIA LOCAL — garante que nenhum lançamento se perca
+// mesmo quando o Supabase não está disponível ou rejeita a inserção.
+// ===================================================
+function _salvarLocalFallback(chave, registro, idEdicao) {
+    try {
+        const raw = localStorage.getItem(chave);
+        let lista = raw ? JSON.parse(raw) : [];
+        if (idEdicao) {
+            const idx = lista.findIndex(x => x.id === idEdicao);
+            if (idx >= 0) lista[idx] = registro;
+            else lista.push(registro);
+        } else {
+            // Evita duplicatas pelo id
+            if (!lista.find(x => x.id === registro.id)) lista.push(registro);
+        }
+        localStorage.setItem(chave, JSON.stringify(lista));
+    } catch(e) {
+        console.error('Erro ao salvar fallback local:', e);
+    }
+}
+
 function carregarTodos() {
     // Sempre inicia com os dados da planilha como base
     // e mescla com novos registros criados no sistema (id > planilha)
@@ -3887,11 +3950,21 @@ function carregarTodos() {
     const editClassMap = Object.fromEntries(editClass.map(r => [r.id, r]));
     const editMatMap   = Object.fromEntries(editMat.map(r => [r.id, normMat(r)]));
 
-    const planProdFinal  = planProd.map(r  => editProdMap[r.id]  || r);
+    // Normaliza produção: campos opcionais com valor 0 viram null (não preenchidos)
+    const camposOpcionaisProd = ['dpg','extrato','proteina','fibra','solubil','umidade','densidade','mineral','calcio','fosforo','granulo1','granulo2','granulo3','fundo'];
+    const normProd = r => {
+        const out = {...r};
+        camposOpcionaisProd.forEach(c => {
+            const v = parseFloat(out[c]);
+            if (out[c] === null || out[c] === undefined || out[c] === '' || (!isNaN(v) && v === 0)) out[c] = null;
+        });
+        return out;
+    };
+    const planProdFinal  = planProd.map(r  => editProdMap[r.id] ? normProd(editProdMap[r.id]) : normProd(r));
     const planClassFinal = planClass.map(r => editClassMap[r.id] ? editClassMap[r.id] : normClass(r));
     const planMatFinal   = planMat.map(r   => editMatMap[r.id]   || r);
 
-    producoes      = [...planProdFinal,  ...novoProd];
+    producoes      = [...planProdFinal,  ...novoProd.map(normProd)];
     classificacoes = [...planClassFinal, ...novoClass];
     materiasPrimas = [...planMatFinal,   ...novoMat.map(normMat)];
 }
@@ -3983,48 +4056,131 @@ function limparFormularioProd() {
     const sel = document.getElementById('cadRacaoProdSelect');
     const inp = document.getElementById('cadRacaoProd');
     const btn = document.getElementById('btnCancelarNovaRacao');
-    if (sel) { sel.value = ''; sel.style.display = 'block'; }
-    if (inp) { inp.value = ''; inp.style.display = 'none'; }
-    if (btn) { btn.style.display = 'none'; }
+    if (sel) { sel.value = ''; }
+    if (inp) { inp.value = ''; inp.style.display = 'none'; inp.style.background = ''; inp.style.borderColor = ''; }
+    const acoes = document.getElementById('novaRacaoAcoes');
+    if (acoes) { acoes.style.display = 'none'; }
 }
 
 function handleRacaoSelectChange(sel) {
     const input = document.getElementById('cadRacaoProd');
-    const btn = document.getElementById('btnCancelarNovaRacao');
-    if (sel.value === '__nova__') {
-        sel.style.display = 'none';
-        input.style.display = 'block';
-        btn.style.display = 'inline-block';
-        input.value = '';
-        input.focus();
-    } else {
-        input.value = sel.value;
-        input.style.display = 'none';
-        btn.style.display = 'none';
+    const acoes = document.getElementById('novaRacaoAcoes');
+    input.value = sel.value;
+    input.style.display = 'none';
+    if (acoes) { acoes.style.display = 'none'; }
+}
+
+function abrirAdicionarRacao() {
+    const input = document.getElementById('cadRacaoProd');
+    const acoes = document.getElementById('novaRacaoAcoes');
+    input.value = '';
+    input.style.background = '';
+    input.style.borderColor = '';
+    input.style.display = 'block';
+    if (acoes) { acoes.style.display = 'flex'; }
+    input.focus();
+}
+
+function removerRacaoSelecionada() {
+    const sel = document.getElementById('cadRacaoProdSelect');
+    const val = sel.value;
+    if (!val) { alert('Selecione uma ra\u00e7\u00e3o para remover.'); return; }
+    if (!confirm('Remover "' + val + '" da lista de ra\u00e7\u00f5es?')) return;
+    const opt = Array.from(sel.options).find(o => o.value === val);
+    if (opt) { opt.remove(); }
+    sel.value = '';
+    document.getElementById('cadRacaoProd').value = '';
+    // Sincroniza com RACOES_GRUPOS (remove da lista de configurações)
+    if (typeof RACOES_GRUPOS !== 'undefined') {
+        for (let i = RACOES_GRUPOS.length - 1; i >= 0; i--) {
+            const g = RACOES_GRUPOS[i];
+            g.racoes = g.racoes.filter(r => r !== val);
+            if (g.formulacoes) g.formulacoes = g.formulacoes.filter(r => r !== val);
+            if (g.racoes.length === 0) { RACOES_GRUPOS.splice(i, 1); }
+        }
+        const pProd = document.getElementById('paramPanelProd');
+        if (pProd && pProd.innerHTML) { renderizarTabelasParametros(); }
     }
+}
+
+function confirmarNovaRacao() {
+    const input = document.getElementById('cadRacaoProd');
+    const nome = input.value.trim().toUpperCase();
+    if (!nome) { alert('Digite o nome da ra\u00e7\u00e3o antes de confirmar.'); input.focus(); return; }
+    const sel = document.getElementById('cadRacaoProdSelect');
+    let opt = Array.from(sel.options).find(o => o.value === nome);
+    if (!opt) {
+        opt = new Option(nome, nome);
+        sel.appendChild(opt);
+        if (typeof RACOES_GRUPOS !== 'undefined') {
+            const jaExiste = RACOES_GRUPOS.some(g => g.racoes.includes(nome));
+            if (!jaExiste) {
+                // Tenta detectar o grupo pelo padrão do nome (ex: "POSTURA MCASSAB R8" → grupo "POSTURA R8")
+                const matchGrupo = nome.match(/^(CORTE|POSTURA)\s+(?:MCASSAB|WISIUM|TECTRON)\s+(R\s*\d+)$/i);
+                let adicionado = false;
+                if (matchGrupo) {
+                    const tipoBase = matchGrupo[1].toUpperCase(); // CORTE ou POSTURA
+                    const numRacao = matchGrupo[2].toUpperCase().replace(/\s+/,''); // R8, R10, etc.
+                    const grupoAlvo = tipoBase + ' ' + numRacao; // ex: POSTURA R8
+                    const grupoExistente = RACOES_GRUPOS.find(g => g.grupo === grupoAlvo);
+                    if (grupoExistente) {
+                        grupoExistente.racoes.push(nome);
+                        if (!grupoExistente.formulacoes) grupoExistente.formulacoes = [];
+                        grupoExistente.formulacoes.push(nome);
+                        adicionado = true;
+                    }
+                }
+                if (!adicionado) {
+                    RACOES_GRUPOS.push({ grupo: nome, label: nome, racoes: [nome], cor: '#7f8c8d', formulacoes: [nome] });
+                }
+                const pProd = document.getElementById('paramPanelProd');
+                if (pProd && pProd.innerHTML) { renderizarTabelasParametros(); }
+            }
+        }
+    }
+    sel.value = nome;
+    input.value = nome;
+    input.style.display = 'none';
+    input.style.background = '';
+    input.style.borderColor = '';
+    document.getElementById('novaRacaoAcoes').style.display = 'none';
 }
 
 function cancelarNovaRacao() {
     const sel = document.getElementById('cadRacaoProdSelect');
     const input = document.getElementById('cadRacaoProd');
-    const btn = document.getElementById('btnCancelarNovaRacao');
+    const acoes = document.getElementById('novaRacaoAcoes');
     sel.value = '';
-    sel.style.display = 'block';
     input.style.display = 'none';
+    input.style.background = '';
+    input.style.borderColor = '';
     input.value = '';
-    btn.style.display = 'none';
+    if (acoes) { acoes.style.display = 'none'; }
 }
 
 function salvarProducao(event) {
     event.preventDefault();
     const dataDisp = document.getElementById('cadDataProd').value;
     const data  = dataParaISO(dataDisp);
-    const racao = document.getElementById('cadRacaoProd').value;
+    // Lê a ração: se o select está visível usa o select, senão usa o input de texto
+    const sel = document.getElementById('cadRacaoProdSelect');
+    const inp = document.getElementById('cadRacaoProd');
+    let racao = '';
+    if (sel && sel.style.display !== 'none' && sel.value && sel.value !== '__nova__') {
+        racao = sel.value;
+        if (inp) inp.value = racao; // sincroniza
+    } else if (inp) {
+        racao = inp.value.trim().toUpperCase();
+    }
+    // Garante que o lote está gerado antes de validar
+    gerarLoteAutomatico();
     const lote  = document.getElementById('cadLoteProd').value.trim();
     const dgm   = parseFloat(document.getElementById('cadDGMProd').value);
-    if (!data || !racao || !lote || isNaN(dgm)) {
-        mostrarErroProd('❌ Preencha Data, Hora (para gerar Lote), Ração e DGM!'); return;
-    }
+    if (!data) { mostrarErroProd('❌ Preencha a Data!'); return; }
+    if (!document.getElementById('cadHoraProd').value) { mostrarErroProd('❌ Preencha a Hora para gerar o Lote!'); return; }
+    if (!racao) { mostrarErroProd('❌ Selecione ou digite o nome da Ração!'); return; }
+    if (!lote) { mostrarErroProd('❌ Lote não gerado. Verifique Data e Hora!'); return; }
+    if (isNaN(dgm)) { mostrarErroProd('❌ Preencha o DGM!'); return; }
     const _pfP = id => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; };
     const r = {
         id: idEdicaoProd || Date.now(), data,
@@ -4051,8 +4207,12 @@ function salvarProducao(event) {
     } else {
         producoes.push(r); mostrarSucessoProd('✓ Produção salva com sucesso!');
     }
-    // Salva no Supabase
-    dbUpsertOne('producoes', r).catch(e => console.error('Erro ao salvar produção:', e));
+    // Salva localmente (fallback garantido) e no Supabase
+    _salvarLocalFallback('producoes_novos', r, idEdicaoProd);
+    dbUpsertOne('producoes', r).catch(e => {
+        console.warn('Supabase indisponível, registro salvo localmente:', e.message);
+    });
+    sincronizarRacoesNovos();
     fecharModalCadastroProd(); limparFormularioProd(); exibirTabelaProd();
 }
 
@@ -4234,8 +4394,11 @@ function salvarClassificacao(event) {
     } else {
         classificacoes.push(r); mostrarSucessoClass('✓ Classificação salva com sucesso!');
     }
-    // Salva no Supabase
-    dbUpsertOne('classificacoes', r).catch(e => console.error('Erro ao salvar classificação:', e));
+    // Salva localmente (fallback garantido) e no Supabase
+    _salvarLocalFallback('classificacoes_novas', r, idEdicaoClass);
+    dbUpsertOne('classificacoes', r).catch(e => {
+        console.warn('Supabase indisponível, registro salvo localmente:', e.message);
+    });
     fecharModalCadastroClass(); limparFormularioClass(); exibirTabelaClass();
     setTimeout(_empHookAposRegistro, 800);
 }
@@ -4435,8 +4598,11 @@ function salvarMateriaPrima(event) {
     } else {
         materiasPrimas.push(r); mostrarSucessoMP('✓ MATÉRIA PRIMA SALVA COM SUCESSO!');
     }
-    // Salva no Supabase
-    dbUpsertOne('materias_primas', r).catch(e => console.error('Erro ao salvar matéria prima:', e));
+    // Salva localmente (fallback garantido) e no Supabase
+    _salvarLocalFallback('materias_novas', r, idEdicaoMP);
+    dbUpsertOne('materias_primas', r).catch(e => {
+        console.warn('Supabase indisponível, registro salvo localmente:', e.message);
+    });
     fecharModalCadastroMP(); limparFormularioMP(); exibirTabelaMP();
     setTimeout(_empHookAposRegistro, 800);
 }
@@ -4568,17 +4734,17 @@ const FASES_MAP = {
     pos_fin:   { label: 'FINAL POSTURA (R3-R10)',
                  racoes: ['POSTURA MCASSAB R3','POSTURA MCASSAB R5',
                           'POSTURA MCASSAB R6','POSTURA MCASSAB R7',
-                          'POSTURA MCASSAB R9','POSTURA MCASSAB R 10',
+                          'POSTURA MCASSAB R8','POSTURA MCASSAB R9','POSTURA MCASSAB R 10',
                           'POSTURA TECTRON R7','POSTURA TECTRON R8',
-                          'POSTURA TECTRON R9','POSTURA TECTRON R 10'],
+                          'POSTURA TECTRON R9','POSTURA TECTRON R 10','POSTURA TECTRON R20'],
                  cor: '#16a085' },
     pos_all:   { label: 'TODAS AS FASES POSTURA',
                  racoes: ['POSTURA MCASSAB R1','POSTURA MCASSAB R2',
                           'POSTURA MCASSAB R3','POSTURA MCASSAB R5',
                           'POSTURA MCASSAB R6','POSTURA MCASSAB R7',
-                          'POSTURA MCASSAB R9','POSTURA MCASSAB R 10',
+                          'POSTURA MCASSAB R8','POSTURA MCASSAB R9','POSTURA MCASSAB R 10',
                           'POSTURA TECTRON R7','POSTURA TECTRON R8',
-                          'POSTURA TECTRON R9','POSTURA TECTRON R 10'],
+                          'POSTURA TECTRON R9','POSTURA TECTRON R 10','POSTURA TECTRON R20'],
                  cor: '#2c3e50' },
 };
 
@@ -7163,11 +7329,23 @@ async function carregarTodosAsync() {
         ]);
     } catch(e) {
         console.error('Erro ao carregar do Supabase:', e);
-        // fallback localStorage
-        rawP = JSON.parse(localStorage.getItem('producoes_novos') || '[]');
-        rawC = JSON.parse(localStorage.getItem('classificacoes_novas') || '[]');
-        rawM = JSON.parse(localStorage.getItem('materias_novas') || '[]');
     }
+
+    // Sempre mescla com localStorage (garante que lançamentos locais não se percam)
+    const _mesclarLocal = (rawArr, chaveLocal, maxIdPlanilha) => {
+        try {
+            const localArr = JSON.parse(localStorage.getItem(chaveLocal) || '[]');
+            if (!localArr.length) return rawArr;
+            const idsRemoto = new Set(rawArr.map(r => r.id));
+            // Adiciona do localStorage apenas os que não vieram do Supabase
+            const extras = localArr.filter(r => r.id > maxIdPlanilha && !idsRemoto.has(r.id));
+            return extras.length ? [...rawArr, ...extras] : rawArr;
+        } catch(e) { return rawArr; }
+    };
+
+    rawP = _mesclarLocal(rawP, 'producoes_novos', maxIdProd);
+    rawC = _mesclarLocal(rawC, 'classificacoes_novas', maxIdClass);
+    rawM = _mesclarLocal(rawM, 'materias_novas', maxIdMat);
 
     const normClass = r => ({
         ...r,
@@ -7221,11 +7399,21 @@ async function carregarTodosAsync() {
     const editClassMap = Object.fromEntries(rawC.filter(r => r.id <= maxIdClass).map(r => [r.id, r]));
     const editMatMap   = Object.fromEntries(rawM.filter(r => r.id <= maxIdMat).map(r => [r.id, normMat(r)]));
 
-    const planProdFinal  = planProd.map(r  => editProdMap[r.id]  || r);
+    const camposOpcionaisProd2 = ['dpg','extrato','proteina','fibra','solubil','umidade','densidade','mineral','calcio','fosforo','granulo1','granulo2','granulo3','fundo'];
+    const normProd2 = r => {
+        const out = {...r};
+        camposOpcionaisProd2.forEach(c => {
+            const v = parseFloat(out[c]);
+            if (out[c] === null || out[c] === undefined || out[c] === '' || (!isNaN(v) && v === 0)) out[c] = null;
+        });
+        return out;
+    };
+
+    const planProdFinal  = planProd.map(r  => editProdMap[r.id] ? normProd2(editProdMap[r.id]) : normProd2(r));
     const planClassFinal = planClass.map(r => editClassMap[r.id] ? editClassMap[r.id] : normClass(r));
     const planMatFinal   = planMat.map(r   => editMatMap[r.id]   || r);
 
-    producoes      = [...planProdFinal,  ...novoProd];
+    producoes      = [...planProdFinal,  ...novoProd.map(normProd2)];
     classificacoes = [...planClassFinal, ...novoClass];
     materiasPrimas = [...planMatFinal,   ...novoMat.map(normMat)];
 }
@@ -7352,12 +7540,14 @@ const RACOES_GRUPOS = [
       formulacoes:['POSTURA MCASSAB R6'] },
     { grupo:'POSTURA R7', label:'POSTURA R7', racoes:['POSTURA MCASSAB R7','POSTURA TECTRON R7'], cor:'#0a80e0',
       formulacoes:['POSTURA MCASSAB R7','POSTURA TECTRON R7'] },
-    { grupo:'POSTURA R8', label:'POSTURA R8', racoes:['POSTURA TECTRON R8'], cor:'#0a90e8',
-      formulacoes:['POSTURA TECTRON R8'] },
+    { grupo:'POSTURA R8', label:'POSTURA R8', racoes:['POSTURA MCASSAB R8','POSTURA TECTRON R8'], cor:'#0a90e8',
+      formulacoes:['POSTURA MCASSAB R8','POSTURA TECTRON R8'] },
     { grupo:'POSTURA R9', label:'POSTURA R9', racoes:['POSTURA MCASSAB R9','POSTURA TECTRON R9'], cor:'#1a9af0',
       formulacoes:['POSTURA MCASSAB R9','POSTURA TECTRON R9'] },
     { grupo:'POSTURA R10',label:'POSTURA R10',racoes:['POSTURA MCASSAB R 10','POSTURA TECTRON R 10'], cor:'#2aaaf8',
       formulacoes:['POSTURA MCASSAB R 10','POSTURA TECTRON R 10'] },
+    { grupo:'POSTURA R20',label:'POSTURA R20',racoes:['POSTURA TECTRON R20'], cor:'#3abcff',
+      formulacoes:['POSTURA TECTRON R20'] },
 ];
 
 // Produtos de Classificação
@@ -7914,21 +8104,138 @@ function onSelectRacao(modulo, panel) {
 function buildSelectHTML(modulo, lista, labelField, keyField, icone) {
     const opts = lista.map(i => {
         const key = (keyField==='key' ? i.key : i.racoes[0]).replace(/ /g,'_');
-        // Para rações com formulações (uma ou mais), adiciona optgroup
         if (i.formulacoes && i.formulacoes.length>=1) {
             return `<optgroup label="── ${i.label} ──">${i.formulacoes.map(f=>`<option value="${f.replace(/ /g,'_')}">${f}</option>`).join('')}</optgroup>`;
         }
         return `<option value="${key}">${i[labelField]||i.label||i.key}</option>`;
     }).join('');
+
+    const botoesExtra = modulo === 'prod' ? `
+        <button type="button" onclick="cfgAdicionarRacao(this)" title="Adicionar ração"
+            style="width:24px;height:24px;padding:0;background:#27ae60;color:white;border:none;border-radius:4px;cursor:pointer;font-size:16px;font-weight:bold;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
+        <button type="button" onclick="cfgRemoverRacao(this)" title="Remover ração selecionada"
+            style="width:24px;height:24px;padding:0;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;font-size:16px;font-weight:bold;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">−</button>` : '';
+
     return `<div style="margin-bottom:14px;">
         <label style="font-size:12px;font-weight:bold;color:#34495e;margin-bottom:6px;display:block;">${icone} Selecione a ração/produto:</label>
-        <select class="param-select-racao" onchange="onSelectRacao('${modulo}',this.closest('.param-cat-panel'))"
-            style="width:100%;max-width:480px;padding:8px 12px;border:1px solid #bdc3c7;border-radius:4px;font-size:13px;font-weight:bold;color:#333;background:white;">
-            <option value="">— Selecione —</option>
-            ${opts}
-        </select>
+        <div style="display:flex;align-items:center;gap:4px;max-width:560px;">
+            <select class="param-select-racao" onchange="onSelectRacao('${modulo}',this.closest('.param-cat-panel'))"
+                style="flex:1;padding:8px 12px;border:1px solid #bdc3c7;border-radius:4px;font-size:13px;font-weight:bold;color:#333;background:white;">
+                <option value="">— Selecione —</option>
+                ${opts}
+            </select>
+            ${botoesExtra}
+        </div>
+        <div id="cfgNovaRacaoArea-${modulo}" style="display:none;margin-top:6px;display:none;gap:6px;align-items:center;flex-wrap:wrap;">
+            <input type="text" id="cfgNovaRacaoInput-${modulo}" placeholder="Nome da ração (ex: POSTURA MCASSAB R8)"
+                style="padding:7px 10px;border:1px solid #1a3a9f;border-radius:4px;font-size:13px;text-transform:uppercase;width:340px;"
+                oninput="this.value=this.value.toUpperCase()">
+            <button type="button" onclick="cfgConfirmarNovaRacao('${modulo}')"
+                style="padding:6px 14px;background:#27ae60;color:white;border:none;border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">✔ Confirmar</button>
+            <button type="button" onclick="cfgCancelarNovaRacao('${modulo}')"
+                style="padding:6px 10px;background:#95a5a6;color:white;border:none;border-radius:4px;font-size:12px;cursor:pointer;">✕ Cancelar</button>
+        </div>
     </div>
     <div class="param-conteudo"></div>`;
+}
+
+function cfgAdicionarRacao(btn) {
+    const modulo = 'prod';
+    const area = document.getElementById('cfgNovaRacaoArea-' + modulo);
+    if (area) { area.style.display = 'flex'; document.getElementById('cfgNovaRacaoInput-' + modulo).focus(); }
+}
+
+function cfgCancelarNovaRacao(modulo) {
+    const area = document.getElementById('cfgNovaRacaoArea-' + modulo);
+    if (area) { area.style.display = 'none'; document.getElementById('cfgNovaRacaoInput-' + modulo).value = ''; }
+}
+
+function cfgConfirmarNovaRacao(modulo) {
+    const input = document.getElementById('cfgNovaRacaoInput-' + modulo);
+    const nome = input.value.trim().toUpperCase();
+    if (!nome) { alert('Digite o nome da ração.'); input.focus(); return; }
+
+    // Tenta agrupar automaticamente (ex: POSTURA MCASSAB R8 → grupo POSTURA R8)
+    const jaExiste = RACOES_GRUPOS.some(g => g.racoes.includes(nome));
+    if (!jaExiste) {
+        const matchGrupo = nome.match(/^(CORTE|POSTURA)\s+(?:MCASSAB|WISIUM|TECTRON)\s+(R\s*\d+)$/i);
+        let adicionado = false;
+        if (matchGrupo) {
+            const tipoBase = matchGrupo[1].toUpperCase();
+            const numRacao = matchGrupo[2].toUpperCase().replace(/\s+/,'');
+            const grupoAlvo = tipoBase + ' ' + numRacao;
+            const grupoExistente = RACOES_GRUPOS.find(g => g.grupo === grupoAlvo);
+            if (grupoExistente) {
+                grupoExistente.racoes.push(nome);
+                if (!grupoExistente.formulacoes) grupoExistente.formulacoes = [];
+                grupoExistente.formulacoes.push(nome);
+                adicionado = true;
+            }
+        }
+        if (!adicionado) {
+            RACOES_GRUPOS.push({ grupo: nome, label: nome, racoes: [nome], cor: '#7f8c8d', formulacoes: [nome] });
+        }
+    }
+
+    // Sincroniza também o select de Lançamentos - Produção
+    const selProd = document.getElementById('cadRacaoProdSelect');
+    if (selProd && !Array.from(selProd.options).find(o => o.value === nome)) {
+        selProd.appendChild(new Option(nome, nome));
+    }
+
+    cfgCancelarNovaRacao(modulo);
+    renderizarTabelasParametros();
+}
+
+function cfgRemoverRacao(btn) {
+    const panel = btn.closest('.param-cat-panel');
+    const sel = panel ? panel.querySelector('.param-select-racao') : null;
+    if (!sel || !sel.value) { alert('Selecione uma ração para remover.'); return; }
+    const val = sel.value.replace(/_/g, ' ');
+
+    // Descobre o grupo ao qual essa ração pertence
+    const grupo = RACOES_GRUPOS.find(g => g.racoes.includes(val) || (g.formulacoes && g.formulacoes.includes(val)));
+
+    let removerGrupo = false;
+    if (grupo && (grupo.racoes.length > 1 || (grupo.formulacoes && grupo.formulacoes.length > 1))) {
+        // Grupo tem mais de uma ração — pergunta o que remover
+        const escolha = confirm(
+            'O que deseja remover?\n\nOK  \u2192  Remover o GRUPO INTEIRO "' + grupo.grupo + '" (' + (grupo.formulacoes || grupo.racoes).join(', ') + ')\n\nCancelar  \u2192  Remover apenas "' + val + '"'
+        );
+        removerGrupo = escolha;
+    } else {
+        if (!confirm('Remover "' + val + '" da lista?')) return;
+        removerGrupo = true; // grupo tem só essa ração, remove junto
+    }
+
+    const selProd = document.getElementById('cadRacaoProdSelect');
+
+    if (removerGrupo && grupo) {
+        // Remove todas as rações do grupo
+        const todasRacoes = [...new Set([...(grupo.racoes || []), ...(grupo.formulacoes || [])])];
+        const idx = RACOES_GRUPOS.indexOf(grupo);
+        if (idx !== -1) RACOES_GRUPOS.splice(idx, 1);
+        if (selProd) {
+            todasRacoes.forEach(r => {
+                const opt = Array.from(selProd.options).find(o => o.value === r);
+                if (opt) opt.remove();
+            });
+        }
+    } else {
+        // Remove só a ração selecionada do grupo
+        for (let i = RACOES_GRUPOS.length - 1; i >= 0; i--) {
+            const g = RACOES_GRUPOS[i];
+            g.racoes = g.racoes.filter(r => r !== val);
+            if (g.formulacoes) g.formulacoes = g.formulacoes.filter(r => r !== val);
+            if (g.racoes.length === 0) RACOES_GRUPOS.splice(i, 1);
+        }
+        if (selProd) {
+            const opt = Array.from(selProd.options).find(o => o.value === val);
+            if (opt) opt.remove();
+        }
+    }
+
+    renderizarTabelasParametros();
 }
 
 function renderizarTabelasParametros() {
@@ -7936,6 +8243,32 @@ function renderizarTabelasParametros() {
     const pProd = document.getElementById('paramPanelProd');
     if (pProd) {
         document.getElementById('paramCat-producao').dataset.modulo = 'prod';
+
+// ─── SINCRONIZA RAÇÕES NOVAS DOS LANÇAMENTOS COM RACOES_GRUPOS ───────────────
+function sincronizarRacoesNovos() {
+    const racoesConhecidas = new Set(RACOES_GRUPOS.flatMap(g => g.racoes));
+    const racoesNovos = [...new Set(producoes.map(r => r.racao))]
+        .filter(r => r && !racoesConhecidas.has(r));
+    racoesNovos.forEach(racao => {
+        RACOES_GRUPOS.push({
+            grupo: racao,
+            label: racao,
+            racoes: [racao],
+            cor: '#7f8c8d',
+            formulacoes: [racao]
+        });
+        console.log('[sincronizar] Nova ração adicionada ao RACOES_GRUPOS:', racao);
+    });
+    if (racoesNovos.length > 0) {
+        // Atualiza o select de parâmetros se já foi renderizado
+        const pProd = document.getElementById('paramProdSelect');
+        if (pProd && typeof buildSelectHTML === 'function') {
+            pProd.innerHTML = buildSelectHTML('prod', RACOES_GRUPOS, 'label', 'racoes', '🌾');
+        }
+    }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+        sincronizarRacoesNovos();
         pProd.innerHTML = buildSelectHTML('prod', RACOES_GRUPOS, 'label', 'racoes', '🌾');
     }
     // CLASSIFICAÇÃO
@@ -8201,7 +8534,8 @@ function fmtDate(d) {
 function fmtN(v, dec=2) {
     if (v === undefined || v === null || v === '') return '-';
     const n = parseFloat(v);
-    return isNaN(n) ? '-' : n.toFixed(dec);
+    if (isNaN(n)) return '-';
+    return n.toFixed(dec);
 }
 function avg(arr) {
     const a = arr.filter(v=>v>0);
