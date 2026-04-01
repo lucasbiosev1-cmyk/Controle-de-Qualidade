@@ -3838,20 +3838,28 @@ async function fazerLogin() {
                 prodsMes.forEach(r => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
                 mpMes.forEach(r => { camposMP.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
 
-                // ─── CARD 2: CONFORMIDADE — total de análises CONFORME no mês (campo a campo)
-                // Uma análise de produção é CONFORME se status === 'CONFORME'
-                const confMesProd   = prodsMes.filter(p => p.status === 'CONFORME').length;
-                const nconfMesProd  = prodsMes.filter(p => p.status === 'NÃO CONFORME' || p.status === 'NAO CONFORME').length;
-                const totalMesProd  = prodsMes.length;
+                // ─── CARD 2/3: usa statusPorParametros igual às tabelas (inclui prod, class e mp)
+                const classMes = (classificacoes||[]).filter(isMesAtual);
 
-                // Para MP: conformes e não-conformes são contados pelo status também
-                const confMesMP    = mpMes.filter(p => p.status === 'CONFORME').length;
-                const nconfMesMP   = mpMes.filter(p => p.status === 'NÃO CONFORME' || p.status === 'NAO CONFORME').length;
-                const totalMesMP   = mpMes.length;
+                const _isConf  = s => s.includes('CONFORME') && !s.includes('NÃO');
+                const _isNConf = s => s.includes('NÃO');
+                const _temParam = s => !s.includes('S/ PARÂM');
 
-                const confMesTotal  = confMesProd + confMesMP;
-                const nconfMesTotal = nconfMesProd + nconfMesMP;
-                const totalMesTudo  = totalMesProd + totalMesMP;
+                const confMesProd  = prodsMes.filter(r => _isConf(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
+                const nconfMesProd = prodsMes.filter(r => _isNConf(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
+                const totalMesProd = prodsMes.filter(r => _temParam(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
+
+                const confMesClass  = classMes.filter(r => _isConf(statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data))).length;
+                const nconfMesClass = classMes.filter(r => _isNConf(statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data))).length;
+                const totalMesClass = classMes.filter(r => _temParam(statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data))).length;
+
+                const confMesMP  = mpMes.filter(r => _isConf(statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data))).length;
+                const nconfMesMP = mpMes.filter(r => _isNConf(statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data))).length;
+                const totalMesMP = mpMes.filter(r => _temParam(statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data))).length;
+
+                const confMesTotal  = confMesProd  + confMesClass  + confMesMP;
+                const nconfMesTotal = nconfMesProd + nconfMesClass + nconfMesMP;
+                const totalMesTudo  = totalMesProd + totalMesClass + totalMesMP;
                 const pctConf   = totalMesTudo > 0 ? Math.round(confMesTotal / totalMesTudo * 100) : 0;
 
                 // ─── CARD 3: NÃO CONFORMIDADE — total não conformes no mês
