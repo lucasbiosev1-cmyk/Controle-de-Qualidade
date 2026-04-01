@@ -1059,13 +1059,6 @@
             <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.55);letter-spacing:1.5px;text-transform:uppercase;font-family:'Montserrat',Arial,sans-serif;">Gestão da Qualidade</div>
         </div>
         <div style="display:flex;align-items:center;gap:14px;">
-            <div class="theme-switcher">
-                <button class="theme-btn theme-btn-azul ativo" id="tbAzul"  onclick="aplicarTema('azul')"  title="Azul Clássico"></button>
-                <button class="theme-btn theme-btn-verde"      id="tbVerde" onclick="aplicarTema('verde')" title="Verde Floresta"></button>
-                <button class="theme-btn theme-btn-cinza"      id="tbCinza" onclick="aplicarTema('cinza')" title="Cinza Profissional"></button>
-                <button class="theme-btn theme-btn-vinho"      id="tbVinho" onclick="aplicarTema('vinho')" title="Vinho Executivo"></button>
-            </div>
-            <div style="width:1px;height:20px;background:rgba(255,255,255,0.15);"></div>
             <div style="display:flex;align-items:center;gap:8px;">
                 <div style="width:28px;height:28px;border-radius:50%;background:#c0392b;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;" id="headerAvatar">U</div>
                 <div>
@@ -1640,7 +1633,15 @@
                 <div class="relatorio-periodo" id="relPeriodo"></div>
 
                 <!-- CARDS DE ESTATÍSTICAS -->
-                <div id="relCards" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:24px;"></div>
+                <div id="relCards" style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:24px;width:100%;box-sizing:border-box;"></div>
+                <style>
+                @media(max-width:700px){
+                    #relCards{grid-template-columns:repeat(3,1fr)!important;}
+                }
+                @media(max-width:420px){
+                    #relCards{grid-template-columns:repeat(2,1fr)!important;}
+                }
+                </style>
 
                 <!-- GRÁFICO PRINCIPAL -->
                 <div class="grafico-container" style="margin-bottom:24px;">
@@ -2264,6 +2265,7 @@
             <button class="cfg-sub-tab" id="cfgBtn-memoria" onclick="trocarSubCfg('memoria', this)">🗄️ Memória</button>
             <button class="cfg-sub-tab" id="cfgBtn-usuarios" onclick="trocarSubCfg('usuarios', this)">👥 Usuários</button>
             <button class="cfg-sub-tab" id="cfgBtn-alertaWhatsApp" onclick="trocarSubCfg('alertaWhatsApp', this)">📲 Alerta WhatsApp</button>
+            <button class="cfg-sub-tab" id="cfgBtn-aparencia" onclick="trocarSubCfg('aparencia', this)">🎨 Aparência</button>
             </div>
             <!-- Painéis -->
             <div class="cfg-sub-panels">
@@ -2745,6 +2747,75 @@
         </div>
 
             </div>
+
+            <!-- PAINEL APARÊNCIA -->
+            <div id="cfg-panel-aparencia" class="cfg-sub-panel">
+                <div style="max-width:900px;margin:0 auto;padding:24px 20px;">
+                    <div class="container">
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #34495e;">
+                            <span style="font-size:28px;">🎨</span>
+                            <div>
+                                <div style="font-size:16px;font-weight:bold;color:#34495e;text-transform:uppercase;">Aparência — Tema de Cores</div>
+                                <div style="font-size:12px;color:#777;margin-top:2px;">Escolha o tema de cores do sistema. A preferência é salva automaticamente.</div>
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-top:8px;">
+
+                            <!-- Azul -->
+                            <div id="temaCard-azul" onclick="aplicarTema('azul')" style="cursor:pointer;border:2px solid #ddd;border-radius:10px;overflow:hidden;transition:all 0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.07);">
+                                <div style="height:70px;background:linear-gradient(135deg,#0a1e7f 60%,#3498db 100%);display:flex;align-items:center;justify-content:center;">
+                                    <span style="font-size:28px;">🔵</span>
+                                </div>
+                                <div style="padding:12px 14px;background:#fff;">
+                                    <div style="font-size:13px;font-weight:bold;color:#0a1e7f;">Azul Clássico</div>
+                                    <div style="font-size:11px;color:#888;margin-top:3px;">Padrão do sistema</div>
+                                    <div id="temaCheck-azul" style="margin-top:8px;font-size:11px;font-weight:bold;color:#27ae60;display:none;">✔ Ativo</div>
+                                </div>
+                            </div>
+
+                            <!-- Verde -->
+                            <div id="temaCard-verde" onclick="aplicarTema('verde')" style="cursor:pointer;border:2px solid #ddd;border-radius:10px;overflow:hidden;transition:all 0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.07);">
+                                <div style="height:70px;background:linear-gradient(135deg,#145a32 60%,#27ae60 100%);display:flex;align-items:center;justify-content:center;">
+                                    <span style="font-size:28px;">🟢</span>
+                                </div>
+                                <div style="padding:12px 14px;background:#fff;">
+                                    <div style="font-size:13px;font-weight:bold;color:#145a32;">Verde Floresta</div>
+                                    <div style="font-size:11px;color:#888;margin-top:3px;">Tonalidade natural</div>
+                                    <div id="temaCheck-verde" style="margin-top:8px;font-size:11px;font-weight:bold;color:#27ae60;display:none;">✔ Ativo</div>
+                                </div>
+                            </div>
+
+                            <!-- Cinza -->
+                            <div id="temaCard-cinza" onclick="aplicarTema('cinza')" style="cursor:pointer;border:2px solid #ddd;border-radius:10px;overflow:hidden;transition:all 0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.07);">
+                                <div style="height:70px;background:linear-gradient(135deg,#2c3e50 60%,#7f8c8d 100%);display:flex;align-items:center;justify-content:center;">
+                                    <span style="font-size:28px;">⚫</span>
+                                </div>
+                                <div style="padding:12px 14px;background:#fff;">
+                                    <div style="font-size:13px;font-weight:bold;color:#2c3e50;">Cinza Profissional</div>
+                                    <div style="font-size:11px;color:#888;margin-top:3px;">Elegante e neutro</div>
+                                    <div id="temaCheck-cinza" style="margin-top:8px;font-size:11px;font-weight:bold;color:#27ae60;display:none;">✔ Ativo</div>
+                                </div>
+                            </div>
+
+                            <!-- Vinho -->
+                            <div id="temaCard-vinho" onclick="aplicarTema('vinho')" style="cursor:pointer;border:2px solid #ddd;border-radius:10px;overflow:hidden;transition:all 0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.07);">
+                                <div style="height:70px;background:linear-gradient(135deg,#6d1a36 60%,#8e44ad 100%);display:flex;align-items:center;justify-content:center;">
+                                    <span style="font-size:28px;">🟣</span>
+                                </div>
+                                <div style="padding:12px 14px;background:#fff;">
+                                    <div style="font-size:13px;font-weight:bold;color:#6d1a36;">Vinho Executivo</div>
+                                    <div style="font-size:11px;color:#888;margin-top:3px;">Sofisticado e forte</div>
+                                    <div id="temaCheck-vinho" style="margin-top:8px;font-size:11px;font-weight:bold;color:#27ae60;display:none;">✔ Ativo</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- FIM PAINEL APARÊNCIA -->
+
             </div>
         </div>
     </div><!-- fim aba-configuracoes -->
@@ -3515,9 +3586,25 @@ function aplicarTema(tema) {
     if (!TEMAS.includes(tema)) tema = 'azul';
     document.documentElement.setAttribute('data-theme', tema);
     localStorage.setItem('tema', tema);
+    // Atualiza botões do header (caso ainda existam)
     TEMAS.forEach(t => {
         const btn = document.getElementById('tb' + t.charAt(0).toUpperCase() + t.slice(1));
         if (btn) btn.classList.toggle('ativo', t === tema);
+    });
+    // Atualiza cards da aba Aparência
+    TEMAS.forEach(t => {
+        const card  = document.getElementById('temaCard-' + t);
+        const check = document.getElementById('temaCheck-' + t);
+        if (card) {
+            if (t === tema) {
+                card.style.border = '2px solid #27ae60';
+                card.style.boxShadow = '0 0 0 3px rgba(39,174,96,0.18)';
+            } else {
+                card.style.border = '2px solid #ddd';
+                card.style.boxShadow = '0 2px 6px rgba(0,0,0,0.07)';
+            }
+        }
+        if (check) check.style.display = (t === tema) ? 'block' : 'none';
     });
 }
 // Aplica tema salvo ao carregar
@@ -3905,6 +3992,7 @@ function trocarSubCfg(subAba, btn) {
     if (subAba === 'memoria')        atualizarMemoria();
     if (subAba === 'alertaWhatsApp') inicializarAbaWhatsApp();
     if (subAba === 'usuarios')       renderizarListaUsuarios();
+    if (subAba === 'aparencia')      aplicarTema(localStorage.getItem('tema') || 'azul');
 }
 
 // ===================================================
@@ -4732,7 +4820,7 @@ function calcEstat(valores) {
     const media= valores.reduce((a,b)=>a+b,0)/n;
     const min  = Math.min(...valores);
     const max  = Math.max(...valores);
-    const dp   = Math.sqrt(valores.reduce((s,v)=>s+Math.pow(v-media,2),0)/n);
+    const dp   = n > 1 ? Math.sqrt(valores.reduce((s,v)=>s+Math.pow(v-media,2),0)/(n-1)) : 0;
     const cv   = media !== 0 ? (dp/media*100) : 0;
     return { n, media, min, max, dp, cv };
 }
@@ -4832,11 +4920,11 @@ function renderCards(e, analNome, eDPG) {
         { label: 'C.V (%)',        value: e.cv.toFixed(2) + '%',     sub: 'Coef. de Variação',    cor: cvCor,     icon: '📉' },
     ];
     document.getElementById('relCards').innerHTML = itens.map(i => `
-        <div style="background:#f9f9f9;border:1px solid #ddd;border-radius:6px;padding:14px;text-align:center;border-top:4px solid ${i.cor};">
-            <div style="font-size:20px;margin-bottom:4px;">${i.icon}</div>
-            <div style="font-size:10px;font-weight:bold;text-transform:uppercase;color:#666;margin-bottom:6px;">${i.label}</div>
-            <div style="font-size:22px;font-weight:bold;color:${i.cor};">${i.value}</div>
-            <div style="font-size:9px;color:#999;margin-top:4px;text-transform:uppercase;">${i.sub}</div>
+        <div style="background:#f9f9f9;border:1px solid #ddd;border-radius:6px;padding:10px 6px;text-align:center;border-top:4px solid ${i.cor};box-sizing:border-box;min-width:0;overflow:hidden;">
+            <div style="font-size:18px;margin-bottom:2px;">${i.icon}</div>
+            <div style="font-size:9px;font-weight:bold;text-transform:uppercase;color:#666;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.label}</div>
+            <div style="font-size:clamp(13px,3vw,20px);font-weight:bold;color:${i.cor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.value}</div>
+            <div style="font-size:8px;color:#999;margin-top:3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.sub}</div>
         </div>`).join('');
 }
 
