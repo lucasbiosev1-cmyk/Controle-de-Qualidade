@@ -1167,7 +1167,7 @@
                         </div>
                         <div class="capa-kpi-value" id="kpiEntradas" style="color:#e67e22;">—</div>
                         <div class="capa-kpi-row">
-                            <div class="capa-kpi-sub" style="color:#aaa;">NC ÷ Conf × 100</div>
+                            <div class="capa-kpi-sub" style="color:#aaa;">Conformes ÷ Total × 100</div>
                             <span class="capa-kpi-badge" id="kpiEntradasP" style="background:#fff8e1;color:#e67e22;">—</span>
                         </div>
                         <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiEntradasBar" style="width:0%;background:#f39c12;"></div></div>
@@ -3866,7 +3866,7 @@ async function fazerLogin() {
                 const pctNConf = totalMesTudo > 0 ? Math.round(nconfMesTotal / totalMesTudo * 100) : 0;
 
                 // ─── CARD 4: EFICIÊNCIA GERAL — (naoConformes / conformes) * 100
-                const eficiencia = confMesTotal > 0 ? (nconfMesTotal / confMesTotal * 100).toFixed(1) : '0.0';
+                const eficiencia = totalMesTudo > 0 ? (confMesTotal / totalMesTudo * 100).toFixed(1) : '0.0';
 
                 // ── Atualizar elementos
                 const kpiA = document.getElementById('kpiAnalises');     if(kpiA) kpiA.textContent = analisesHoje;
