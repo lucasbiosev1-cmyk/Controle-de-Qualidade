@@ -3843,15 +3843,27 @@ function carregarTodos() {
         umidade:     +(r.umidade     * 100).toFixed(3),
     });
 
-    // Normaliza campos de matéria-prima garantindo que solubil e outros
-    // campos opcionais existam mesmo quando não salvos anteriormente
+    // Normaliza campos de matéria-prima respeitando NULL do Supabase
     const normMat = r => ({
-        solubil: 0, extrato: 0, fibra: 0, mineral: 0, acidez: 0,
-        ureatica: 0, rancidez: 0, peroxido: 0, digestibilidade: 0,
-        granulo1: 0, granulo2: 0, granulo3: 0, granulo4: 0,
-        tempResfriador: 0, tempCanhao: 0, alimentacaoHz: 0, calcio: 0, fosforo: 0,
         ...r,
-        solubil: parseFloat(r.solubil ?? r.solubilidade ?? 0) || 0,
+        solubil:         r.solubil         !== undefined ? (r.solubil         !== null ? parseFloat(r.solubil)         : null) : (r.solubilidade !== undefined ? (r.solubilidade !== null ? parseFloat(r.solubilidade) : null) : null),
+        extrato:         r.extrato         !== undefined ? (r.extrato         !== null ? parseFloat(r.extrato)         : null) : null,
+        fibra:           r.fibra           !== undefined ? (r.fibra           !== null ? parseFloat(r.fibra)           : null) : null,
+        mineral:         r.mineral         !== undefined ? (r.mineral         !== null ? parseFloat(r.mineral)         : null) : null,
+        acidez:          r.acidez          !== undefined ? (r.acidez          !== null ? parseFloat(r.acidez)          : null) : null,
+        ureatica:        r.ureatica        !== undefined ? (r.ureatica        !== null ? parseFloat(r.ureatica)        : null) : null,
+        rancidez:        r.rancidez        !== undefined ? (r.rancidez        !== null ? parseFloat(r.rancidez)        : null) : null,
+        peroxido:        r.peroxido        !== undefined ? (r.peroxido        !== null ? parseFloat(r.peroxido)        : null) : null,
+        digestibilidade: r.digestibilidade !== undefined ? (r.digestibilidade !== null ? parseFloat(r.digestibilidade) : null) : null,
+        granulo1:        r.granulo1        !== undefined ? (r.granulo1        !== null ? parseFloat(r.granulo1)        : null) : null,
+        granulo2:        r.granulo2        !== undefined ? (r.granulo2        !== null ? parseFloat(r.granulo2)        : null) : null,
+        granulo3:        r.granulo3        !== undefined ? (r.granulo3        !== null ? parseFloat(r.granulo3)        : null) : null,
+        granulo4:        r.granulo4        !== undefined ? (r.granulo4        !== null ? parseFloat(r.granulo4)        : null) : null,
+        tempResfriador:  r.tempResfriador  !== undefined ? (r.tempResfriador  !== null ? parseFloat(r.tempResfriador)  : null) : null,
+        tempCanhao:      r.tempCanhao      !== undefined ? (r.tempCanhao      !== null ? parseFloat(r.tempCanhao)      : null) : null,
+        alimentacaoHz:   r.alimentacaoHz   !== undefined ? (r.alimentacaoHz   !== null ? parseFloat(r.alimentacaoHz)   : null) : null,
+        calcio:          r.calcio          !== undefined ? (r.calcio          !== null ? parseFloat(r.calcio)          : null) : null,
+        fosforo:         r.fosforo         !== undefined ? (r.fosforo         !== null ? parseFloat(r.fosforo)         : null) : null,
     });
 
     // Aplica edições sobre a planilha base (sobrescreve registros editados)
@@ -7158,30 +7170,28 @@ async function carregarTodosAsync() {
         umidade:     +(r.umidade     * 100).toFixed(3),
     });
 
-    // Normaliza campos de matéria-prima garantindo que solubil e outros
-    // campos opcionais existam mesmo quando o Supabase não os retorna
+    // Normaliza campos de matéria-prima respeitando NULL do Supabase
     const normMat = r => ({
-        solubil:         0,
-        extrato:         0,
-        fibra:           0,
-        mineral:         0,
-        acidez:          0,
-        ureatica:        0,
-        rancidez:        0,
-        peroxido:        0,
-        digestibilidade: 0,
-        granulo1:        0,
-        granulo2:        0,
-        granulo3:        0,
-        granulo4:        0,
-        tempResfriador:  0,
-        tempCanhao:      0,
-        alimentacaoHz:   0,
-        calcio:          0,
-        fosforo:         0,
         ...r,
-        // garante que solubil seja numérico mesmo se vier como null/undefined
-        solubil: parseFloat(r.solubil ?? r.solubilidade ?? 0) || 0,
+        // Só converte para null se o campo não existir no objeto; respeita null do Supabase
+        solubil:         r.solubil         !== undefined ? (r.solubil         !== null ? parseFloat(r.solubil)         : null) : (r.solubilidade !== undefined ? (r.solubilidade !== null ? parseFloat(r.solubilidade) : null) : null),
+        extrato:         r.extrato         !== undefined ? (r.extrato         !== null ? parseFloat(r.extrato)         : null) : null,
+        fibra:           r.fibra           !== undefined ? (r.fibra           !== null ? parseFloat(r.fibra)           : null) : null,
+        mineral:         r.mineral         !== undefined ? (r.mineral         !== null ? parseFloat(r.mineral)         : null) : null,
+        acidez:          r.acidez          !== undefined ? (r.acidez          !== null ? parseFloat(r.acidez)          : null) : null,
+        ureatica:        r.ureatica        !== undefined ? (r.ureatica        !== null ? parseFloat(r.ureatica)        : null) : null,
+        rancidez:        r.rancidez        !== undefined ? (r.rancidez        !== null ? parseFloat(r.rancidez)        : null) : null,
+        peroxido:        r.peroxido        !== undefined ? (r.peroxido        !== null ? parseFloat(r.peroxido)        : null) : null,
+        digestibilidade: r.digestibilidade !== undefined ? (r.digestibilidade !== null ? parseFloat(r.digestibilidade) : null) : null,
+        granulo1:        r.granulo1        !== undefined ? (r.granulo1        !== null ? parseFloat(r.granulo1)        : null) : null,
+        granulo2:        r.granulo2        !== undefined ? (r.granulo2        !== null ? parseFloat(r.granulo2)        : null) : null,
+        granulo3:        r.granulo3        !== undefined ? (r.granulo3        !== null ? parseFloat(r.granulo3)        : null) : null,
+        granulo4:        r.granulo4        !== undefined ? (r.granulo4        !== null ? parseFloat(r.granulo4)        : null) : null,
+        tempResfriador:  r.tempResfriador  !== undefined ? (r.tempResfriador  !== null ? parseFloat(r.tempResfriador)  : null) : null,
+        tempCanhao:      r.tempCanhao      !== undefined ? (r.tempCanhao      !== null ? parseFloat(r.tempCanhao)      : null) : null,
+        alimentacaoHz:   r.alimentacaoHz   !== undefined ? (r.alimentacaoHz   !== null ? parseFloat(r.alimentacaoHz)   : null) : null,
+        calcio:          r.calcio          !== undefined ? (r.calcio          !== null ? parseFloat(r.calcio)          : null) : null,
+        fosforo:         r.fosforo         !== undefined ? (r.fosforo         !== null ? parseFloat(r.fosforo)         : null) : null,
     });
 
     // Registros do Supabase com id > max planilha = novos; <= max = edições
