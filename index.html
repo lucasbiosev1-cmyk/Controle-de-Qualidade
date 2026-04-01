@@ -1184,7 +1184,7 @@
                 <!-- Módulos -->
                 <div class="capa-sec-title">Módulos do sistema</div>
                 <div class="capa-cards">
-                    <div class="capa-card" onclick="trocarAba('producao', document.getElementById('tabProducao'))">
+                    <div class="capa-card" id="capaCardProducao" onclick="trocarAba('producao', document.getElementById('tabProducao'))">
                         <div class="capa-card-icon" style="background:#eef2ff;">🌾</div>
                         <div class="capa-card-info">
                             <div class="capa-card-label">Produção</div>
@@ -1192,7 +1192,7 @@
                         </div>
                         <span class="capa-card-arrow">›</span>
                     </div>
-                    <div class="capa-card" onclick="trocarAba('materiaPrima', document.getElementById('tabMateriaPrima'))">
+                    <div class="capa-card" id="capaCardMateriaPrima" onclick="trocarAba('materiaPrima', document.getElementById('tabMateriaPrima'))">
                         <div class="capa-card-icon" style="background:#edfaf6;">🧪</div>
                         <div class="capa-card-info">
                             <div class="capa-card-label">Matéria Prima</div>
@@ -1200,7 +1200,7 @@
                         </div>
                         <span class="capa-card-arrow">›</span>
                     </div>
-                    <div class="capa-card" onclick="trocarAba('classificacao', document.getElementById('tabClassificacao'))">
+                    <div class="capa-card" id="capaCardClassificacao" onclick="trocarAba('classificacao', document.getElementById('tabClassificacao'))">
                         <div class="capa-card-icon" style="background:#fef9ee;">🌽</div>
                         <div class="capa-card-info">
                             <div class="capa-card-label">Classificação</div>
@@ -1208,7 +1208,7 @@
                         </div>
                         <span class="capa-card-arrow">›</span>
                     </div>
-                    <div class="capa-card" onclick="trocarAba('relatorio', document.getElementById('tabRelatorio'))">
+                    <div class="capa-card" id="capaCardRelatorio" onclick="trocarAba('relatorio', document.getElementById('tabRelatorio'))">
                         <div class="capa-card-icon" style="background:#eef2ff;">📊</div>
                         <div class="capa-card-info">
                             <div class="capa-card-label">Rel. Produção</div>
@@ -1216,7 +1216,7 @@
                         </div>
                         <span class="capa-card-arrow">›</span>
                     </div>
-                    <div class="capa-card" onclick="trocarAba('relMP', document.getElementById('tabRelMP'))">
+                    <div class="capa-card" id="capaCardRelMP" onclick="trocarAba('relMP', document.getElementById('tabRelMP'))">
                         <div class="capa-card-icon" style="background:#fef0ee;">📋</div>
                         <div class="capa-card-info">
                             <div class="capa-card-label">Rel. Mat. Prima</div>
@@ -1224,7 +1224,7 @@
                         </div>
                         <span class="capa-card-arrow">›</span>
                     </div>
-                    <div class="capa-card" onclick="trocarAba('entradaMP', document.getElementById('tabEntradaMP'))">
+                    <div class="capa-card" id="capaCardEntradaMP" onclick="trocarAba('entradaMP', document.getElementById('tabEntradaMP'))">
                         <div class="capa-card-icon" style="background:#f4f4f2;">📥</div>
                         <div class="capa-card-info">
                             <div class="capa-card-label">Entradas MP</div>
@@ -3679,8 +3679,8 @@ async function fazerLogin() {
         err.classList.remove('show');
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('mainSystem').style.display  = 'block';
-        trocarAba('capa', document.getElementById('tabCapa'));
         carregarParametros();
+        // Redirecionamento pós-login gerenciado dentro de aplicarPermissoes()
         document.getElementById('nomeUsuario').textContent   = USUARIOS[user].nome;
         document.getElementById('perfilBadge').innerHTML =
             perfilAtual === 'admin'
@@ -3812,6 +3812,30 @@ function aplicarPermissoes() {
         carregarEntradasMP().then(() => exibirTabelaEMP());
     }
 
+    // Ocultar cards da capa que o usuário não tem acesso
+    const _cv = (id, visivel) => { const el = document.getElementById(id); if (el) el.style.display = visivel ? '' : 'none'; };
+    _cv('capaCardProducao',     isAdmin || podeCadastro);
+    _cv('capaCardMateriaPrima', isAdmin || podeCadastro);
+    _cv('capaCardClassificacao',isAdmin || podeCadastro);
+    _cv('capaCardRelatorio',    isAdmin || podeRel);
+    _cv('capaCardRelMP',        isAdmin || podeRel);
+    _cv('capaCardEntradaMP',    isAdmin || podeEntradaMP);
+
+    // Redirecionar para a primeira tela com acesso ao logar
+    if (!isAdmin) {
+        // Prioridade: Entradas MP > Relatórios > Cadastro/Produção
+        if (podeEntradaMP) {
+            trocarAba('entradaMP', document.getElementById('tabEntradaMP'));
+        } else if (podeRel) {
+            trocarAba('relatorio', document.getElementById('tabRelatorio'));
+        } else if (podeCadastro) {
+            trocarAba('producao', document.getElementById('tabProducao'));
+        }
+        // Ocultar aba Início para usuários comuns (o dashboard é para admin)
+        const tabCapaEl = document.getElementById('tabCapa');
+        if (tabCapaEl) tabCapaEl.style.display = 'none';
+    }
+
     // Aba Usuários — só admin (controlado dentro de cfg)
     // (visibilidade do cfgBtn-usuarios controlado via trocarSubCfg)
 }
@@ -3825,6 +3849,9 @@ function fazerLogout() {
         document.getElementById('loginUser').value = '';
         document.getElementById('loginPass').value = '';
         document.getElementById('loginError').classList.remove('show');
+        // Restaurar visibilidade da aba Início para próximo login
+        const tabCapaEl = document.getElementById('tabCapa');
+        if (tabCapaEl) tabCapaEl.style.display = '';
     }
 }
 
