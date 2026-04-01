@@ -8486,7 +8486,7 @@ function gerarTabelaProd(rows, compacto, destNC) {
             <td${cl(r.extrato,'extrato')}>${fmtN(r.extrato||0,2)}</td>
             <td${cl(r.proteina,'proteina')}>${fmtN(r.proteina,2)}</td>
             <td${cl(r.fibra,'fibra')}>${fmtN(r.fibra,2)}</td>
-            <td${cl(r.solubil,'solubil')}>${fmtN(r.solubil||0,2)}</td>
+            <td${cl(r.solubil,'solubil')}>${(r.solubil&&r.solubil!==0)?fmtN(r.solubil,2):'-'}</td>
             <td${cl(r.umidade,'umidade')}>${fmtN(r.umidade,1)}</td>
             <td${cl(r.densidade,'densidade')}>${fmtN(r.densidade,0)}</td>
             <td${cl(r.mineral,'mineral')}>${fmtN(r.mineral,2)}</td>
@@ -8685,7 +8685,7 @@ function gerarTabelaMP(rows, compacto, destNC) {
             <td${cl(r.extrato,'extrato')}>${fmtN(r.extrato||0,2)}</td>
             <td${cl(r.proteina,'proteina')}>${fmtN(r.proteina,2)}</td>
             <td>${fmtN(r.fibra,2)}</td>
-            <td${cl(r.solubil,'solubil')}>${fmtN(r.solubil||0,2)}</td>
+            <td${cl(r.solubil,'solubil')}>${(r.solubil&&r.solubil!==0)?fmtN(r.solubil,2):'-'}</td>
             <td${cl(r.mineral,'mineral')}>${fmtN(r.mineral,2)}</td>
             <td${cl(r.acidez,'acidez')}>${fmtN(r.acidez,2)}</td>
             <td${cl(r.ureatica,'ureatica')}>${fmtN(r.ureatica,3)}</td>
