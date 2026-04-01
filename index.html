@@ -3823,20 +3823,33 @@ async function fazerLogin() {
                 const camposMP = ['proteina','solubil','umidade','densidade','mineral','acidez','ureatica','rancidez','peroxido','digestibilidade'];
                 const camposProd = ['proteina','fibra','solubil','umidade','densidade','mineral'];
 
-                // ─── CARD 1: ANÁLISES HOJE — soma de campos com resultado válido (hoje)
-                const prodsHoje = (producoes||[]).filter(isHoje);
-                const mpHoje    = (materiasPrimas||[]).filter(isHoje);
+                // ─── CARD 1: ANÁLISES HOJE
+                // Produção e MP: conta cada campo preenchido (ureatica/peroxido/rancidez contam com 0,00)
+                // Classificação: cada registro conta 1 (a classificação) + 1 se umidade preenchida + 1 se densidade preenchida
+                const contarClass = (r) => {
+                    let n = 1; // a classificação em si sempre conta 1
+                    if (r.umidade  !== null && r.umidade  !== undefined) n++;
+                    if (r.densidade !== null && r.densidade !== undefined && parseFloat(r.densidade) > 0) n++;
+                    return n;
+                };
+
+                const prodsHoje  = (producoes||[]).filter(isHoje);
+                const mpHoje     = (materiasPrimas||[]).filter(isHoje);
+                const classHoje  = (classificacoes||[]).filter(isHoje);
 
                 let analisesHoje = 0;
-                prodsHoje.forEach(r => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesHoje++; }); });
-                mpHoje.forEach(r => { camposMP.forEach(c => { if(temValorMP(r,c)) analisesHoje++; }); });
+                prodsHoje.forEach(r  => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesHoje++; }); });
+                mpHoje.forEach(r     => { camposMP.forEach(c   => { if(temValorMP(r,c)) analisesHoje++; }); });
+                classHoje.forEach(r  => { analisesHoje += contarClass(r); });
 
-                // Sub: total de campos com resultado no mês
-                const prodsMes = (producoes||[]).filter(isMesAtual);
-                const mpMes    = (materiasPrimas||[]).filter(isMesAtual);
+                // Sub: total no mês
+                const prodsMes  = (producoes||[]).filter(isMesAtual);
+                const mpMes     = (materiasPrimas||[]).filter(isMesAtual);
+                const classMesC = (classificacoes||[]).filter(isMesAtual);
                 let analisesMes = 0;
-                prodsMes.forEach(r => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
-                mpMes.forEach(r => { camposMP.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
+                prodsMes.forEach(r   => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
+                mpMes.forEach(r      => { camposMP.forEach(c   => { if(temValorMP(r,c)) analisesMes++; }); });
+                classMesC.forEach(r  => { analisesMes += contarClass(r); });
 
                 // ─── CARD 2/3: usa statusPorParametros igual às tabelas (inclui prod, class e mp)
                 const classMes = (classificacoes||[]).filter(isMesAtual);
