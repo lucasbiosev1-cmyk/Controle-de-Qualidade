@@ -2791,7 +2791,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>DATA</th><th>HORA</th><th>FORNECEDOR</th><th>NOTA FISCAL</th>
+                            <th>DATA</th><th>HORA</th><th>MATÉRIA PRIMA</th><th>FORNECEDOR</th><th>NOTA FISCAL</th>
                             <th>USUÁRIO</th><th>STATUS</th><th id="thAcaoEMP">AÇÃO</th>
                         </tr>
                     </thead>
@@ -2818,7 +2818,14 @@
                             <div class="form-group required"><label>Hora</label><input type="text" id="cadHoraEMP" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" required oninput="mascaraHora(this)"></div>
                         </div>
                         <div class="form-grid form-grid-2">
+                            <div class="form-group required"><label>Matéria Prima</label>
+                                <select id="cadMateriaPrimaEMP" required style="padding:5px;border:1px solid #bdc3c7;border-radius:4px;font-size:10px;text-transform:uppercase;">
+                                    <option value="">SELECIONE...</option>
+                                </select>
+                            </div>
                             <div class="form-group required"><label>Fornecedor</label><input type="text" id="cadFornecedorEMP" required></div>
+                        </div>
+                        <div class="form-grid form-grid-2">
                             <div class="form-group required"><label>Número da Nota Fiscal</label><input type="text" id="cadNFEMP" required></div>
                         </div>
                         <div class="form-grid form-grid-2">
@@ -6753,7 +6760,8 @@ function exibirTabelaEMP(lista) {
         return `<tr>
             <td>${dataFmt}</td>
             <td>${r.hora||'-'}</td>
-            <td style="text-align:left;font-weight:bold;">${r.fornecedor||'-'}</td>
+            <td style="text-align:left;font-weight:bold;">${r.materia_prima||'-'}</td>
+            <td style="text-align:left;">${r.fornecedor||'-'}</td>
             <td>${r.nf||'-'}</td>
             <td>${r.usuario||'-'}</td>
             <td>${_empStatusBadge(r.status)}</td>
@@ -6777,12 +6785,17 @@ function abrirModalEMP() {
     document.getElementById('cadDataEMP').value = dataHoje();
     const agora = new Date();
     document.getElementById('cadHoraEMP').value = String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0');
+    document.getElementById('cadMateriaPrimaEMP').value = '';
     document.getElementById('cadFornecedorEMP').value = '';
     document.getElementById('cadNFEMP').value = '';
     const uNome = USUARIOS[usuarioAtual]?.nome || usuarioAtual || '';
     document.getElementById('cadUsuarioEMP').value = uNome;
+    // Popular select de matérias primas
+    const sel = document.getElementById('cadMateriaPrimaEMP');
+    const mps = [...new Set(materiasPrimas.map(r => r.produto).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="">SELECIONE...</option>' + mps.map(m => `<option value="${m}">${m}</option>`).join('');
     document.getElementById('modalCadastroEMP').classList.add('show');
-    setTimeout(() => document.getElementById('cadFornecedorEMP').focus(), 100);
+    setTimeout(() => document.getElementById('cadMateriaPrimaEMP').focus(), 100);
 }
 
 function editarEntradaMP(id) {
@@ -6793,6 +6806,11 @@ function editarEntradaMP(id) {
     document.getElementById('cadIdEMP').value = id;
     document.getElementById('cadDataEMP').value = dataParaDisplay(entrada.data);
     document.getElementById('cadHoraEMP').value = entrada.hora || '';
+    // Popular select e selecionar valor atual
+    const sel = document.getElementById('cadMateriaPrimaEMP');
+    const mps = [...new Set(materiasPrimas.map(r => r.produto).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="">SELECIONE...</option>' + mps.map(m => `<option value="${m}">${m}</option>`).join('');
+    sel.value = entrada.materia_prima || '';
     document.getElementById('cadFornecedorEMP').value = entrada.fornecedor || '';
     document.getElementById('cadNFEMP').value = entrada.nf || '';
     document.getElementById('cadUsuarioEMP').value = entrada.usuario || '';
@@ -6807,31 +6825,33 @@ function fecharModalEMP() {
 function limparFormularioEMP() {
     document.getElementById('cadDataEMP').value = dataHoje();
     document.getElementById('cadHoraEMP').value = '';
+    document.getElementById('cadMateriaPrimaEMP').value = '';
     document.getElementById('cadFornecedorEMP').value = '';
     document.getElementById('cadNFEMP').value = '';
 }
 
 async function salvarEntradaMP(event) {
     if (event) event.preventDefault();
-    const data      = dataParaISO(document.getElementById('cadDataEMP').value);
-    const hora      = document.getElementById('cadHoraEMP').value.trim();
-    const fornecedor= document.getElementById('cadFornecedorEMP').value.trim().toUpperCase();
-    const nf        = document.getElementById('cadNFEMP').value.trim().toUpperCase();
-    const usuario   = USUARIOS[usuarioAtual]?.nome || usuarioAtual || '';
+    const data        = dataParaISO(document.getElementById('cadDataEMP').value);
+    const hora        = document.getElementById('cadHoraEMP').value.trim();
+    const materia_prima = document.getElementById('cadMateriaPrimaEMP').value.trim().toUpperCase();
+    const fornecedor  = document.getElementById('cadFornecedorEMP').value.trim().toUpperCase();
+    const nf          = document.getElementById('cadNFEMP').value.trim().toUpperCase();
+    const usuario     = USUARIOS[usuarioAtual]?.nome || usuarioAtual || '';
 
-    if (!data)      { mostrarMsgEMP('erro','Informe a data.'); return; }
-    if (!fornecedor){ mostrarMsgEMP('erro','Informe o fornecedor.'); return; }
-    if (!nf)        { mostrarMsgEMP('erro','Informe o número da nota fiscal.'); return; }
+    if (!data)         { mostrarMsgEMP('erro','Informe a data.'); return; }
+    if (!materia_prima){ mostrarMsgEMP('erro','Selecione a matéria prima.'); return; }
+    if (!fornecedor)   { mostrarMsgEMP('erro','Informe o fornecedor.'); return; }
+    if (!nf)           { mostrarMsgEMP('erro','Informe o número da nota fiscal.'); return; }
 
     if (_empEditandoId) {
         const idx = entradasMP.findIndex(e => e.id === _empEditandoId);
         if (idx >= 0) {
-            entradasMP[idx] = { ...entradasMP[idx], data, hora, fornecedor, nf };
+            entradasMP[idx] = { ...entradasMP[idx], data, hora, materia_prima, fornecedor, nf };
             try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e){}
         }
         mostrarMsgEMP('sucesso','✅ Entrada atualizada com sucesso!');
     } else {
-        // Verifica se NF já existe nas abas de análise para já marcar concluída
         const nfUp = nf.toUpperCase();
         const emClass = classificacoes.some(r => (r.nf||'').toString().trim().toUpperCase() === nfUp);
         const emMP    = materiasPrimas.some(r => (r.nf||'').toString().trim().toUpperCase() === nfUp);
@@ -6839,7 +6859,7 @@ async function salvarEntradaMP(event) {
 
         const novaEntrada = {
             id: Date.now(),
-            data, hora, fornecedor, nf,
+            data, hora, materia_prima, fornecedor, nf,
             usuario,
             status: statusInicial,
             criado_em: new Date().toISOString()
