@@ -1162,12 +1162,12 @@
                     <div class="capa-kpi">
                         <div class="capa-kpi-accent" style="background:#f39c12;"></div>
                         <div class="capa-kpi-top">
-                            <div class="capa-kpi-label">Entradas MP</div>
-                            <div class="capa-kpi-icon" style="background:#fff8e1;">📥</div>
+                            <div class="capa-kpi-label">Eficiência Geral</div>
+                            <div class="capa-kpi-icon" style="background:#fff8e1;">📊</div>
                         </div>
                         <div class="capa-kpi-value" id="kpiEntradas" style="color:#e67e22;">—</div>
                         <div class="capa-kpi-row">
-                            <div class="capa-kpi-sub" style="color:#aaa;">Recebimentos totais</div>
+                            <div class="capa-kpi-sub" style="color:#aaa;">NC ÷ Conf × 100</div>
                             <span class="capa-kpi-badge" id="kpiEntradasP" style="background:#fff8e1;color:#e67e22;">—</span>
                         </div>
                         <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiEntradasBar" style="width:0%;background:#f39c12;"></div></div>
@@ -3803,39 +3803,78 @@ async function fazerLogin() {
             try {
                 const agora      = new Date();
                 const anoAtual   = agora.getFullYear();
-                const mesAtual   = agora.getMonth() + 1; // 1-12
-                const prefixoMes = anoAtual + '-' + String(mesAtual).padStart(2,'0'); // ex: "2025-04"
+                const mesAtual   = agora.getMonth() + 1;
+                const prefixoMes = anoAtual + '-' + String(mesAtual).padStart(2,'0');
+                const hojeISO    = prefixoMes + '-' + String(agora.getDate()).padStart(2,'0');
 
                 const isMesAtual = r => r.data && r.data.startsWith(prefixoMes);
-
-                const prodsMes  = (producoes||[]).filter(isMesAtual);
-                const mpMes     = (materiasPrimas||[]).filter(isMesAtual);
-
-                const totalMes  = prodsMes.length;
-                const confMes   = prodsMes.filter(p=>p.status==='CONFORME').length;
-                const nconfMes  = prodsMes.filter(p=>p.status==='NÃO CONFORME'||p.status==='NAO CONFORME').length;
-                const entradasMes = mpMes.length;
-                const analisesMes = totalMes + mpMes.length;
-                const pct       = totalMes > 0 ? Math.round(confMes/totalMes*100) : 0;
-                const pctNaoConf = totalMes > 0 ? Math.round(nconfMes/totalMes*100) : 0;
+                const isHoje     = r => r.data && r.data.slice(0,10) === hojeISO;
 
                 const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
                 const nomeMes = meses[agora.getMonth()];
 
-                const kpiA = document.getElementById('kpiAnalises');     if(kpiA) kpiA.textContent = analisesMes;
-                const kpiC = document.getElementById('kpiConformidade'); if(kpiC) kpiC.textContent = pct + '%';
-                const kpiN = document.getElementById('kpiNaoConf');      if(kpiN) kpiN.textContent = nconfMes;
-                const kpiE = document.getElementById('kpiEntradas');     if(kpiE) kpiE.textContent = entradasMes;
-                const barC = document.getElementById('kpiConfBar');      if(barC) barC.style.width = pct + '%';
-                const barN = document.getElementById('kpiNaoConfBar');   if(barN) barN.style.width = Math.min(pctNaoConf*3,100) + '%';
+                // ─── Campos que contam quando > 0 (exceto ureatica que conta qualquer valor não-null)
+                const temValorMP = (r, campo) => {
+                    const v = r[campo];
+                    if (v === null || v === undefined) return false;
+                    if (campo === 'ureatica' || campo === 'peroxido' || campo === 'rancidez') return true; // conta inclusive 0,00
+                    return parseFloat(v) > 0;
+                };
+                const camposMP = ['proteina','solubil','umidade','densidade','mineral','acidez','ureatica','rancidez','peroxido','digestibilidade'];
+                const camposProd = ['proteina','fibra','solubil','umidade','densidade','mineral'];
 
-                const kpiAP = document.getElementById('kpiAnalisesP');     if(kpiAP) kpiAP.textContent = analisesMes + ' registros em ' + nomeMes;
-                const kpiCP = document.getElementById('kpiConformidadeP'); if(kpiCP) kpiCP.textContent = confMes + ' de ' + totalMes + ' lotes';
-                const kpiNP = document.getElementById('kpiNaoConfP');      if(kpiNP) kpiNP.textContent = pctNaoConf + '%';
-                const kpiEP = document.getElementById('kpiEntradasP');     if(kpiEP) kpiEP.textContent = entradasMes + ' entradas em ' + nomeMes;
+                // ─── CARD 1: ANÁLISES HOJE — soma de campos com resultado válido (hoje)
+                const prodsHoje = (producoes||[]).filter(isHoje);
+                const mpHoje    = (materiasPrimas||[]).filter(isHoje);
 
-                const barA = document.getElementById('kpiAnalisesBar');  if(barA) barA.style.width = Math.min(analisesMes,100) + '%';
-                const barE = document.getElementById('kpiEntradasBar');  if(barE) barE.style.width = Math.min(Math.round(entradasMes/Math.max(entradasMes+10,1)*100),100) + '%';
+                let analisesHoje = 0;
+                prodsHoje.forEach(r => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesHoje++; }); });
+                mpHoje.forEach(r => { camposMP.forEach(c => { if(temValorMP(r,c)) analisesHoje++; }); });
+
+                // Sub: total de campos com resultado no mês
+                const prodsMes = (producoes||[]).filter(isMesAtual);
+                const mpMes    = (materiasPrimas||[]).filter(isMesAtual);
+                let analisesMes = 0;
+                prodsMes.forEach(r => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
+                mpMes.forEach(r => { camposMP.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
+
+                // ─── CARD 2: CONFORMIDADE — total de análises CONFORME no mês (campo a campo)
+                // Uma análise de produção é CONFORME se status === 'CONFORME'
+                const confMesProd   = prodsMes.filter(p => p.status === 'CONFORME').length;
+                const nconfMesProd  = prodsMes.filter(p => p.status === 'NÃO CONFORME' || p.status === 'NAO CONFORME').length;
+                const totalMesProd  = prodsMes.length;
+
+                // Para MP: conformes e não-conformes são contados pelo status também
+                const confMesMP    = mpMes.filter(p => p.status === 'CONFORME').length;
+                const nconfMesMP   = mpMes.filter(p => p.status === 'NÃO CONFORME' || p.status === 'NAO CONFORME').length;
+                const totalMesMP   = mpMes.length;
+
+                const confMesTotal  = confMesProd + confMesMP;
+                const nconfMesTotal = nconfMesProd + nconfMesMP;
+                const totalMesTudo  = totalMesProd + totalMesMP;
+                const pctConf   = totalMesTudo > 0 ? Math.round(confMesTotal / totalMesTudo * 100) : 0;
+
+                // ─── CARD 3: NÃO CONFORMIDADE — total não conformes no mês
+                const pctNConf = totalMesTudo > 0 ? Math.round(nconfMesTotal / totalMesTudo * 100) : 0;
+
+                // ─── CARD 4: EFICIÊNCIA GERAL — (naoConformes / conformes) * 100
+                const eficiencia = confMesTotal > 0 ? (nconfMesTotal / confMesTotal * 100).toFixed(1) : '0.0';
+
+                // ── Atualizar elementos
+                const kpiA = document.getElementById('kpiAnalises');     if(kpiA) kpiA.textContent = analisesHoje;
+                const kpiC = document.getElementById('kpiConformidade'); if(kpiC) kpiC.textContent = pctConf + '%';
+                const kpiN = document.getElementById('kpiNaoConf');      if(kpiN) kpiN.textContent = nconfMesTotal;
+                const kpiE = document.getElementById('kpiEntradas');     if(kpiE) kpiE.textContent = eficiencia + '%';
+                const barC = document.getElementById('kpiConfBar');      if(barC) barC.style.width = pctConf + '%';
+                const barN = document.getElementById('kpiNaoConfBar');   if(barN) barN.style.width = Math.min(pctNConf*3,100) + '%';
+
+                const kpiAP = document.getElementById('kpiAnalisesP');     if(kpiAP) kpiAP.textContent = analisesMes + ' resultados em ' + nomeMes;
+                const kpiCP = document.getElementById('kpiConformidadeP'); if(kpiCP) kpiCP.textContent = confMesTotal + ' de ' + totalMesTudo + ' lotes';
+                const kpiNP = document.getElementById('kpiNaoConfP');      if(kpiNP) kpiNP.textContent = pctNConf + '%';
+                const kpiEP = document.getElementById('kpiEntradasP');     if(kpiEP) kpiEP.textContent = nconfMesTotal + ' NC / ' + confMesTotal + ' C em ' + nomeMes;
+
+                const barA = document.getElementById('kpiAnalisesBar');  if(barA) barA.style.width = Math.min(Math.round(analisesHoje/10),100) + '%';
+                const barE = document.getElementById('kpiEntradasBar');  if(barE) barE.style.width = Math.min(parseFloat(eficiencia),100) + '%';
             } catch(e) {}
         });
     } else {
