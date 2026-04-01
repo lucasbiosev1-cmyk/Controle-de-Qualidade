@@ -3,38 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <script>
-      // Mata todos os Service Workers registrados e limpa todos os caches
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for (var reg of registrations) { reg.unregister(); }
-        });
-      }
-      if ('caches' in window) {
-        caches.keys().then(function(names) {
-          for (var name of names) { caches.delete(name); }
-        });
-      }
-    </script>
-    <!-- v20260331 -->
-    <meta name="version" content="20250331-001">
     <title>Sistema de Sistema Gestão da Qualidade</title>
-    <script>
-      // Força recarregamento se versão em cache for diferente
-      (function() {
-        var VERSION = '20250331-001';
-        var stored = sessionStorage.getItem('app_version');
-        if (stored && stored !== VERSION) {
-          sessionStorage.setItem('app_version', VERSION);
-          window.location.reload(true);
-        } else {
-          sessionStorage.setItem('app_version', VERSION);
-        }
-      })();
-    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -1265,7 +1237,6 @@
                         <option value="POSTURA TECTRON R8">POSTURA TECTRON R8</option>
                         <option value="POSTURA TECTRON R9">POSTURA TECTRON R9</option>
                         <option value="POSTURA TECTRON R 10">POSTURA TECTRON R 10</option>
-                        <option value="POSTURA TECTRON R20">POSTURA TECTRON R20</option>
                         <option value="BEPEL CALCÁRIO FINO">BEPEL CALCÁRIO FINO</option>
                         <option value="BEPEL CALCÁRIO GROSSO">BEPEL CALCÁRIO GROSSO</option>
                     </select>
@@ -1538,10 +1509,6 @@
                             <option value="g:POSTURA MCASSAB R 10|POSTURA TECTRON R 10">POSTURA R10 — TODOS</option>
                             <option value="POSTURA MCASSAB R 10">POSTURA MCASSAB R 10</option>
                             <option value="POSTURA TECTRON R 10">POSTURA TECTRON R 10</option>
-                        </optgroup>
-                        <optgroup label="── POSTURA R20 ──">
-                            <option value="g:POSTURA TECTRON R20">POSTURA R20 — TODOS</option>
-                            <option value="POSTURA TECTRON R20">POSTURA TECTRON R20</option>
                         </optgroup>
                         <optgroup label="── CALCÁRIO ──">
                             <option value="g:BEPEL CALCÁRIO FINO|BEPEL CALCÁRIO GROSSO">CALCÁRIO — TODOS</option>
@@ -3138,57 +3105,21 @@
                         <div class="form-group"><label>Hora</label><input type="text" id="cadHoraProd" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" oninput="mascaraHora(this)" onchange="gerarLoteAutomatico()"></div>
                         <div class="form-group required">
                             <label>Ração</label>
-                            <div style="display:flex;align-items:center;gap:4px;">
-                                <select id="cadRacaoProdSelect" onchange="handleRacaoSelectChange(this)" style="flex:1;">
-                                    <option value="">Selecione...</option>
-                                    <optgroup label="── SOJA ──">
-                                        <option value="SOJA MOÍDA">SOJA MOÍDA</option>
-                                    </optgroup>
-                                    <optgroup label="── CORTE WISIUM ──">
-                                        <option value="CORTE R1 WISIUM">CORTE R1 WISIUM</option>
-                                        <option value="CORTE R2 WISIUM">CORTE R2 WISIUM</option>
-                                        <option value="CORTE R3 WISIUM">CORTE R3 WISIUM</option>
-                                        <option value="CORTE R4 WISIUM">CORTE R4 WISIUM</option>
-                                        <option value="CORTE R5 WISIUM">CORTE R5 WISIUM</option>
-                                    </optgroup>
-                                    <optgroup label="── CORTE MCASSAB ──">
-                                        <option value="CORTE R1 MCASSAB">CORTE R1 MCASSAB</option>
-                                        <option value="CORTE R2 MCASSAB">CORTE R2 MCASSAB</option>
-                                        <option value="CORTE R3 MCASSAB">CORTE R3 MCASSAB</option>
-                                        <option value="CORTE R4 MCASSAB">CORTE R4 MCASSAB</option>
-                                        <option value="CORTE R5 MCASSAB">CORTE R5 MCASSAB</option>
-                                    </optgroup>
-                                    <optgroup label="── POSTURA MCASSAB ──">
-                                        <option value="POSTURA MCASSAB R1">POSTURA MCASSAB R1</option>
-                                        <option value="POSTURA MCASSAB R2">POSTURA MCASSAB R2</option>
-                                        <option value="POSTURA MCASSAB R3">POSTURA MCASSAB R3</option>
-                                        <option value="POSTURA MCASSAB R5">POSTURA MCASSAB R5</option>
-                                        <option value="POSTURA MCASSAB R6">POSTURA MCASSAB R6</option>
-                                        <option value="POSTURA MCASSAB R7">POSTURA MCASSAB R7</option>
-                                        <option value="POSTURA MCASSAB R8">POSTURA MCASSAB R8</option>
-                                        <option value="POSTURA MCASSAB R9">POSTURA MCASSAB R9</option>
-                                        <option value="POSTURA MCASSAB R 10">POSTURA MCASSAB R 10</option>
-                                    </optgroup>
-                                    <optgroup label="── POSTURA TECTRON ──">
-                                        <option value="POSTURA TECTRON R7">POSTURA TECTRON R7</option>
-                                        <option value="POSTURA TECTRON R8">POSTURA TECTRON R8</option>
-                                        <option value="POSTURA TECTRON R9">POSTURA TECTRON R9</option>
-                                        <option value="POSTURA TECTRON R 10">POSTURA TECTRON R 10</option>
-                                        <option value="POSTURA TECTRON R20">POSTURA TECTRON R20</option>
-                                    </optgroup>
-                                    <optgroup label="── CALCÁRIO ──">
-                                        <option value="BEPEL CALCÁRIO GROSSO">BEPEL CALCÁRIO GROSSO</option>
-                                        <option value="BEPEL CALCÁRIO FINO">BEPEL CALCÁRIO FINO</option>
-                                    </optgroup>
-                                </select>
-                                <button type="button" onclick="abrirAdicionarRacao()" title="Adicionar ração" style="width:24px;height:24px;padding:0;background:#27ae60;color:white;border:none;border-radius:4px;cursor:pointer;font-size:16px;font-weight:bold;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
-                                <button type="button" onclick="removerRacaoSelecionada()" title="Remover ração selecionada" style="width:24px;height:24px;padding:0;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;font-size:16px;font-weight:bold;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;">−</button>
-                            </div>
-                            <input type="text" id="cadRacaoProd" placeholder="Digite o nome da nova ração" style="display:none;margin-top:5px;width:100%;padding:8px;border:1px solid #1a3a9f;border-radius:4px;font-size:13px;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
-                            <div id="novaRacaoAcoes" style="display:none;margin-top:4px;gap:6px;">
-                                <button type="button" id="btnConfirmarNovaRacao" onclick="confirmarNovaRacao()" style="font-size:11px;padding:5px 12px;background:#27ae60;color:white;border:none;border-radius:3px;cursor:pointer;font-weight:bold;">✔ Confirmar</button>
-                                <button type="button" id="btnCancelarNovaRacao" onclick="cancelarNovaRacao()" style="font-size:11px;padding:5px 8px;background:#95a5a6;color:white;border:none;border-radius:3px;cursor:pointer;">✕ Cancelar</button>
-                            </div>
+                            <select id="cadRacaoProdSelect" onchange="handleRacaoSelectChange(this)">
+                                <option value="">Selecione...</option>
+                                <option value="SOJA MOÍDA">SOJA MOÍDA</option>
+                                <option value="CORTE R1 WISIUM">CORTE R1 WISIUM</option>
+                                <option value="CORTE R2 WISIUM">CORTE R2 WISIUM</option>
+                                <option value="CORTE R3 MCASSAB">CORTE R3 MCASSAB</option>
+                                <option value="CORTE R4 WISIUM">CORTE R4 WISIUM</option>
+                                <option value="CORTE R5 WISIUM">CORTE R5 WISIUM</option>
+                                <option value="POSTURA MCASSAB R1">POSTURA MCASSAB R1</option>
+                                <option value="POSTURA MCASSAB R7">POSTURA MCASSAB R7</option>
+                                <option value="POSTURA TECTRON R8">POSTURA TECTRON R8</option>
+                                <option value="__nova__">➕ Nova Ração...</option>
+                            </select>
+                            <input type="text" id="cadRacaoProd" placeholder="Nome da ração" style="display:none;margin-top:5px;width:100%;padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:13px;text-transform:uppercase;">
+                            <button type="button" id="btnCancelarNovaRacao" onclick="cancelarNovaRacao()" style="display:none;margin-top:4px;font-size:11px;padding:3px 8px;background:#95a5a6;color:white;border:none;border-radius:3px;cursor:pointer;">✕ Cancelar</button>
                         </div>
                         <div class="form-group required"><label>Lote (Automático)</label><input type="text" id="cadLoteProd" required readonly></div>
                     </div>
@@ -3928,21 +3859,11 @@ function carregarTodos() {
     const editClassMap = Object.fromEntries(editClass.map(r => [r.id, r]));
     const editMatMap   = Object.fromEntries(editMat.map(r => [r.id, normMat(r)]));
 
-    // Normaliza produção: campos opcionais com valor 0 viram null (não preenchidos)
-    const camposOpcionaisProd = ['dpg','extrato','proteina','fibra','solubil','umidade','densidade','mineral','calcio','fosforo','granulo1','granulo2','granulo3','fundo'];
-    const normProd = r => {
-        const out = {...r};
-        camposOpcionaisProd.forEach(c => {
-            const v = parseFloat(out[c]);
-            if (out[c] === null || out[c] === undefined || out[c] === '' || (!isNaN(v) && v === 0)) out[c] = null;
-        });
-        return out;
-    };
-    const planProdFinal  = planProd.map(r  => editProdMap[r.id] ? normProd(editProdMap[r.id]) : normProd(r));
+    const planProdFinal  = planProd.map(r  => editProdMap[r.id]  || r);
     const planClassFinal = planClass.map(r => editClassMap[r.id] ? editClassMap[r.id] : normClass(r));
     const planMatFinal   = planMat.map(r   => editMatMap[r.id]   || r);
 
-    producoes      = [...planProdFinal,  ...novoProd.map(normProd)];
+    producoes      = [...planProdFinal,  ...novoProd];
     classificacoes = [...planClassFinal, ...novoClass];
     materiasPrimas = [...planMatFinal,   ...novoMat.map(normMat)];
 }
@@ -4034,131 +3955,48 @@ function limparFormularioProd() {
     const sel = document.getElementById('cadRacaoProdSelect');
     const inp = document.getElementById('cadRacaoProd');
     const btn = document.getElementById('btnCancelarNovaRacao');
-    if (sel) { sel.value = ''; }
-    if (inp) { inp.value = ''; inp.style.display = 'none'; inp.style.background = ''; inp.style.borderColor = ''; }
-    const acoes = document.getElementById('novaRacaoAcoes');
-    if (acoes) { acoes.style.display = 'none'; }
+    if (sel) { sel.value = ''; sel.style.display = 'block'; }
+    if (inp) { inp.value = ''; inp.style.display = 'none'; }
+    if (btn) { btn.style.display = 'none'; }
 }
 
 function handleRacaoSelectChange(sel) {
     const input = document.getElementById('cadRacaoProd');
-    const acoes = document.getElementById('novaRacaoAcoes');
-    input.value = sel.value;
-    input.style.display = 'none';
-    if (acoes) { acoes.style.display = 'none'; }
-}
-
-function abrirAdicionarRacao() {
-    const input = document.getElementById('cadRacaoProd');
-    const acoes = document.getElementById('novaRacaoAcoes');
-    input.value = '';
-    input.style.background = '';
-    input.style.borderColor = '';
-    input.style.display = 'block';
-    if (acoes) { acoes.style.display = 'flex'; }
-    input.focus();
-}
-
-function removerRacaoSelecionada() {
-    const sel = document.getElementById('cadRacaoProdSelect');
-    const val = sel.value;
-    if (!val) { alert('Selecione uma ra\u00e7\u00e3o para remover.'); return; }
-    if (!confirm('Remover "' + val + '" da lista de ra\u00e7\u00f5es?')) return;
-    const opt = Array.from(sel.options).find(o => o.value === val);
-    if (opt) { opt.remove(); }
-    sel.value = '';
-    document.getElementById('cadRacaoProd').value = '';
-    // Sincroniza com RACOES_GRUPOS (remove da lista de configurações)
-    if (typeof RACOES_GRUPOS !== 'undefined') {
-        for (let i = RACOES_GRUPOS.length - 1; i >= 0; i--) {
-            const g = RACOES_GRUPOS[i];
-            g.racoes = g.racoes.filter(r => r !== val);
-            if (g.formulacoes) g.formulacoes = g.formulacoes.filter(r => r !== val);
-            if (g.racoes.length === 0) { RACOES_GRUPOS.splice(i, 1); }
-        }
-        const pProd = document.getElementById('paramPanelProd');
-        if (pProd && pProd.innerHTML) { renderizarTabelasParametros(); }
+    const btn = document.getElementById('btnCancelarNovaRacao');
+    if (sel.value === '__nova__') {
+        sel.style.display = 'none';
+        input.style.display = 'block';
+        btn.style.display = 'inline-block';
+        input.value = '';
+        input.focus();
+    } else {
+        input.value = sel.value;
+        input.style.display = 'none';
+        btn.style.display = 'none';
     }
-}
-
-function confirmarNovaRacao() {
-    const input = document.getElementById('cadRacaoProd');
-    const nome = input.value.trim().toUpperCase();
-    if (!nome) { alert('Digite o nome da ra\u00e7\u00e3o antes de confirmar.'); input.focus(); return; }
-    const sel = document.getElementById('cadRacaoProdSelect');
-    let opt = Array.from(sel.options).find(o => o.value === nome);
-    if (!opt) {
-        opt = new Option(nome, nome);
-        sel.appendChild(opt);
-        if (typeof RACOES_GRUPOS !== 'undefined') {
-            const jaExiste = RACOES_GRUPOS.some(g => g.racoes.includes(nome));
-            if (!jaExiste) {
-                // Tenta detectar o grupo pelo padrão do nome (ex: "POSTURA MCASSAB R8" → grupo "POSTURA R8")
-                const matchGrupo = nome.match(/^(CORTE|POSTURA)\s+(?:MCASSAB|WISIUM|TECTRON)\s+(R\s*\d+)$/i);
-                let adicionado = false;
-                if (matchGrupo) {
-                    const tipoBase = matchGrupo[1].toUpperCase(); // CORTE ou POSTURA
-                    const numRacao = matchGrupo[2].toUpperCase().replace(/\s+/,''); // R8, R10, etc.
-                    const grupoAlvo = tipoBase + ' ' + numRacao; // ex: POSTURA R8
-                    const grupoExistente = RACOES_GRUPOS.find(g => g.grupo === grupoAlvo);
-                    if (grupoExistente) {
-                        grupoExistente.racoes.push(nome);
-                        if (!grupoExistente.formulacoes) grupoExistente.formulacoes = [];
-                        grupoExistente.formulacoes.push(nome);
-                        adicionado = true;
-                    }
-                }
-                if (!adicionado) {
-                    RACOES_GRUPOS.push({ grupo: nome, label: nome, racoes: [nome], cor: '#7f8c8d', formulacoes: [nome] });
-                }
-                const pProd = document.getElementById('paramPanelProd');
-                if (pProd && pProd.innerHTML) { renderizarTabelasParametros(); }
-            }
-        }
-    }
-    sel.value = nome;
-    input.value = nome;
-    input.style.display = 'none';
-    input.style.background = '';
-    input.style.borderColor = '';
-    document.getElementById('novaRacaoAcoes').style.display = 'none';
 }
 
 function cancelarNovaRacao() {
     const sel = document.getElementById('cadRacaoProdSelect');
     const input = document.getElementById('cadRacaoProd');
-    const acoes = document.getElementById('novaRacaoAcoes');
+    const btn = document.getElementById('btnCancelarNovaRacao');
     sel.value = '';
+    sel.style.display = 'block';
     input.style.display = 'none';
-    input.style.background = '';
-    input.style.borderColor = '';
     input.value = '';
-    if (acoes) { acoes.style.display = 'none'; }
+    btn.style.display = 'none';
 }
 
 function salvarProducao(event) {
     event.preventDefault();
     const dataDisp = document.getElementById('cadDataProd').value;
     const data  = dataParaISO(dataDisp);
-    // Lê a ração: se o select está visível usa o select, senão usa o input de texto
-    const sel = document.getElementById('cadRacaoProdSelect');
-    const inp = document.getElementById('cadRacaoProd');
-    let racao = '';
-    if (sel && sel.style.display !== 'none' && sel.value && sel.value !== '__nova__') {
-        racao = sel.value;
-        if (inp) inp.value = racao; // sincroniza
-    } else if (inp) {
-        racao = inp.value.trim().toUpperCase();
-    }
-    // Garante que o lote está gerado antes de validar
-    gerarLoteAutomatico();
+    const racao = document.getElementById('cadRacaoProd').value;
     const lote  = document.getElementById('cadLoteProd').value.trim();
     const dgm   = parseFloat(document.getElementById('cadDGMProd').value);
-    if (!data) { mostrarErroProd('❌ Preencha a Data!'); return; }
-    if (!document.getElementById('cadHoraProd').value) { mostrarErroProd('❌ Preencha a Hora para gerar o Lote!'); return; }
-    if (!racao) { mostrarErroProd('❌ Selecione ou digite o nome da Ração!'); return; }
-    if (!lote) { mostrarErroProd('❌ Lote não gerado. Verifique Data e Hora!'); return; }
-    if (isNaN(dgm)) { mostrarErroProd('❌ Preencha o DGM!'); return; }
+    if (!data || !racao || !lote || isNaN(dgm)) {
+        mostrarErroProd('❌ Preencha Data, Hora (para gerar Lote), Ração e DGM!'); return;
+    }
     const _pfP = id => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; };
     const r = {
         id: idEdicaoProd || Date.now(), data,
@@ -4185,26 +4023,8 @@ function salvarProducao(event) {
     } else {
         producoes.push(r); mostrarSucessoProd('✓ Produção salva com sucesso!');
     }
-    // Persiste localmente IMEDIATAMENTE (garante que sobrevive ao recarregar)
-    const _maxIdBase = Math.max(0, ...DADOS_PLANILHA.producoes.map(x => x.id));
-    try {
-        if (idEdicaoProd && r.id <= _maxIdBase) {
-            // Edição de registro da planilha base → producoes_editadas
-            const _ed = JSON.parse(localStorage.getItem('producoes_editadas') || '[]');
-            const _ei = _ed.findIndex(x => x.id === r.id);
-            if (_ei >= 0) _ed[_ei] = r; else _ed.push(r);
-            localStorage.setItem('producoes_editadas', JSON.stringify(_ed));
-        } else {
-            // Registro novo → producoes_novos
-            const _nv = JSON.parse(localStorage.getItem('producoes_novos') || '[]');
-            const _ni = _nv.findIndex(x => x.id === r.id);
-            if (_ni >= 0) _nv[_ni] = r; else _nv.push(r);
-            localStorage.setItem('producoes_novos', JSON.stringify(_nv));
-        }
-    } catch(_e) { console.warn('localStorage indisponível:', _e); }
-    // Salva no Supabase em segundo plano
+    // Salva no Supabase
     dbUpsertOne('producoes', r).catch(e => console.error('Erro ao salvar produção:', e));
-    sincronizarRacoesNovos();
     fecharModalCadastroProd(); limparFormularioProd(); exibirTabelaProd();
 }
 
@@ -4267,13 +4087,10 @@ function deletarProd(id) {
     if (perfilAtual !== 'admin') return;
     if (confirm('Tem certeza que deseja deletar este registro?')) {
         producoes = producoes.filter(r => r.id !== id);
-        // Remove do localStorage também
-        try {
-            const _nv = JSON.parse(localStorage.getItem('producoes_novos') || '[]').filter(r => r.id !== id);
-            localStorage.setItem('producoes_novos', JSON.stringify(_nv));
-            const _ed = JSON.parse(localStorage.getItem('producoes_editadas') || '[]').filter(r => r.id !== id);
-            localStorage.setItem('producoes_editadas', JSON.stringify(_ed));
-        } catch(_e) {}
+        const maxBase = Math.max(...DADOS_PLANILHA.producoes.map(r=>r.id));
+        const novos = producoes.filter(r => r.id > maxBase);
+        const editIds = new Set(DADOS_PLANILHA.producoes.map(x=>x.id));
+        const editados = producoes.filter(r => editIds.has(r.id));
         dbDeleteOne('producoes', id).catch(e => console.error('Erro ao deletar produção:', e));
         exibirTabelaProd(); mostrarSucessoProd('✓ Registro deletado!');
     }
@@ -4723,17 +4540,17 @@ const FASES_MAP = {
     pos_fin:   { label: 'FINAL POSTURA (R3-R10)',
                  racoes: ['POSTURA MCASSAB R3','POSTURA MCASSAB R5',
                           'POSTURA MCASSAB R6','POSTURA MCASSAB R7',
-                          'POSTURA MCASSAB R8','POSTURA MCASSAB R9','POSTURA MCASSAB R 10',
+                          'POSTURA MCASSAB R9','POSTURA MCASSAB R 10',
                           'POSTURA TECTRON R7','POSTURA TECTRON R8',
-                          'POSTURA TECTRON R9','POSTURA TECTRON R 10','POSTURA TECTRON R20'],
+                          'POSTURA TECTRON R9','POSTURA TECTRON R 10'],
                  cor: '#16a085' },
     pos_all:   { label: 'TODAS AS FASES POSTURA',
                  racoes: ['POSTURA MCASSAB R1','POSTURA MCASSAB R2',
                           'POSTURA MCASSAB R3','POSTURA MCASSAB R5',
                           'POSTURA MCASSAB R6','POSTURA MCASSAB R7',
-                          'POSTURA MCASSAB R8','POSTURA MCASSAB R9','POSTURA MCASSAB R 10',
+                          'POSTURA MCASSAB R9','POSTURA MCASSAB R 10',
                           'POSTURA TECTRON R7','POSTURA TECTRON R8',
-                          'POSTURA TECTRON R9','POSTURA TECTRON R 10','POSTURA TECTRON R20'],
+                          'POSTURA TECTRON R9','POSTURA TECTRON R 10'],
                  cor: '#2c3e50' },
 };
 
@@ -7324,25 +7141,6 @@ async function carregarTodosAsync() {
         rawM = JSON.parse(localStorage.getItem('materias_novas') || '[]');
     }
 
-    // SEMPRE mescla com localStorage — garante que edições e registros novos
-    // offline não se percam, mesmo quando o Supabase está online
-    try {
-        const _editados = JSON.parse(localStorage.getItem('producoes_editadas') || '[]');
-        const _novos    = JSON.parse(localStorage.getItem('producoes_novos')    || '[]');
-        const _maxBase  = Math.max(0, ...DADOS_PLANILHA.producoes.map(r => r.id));
-        if (_editados.length) {
-            const _editMap = Object.fromEntries(_editados.map(r => [r.id, r]));
-            // Sobrescreve com versão local se Supabase não tiver ou tiver versão antiga
-            rawP = rawP.map(r => _editMap[r.id] || r);
-            // Adiciona editados que não vieram do Supabase
-            _editados.forEach(r => { if (!rawP.find(x => x.id === r.id)) rawP.push(r); });
-        }
-        if (_novos.length) {
-            const _idsRawP = new Set(rawP.map(r => r.id));
-            _novos.filter(r => r.id > _maxBase && !_idsRawP.has(r.id)).forEach(r => rawP.push(r));
-        }
-    } catch(_e) { console.warn('Erro ao mesclar localStorage:', _e); }
-
     const normClass = r => ({
         ...r,
         queimado:    +(r.queimado    * 100).toFixed(4),
@@ -7395,21 +7193,11 @@ async function carregarTodosAsync() {
     const editClassMap = Object.fromEntries(rawC.filter(r => r.id <= maxIdClass).map(r => [r.id, r]));
     const editMatMap   = Object.fromEntries(rawM.filter(r => r.id <= maxIdMat).map(r => [r.id, normMat(r)]));
 
-    const camposOpcionaisProd2 = ['dpg','extrato','proteina','fibra','solubil','umidade','densidade','mineral','calcio','fosforo','granulo1','granulo2','granulo3','fundo'];
-    const normProd2 = r => {
-        const out = {...r};
-        camposOpcionaisProd2.forEach(c => {
-            const v = parseFloat(out[c]);
-            if (out[c] === null || out[c] === undefined || out[c] === '' || (!isNaN(v) && v === 0)) out[c] = null;
-        });
-        return out;
-    };
-
-    const planProdFinal  = planProd.map(r  => editProdMap[r.id] ? normProd2(editProdMap[r.id]) : normProd2(r));
+    const planProdFinal  = planProd.map(r  => editProdMap[r.id]  || r);
     const planClassFinal = planClass.map(r => editClassMap[r.id] ? editClassMap[r.id] : normClass(r));
     const planMatFinal   = planMat.map(r   => editMatMap[r.id]   || r);
 
-    producoes      = [...planProdFinal,  ...novoProd.map(normProd2)];
+    producoes      = [...planProdFinal,  ...novoProd];
     classificacoes = [...planClassFinal, ...novoClass];
     materiasPrimas = [...planMatFinal,   ...novoMat.map(normMat)];
 }
@@ -7536,14 +7324,12 @@ const RACOES_GRUPOS = [
       formulacoes:['POSTURA MCASSAB R6'] },
     { grupo:'POSTURA R7', label:'POSTURA R7', racoes:['POSTURA MCASSAB R7','POSTURA TECTRON R7'], cor:'#0a80e0',
       formulacoes:['POSTURA MCASSAB R7','POSTURA TECTRON R7'] },
-    { grupo:'POSTURA R8', label:'POSTURA R8', racoes:['POSTURA MCASSAB R8','POSTURA TECTRON R8'], cor:'#0a90e8',
-      formulacoes:['POSTURA MCASSAB R8','POSTURA TECTRON R8'] },
+    { grupo:'POSTURA R8', label:'POSTURA R8', racoes:['POSTURA TECTRON R8'], cor:'#0a90e8',
+      formulacoes:['POSTURA TECTRON R8'] },
     { grupo:'POSTURA R9', label:'POSTURA R9', racoes:['POSTURA MCASSAB R9','POSTURA TECTRON R9'], cor:'#1a9af0',
       formulacoes:['POSTURA MCASSAB R9','POSTURA TECTRON R9'] },
     { grupo:'POSTURA R10',label:'POSTURA R10',racoes:['POSTURA MCASSAB R 10','POSTURA TECTRON R 10'], cor:'#2aaaf8',
       formulacoes:['POSTURA MCASSAB R 10','POSTURA TECTRON R 10'] },
-    { grupo:'POSTURA R20',label:'POSTURA R20',racoes:['POSTURA TECTRON R20'], cor:'#3abcff',
-      formulacoes:['POSTURA TECTRON R20'] },
 ];
 
 // Produtos de Classificação
@@ -8100,138 +7886,21 @@ function onSelectRacao(modulo, panel) {
 function buildSelectHTML(modulo, lista, labelField, keyField, icone) {
     const opts = lista.map(i => {
         const key = (keyField==='key' ? i.key : i.racoes[0]).replace(/ /g,'_');
+        // Para rações com formulações (uma ou mais), adiciona optgroup
         if (i.formulacoes && i.formulacoes.length>=1) {
             return `<optgroup label="── ${i.label} ──">${i.formulacoes.map(f=>`<option value="${f.replace(/ /g,'_')}">${f}</option>`).join('')}</optgroup>`;
         }
         return `<option value="${key}">${i[labelField]||i.label||i.key}</option>`;
     }).join('');
-
-    const botoesExtra = modulo === 'prod' ? `
-        <button type="button" onclick="cfgAdicionarRacao(this)" title="Adicionar ração"
-            style="width:24px;height:24px;padding:0;background:#27ae60;color:white;border:none;border-radius:4px;cursor:pointer;font-size:16px;font-weight:bold;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
-        <button type="button" onclick="cfgRemoverRacao(this)" title="Remover ração selecionada"
-            style="width:24px;height:24px;padding:0;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;font-size:16px;font-weight:bold;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">−</button>` : '';
-
     return `<div style="margin-bottom:14px;">
         <label style="font-size:12px;font-weight:bold;color:#34495e;margin-bottom:6px;display:block;">${icone} Selecione a ração/produto:</label>
-        <div style="display:flex;align-items:center;gap:4px;max-width:560px;">
-            <select class="param-select-racao" onchange="onSelectRacao('${modulo}',this.closest('.param-cat-panel'))"
-                style="flex:1;padding:8px 12px;border:1px solid #bdc3c7;border-radius:4px;font-size:13px;font-weight:bold;color:#333;background:white;">
-                <option value="">— Selecione —</option>
-                ${opts}
-            </select>
-            ${botoesExtra}
-        </div>
-        <div id="cfgNovaRacaoArea-${modulo}" style="display:none;margin-top:6px;display:none;gap:6px;align-items:center;flex-wrap:wrap;">
-            <input type="text" id="cfgNovaRacaoInput-${modulo}" placeholder="Nome da ração (ex: POSTURA MCASSAB R8)"
-                style="padding:7px 10px;border:1px solid #1a3a9f;border-radius:4px;font-size:13px;text-transform:uppercase;width:340px;"
-                oninput="this.value=this.value.toUpperCase()">
-            <button type="button" onclick="cfgConfirmarNovaRacao('${modulo}')"
-                style="padding:6px 14px;background:#27ae60;color:white;border:none;border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">✔ Confirmar</button>
-            <button type="button" onclick="cfgCancelarNovaRacao('${modulo}')"
-                style="padding:6px 10px;background:#95a5a6;color:white;border:none;border-radius:4px;font-size:12px;cursor:pointer;">✕ Cancelar</button>
-        </div>
+        <select class="param-select-racao" onchange="onSelectRacao('${modulo}',this.closest('.param-cat-panel'))"
+            style="width:100%;max-width:480px;padding:8px 12px;border:1px solid #bdc3c7;border-radius:4px;font-size:13px;font-weight:bold;color:#333;background:white;">
+            <option value="">— Selecione —</option>
+            ${opts}
+        </select>
     </div>
     <div class="param-conteudo"></div>`;
-}
-
-function cfgAdicionarRacao(btn) {
-    const modulo = 'prod';
-    const area = document.getElementById('cfgNovaRacaoArea-' + modulo);
-    if (area) { area.style.display = 'flex'; document.getElementById('cfgNovaRacaoInput-' + modulo).focus(); }
-}
-
-function cfgCancelarNovaRacao(modulo) {
-    const area = document.getElementById('cfgNovaRacaoArea-' + modulo);
-    if (area) { area.style.display = 'none'; document.getElementById('cfgNovaRacaoInput-' + modulo).value = ''; }
-}
-
-function cfgConfirmarNovaRacao(modulo) {
-    const input = document.getElementById('cfgNovaRacaoInput-' + modulo);
-    const nome = input.value.trim().toUpperCase();
-    if (!nome) { alert('Digite o nome da ração.'); input.focus(); return; }
-
-    // Tenta agrupar automaticamente (ex: POSTURA MCASSAB R8 → grupo POSTURA R8)
-    const jaExiste = RACOES_GRUPOS.some(g => g.racoes.includes(nome));
-    if (!jaExiste) {
-        const matchGrupo = nome.match(/^(CORTE|POSTURA)\s+(?:MCASSAB|WISIUM|TECTRON)\s+(R\s*\d+)$/i);
-        let adicionado = false;
-        if (matchGrupo) {
-            const tipoBase = matchGrupo[1].toUpperCase();
-            const numRacao = matchGrupo[2].toUpperCase().replace(/\s+/,'');
-            const grupoAlvo = tipoBase + ' ' + numRacao;
-            const grupoExistente = RACOES_GRUPOS.find(g => g.grupo === grupoAlvo);
-            if (grupoExistente) {
-                grupoExistente.racoes.push(nome);
-                if (!grupoExistente.formulacoes) grupoExistente.formulacoes = [];
-                grupoExistente.formulacoes.push(nome);
-                adicionado = true;
-            }
-        }
-        if (!adicionado) {
-            RACOES_GRUPOS.push({ grupo: nome, label: nome, racoes: [nome], cor: '#7f8c8d', formulacoes: [nome] });
-        }
-    }
-
-    // Sincroniza também o select de Lançamentos - Produção
-    const selProd = document.getElementById('cadRacaoProdSelect');
-    if (selProd && !Array.from(selProd.options).find(o => o.value === nome)) {
-        selProd.appendChild(new Option(nome, nome));
-    }
-
-    cfgCancelarNovaRacao(modulo);
-    renderizarTabelasParametros();
-}
-
-function cfgRemoverRacao(btn) {
-    const panel = btn.closest('.param-cat-panel');
-    const sel = panel ? panel.querySelector('.param-select-racao') : null;
-    if (!sel || !sel.value) { alert('Selecione uma ração para remover.'); return; }
-    const val = sel.value.replace(/_/g, ' ');
-
-    // Descobre o grupo ao qual essa ração pertence
-    const grupo = RACOES_GRUPOS.find(g => g.racoes.includes(val) || (g.formulacoes && g.formulacoes.includes(val)));
-
-    let removerGrupo = false;
-    if (grupo && (grupo.racoes.length > 1 || (grupo.formulacoes && grupo.formulacoes.length > 1))) {
-        // Grupo tem mais de uma ração — pergunta o que remover
-        const escolha = confirm(
-            'O que deseja remover?\n\nOK  \u2192  Remover o GRUPO INTEIRO "' + grupo.grupo + '" (' + (grupo.formulacoes || grupo.racoes).join(', ') + ')\n\nCancelar  \u2192  Remover apenas "' + val + '"'
-        );
-        removerGrupo = escolha;
-    } else {
-        if (!confirm('Remover "' + val + '" da lista?')) return;
-        removerGrupo = true; // grupo tem só essa ração, remove junto
-    }
-
-    const selProd = document.getElementById('cadRacaoProdSelect');
-
-    if (removerGrupo && grupo) {
-        // Remove todas as rações do grupo
-        const todasRacoes = [...new Set([...(grupo.racoes || []), ...(grupo.formulacoes || [])])];
-        const idx = RACOES_GRUPOS.indexOf(grupo);
-        if (idx !== -1) RACOES_GRUPOS.splice(idx, 1);
-        if (selProd) {
-            todasRacoes.forEach(r => {
-                const opt = Array.from(selProd.options).find(o => o.value === r);
-                if (opt) opt.remove();
-            });
-        }
-    } else {
-        // Remove só a ração selecionada do grupo
-        for (let i = RACOES_GRUPOS.length - 1; i >= 0; i--) {
-            const g = RACOES_GRUPOS[i];
-            g.racoes = g.racoes.filter(r => r !== val);
-            if (g.formulacoes) g.formulacoes = g.formulacoes.filter(r => r !== val);
-            if (g.racoes.length === 0) RACOES_GRUPOS.splice(i, 1);
-        }
-        if (selProd) {
-            const opt = Array.from(selProd.options).find(o => o.value === val);
-            if (opt) opt.remove();
-        }
-    }
-
-    renderizarTabelasParametros();
 }
 
 function renderizarTabelasParametros() {
@@ -8239,32 +7908,6 @@ function renderizarTabelasParametros() {
     const pProd = document.getElementById('paramPanelProd');
     if (pProd) {
         document.getElementById('paramCat-producao').dataset.modulo = 'prod';
-
-// ─── SINCRONIZA RAÇÕES NOVAS DOS LANÇAMENTOS COM RACOES_GRUPOS ───────────────
-function sincronizarRacoesNovos() {
-    const racoesConhecidas = new Set(RACOES_GRUPOS.flatMap(g => g.racoes));
-    const racoesNovos = [...new Set(producoes.map(r => r.racao))]
-        .filter(r => r && !racoesConhecidas.has(r));
-    racoesNovos.forEach(racao => {
-        RACOES_GRUPOS.push({
-            grupo: racao,
-            label: racao,
-            racoes: [racao],
-            cor: '#7f8c8d',
-            formulacoes: [racao]
-        });
-        console.log('[sincronizar] Nova ração adicionada ao RACOES_GRUPOS:', racao);
-    });
-    if (racoesNovos.length > 0) {
-        // Atualiza o select de parâmetros se já foi renderizado
-        const pProd = document.getElementById('paramProdSelect');
-        if (pProd && typeof buildSelectHTML === 'function') {
-            pProd.innerHTML = buildSelectHTML('prod', RACOES_GRUPOS, 'label', 'racoes', '🌾');
-        }
-    }
-}
-// ─────────────────────────────────────────────────────────────────────────────
-        sincronizarRacoesNovos();
         pProd.innerHTML = buildSelectHTML('prod', RACOES_GRUPOS, 'label', 'racoes', '🌾');
     }
     // CLASSIFICAÇÃO
@@ -8530,8 +8173,7 @@ function fmtDate(d) {
 function fmtN(v, dec=2) {
     if (v === undefined || v === null || v === '') return '-';
     const n = parseFloat(v);
-    if (isNaN(n)) return '-';
-    return n.toFixed(dec);
+    return isNaN(n) ? '-' : n.toFixed(dec);
 }
 function avg(arr) {
     const a = arr.filter(v=>v>0);
