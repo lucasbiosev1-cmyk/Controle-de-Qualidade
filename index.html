@@ -8,6 +8,16 @@
     <meta http-equiv="Expires" content="0">
     <title>Sistema de Sistema Gestão da Qualidade</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+    <script>
+        // Desregistra o datalabels globalmente para não afetar outros gráficos
+        // Será usado apenas localmente no gráfico de ranking (via plugins: [ChartDataLabels])
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+                Chart.unregister(ChartDataLabels);
+            }
+        });
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -1047,6 +1057,21 @@
         .capa-badge, .capa-logo-circle, .capa-title, .capa-sub, .capa-divider { display: none !important; }
         @media (max-width: 900px) { .capa-kpis { grid-template-columns: repeat(2,1fr); } .capa-cards { grid-template-columns: repeat(2,1fr); } }
         @media (max-width: 600px) { .capa-cards { grid-template-columns: 1fr; } .capa-bottom { grid-template-columns: 1fr; } .capa-kpis { grid-template-columns: repeat(2,1fr); } }
+
+        /* ── Bloco produto avaliado (ranking) ── */
+        .rk-produto-bloco {
+            display: flex; align-items: center; gap: 14px;
+            background: #f0f4ff; border: 1.5px solid #1a3a9f;
+            border-radius: 8px; padding: 14px 20px; margin-bottom: 18px;
+        }
+        .rk-produto-icon  { font-size: 28px; flex-shrink: 0; }
+        .rk-produto-label { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #1a3a9f; letter-spacing: 1.5px; margin-bottom: 3px; }
+        .rk-produto-nome  { font-size: 18px; font-weight: 900; color: #0a1e7f; text-transform: uppercase; }
+        .rk-produto-sub   { font-size: 9px; color: #666; margin-top: 2px; }
+
+        /* ── Tabela de ranking: scroll horizontal na tela ── */
+        #aba-ranking .tabela-container { overflow-x: auto; }
+        #aba-ranking .tabela-ranking-detalhada table { min-width: 1100px; }
     </style>
 </head>
 <body>
@@ -1140,6 +1165,7 @@
                 <button class="nav-dropdown-item" id="tabRelatorio" onclick="trocarAba('relatorio', this);closeDropdowns()">📊 Rel. Produção</button>
                 <button class="nav-dropdown-item" id="tabRelClass" onclick="trocarAba('relClass', this);closeDropdowns()">📊 Rel. Classificação</button>
                 <button class="nav-dropdown-item" id="tabRelMP" onclick="trocarAba('relMP', this);closeDropdowns()">🧪 Rel. Matéria Prima</button>
+                <button class="nav-dropdown-item" id="tabRanking" onclick="trocarAba('ranking', this);closeDropdowns()">🏆 Ranking Fornecedores</button>
                 <button class="nav-dropdown-item" id="tabBoletim" onclick="trocarAba('boletim', this);closeDropdowns()">📋 Boletim Industrial</button>
             </div>
         </div>
@@ -2264,35 +2290,46 @@
                     <canvas id="rkGrafico" style="max-height:320px;"></canvas>
                 </div>
 
-                <!-- TABELA RANKING -->
-                <div class="secao-title" style="margin-bottom:10px;">RANKING DETALHADO POR FORNECEDOR</div>
-                <div class="tabela-container">
-                    <table style="width:100%;border-collapse:collapse;font-size:11px;">
-                        <thead>
-                            <tr style="background:#34495e;color:white;">
-                                <th style="padding:8px 6px;text-align:center;width:50px;">POS.</th>
-                                <th style="padding:8px 10px;text-align:left;">FORNECEDOR</th>
-                                <th style="padding:8px;">REG.</th>
-                                <th style="padding:8px;" id="rkThCriterio">AVARIADOS<br>MÉD.%</th>
-                                <th style="padding:8px;">QUEIMADO<br>MÉD.%</th>
-                                <th style="padding:8px;">ARDIDO<br>MÉD.%</th>
-                                <th style="padding:8px;">MOFADO<br>MÉD.%</th>
-                                <th style="padding:8px;">FERMENT.<br>MÉD.%</th>
-                                <th style="padding:8px;">CHOCHO<br>MÉD.%</th>
-                                <th style="padding:8px;">GESSADO<br>MÉD.%</th>
-                                <th style="padding:8px;">GERMINADO<br>MÉD.%</th>
-                                <th style="padding:8px;">PICADO<br>MÉD.%</th>
-                                <th style="padding:8px;">ESVERDEADO<br>MÉD.%</th>
-                                <th style="padding:8px;">CARUNCHO<br>MÉD.%</th>
-                                <th style="padding:8px;">QUEBRADO<br>MÉD.%</th>
-                                <th style="padding:8px;">IMPUREZA<br>MÉD.%</th>
-                                <th style="padding:8px;">UMIDADE<br>MÉD.%</th>
-                                <th style="padding:8px;">CONFORM.</th>
-                                <th style="padding:8px;">STATUS</th>
-                            </tr>
-                        </thead>
-                        <tbody id="rkTbody"></tbody>
-                    </table>
+                <!-- TABELA RANKING — segunda página, paisagem -->
+                <div class="tabela-ranking-detalhada">
+                    <!-- Bloco: produto avaliado -->
+                    <div class="rk-produto-bloco" id="rkProdutoBloco">
+                        <div class="rk-produto-icon" id="rkProdutoIcon">🌽</div>
+                        <div>
+                            <div class="rk-produto-label">Produto Avaliado</div>
+                            <div class="rk-produto-nome" id="rkProdutoNome">—</div>
+                            <div class="rk-produto-sub" id="rkProdutoSub">Classificação de grãos · Ranking de fornecedores</div>
+                        </div>
+                    </div>
+                    <div class="secao-title" style="margin-bottom:10px;">RANKING DETALHADO POR FORNECEDOR</div>
+                    <div class="tabela-container">
+                        <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                            <thead>
+                                <tr style="background:#34495e;color:white;">
+                                    <th style="padding:8px 6px;text-align:center;width:50px;">POS.</th>
+                                    <th style="padding:8px 10px;text-align:left;">FORNECEDOR</th>
+                                    <th style="padding:8px;">REG.</th>
+                                    <th style="padding:8px;" id="rkThCriterio">AVARIADOS<br>MÉD.%</th>
+                                    <th style="padding:8px;">QUEIMADO<br>MÉD.%</th>
+                                    <th style="padding:8px;">ARDIDO<br>MÉD.%</th>
+                                    <th style="padding:8px;">MOFADO<br>MÉD.%</th>
+                                    <th style="padding:8px;">FERMENT.<br>MÉD.%</th>
+                                    <th style="padding:8px;">CHOCHO<br>MÉD.%</th>
+                                    <th style="padding:8px;">GESSADO<br>MÉD.%</th>
+                                    <th style="padding:8px;">GERMINADO<br>MÉD.%</th>
+                                    <th style="padding:8px;">PICADO<br>MÉD.%</th>
+                                    <th style="padding:8px;">ESVERDEADO<br>MÉD.%</th>
+                                    <th style="padding:8px;">CARUNCHO<br>MÉD.%</th>
+                                    <th style="padding:8px;">QUEBRADO<br>MÉD.%</th>
+                                    <th style="padding:8px;">IMPUREZA<br>MÉD.%</th>
+                                    <th style="padding:8px;">UMIDADE<br>MÉD.%</th>
+                                    <th style="padding:8px;">CONFORM.</th>
+                                    <th style="padding:8px;">STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rkTbody"></tbody>
+                        </table>
+                    </div>
                 </div>
 
             </div><!-- fim rankingConteudo -->
@@ -5631,6 +5668,21 @@ function _gerarJanelaImpressao(titulo, capaHTML, conteudoHTML) {
             .rk-card  { background:white; border:1px solid #ddd; border-radius:6px; padding:12px; text-align:center; }
             .rk-valor { font-size:20px; font-weight:bold; }
             .rk-label { font-size:9px; color:#666; text-transform:uppercase; margin-top:3px; }
+
+            /* Tabela ranking: estilos na janela dedicada _gerarJanelaImpressaoRanking */
+            .tabela-ranking-detalhada { page-break-before: always; }
+
+            /* ── Bloco produto avaliado ── */
+            .rk-produto-bloco {
+                display: flex; align-items: center; gap: 14px;
+                background: #f0f4ff; border: 1.5px solid #1a3a9f;
+                border-radius: 8px; padding: 14px 20px; margin-bottom: 18px;
+                page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            }
+            .rk-produto-icon { font-size: 28px; flex-shrink: 0; }
+            .rk-produto-label { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #1a3a9f; letter-spacing: 1.5px; margin-bottom: 3px; }
+            .rk-produto-nome  { font-size: 18px; font-weight: 900; color: #0a1e7f; text-transform: uppercase; letter-spacing: 0.5px; }
+            .rk-produto-sub   { font-size: 9px; color: #666; margin-top: 2px; }
         </style>
     </head><body>
     ${capaHTML}
@@ -6244,8 +6296,25 @@ function aplicarFiltrosRanking() {
     if (!di || !df) return;
 
     const PRODUTOS_ESTOQUE = ['MILHO ESTOQUE 01','MILHO ESTOQUE 02','SOJA ESTOQUE 01'];
-    let base = classificacoes.filter(r => r.data >= di && r.data <= df && !PRODUTOS_ESTOQUE.includes((r.produto||'').toUpperCase()));
+    // Detecta qualquer variação do nome Fábrica Agronor (com/sem acento, maiúsc.)
+    function _isFabricaAgronor(forn) {
+        const n = (forn||'').toUpperCase().trim()
+            .normalize('NFD').replace(/[̀-ͯ]/g,'');
+        return n === 'FABRICA AGRONOR' || n.startsWith('FABRICA AGRONOR');
+    }
+
+    // Base geral: sem estoques, sem Fábrica Agronor
+    let base = classificacoes.filter(r => {
+        const prod = (r.produto||'').toUpperCase();
+        return r.data >= di && r.data <= df
+            && !PRODUTOS_ESTOQUE.includes(prod)
+            && !_isFabricaAgronor(r.fornecedor);
+    });
     if (prodSel !== 'all') base = base.filter(r => r.produto === prodSel);
+
+    // Fábrica Agronor removida do relatório
+    const baseFabrica = [];
+    const statsFabrica = [];
 
     const diStr = new Date(di+'T00:00:00').toLocaleDateString('pt-BR');
     const dfStr = new Date(df+'T00:00:00').toLocaleDateString('pt-BR');
@@ -6259,17 +6328,25 @@ function aplicarFiltrosRanking() {
     document.getElementById('rkThCriterio').innerHTML = getRkNome(criterio).replace(' (%)', '<br>MÉD.%').replace(' (PPM)', '<br>MÉD.PPB').replace(' (PPB)', '<br>MÉD.PPB');
     document.getElementById('rkGraficoTitulo').textContent = getRkNome(criterio).toUpperCase() + ' POR FORNECEDOR';
 
-    // Agrupa por fornecedor
-    const fornecedores = [...new Set(base.map(r => r.fornecedor).filter(Boolean))].sort();
+    // Atualiza bloco de produto avaliado
+    const rkNomeEl  = document.getElementById('rkProdutoNome');
+    const rkIconEl  = document.getElementById('rkProdutoIcon');
+    const rkSubEl   = document.getElementById('rkProdutoSub');
+    if (rkNomeEl) rkNomeEl.textContent = prodLabel;
+    if (rkIconEl) {
+        const icones = { 'MILHO':'🌽', 'SOJA':'🫘', 'SORGO':'🌾', 'TRIGO':'🌾', 'ARROZ':'🌾' };
+        const chave = Object.keys(icones).find(k => prodSel.toUpperCase().includes(k));
+        rkIconEl.textContent = chave ? icones[chave] : '🌾';
+    }
+    if (rkSubEl) rkSubEl.textContent = 'Classificação de grãos · Ranking de fornecedores · ' + base.length + ' registro(s) no período';
 
-    // Calcula estatísticas por fornecedor e ordena
-    const stats = fornecedores.map(f => {
-        const dd = base.filter(r => r.fornecedor === f);
+    // Função auxiliar para calcular stats de um grupo de registros
+    function calcStats(dd, forn) {
         const vals = dd.map(r => getRkValor(r, criterio));
         const media = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
         const conformes = dd.filter(r => !statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data).includes('NÃO')).length;
         return {
-            fornecedor: f,
+            fornecedor: forn,
             n: dd.length,
             media,
             queimado:    med(dd.map(r=>r.queimado||0)),
@@ -6287,8 +6364,16 @@ function aplicarFiltrosRanking() {
             umidade:     med(dd.map(r=>r.umidade||0)),
             conformes,
             pctConf: dd.length ? (conformes/dd.length*100) : 0,
+            isFabrica: false,
         };
-    }).sort((a,b) => a.media - b.media); // melhor (menor) primeiro
+    }
+
+    // Agrupa por fornecedor (sem Fábrica)
+    const fornecedores = [...new Set(base.map(r => r.fornecedor).filter(Boolean))].sort();
+    const stats = fornecedores.map(f => calcStats(base.filter(r => r.fornecedor === f), f))
+        .sort((a,b) => a.media - b.media); // melhor (menor) primeiro
+
+
 
     // CARDS
     const melhor = stats[0];
@@ -6308,12 +6393,16 @@ function aplicarFiltrosRanking() {
             <div style="font-size:9px;color:#999;margin-top:4px;text-transform:uppercase;">${i.sub}</div>
         </div>`).join('');
 
-    // GRÁFICO
-    const labels = stats.map(s => s.fornecedor);
-    const valores = stats.map(s => parseFloat(s.media.toFixed(2)));
-    const cores = stats.map((s,i) => {
-        const pct = stats.length > 1 ? i / (stats.length - 1) : 0;
-        // Verde → Amarelo → Vermelho
+    // GRÁFICO — inclui todos (fornecedores + Fábrica ao final, separada visualmente)
+    const todosGrafico = [...stats, ...statsFabrica];
+    const labelsG  = todosGrafico.map(s => (s.isFabrica ? '🏭 ' : '') + s.fornecedor);
+    const valoresG = todosGrafico.map(s => parseFloat(s.media.toFixed(2)));
+
+    // Cor: verde→vermelho para fornecedores externos; azul-acinzentado para Fábrica
+    // Se valor = 0 → verde puro; caso contrário interpola pelo rank
+    function corBarra(s, idx, totalExt) {
+        if (s.isFabrica) return 'rgba(100,140,200,0.85)';
+        const pct = totalExt > 1 ? idx / (totalExt - 1) : 0;
         if (pct < 0.5) {
             const g = Math.round(174 + (195-174)*pct*2);
             const r = Math.round(39  + (230-39 )*pct*2);
@@ -6324,74 +6413,121 @@ function aplicarFiltrosRanking() {
             const g = Math.round(195 - (195-76 )*p);
             return `rgba(${r},${g},60,0.85)`;
         }
-    });
+    }
+    const coresG = todosGrafico.map((s, i) => corBarra(s, i, stats.length));
+
+    // Para barras com valor 0: usa valor mínimo visual (0.01) para aparecer verde
+    const valoresVisuais = valoresG.map(v => v === 0 ? 0.01 : v);
 
     const ctx = document.getElementById('rkGrafico').getContext('2d');
     if (window._rkGraficoInst) window._rkGraficoInst.destroy();
     window._rkGraficoInst = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels,
+            labels: labelsG,
             datasets: [{
                 label: getRkNome(criterio),
-                data: valores,
-                backgroundColor: cores,
-                borderColor: cores.map(c=>c.replace('0.85','1')),
+                data: valoresVisuais,
+                backgroundColor: coresG,
+                borderColor: coresG.map(c=>c.replace('0.85','1')),
                 borderWidth: 1.5,
             }]
         },
         options: {
             indexAxis: 'y',
             responsive: true, maintainAspectRatio: true,
+            layout: { padding: { right: 56 } },
             plugins: {
                 legend: { display: false },
                 tooltip: {
                     callbacks: {
-                        label: ctx => ' ' + ctx.parsed.x.toFixed(2) + '%'
+                        // Tooltip sempre mostra valor real (não o visual 0.01)
+                        label: ctx => {
+                            const realVal = valoresG[ctx.dataIndex];
+                            return ' ' + realVal.toFixed(2) + '%';
+                        }
                     }
+                },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'end',
+                    // Label mostra valor real; se 0 mostra "0.00% ✔"
+                    formatter: (value, ctx) => {
+                        const realVal = valoresG[ctx.dataIndex];
+                        return realVal === 0 ? '0.00% ✔' : realVal.toFixed(2) + '%';
+                    },
+                    color: (ctx) => valoresG[ctx.dataIndex] === 0 ? '#27ae60' : '#333',
+                    font: (ctx) => ({ size: 10, weight: valoresG[ctx.dataIndex] === 0 ? 'bold' : 'bold' }),
+                    padding: { left: 4 }
                 }
             },
             scales: {
                 x: { beginAtZero: true, ticks: { font:{size:10} }, title:{ display:true, text:'%', font:{size:10} } },
                 y: { ticks: { font:{size:10} } }
             }
-        }
+        },
+        plugins: [ChartDataLabels]
     });
 
-    // TABELA
-    const medalhas = ['🥇','🥈','🥉'];
-    document.getElementById('rkTbody').innerHTML = stats.map((s,i) => {
-        const bg = i%2===0 ? '#fff' : '#f9f9f9';
-        const pos = i < 3 ? medalhas[i] : (i+1)+'º';
-        const posColor = i===0?'#f1c40f': i===1?'#bdc3c7': i===2?'#cd7f32':'#555';
-        const mediaColor = i===0?'#27ae60': i===stats.length-1?'#e74c3c':'#333';
-        const confColor = s.pctConf>=80?'#27ae60': s.pctConf>=50?'#e67e22':'#e74c3c';
-        const status = s.pctConf>=80
-            ? '<span class="badge badge-conforme">CONFORME</span>'
-            : '<span class="badge badge-nao-conforme">ATENÇÃO</span>';
-        const f = (v,d=2) => v.toFixed(d);
-        return `<tr style="background:${bg};">
-            <td style="padding:8px;text-align:center;font-size:16px;font-weight:bold;color:${posColor};">${pos}</td>
-            <td style="padding:8px 10px;font-weight:bold;text-transform:uppercase;border-left:4px solid ${posColor};">${s.fornecedor}</td>
-            <td style="padding:8px;text-align:center;">${s.n}</td>
-            <td style="padding:8px;text-align:center;font-weight:bold;color:${mediaColor};">${f(s.media)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.queimado)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.ardido)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.mofado)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.fermentando)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.chocho)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.gessado)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.germinado)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.picado)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.esverdeado)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.carunchado)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.quebrado)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.impureza)}</td>
-            <td style="padding:8px;text-align:center;">${f(s.umidade,2)}</td>
-            <td style="padding:8px;text-align:center;font-weight:bold;color:${confColor};">${s.pctConf.toFixed(1)}%<br><span style="font-size:9px;font-weight:normal;">${s.conformes}/${s.n}</span></td>
-            <td style="padding:8px;text-align:center;">${status}</td>
-        </tr>`;
-    }).join('') || '<tr><td colspan="21" style="text-align:center;padding:20px;color:#999;">Nenhum registro no período</td></tr>';
+    // Função auxiliar para gerar linhas da tabela
+    function gerarLinhasTabela(lista, medalhasAtivas) {
+        const medalhas = ['🥇','🥈','🥉'];
+        return lista.map((s, i) => {
+            const bg = i%2===0 ? '#fff' : '#f9f9f9';
+            let pos, posColor;
+            if (s.isFabrica) {
+                pos = '🏭'; posColor = '#3498db';
+            } else {
+                pos = medalhasAtivas && i < 3 ? medalhas[i] : (i+1)+'º';
+                posColor = i===0?'#f1c40f': i===1?'#bdc3c7': i===2?'#cd7f32':'#555';
+            }
+            const mediaColor = s.media === 0 ? '#27ae60' : (i===0 && !s.isFabrica)?'#27ae60': (i===lista.length-1 && !s.isFabrica)?'#e74c3c':'#333';
+            const confColor = s.pctConf>=80?'#27ae60': s.pctConf>=50?'#e67e22':'#e74c3c';
+            const status = s.pctConf>=80
+                ? '<span class="badge badge-conforme">CONFORME</span>'
+                : '<span class="badge badge-nao-conforme">ATENÇÃO</span>';
+            const f = (v,d=2) => v.toFixed(d);
+            return `<tr style="background:${bg};">
+                <td style="padding:8px;text-align:center;font-size:16px;font-weight:bold;color:${posColor};">${pos}</td>
+                <td style="padding:8px 10px;font-weight:bold;text-transform:uppercase;border-left:4px solid ${posColor};">${s.fornecedor}</td>
+                <td style="padding:8px;text-align:center;">${s.n}</td>
+                <td style="padding:8px;text-align:center;font-weight:bold;color:${mediaColor};">${f(s.media)}</td>
+                <td style="padding:8px;text-align:center;">${f(s.queimado)}</td>
+                <td style="padding:8px;text-align:center;">${f(s.ardido)}</td>
+                <td style="padding:8px;text-align:center;">${f(s.mofado)}</td>
+                <td style="padding:8px;text-align:center;">${f(s.fermentando)}</td>
+                <td style="padding:8px;text-align:center;">${f(s.chocho)}</td>
+                <td style="padding:8px;text-align:center;">${f(s.gessado)}</td>
+                <td style="padding:8px;text-align:center;">${f(s.germinado)}</td>
+                <td style="padding:8px;text-align:center;">${f(s.picado)}</td>
+                <td style="padding:8px;text-align:center;">${f(s.esverdeado)}</td>
+                <td style="padding:8px;text-align:center;">${f(s.carunchado)}</td>
+                <td style="padding:8px;text-align:center;">${f(s.quebrado)}</td>
+                <td style="padding:8px;text-align:center;">${f(s.impureza)}</td>
+                <td style="padding:8px;text-align:center;">${f(s.umidade,2)}</td>
+                <td style="padding:8px;text-align:center;font-weight:bold;color:${confColor};">${s.pctConf.toFixed(1)}%<br><span style="font-size:9px;font-weight:normal;">${s.conformes}/${s.n}</span></td>
+                <td style="padding:8px;text-align:center;">${status}</td>
+            </tr>`;
+        }).join('');
+    }
+
+    // TABELA — fornecedores externos
+    const linhasForn = gerarLinhasTabela(stats, true)
+        || '<tr><td colspan="19" style="text-align:center;padding:20px;color:#999;">Nenhum fornecedor externo no período</td></tr>';
+
+    // Separador + linhas da Fábrica Agronor (se houver)
+    let linhasFabrica = '';
+    if (statsFabrica.length > 0) {
+        linhasFabrica = `
+            <tr style="background:#e8f0fe;">
+                <td colspan="19" style="padding:8px 10px;font-weight:bold;font-size:11px;color:#1a3a9f;text-transform:uppercase;letter-spacing:1px;border-top:2px solid #1a3a9f;border-bottom:2px solid #1a3a9f;">
+                    🏭 Fábrica Agronor — Produção Interna
+                </td>
+            </tr>
+            ${gerarLinhasTabela(statsFabrica, false)}`;
+    }
+
+    document.getElementById('rkTbody').innerHTML = linhasForn + linhasFabrica;
 
     } catch(err) {
         console.error('Erro ranking:', err);
@@ -7403,9 +7539,7 @@ function imprimirRanking() {
         try {
             const img = document.createElement('img');
             img.src = originais[i].toDataURL('image/png');
-            img.style.maxWidth = '100%'; img.style.display = 'block';
-            img.style.width  = (originais[i].offsetWidth  || originais[i].width)  + 'px';
-            img.style.height = (originais[i].offsetHeight || originais[i].height) + 'px';
+            img.style.cssText = 'max-width:100%;display:block;width:' + (originais[i].offsetWidth||originais[i].width) + 'px;height:' + (originais[i].offsetHeight||originais[i].height) + 'px;';
             cv.parentNode.replaceChild(img, cv);
         } catch(e) {}
     });
@@ -7421,8 +7555,8 @@ function imprimirRanking() {
 
     const capaHTML = _gerarCapaHTML(dataEmissao, unidade, resp, periodo, 'RANKING DE FORNECEDORES', 'Classificação &amp; Qualidade');
 
-    const janela = window.open('', '_blank', 'width=900,height=700');
-    janela.document.write(_gerarJanelaImpressao(
+    const janela = window.open('', '_blank', 'width=850,height=700');
+    janela.document.write(_gerarJanelaImpressaoRanking(
         'Ranking de Fornecedores - Agronor Alimentos',
         capaHTML,
         clone.innerHTML
@@ -7432,6 +7566,114 @@ function imprimirRanking() {
 }
 function gerarPDFRanking() {
     imprimirRanking();
+}
+
+function _gerarJanelaImpressaoRanking(titulo, capaHTML, conteudoHTML) {
+    // Janela dedicada ao ranking: retrato A4, tabela ultra-compacta com scale para não cortar
+    return `<!DOCTYPE html><html lang=pt-BR><head>
+        <meta charset=UTF-8>
+        <title>${titulo}</title>
+        <style>
+            * { margin:0; padding:0; box-sizing:border-box; }
+            html, body { background:white; font-family:Arial,sans-serif; width:100%; }
+
+            @page { size: A4 portrait; margin: 8mm 6mm 10mm 6mm; }
+            @media print {
+                html, body { background:white; margin:0; overflow:visible; }
+                * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            }
+
+            /* ── Capa ── */
+            .rel-capa-wrap, .rel-capa-wrap-rc, .rel-capa-wrap-rk, .rel-capa-wrap-bol { display:none !important; }
+
+            /* ── Container ── */
+            #rankingConteudo { background:white !important; box-shadow:none !important; border-radius:0 !important; padding:12px 0 !important; }
+
+            /* ── Controles ocultos ── */
+            .rel-filtros, .btn-print, .btn-pdf, .msg-info-rel, .btn-scroll-tabela { display:none !important; }
+
+            /* ── Títulos e textos gerais ── */
+            .relatorio-container { max-width:100%; margin:0; }
+            .relatorio-title { font-size:14px; font-weight:bold; text-transform:uppercase; color:#333; margin-bottom:6px; border-bottom:2px solid #34495e; padding-bottom:6px; text-align:center; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .relatorio-periodo { font-size:10px; color:#666; text-align:center; margin-bottom:14px; text-transform:uppercase; }
+            .secao-title { font-size:11px; font-weight:bold; text-transform:uppercase; color:#333; margin-bottom:8px; padding-bottom:4px; border-bottom:2px solid #3498db; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+            /* ── Cards de resumo ── */
+            .rk-card  { background:white; border:1px solid #ddd; border-radius:4px; padding:8px; text-align:center; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .rk-valor { font-size:16px; font-weight:bold; }
+            .rk-label { font-size:8px; color:#666; text-transform:uppercase; margin-top:2px; }
+
+            /* ── Gráfico ── */
+            .grafico-container { background:white; border:1px solid #ddd; border-radius:4px; padding:10px; margin-bottom:14px; page-break-inside:avoid; break-inside:avoid; }
+            .grafico-title { font-size:10px; font-weight:bold; text-transform:uppercase; color:#333; margin-bottom:8px; }
+            .grafico-container img { max-width:100%; height:auto; display:block; margin:0 auto; }
+
+            /* ── Badges ── */
+            .badge { display:inline-block; padding:1px 4px; border-radius:2px; font-size:8px; font-weight:bold; }
+            .badge-conforme     { background:#d5f4e6; color:#27ae60; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .badge-nao-conforme { background:#fadbd8; color:#e74c3c; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+            /* ── Bloco produto avaliado ── */
+            .rk-produto-bloco { display:flex; align-items:center; gap:10px; background:#f0f4ff; border:1.5px solid #1a3a9f; border-radius:6px; padding:10px 14px; margin-bottom:12px; page-break-inside:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .rk-produto-icon  { font-size:22px; flex-shrink:0; }
+            .rk-produto-label { font-size:8px; font-weight:700; text-transform:uppercase; color:#1a3a9f; letter-spacing:1px; margin-bottom:2px; }
+            .rk-produto-nome  { font-size:15px; font-weight:900; color:#0a1e7f; text-transform:uppercase; }
+            .rk-produto-sub   { font-size:8px; color:#666; margin-top:1px; }
+
+            /* ── TABELA DETALHADA: escalonada para caber no retrato ── */
+            .tabela-ranking-detalhada { page-break-before:always; }
+            .tabela-ranking-detalhada .tabela-container {
+                overflow:visible;
+                width:100%;
+            }
+            /* Wrapper de escala: reduz a tabela para caber na largura da página */
+            .tabela-ranking-detalhada .tabela-scale-wrap {
+                width:100%;
+                overflow:visible;
+            }
+            .tabela-ranking-detalhada table {
+                width:100%;
+                border-collapse:collapse;
+                table-layout:fixed;
+                font-size:6.8px;
+            }
+            .tabela-ranking-detalhada table th {
+                background:#34495e;
+                color:white;
+                padding:3px 1px;
+                text-align:center;
+                font-weight:bold;
+                white-space:normal;
+                word-break:break-word;
+                font-size:6.5px;
+                line-height:1.2;
+                -webkit-print-color-adjust:exact;
+                print-color-adjust:exact;
+            }
+            .tabela-ranking-detalhada table td {
+                padding:3px 1px;
+                border-bottom:1px solid #ecf0f1;
+                text-align:center;
+                font-size:7px;
+                word-break:break-word;
+            }
+            .tabela-ranking-detalhada table tr:nth-child(even) {
+                background:#f9f9f9;
+                -webkit-print-color-adjust:exact;
+                print-color-adjust:exact;
+            }
+            /* Coluna Fornecedor: um pouco mais larga, alinhada à esquerda */
+            .tabela-ranking-detalhada table td:nth-child(2),
+            .tabela-ranking-detalhada table th:nth-child(2) {
+                text-align:left;
+                font-size:6.5px;
+                padding-left:3px;
+            }
+        </style>
+    </head><body>
+    ${capaHTML}
+    ${conteudoHTML}
+    </body></html>`;
 }
 
 // ===================================================
