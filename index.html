@@ -7789,21 +7789,26 @@ async function dbCount(tabela) {
 // Versões assíncronas das funções de leitura/gravação
 async function carregarTodosAsync() {
     // Busca tudo direto do Supabase — sem mesclagem com planilha
+    // Os dados no Supabase já estão em percentual (ex: 6.45 = 6.45%).
+    // A migração exportou classificacoes já com normClass aplicada (em %),
+    // e os registros novos também são salvos diretamente em %.
+    // Portanto NÃO multiplicamos por 100 — apenas garantimos o tipo numérico.
+    const _pct = (v, dec) => (v === null || v === undefined) ? 0 : +parseFloat(v).toFixed(dec);
     const normClass = r => ({
         ...r,
-        queimado:    +(r.queimado    * 100).toFixed(4),
-        ardido:      +(r.ardido      * 100).toFixed(4),
-        mofado:      +(r.mofado      * 100).toFixed(4),
-        esverdeado:  +(r.esverdeado  * 100).toFixed(4),
-        fermentando: +(r.fermentando * 100).toFixed(4),
-        chocho:      +(r.chocho      * 100).toFixed(4),
-        picado:      +(r.picado      * 100).toFixed(4),
-        gessado:     +(r.gessado     * 100).toFixed(4),
-        quebrado:    +(r.quebrado    * 100).toFixed(4),
-        germinado:   +(r.germinado   * 100).toFixed(4),
-        carunchado:  +(r.carunchado  * 100).toFixed(4),
-        impureza:    +(r.impureza    * 100).toFixed(4),
-        umidade:     +(r.umidade     * 100).toFixed(3),
+        queimado:    _pct(r.queimado,    4),
+        ardido:      _pct(r.ardido,      4),
+        mofado:      _pct(r.mofado,      4),
+        esverdeado:  _pct(r.esverdeado,  4),
+        fermentando: _pct(r.fermentando, 4),
+        chocho:      _pct(r.chocho,      4),
+        picado:      _pct(r.picado,      4),
+        gessado:     _pct(r.gessado,     4),
+        quebrado:    _pct(r.quebrado,    4),
+        germinado:   _pct(r.germinado,   4),
+        carunchado:  _pct(r.carunchado,  4),
+        impureza:    _pct(r.impureza,    4),
+        umidade:     _pct(r.umidade,     3),
     });
 
     const normMat = r => ({
