@@ -6380,12 +6380,19 @@ function aplicarFiltrosRanking() {
     const pior   = stats[stats.length - 1];
     const totalReg = base.length;
     const totalConf = base.filter(r => !statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data).includes('NÃO')).length;
-    document.getElementById('rkCards').innerHTML = [
+
+    // Só mostra "FORNECEDOR NÃO ATENDE" se houver mais de 1 fornecedor E o pior for diferente do melhor
+    const mostrarPior = stats.length > 1 && pior && melhor && pior.fornecedor !== melhor.fornecedor;
+
+    const cardsBase = [
         { icon:'🏆', label:'MELHOR FORNECEDOR',  value: melhor ? melhor.fornecedor : '-',      sub: melhor ? getRkNome(criterio)+': '+melhor.media.toFixed(2)+'%' : '', cor:'#27ae60' },
-        { icon:'⚠️', label:'FORNECEDOR NÃO ATENDE',    value: pior   ? pior.fornecedor   : '-',      sub: pior   ? getRkNome(criterio)+': '+pior.media.toFixed(2)+'%'   : '', cor:'#e74c3c' },
+        mostrarPior
+            ? { icon:'⚠️', label:'FORNECEDOR NÃO ATENDE', value: pior.fornecedor, sub: getRkNome(criterio)+': '+pior.media.toFixed(2)+'%', cor:'#e74c3c' }
+            : { icon:'✅', label:'ÚNICO FORNECEDOR', value: melhor ? melhor.fornecedor : '-', sub: 'Apenas 1 fornecedor no período', cor:'#27ae60' },
         { icon:'🏢', label:'FORNECEDORES',        value: stats.length,                          sub: 'avaliados no período',    cor:'#3498db' },
         { icon:'✅', label:'CONFORMIDADE GERAL',  value: totalReg ? (totalConf/totalReg*100).toFixed(1)+'%' : '-', sub: totalConf+' de '+totalReg+' registros OK', cor: totalConf===totalReg?'#27ae60':'#e67e22' },
-    ].map(i=>`
+    ];
+    document.getElementById('rkCards').innerHTML = cardsBase.map(i=>`
         <div style="background:#f9f9f9;border:1px solid #ddd;border-radius:6px;padding:14px;text-align:center;border-top:4px solid ${i.cor};">
             <div style="font-size:20px;margin-bottom:4px;">${i.icon}</div>
             <div style="font-size:10px;font-weight:bold;text-transform:uppercase;color:#666;margin-bottom:6px;">${i.label}</div>
