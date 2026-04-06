@@ -6349,11 +6349,36 @@ function aplicarFiltrosRanking() {
             : null;
         const avForaDeLimite = limiteAv !== null ? (avMedia > limiteAv) : null;
 
+        // ── Verifica cada campo individual contra seu parâmetro ──
+        const _campoFora = (campo) => {
+            const medVal = med(dd.map(r => r[campo]||0));
+            // Usa produto dominante (primeiro registro) como referência
+            const pk = (dd[0]?.produto||'').replace(/ /g,'_');
+            const cfg = pk ? getParam('class', pk, campo, dd[0]?.data||null) : null;
+            if (!cfg || !cfg.ativo) return false;
+            return (cfg.max < 9999 && medVal > cfg.max) || (cfg.min > 0 && medVal < cfg.min);
+        };
+
         const produtoDominante = prodSel !== 'all' ? prodSel : (dd[0] ? dd[0].produto : '');
         return {
             fornecedor: forn,
             produtoDominante,
             avForaDeLimite,
+            campoFora: {
+                queimado:    _campoFora('queimado'),
+                ardido:      _campoFora('ardido'),
+                mofado:      _campoFora('mofado'),
+                fermentando: _campoFora('fermentando'),
+                chocho:      _campoFora('chocho'),
+                gessado:     _campoFora('gessado'),
+                germinado:   _campoFora('germinado'),
+                picado:      _campoFora('picado'),
+                esverdeado:  _campoFora('esverdeado'),
+                carunchado:  _campoFora('carunchado'),
+                quebrado:    _campoFora('quebrado'),
+                impureza:    _campoFora('impureza'),
+                umidade:     _campoFora('umidade'),
+            },
             n: dd.length,
             media,
             queimado:    med(dd.map(r=>r.queimado||0)),
@@ -6512,24 +6537,31 @@ function aplicarFiltrosRanking() {
                 ? '<span class="badge badge-conforme">CONFORME</span>'
                 : '<span class="badge badge-nao-conforme">ATENÇÃO</span>';
             const f = (v,d=2) => v.toFixed(d);
+            const tdC = (campo, val) => {
+                const fora = s.campoFora && s.campoFora[campo];
+                const st = fora
+                    ? ' style="padding:8px;text-align:center;background:#fde8e8;color:#c0392b;font-weight:bold;"'
+                    : ' style="padding:8px;text-align:center;"';
+                return `<td${st}>${f(val)}</td>`;
+            };
             return `<tr style="background:${bg};">
                 <td style="padding:8px;text-align:center;font-size:16px;font-weight:bold;color:${posColor};">${pos}</td>
                 <td style="padding:8px 10px;font-weight:bold;text-transform:uppercase;border-left:4px solid ${posColor};">${s.fornecedor}</td>
                 <td style="padding:8px;text-align:center;">${s.n}</td>
                 <td style="padding:8px;text-align:center;font-weight:bold;color:${mediaColor};">${f(s.media)}</td>
-                <td style="padding:8px;text-align:center;">${f(s.queimado)}</td>
-                <td style="padding:8px;text-align:center;">${f(s.ardido)}</td>
-                <td style="padding:8px;text-align:center;">${f(s.mofado)}</td>
-                <td style="padding:8px;text-align:center;">${f(s.fermentando)}</td>
-                <td style="padding:8px;text-align:center;">${f(s.chocho)}</td>
-                <td style="padding:8px;text-align:center;">${f(s.gessado)}</td>
-                <td style="padding:8px;text-align:center;">${f(s.germinado)}</td>
-                <td style="padding:8px;text-align:center;">${f(s.picado)}</td>
-                <td style="padding:8px;text-align:center;">${f(s.esverdeado)}</td>
-                <td style="padding:8px;text-align:center;">${f(s.carunchado)}</td>
-                <td style="padding:8px;text-align:center;">${f(s.quebrado)}</td>
-                <td style="padding:8px;text-align:center;">${f(s.impureza)}</td>
-                <td style="padding:8px;text-align:center;">${f(s.umidade,2)}</td>
+                ${tdC('queimado',    s.queimado)}
+                ${tdC('ardido',      s.ardido)}
+                ${tdC('mofado',      s.mofado)}
+                ${tdC('fermentando', s.fermentando)}
+                ${tdC('chocho',      s.chocho)}
+                ${tdC('gessado',     s.gessado)}
+                ${tdC('germinado',   s.germinado)}
+                ${tdC('picado',      s.picado)}
+                ${tdC('esverdeado',  s.esverdeado)}
+                ${tdC('carunchado',  s.carunchado)}
+                ${tdC('quebrado',    s.quebrado)}
+                ${tdC('impureza',    s.impureza)}
+                ${tdC('umidade',     s.umidade)}
                 <td style="padding:8px;text-align:center;font-weight:bold;color:${confColor};">${s.pctConf.toFixed(1)}%<br><span style="font-size:9px;font-weight:normal;">${s.conformes}/${s.n}</span></td>
                 <td style="padding:8px;text-align:center;">${status}</td>
             </tr>`;
