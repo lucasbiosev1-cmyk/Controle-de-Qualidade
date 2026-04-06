@@ -5767,9 +5767,18 @@ function aplicarFiltrosRelClass() {
     const conformes   = dados.filter(r=>!statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data).includes('NÃO')).length;
     const naoConformes= dados.length - conformes;
 
+    // Cor do card avariados baseada no parâmetro — usa o menor limite máximo entre os produtos presentes
+    const produtosPresentes = [...new Set(dados.map(r => r.produto))];
+    const limiteAvCard = produtosPresentes.reduce((menor, p) => {
+        const cfg = getParam('class', p.replace(/ /g,'_'), 'avariados', dados[dados.length-1]?.data || null);
+        if (cfg && cfg.ativo && cfg.max < 9999) return Math.min(menor, cfg.max);
+        return menor;
+    }, 9999);
+    const avCorCard = (limiteAvCard < 9999 ? avMedia > limiteAvCard : avMedia > 1) ? '#e74c3c' : '#27ae60';
+
     document.getElementById('rcCardsResumo').innerHTML = [
         { icon:'📋', label:'REGISTROS',         value: dados.length,              sub:'no período',          cor:'#2980b9' },
-        { icon:'⚠️', label:'AVARIADOS MÉD.(%)', value: avMedia.toFixed(2)+'%',    sub:'máx: '+avMax.toFixed(2)+'%', cor: avMedia>1?'#e74c3c':'#27ae60' },
+        { icon:'⚠️', label:'AVARIADOS MÉD.(%)', value: avMedia.toFixed(2)+'%',    sub:'máx: '+avMax.toFixed(2)+'%', cor: avCorCard },
         { icon:'💧', label:'UMIDADE MÉD.(%)',   value: med(umVals).toFixed(2)+'%', sub:'média do período',   cor:'#3498db' },
         { icon:'✅', label:'CONFORMES',         value: conformes+' CONFORMES', sub: naoConformes+' não conformes de '+dados.length+' análises', cor: naoConformes>0?'#e67e22':'#27ae60' },
     ].map(i=>`
@@ -6028,7 +6037,9 @@ function renderRCTabelaProd(dados) {
         const av  = med(dd.map(r=>getAvariados(r)));
         const cor = RC_PRODUTOS[p]?.cor || '#7f8c8d';
         const bg  = i%2===0?'#fff':'#f9f9f9';
-        const avCor = av>1?'#e74c3c':'#27ae60';
+        const cfgAv  = getParam('class', p.replace(/ /g,'_'), 'avariados', dd[dd.length-1]?.data || null);
+        const avFora = cfgAv && cfgAv.ativo && av > cfgAv.max;
+        const avCor  = avFora ? '#e74c3c' : '#27ae60';
         // Monta um registro sintético com as médias para avaliar conformidade
         const registroMedio = {
             produto: p, data: dd[dd.length-1]?.data || null,
