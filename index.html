@@ -3992,7 +3992,7 @@ async function fazerLogin() {
             exibirTabelaMP();
             if (perfilAtual === 'admin') verificarEspacoAoIniciar();
             // Correção única: registros antes de 20/03/2026 importados de planilha com valores decimais
-            if (!localStorage.getItem('correcaoDecimal_v1')) {
+            if (!localStorage.getItem('correcaoDecimal_v2')) {
                 _corrigirDecimaisNoBanco();
             }
             // KPIs da capa — filtrados pelo mês atual
@@ -7904,7 +7904,7 @@ async function _corrigirDecimaisNoBanco() {
         });
 
         if (afetados.length === 0) {
-            localStorage.setItem('correcaoDecimal_v1', 'ok-nada');
+            localStorage.setItem('correcaoDecimal_v2', 'ok-nada');
             return;
         }
 
@@ -7915,11 +7915,21 @@ async function _corrigirDecimaisNoBanco() {
             });
             const um = parseFloat(r.umidade) || 0;
             if (um > 0 && um <= 1) corrigido.umidade = +(um * 100).toFixed(3);
-            return dbUpsertOne('classificacoes', corrigido);
+            // PATCH direto por ID garante UPDATE real no Supabase
+            return fetch(`${SUPABASE_URL}/rest/v1/classificacoes?id=eq.${r.id}`, {
+                method: 'PATCH',
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': 'Bearer ' + SUPABASE_KEY,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify(corrigido)
+            });
         });
 
         await Promise.all(promises);
-        localStorage.setItem('correcaoDecimal_v1', 'ok-' + afetados.length);
+        localStorage.setItem('correcaoDecimal_v2', 'ok-' + afetados.length);
 
         // Recarrega para refletir os valores corretos
         await carregarTodosAsync();
