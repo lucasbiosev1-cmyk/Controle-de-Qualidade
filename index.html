@@ -9641,82 +9641,20 @@ function imprimirBoletim() {
             .bol-resumo-card .rl { font-size:7px; color:#888; text-transform:uppercase; margin-top:2px; }
             .bol-empty { padding:20px; text-align:center; color:#aaa; font-size:11px; }
             div[style*="border-left:6px"] { -webkit-print-color-adjust:exact; print-color-adjust:exact; page-break-before:auto; }
-            @page { margin: 8mm 6mm 16mm 6mm; size: A4 portrait; }
+            @page { margin: 8mm 6mm 8mm 6mm; size: A4 portrait; }
             @media print {
                 html, body { width:210mm; overflow:visible; }
                 * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
                 .print-footer { display:block !important; }
+                .no-print { display:none !important; }
             }
-            .print-footer { display:none; position:fixed; bottom:0; left:0; right:0; background:#0a1e7f; color:white; font-size:7.5px; padding:4px 12px; text-align:center; border-top:3px solid #2a9fd8; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .print-footer { display:none; background:#0a1e7f; color:white; font-size:7.5px; padding:4px 12px; text-align:center; border-top:3px solid #2a9fd8; margin-top:8px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
         </style>
     </head><body>
     ${capaHTML}
     ${conteudo.innerHTML}
     <div class="print-footer">
         <strong>AGRONOR ALIMENTOS</strong> &nbsp;&bull;&nbsp; Boletim Industrial Analítico &nbsp;&bull;&nbsp; Controle de Qualidade &nbsp;&bull;&nbsp; Emitido em: ${dataEmissao} às ${horaEmissao}
-    </div>
-    
-    <!-- ===== BOTÃO FIXO WHATSAPP ===== -->
-    <button class="btn-wapp-fixo" onclick="abrirModalWhatsApp()">
-        📲 Alerta WhatsApp
-    </button>
-
-    <!-- ===== MODAL WHATSAPP ===== -->
-    <div id="modalWhatsApp">
-        <div class="wapp-box">
-            <div class="wapp-header">
-                <h2>📲 Gerar Alerta WhatsApp</h2>
-                <button class="wapp-close" onclick="fecharModalWhatsApp()">×</button>
-            </div>
-            <div class="wapp-body">
-
-                <div class="wapp-numero">
-                    <div>
-                        <label>Número destino (opcional)</label>
-                        <input type="text" id="wappNumero" placeholder="5547999999999" />
-                        <small>Com código do país e DDD, sem espaços ou símbolos</small>
-                    </div>
-                </div>
-
-                <div class="wapp-periodo">
-                    <div>
-                        <label>Data Início</label>
-                        <input type="date" id="wappDataInicio" />
-                    </div>
-                    <div>
-                        <label>Data Fim</label>
-                        <input type="date" id="wappDataFim" />
-                    </div>
-                </div>
-
-                <!-- PRODUÇÃO -->
-                <div class="wapp-section">
-                    <h3>🌾 Produção — Campos para incluir no alerta</h3>
-                    <div class="wapp-campos" id="wappCamposProd"></div>
-                </div>
-
-                <!-- MATÉRIA PRIMA -->
-                <div class="wapp-section">
-                    <h3>🧪 Matéria Prima — Campos para incluir no alerta</h3>
-                    <div class="wapp-campos" id="wappCamposMP"></div>
-                </div>
-
-                <!-- PREVIEW -->
-                <div class="wapp-section">
-                    <h3>📋 Pré-visualização da mensagem</h3>
-                    <div class="wapp-preview" id="wappPreview">
-                        <span class="wapp-preview-vazio">Clique em "Gerar Mensagem" para visualizar</span>
-                    </div>
-                </div>
-
-                <div class="wapp-actions">
-                    <button class="btn-wapp-gerar" onclick="gerarMensagemWhatsApp()">🔍 Gerar Mensagem</button>
-                    <button class="btn-wapp-copiar" onclick="copiarMensagemWhatsApp()">📋 Copiar</button>
-                    <button class="btn-wapp-enviar" onclick="enviarWhatsApp()">📲 Abrir WhatsApp</button>
-                </div>
-
-            </div>
-        </div>
     </div>
 
 </body></html>`);
