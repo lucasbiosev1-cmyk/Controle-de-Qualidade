@@ -2160,10 +2160,8 @@
                                     <th style="padding:7px 10px;text-align:center;width:200px;">LOCAL / SILO</th>
                                     <th style="padding:7px;text-align:center;width:100px;">TOTAL<br>REGISTROS</th>
                                     <th style="padding:7px;text-align:center;width:100px;">COM<br>MICOTOX.</th>
-                                    <th style="padding:7px;text-align:center;width:120px;">AFLATOXINA<br>MÉD. (PPB)</th>
-                                    <th style="padding:7px;text-align:center;width:120px;">AFLATOXINA<br>MÁX. (PPB)</th>
-                                    <th style="padding:7px;text-align:center;width:120px;">FUMONISINA<br>MÉD. (PPB)</th>
-                                    <th style="padding:7px;text-align:center;width:120px;">FUMONISINA<br>MÁX. (PPB)</th>
+                                    <th style="padding:7px;text-align:center;width:140px;">AFLATOXINA<br>MÉD. (PPB)</th>
+                                    <th style="padding:7px;text-align:center;width:140px;">FUMONISINA<br>MÉD. (PPB)</th>
                                     <th style="padding:7px;text-align:center;width:100px;">RISCO</th>
                                 </tr>
                             </thead>
@@ -8764,7 +8762,7 @@ function getMicoNivel(valor, tipo) {
 function getMicoBadge(nivel) {
     if (!nivel) return '';
     const map = {
-        leve:     '<span style="background:#f39c12;color:white;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:bold;">LEVE</span>',
+        leve:     '<span style="background:#27ae60;color:white;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:bold;">LEVE</span>',
         moderado: '<span style="background:#e67e22;color:white;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:bold;">MODERADO</span>',
         critico:  '<span style="background:#e74c3c;color:white;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:bold;">CRÍTICO</span>',
     };
@@ -8774,17 +8772,17 @@ function getMicoBadge(nivel) {
 function getMicoStyle(nivel) {
     if (!nivel) return '';
     const map = {
-        leve:     'background:#fef9e7;color:#d68910;font-weight:bold;',
+        leve:     'background:#d5f5e3;color:#1e8449;font-weight:bold;',
         moderado: 'background:#fdebd0;color:#ca6f1e;font-weight:bold;',
         critico:  'background:#fde8e8;color:#c0392b;font-weight:bold;',
     };
     return map[nivel] || '';
 }
 
-// Risco geral para o ranking: usa o pior entre afla e fumo
-function getMicoRiscoGeral(aflaMax, fumoMax) {
-    const nivelAfla = getMicoNivel(aflaMax, 'afla');
-    const nivelFumo = getMicoNivel(fumoMax, 'fumo');
+// Risco geral para o ranking: usa o pior entre afla e fumo (baseado na MÉDIA)
+function getMicoRiscoGeral(aflaMedia, fumoMedia) {
+    const nivelAfla = getMicoNivel(aflaMedia, 'afla');
+    const nivelFumo = getMicoNivel(fumoMedia, 'fumo');
     const ordem = [null, 'leve', 'moderado', 'critico'];
     const pior = ordem[Math.max(ordem.indexOf(nivelAfla), ordem.indexOf(nivelFumo))];
     if (!pior) return '<span style="background:#27ae60;color:white;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;">OK</span>';
@@ -8800,6 +8798,14 @@ function salvarMicoParams() {
     localStorage.setItem(MICO_STORAGE_KEY, JSON.stringify(MICO_LIMITES));
     const msg = document.getElementById('msgSucessoParam');
     if (msg) { msg.textContent = '✅ Limites de micotoxinas salvos!'; msg.style.display='block'; setTimeout(()=>{ msg.style.display='none'; }, 3000); }
+    // Atualiza relatórios que usam os parâmetros de micotoxinas
+    if (typeof renderRCMicotoxinas === 'function') {
+        // Re-executa o relatório de classificação que contém as micotoxinas
+        const btnRC = document.querySelector('[onclick*="gerarRelatorioClass"]') || document.querySelector('[onclick*="atualizarRelClass"]');
+        // Tenta re-renderizar pelo filtro atual
+        try { gerarRelatorioClass && gerarRelatorioClass(); } catch(e) {}
+    }
+    if (typeof exibirTabelaClass === 'function') exibirTabelaClass();
 }
 
 function resetarMicoParams() {
@@ -8842,8 +8848,8 @@ function renderPanelMicotoxinas() {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr style="background:#fef9e7;">
-                        <td style="padding:8px;"><span style="background:#f39c12;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">LEVE</span></td>
+                    <tr style="background:#d5f5e3;">
+                        <td style="padding:8px;"><span style="background:#27ae60;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">LEVE</span></td>
                         <td style="padding:8px;text-align:center;">até <input id="micoAflaLeve" type="number" min="0" step="0.1" value="${L.afla.leve}" style="width:80px;padding:5px;border:1px solid #ddd;border-radius:4px;text-align:center;font-size:12px;"></td>
                         <td style="padding:8px;font-size:10px;color:#888;">ppb</td>
                     </tr>
@@ -8875,8 +8881,8 @@ function renderPanelMicotoxinas() {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr style="background:#fef9e7;">
-                        <td style="padding:8px;"><span style="background:#f39c12;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">LEVE</span></td>
+                    <tr style="background:#d5f5e3;">
+                        <td style="padding:8px;"><span style="background:#27ae60;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">LEVE</span></td>
                         <td style="padding:8px;text-align:center;">até <input id="micoFumoLeve" type="number" min="0" step="0.1" value="${L.fumo.leve}" style="width:90px;padding:5px;border:1px solid #ddd;border-radius:4px;text-align:center;font-size:12px;"></td>
                         <td style="padding:8px;font-size:10px;color:#888;">ppb</td>
                     </tr>
@@ -10217,8 +10223,8 @@ function renderRCMicotoxinas(dados, di, df) {
         score:     (d.aflaArr.length ? _rcMed(d.aflaArr) : 0)*2 + (d.fumoArr.length ? _rcMed(d.fumoArr)/1000 : 0)
     })).sort((a,b) => b.score - a.score);
 
-    const getRisco = (aflaMax, fumoMax, produto) => {
-        return getMicoRiscoGeral(aflaMax, fumoMax);
+    const getRisco = (aflaMedia, fumoMedia, produto) => {
+        return getMicoRiscoGeral(aflaMedia, fumoMedia);
     };
 
     const medalha = ['🥇','🥈','🥉'];
@@ -10237,12 +10243,10 @@ function renderRCMicotoxinas(dados, di, df) {
             <td style="padding:7px;text-align:center;">${d.total}</td>
             <td style="padding:7px;text-align:center;font-weight:bold;color:${d.comMico>0?'#e74c3c':'#27ae60'};">${d.comMico}</td>
             <td style="padding:7px;text-align:center;font-weight:bold;color:${aflaCorMed};">${d.aflaMedia > 0 ? d.aflaMedia.toFixed(2) : '—'}</td>
-            <td style="padding:7px;text-align:center;font-weight:bold;color:${aflaCorMax};">${d.aflaMax > 0 ? d.aflaMax.toFixed(2) : '—'}</td>
             <td style="padding:7px;text-align:center;font-weight:bold;color:${fumoCorMed};">${d.fumoMedia > 0 ? d.fumoMedia.toFixed(0) : '—'}</td>
-            <td style="padding:7px;text-align:center;font-weight:bold;color:${fumoCorMax};">${d.fumoMax > 0 ? d.fumoMax.toFixed(0) : '—'}</td>
-            <td style="padding:7px;text-align:center;">${getRisco(d.aflaMax, d.fumoMax, d.forn)}</td>
+            <td style="padding:7px;text-align:center;">${getRisco(d.aflaMedia, d.fumoMedia, d.forn)}</td>
         </tr>`;
-    }).join('') : '<tr><td colspan="10" style="text-align:center;padding:14px;color:#999;">Nenhum dado no período</td></tr>';
+    }).join('') : '<tr><td colspan="8" style="text-align:center;padding:14px;color:#999;">Nenhum dado no período</td></tr>';
 
     // ---- TABELA DETALHADA (todos com afla ou fumo > 0) ----
     const sorted = [...comMico].sort((a,b) => {
