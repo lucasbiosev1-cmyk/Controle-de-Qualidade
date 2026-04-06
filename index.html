@@ -2649,6 +2649,35 @@
                 <div id="bkMsgImport" style="margin-top:12px;font-size:12px;display:none;"></div>
             </div>
 
+            <!-- CORREÇÃO DE VALORES DECIMAIS -->
+            <div class="container" style="margin-bottom:20px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #e67e22;">
+                    <span style="font-size:28px;">🔧</span>
+                    <div>
+                        <div style="font-size:16px;font-weight:bold;color:#e67e22;text-transform:uppercase;">Corrigir Valores de Defeitos (Decimal → Percentual)</div>
+                        <div style="font-size:12px;color:#777;margin-top:2px;">Corrige registros importados de planilha onde os defeitos ficaram em formato decimal (ex: 0.04 em vez de 4.00%). Somente registros com todos os defeitos ≤ 1 são afetados.</div>
+                    </div>
+                </div>
+                <div style="background:#fef9e7;border:1px solid #f9e79f;border-radius:6px;padding:12px;margin-bottom:14px;font-size:12px;color:#7d6608;">
+                    ⚠️ <strong>Use somente se</strong> os valores na tabela de classificação aparecem como <code>0.02</code> quando deveriam ser <code>2.00</code>. A correção multiplica por 100 apenas os campos de defeito que estejam ≤ 1 (formato decimal). Registros com valores já corretos (>1) não são alterados.
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <label style="font-size:12px;font-weight:bold;color:#555;">Data início:</label>
+                        <input type="date" id="correcaoDataInicio" style="padding:6px 8px;border:1px solid #ddd;border-radius:4px;font-size:12px;">
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <label style="font-size:12px;font-weight:bold;color:#555;">Data fim:</label>
+                        <input type="date" id="correcaoDataFim" style="padding:6px 8px;border:1px solid #ddd;border-radius:4px;font-size:12px;">
+                    </div>
+                    <button onclick="analisarCorrecaoDefeitos()" style="background:#e67e22;color:white;padding:9px 18px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;">
+                        🔍 Analisar Registros
+                    </button>
+                </div>
+                <div id="correcaoPreview" style="display:none;margin-top:14px;"></div>
+                <div id="correcaoMsg" style="margin-top:10px;font-size:12px;display:none;"></div>
+            </div>
+
             <!-- LIMPAR DADOS NOVOS -->
             <div class="container">
                 <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #e74c3c;">
@@ -3962,6 +3991,10 @@ async function fazerLogin() {
             exibirTabelaClass();
             exibirTabelaMP();
             if (perfilAtual === 'admin') verificarEspacoAoIniciar();
+            // Correção única: registros antes de 20/03/2026 importados de planilha com valores decimais
+            if (!localStorage.getItem('correcaoDecimal_v1')) {
+                _corrigirDecimaisNoBanco();
+            }
             // KPIs da capa — filtrados pelo mês atual
             try {
                 const agora      = new Date();
@@ -7792,7 +7825,8 @@ async function carregarTodosAsync() {
     // Os dados no Supabase já estão em percentual (ex: 6.45 = 6.45%).
     // A migração exportou classificacoes já com normClass aplicada (em %),
     // e os registros novos também são salvos diretamente em %.
-    // Portanto NÃO multiplicamos por 100 — apenas garantimos o tipo numérico.
+    // Os dados no Supabase estão em percentual (ex: 6.45 = 6.45%).
+    // Registros antigos com valores decimais são corrigidos automaticamente pela _corrigirDecimaisNoBanco.
     const _pct = (v, dec) => (v === null || v === undefined) ? 0 : +parseFloat(v).toFixed(dec);
     const normClass = r => ({
         ...r,
@@ -7852,6 +7886,50 @@ async function carregarTodosAsync() {
     materiasPrimas = rawM.map(normMat);
 }
 
+
+// ===================================================
+// CORREÇÃO ÚNICA — DECIMAIS → PERCENTUAL NO BANCO
+// ===================================================
+const _DEFEITOS_CAMPOS = ['queimado','ardido','mofado','esverdeado','fermentando',
+    'chocho','picado','gessado','quebrado','germinado','carunchado','impureza'];
+
+async function _corrigirDecimaisNoBanco() {
+    try {
+        const todos = await dbGetAll('classificacoes');
+        // Apenas registros anteriores a 20/03/2026 que estejam em formato decimal
+        const afetados = todos.filter(r => {
+            if (!r.data || r.data >= '2026-03-20') return false;
+            const vals = _DEFEITOS_CAMPOS.map(c => parseFloat(r[c]) || 0);
+            return vals.some(v => v > 0) && vals.every(v => v <= 1);
+        });
+
+        if (afetados.length === 0) {
+            localStorage.setItem('correcaoDecimal_v1', 'ok-nada');
+            return;
+        }
+
+        const promises = afetados.map(r => {
+            const corrigido = { ...r };
+            _DEFEITOS_CAMPOS.forEach(c => {
+                corrigido[c] = +(parseFloat(r[c] || 0) * 100).toFixed(4);
+            });
+            const um = parseFloat(r.umidade) || 0;
+            if (um > 0 && um <= 1) corrigido.umidade = +(um * 100).toFixed(3);
+            return dbUpsertOne('classificacoes', corrigido);
+        });
+
+        await Promise.all(promises);
+        localStorage.setItem('correcaoDecimal_v1', 'ok-' + afetados.length);
+
+        // Recarrega para refletir os valores corretos
+        await carregarTodosAsync();
+        exibirTabelaClass();
+        console.log(`[Correção] ${afetados.length} registro(s) corrigidos no banco com sucesso.`);
+    } catch(e) {
+        console.error('[Correção decimais] Erro:', e);
+        // Não marca como feito para tentar novamente na próxima sessão
+    }
+}
 
 // ===================================================
 // MONITORAMENTO DE MEMÓRIA
@@ -10604,5 +10682,164 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// ===================================================
+// CORREÇÃO DE DEFEITOS DECIMAIS → PERCENTUAL
+// ===================================================
+const _CAMPOS_DEFEITO = ['queimado','ardido','mofado','esverdeado','fermentando',
+    'chocho','picado','gessado','quebrado','germinado','carunchado','impureza'];
+
+function _registroNecessitaCorrecao(r) {
+    // Um registro precisa de correção se TODOS os campos de defeito presentes
+    // têm valor <= 1 e pelo menos um é > 0 (ou seja, são decimais, não percentuais)
+    const vals = _CAMPOS_DEFEITO.map(c => parseFloat(r[c]) || 0);
+    const algumPositivo = vals.some(v => v > 0);
+    const todosDecimais = vals.every(v => v <= 1);
+    return algumPositivo && todosDecimais;
+}
+
+async function analisarCorrecaoDefeitos() {
+    const di = document.getElementById('correcaoDataInicio').value;
+    const df = document.getElementById('correcaoDataFim').value;
+    const previewEl = document.getElementById('correcaoPreview');
+    const msgEl = document.getElementById('correcaoMsg');
+
+    previewEl.style.display = 'none';
+    msgEl.style.display = 'none';
+
+    let todos;
+    try {
+        todos = await dbGetAll('classificacoes');
+    } catch(e) {
+        msgEl.textContent = '❌ Erro ao buscar dados: ' + e.message;
+        msgEl.style.color = '#e74c3c';
+        msgEl.style.display = 'block';
+        return;
+    }
+
+    // Filtrar por período se informado
+    const filtrados = todos.filter(r => {
+        if (di && r.data < di) return false;
+        if (df && r.data > df) return false;
+        return true;
+    });
+
+    const afetados = filtrados.filter(_registroNecessitaCorrecao);
+
+    if (afetados.length === 0) {
+        msgEl.innerHTML = '✅ Nenhum registro com valores decimais encontrado no período selecionado. Os dados parecem estar corretos.';
+        msgEl.style.color = '#27ae60';
+        msgEl.style.display = 'block';
+        return;
+    }
+
+    // Monta preview
+    let html = `<div style="font-size:13px;font-weight:bold;color:#e67e22;margin-bottom:8px;">
+        🔍 ${afetados.length} registro(s) com valores decimais detectados — serão multiplicados por 100:
+    </div>
+    <div style="overflow-x:auto;max-height:300px;overflow-y:auto;border:1px solid #ddd;border-radius:4px;">
+    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead>
+            <tr style="background:#e67e22;color:white;position:sticky;top:0;">
+                <th style="padding:6px 8px;">Data</th>
+                <th style="padding:6px 8px;">Produto</th>
+                <th style="padding:6px 8px;">Fornecedor</th>
+                <th style="padding:6px 8px;">Queimado</th>
+                <th style="padding:6px 8px;">Ardido</th>
+                <th style="padding:6px 8px;">Mofado</th>
+                <th style="padding:6px 8px;">Ferment.</th>
+                <th style="padding:6px 8px;">Esverdeado</th>
+                <th style="padding:6px 8px;">Impureza</th>
+                <th style="padding:6px 8px;">→ Após correção (ex: Queimado)</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    afetados.forEach((r, i) => {
+        const bg = i % 2 === 0 ? '#fff' : '#fef9e7';
+        const dataFmt = r.data ? new Date(r.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+        const queimadoCorr = +(parseFloat(r.queimado || 0) * 100).toFixed(4);
+        html += `<tr style="background:${bg};">
+            <td style="padding:4px 8px;white-space:nowrap;">${dataFmt}</td>
+            <td style="padding:4px 8px;">${r.produto || '-'}</td>
+            <td style="padding:4px 8px;">${r.fornecedor || '-'}</td>
+            <td style="padding:4px 8px;color:#c0392b;">${fmtN(r.queimado)}</td>
+            <td style="padding:4px 8px;color:#c0392b;">${fmtN(r.ardido)}</td>
+            <td style="padding:4px 8px;color:#c0392b;">${fmtN(r.mofado)}</td>
+            <td style="padding:4px 8px;color:#c0392b;">${fmtN(r.fermentando)}</td>
+            <td style="padding:4px 8px;color:#c0392b;">${fmtN(r.esverdeado)}</td>
+            <td style="padding:4px 8px;color:#c0392b;">${fmtN(r.impureza)}</td>
+            <td style="padding:4px 8px;color:#27ae60;font-weight:bold;">${fmtN(queimadoCorr)}</td>
+        </tr>`;
+    });
+
+    html += `</tbody></table></div>
+    <div style="margin-top:12px;display:flex;gap:10px;">
+        <button onclick="executarCorrecaoDefeitos()" style="background:#27ae60;color:white;padding:10px 22px;border:none;border-radius:4px;font-weight:bold;font-size:13px;cursor:pointer;text-transform:uppercase;">
+            ✅ Aplicar Correção nos ${afetados.length} Registros
+        </button>
+        <button onclick="document.getElementById('correcaoPreview').style.display='none'" style="background:#95a5a6;color:white;padding:10px 16px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;">
+            Cancelar
+        </button>
+    </div>`;
+
+    previewEl.innerHTML = html;
+    previewEl.style.display = 'block';
+    // Guarda os ids para correção
+    previewEl.dataset.ids = JSON.stringify(afetados.map(r => r.id));
+}
+
+async function executarCorrecaoDefeitos() {
+    const previewEl = document.getElementById('correcaoPreview');
+    const msgEl = document.getElementById('correcaoMsg');
+    const ids = new Set(JSON.parse(previewEl.dataset.ids || '[]'));
+
+    if (ids.size === 0) return;
+    if (!confirm(`Confirma a correção de ${ids.size} registro(s)? Os valores de defeito serão multiplicados por 100.`)) return;
+
+    msgEl.textContent = '⏳ Aplicando correção...';
+    msgEl.style.color = '#e67e22';
+    msgEl.style.display = 'block';
+    previewEl.style.display = 'none';
+
+    let todos;
+    try {
+        todos = await dbGetAll('classificacoes');
+    } catch(e) {
+        msgEl.textContent = '❌ Erro ao buscar dados: ' + e.message;
+        msgEl.style.color = '#e74c3c';
+        return;
+    }
+
+    let corrigidos = 0;
+    const promises = [];
+
+    todos.forEach(r => {
+        if (!ids.has(r.id)) return;
+        const corrigido = { ...r };
+        _CAMPOS_DEFEITO.forEach(c => {
+            const v = parseFloat(r[c]) || 0;
+            corrigido[c] = +(v * 100).toFixed(4);
+        });
+        // Umidade também pode estar decimal se <= 1
+        const um = parseFloat(r.umidade) || 0;
+        if (um > 0 && um <= 1) corrigido.umidade = +(um * 100).toFixed(3);
+
+        promises.push(dbUpsertOne('classificacoes', corrigido));
+        corrigidos++;
+    });
+
+    try {
+        await Promise.all(promises);
+        await carregarTodosAsync();
+        exibirTabelaClass();
+        msgEl.innerHTML = `✅ Correção aplicada com sucesso em <strong>${corrigidos}</strong> registro(s). Os valores agora estão em percentual correto.`;
+        msgEl.style.color = '#27ae60';
+    } catch(e) {
+        msgEl.textContent = '❌ Erro ao salvar correção: ' + e.message;
+        msgEl.style.color = '#e74c3c';
+        console.error(e);
+    }
+}
 
 </script>
