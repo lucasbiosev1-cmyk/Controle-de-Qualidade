@@ -5722,6 +5722,7 @@ function med(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
 
 function aplicarFiltrosRelClass() {
     try {
+    carregarMicoParams(); // Garante parâmetros de micotoxinas sempre atualizados
     const di      = document.getElementById('rcDataInicio').value;
     const df      = document.getElementById('rcDataFim').value;
     const prodSel = document.getElementById('rcProduto').value;
@@ -8757,13 +8758,13 @@ function carregarMicoParams() {
     } catch(e) { MICO_LIMITES = JSON.parse(JSON.stringify(MICO_DEFAULTS)); }
 }
 
-// Retorna badge colorido baseado nas 3 faixas configuradas
+// Retorna nível de risco baseado nas faixas configuradas
+// tipo: 'afla' ou 'fumo'
 function getMicoNivel(valor, tipo) {
-    // tipo: 'afla' ou 'fumo'
     const L = MICO_LIMITES[tipo] || MICO_DEFAULTS[tipo];
-    if (valor <= 0)            return null; // sem contaminação
-    if (valor <= L.leve)       return 'leve';
-    if (valor <= L.moderado)   return 'moderado';
+    if (!valor || valor <= 0) return null;
+    if (valor <= L.leve)     return 'leve';
+    if (valor <= L.moderado) return 'moderado';
     return 'critico';
 }
 
@@ -8805,18 +8806,11 @@ function salvarMicoParams() {
     };
     localStorage.setItem(MICO_STORAGE_KEY, JSON.stringify(MICO_LIMITES));
     const msg = document.getElementById('msgSucessoParam');
-    if (msg) { msg.textContent = '✅ Limites de micotoxinas salvos!'; msg.style.display='block'; setTimeout(()=>{ msg.style.display='none'; }, 3000); }
-    // Atualiza relatórios que usam os parâmetros de micotoxinas
-    try {
-        // Tenta re-renderizar a seção de micotoxinas se o relatório já estiver aberto
-        const conteudo = document.getElementById('relClassConteudo');
-        if (conteudo && conteudo.innerHTML.length > 100) {
-            // Re-executa o botão de gerar relatório se existir
-            const btnGerar = document.getElementById('btnGerarRelClass') || document.querySelector('[onclick*="gerarRelClass"]');
-            if (btnGerar) btnGerar.click();
-        }
-    } catch(e) {}
-    if (typeof exibirTabelaClass === 'function') exibirTabelaClass();
+    if (msg) { msg.textContent = '✅ Limites salvos! Relatório atualizado.'; msg.style.display='block'; setTimeout(()=>{ msg.style.display='none'; }, 3000); }
+    // Re-renderiza o relatório de classificação (que contém as micotoxinas) se já estiver gerado
+    try { if (typeof aplicarFiltrosRelClass === 'function') aplicarFiltrosRelClass(); } catch(e) {}
+    // Re-renderiza tabela de classificação (badges na aba de lançamentos)
+    try { if (typeof exibirTabelaClass === 'function') exibirTabelaClass(); } catch(e) {}
 }
 
 function resetarMicoParams() {
@@ -8824,6 +8818,9 @@ function resetarMicoParams() {
     MICO_LIMITES = JSON.parse(JSON.stringify(MICO_DEFAULTS));
     localStorage.removeItem(MICO_STORAGE_KEY);
     renderPanelMicotoxinas();
+    // Re-renderiza após resetar também
+    try { if (typeof aplicarFiltrosRelClass === 'function') aplicarFiltrosRelClass(); } catch(e) {}
+    try { if (typeof exibirTabelaClass === 'function') exibirTabelaClass(); } catch(e) {}
 }
 
 function renderPanelMicotoxinas() {
