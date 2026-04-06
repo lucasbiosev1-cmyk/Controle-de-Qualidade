@@ -10121,19 +10121,37 @@ function renderRCMicotoxinas(dados, di, df) {
     // --- filtrar apenas registros com afla ou fumo > 0
     const comMico = dados.filter(r => (r.aflatoxinas||0) > 0 || (r.fumonisinas||0) > 0);
 
+    // ---- Amostras com micotoxinas analisadas (que têm valor > 0 em afla ou fumo) ----
+    const amostrasAnalisadas = comMico.length;
+
+    // ---- Busca LMT dos parâmetros por produto (usa menor limite entre os produtos presentes) ----
+    const produtosPresentes = [...new Set(dados.map(r => r.produto).filter(Boolean))];
+    const _getLmt = (campo, defaultVal) => {
+        let lmt = defaultVal;
+        produtosPresentes.forEach(p => {
+            const cfg = getParam('class', p.replace(/ /g,'_'), campo, dados[dados.length-1]?.data || null);
+            if (cfg && cfg.ativo && cfg.max < 9999) lmt = Math.min(lmt, cfg.max);
+        });
+        return lmt;
+    };
+    const lmtAfla = _getLmt('aflatoxinas', 20);
+    const lmtFumo = _getLmt('fumonisinas', 5000);
+
     // ---- CARDS ----
-    const aflaVals = dados.filter(r=>(r.aflatoxinas||0)>0).map(r=>r.aflatoxinas);
-    const fumoVals = dados.filter(r=>(r.fumonisinas||0)>0).map(r=>r.fumonisinas);
+    const aflaVals = comMico.filter(r=>(r.aflatoxinas||0)>0).map(r=>r.aflatoxinas);
+    const fumoVals = comMico.filter(r=>(r.fumonisinas||0)>0).map(r=>r.fumonisinas);
     const aflaMedia = _rcMed(aflaVals);
     const aflaMax   = aflaVals.length ? Math.max(...aflaVals) : 0;
     const fumoMedia = _rcMed(fumoVals);
     const fumoMax   = fumoVals.length ? Math.max(...fumoVals) : 0;
 
+    const acimaLmt = comMico.filter(r=>(r.aflatoxinas||0)>lmtAfla||(r.fumonisinas||0)>lmtFumo).length;
+
     document.getElementById('rcMicoCards').innerHTML = [
-        { icon:'🔬', label:'AMOSTRAS C/ MICOTOX.', value: comMico.length,                         sub: dados.length + ' analisadas no período',    cor:'#8e44ad' },
-        { icon:'⚠️', label:'AFLATOXINA MÉD.(PPB)', value: aflaMedia.toFixed(2),                   sub: 'máx: '+aflaMax.toFixed(2)+' ppb | LMT: 20', cor: aflaMedia>20?'#e74c3c': aflaMedia>5?'#e67e22':'#27ae60' },
-        { icon:'🧪', label:'FUMONISINA MÉD.(PPB)', value: fumoMedia.toFixed(0),                   sub: 'máx: '+fumoMax.toFixed(0)+' ppb | LMT: 5000', cor: fumoMedia>5000?'#e74c3c': fumoMedia>1000?'#e67e22':'#27ae60' },
-        { icon:'🚨', label:'AMOSTRAS ACIMA LMT',   value: dados.filter(r=>(r.aflatoxinas||0)>20||(r.fumonisinas||0)>5000).length, sub:'aflatox > 20 ppb ou fumon > 5000 ppb', cor: dados.filter(r=>(r.aflatoxinas||0)>20||(r.fumonisinas||0)>5000).length>0?'#e74c3c':'#27ae60' },
+        { icon:'🔬', label:'AMOSTRAS C/ MICOTOX.', value: amostrasAnalisadas, sub: amostrasAnalisadas + ' com micotox. analisadas', cor:'#8e44ad' },
+        { icon:'⚠️', label:'AFLATOXINA MÉD.(PPB)', value: aflaMedia.toFixed(2), sub: 'máx: '+aflaMax.toFixed(2)+' ppb | LMT: '+lmtAfla, cor: aflaMedia>lmtAfla?'#e74c3c': aflaMedia>(lmtAfla*0.5)?'#e67e22':'#27ae60' },
+        { icon:'🧪', label:'FUMONISINA MÉD.(PPB)', value: fumoMedia.toFixed(0), sub: 'máx: '+fumoMax.toFixed(0)+' ppb | LMT: '+lmtFumo, cor: fumoMedia>lmtFumo?'#e74c3c': fumoMedia>(lmtFumo*0.5)?'#e67e22':'#27ae60' },
+        { icon:'🚨', label:'AMOSTRAS ACIMA LMT',   value: acimaLmt, sub:'aflatox > '+lmtAfla+' ppb ou fumon > '+lmtFumo+' ppb', cor: acimaLmt>0?'#e74c3c':'#27ae60' },
     ].map(i=>`
         <div style="background:#f9f9f9;border:1px solid #ddd;border-radius:6px;padding:14px;text-align:center;border-top:4px solid ${i.cor};">
             <div style="font-size:20px;margin-bottom:4px;">${i.icon}</div>
@@ -10162,7 +10180,7 @@ function renderRCMicotoxinas(dados, di, df) {
                 datasets: [
                     { label:'Aflatoxina Média (ppb)', data: labels.map(d => dateMap[d].afla.length ? parseFloat(_rcMed(dateMap[d].afla).toFixed(2)) : null), borderColor:'#e74c3c', backgroundColor:'rgba(231,76,60,0.1)', borderWidth:2, pointRadius:3, tension:0.3, yAxisID:'yA', spanGaps:false },
                     { label:'Fumonisina Média (ppb÷1000)', data: labels.map(d => dateMap[d].fumo.length ? parseFloat((_rcMed(dateMap[d].fumo)/1000).toFixed(2)) : null), borderColor:'#e67e22', backgroundColor:'rgba(230,126,34,0.1)', borderWidth:2, pointRadius:3, tension:0.3, yAxisID:'yF', spanGaps:false },
-                    { label:'LMT Aflatox. (20 ppb)', data: labels.map(()=>20), borderColor:'rgba(231,76,60,0.4)', borderWidth:1, borderDash:[5,5], pointRadius:0, yAxisID:'yA' },
+                    { label:'LMT Aflatox. ('+lmtAfla+' ppb)', data: labels.map(()=>lmtAfla), borderColor:'rgba(231,76,60,0.4)', borderWidth:1, borderDash:[5,5], pointRadius:0, yAxisID:'yA' },
                 ]
             },
             options: {
