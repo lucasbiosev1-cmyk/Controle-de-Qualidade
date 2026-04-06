@@ -7898,7 +7898,7 @@ async function _corrigirDecimaisNoBanco() {
         const todos = await dbGetAll('classificacoes');
         // Apenas registros anteriores a 20/03/2026 que estejam em formato decimal
         const afetados = todos.filter(r => {
-            if (!r.data || r.data >= '2026-03-20') return false;
+            if (!r.data || r.data > '2026-03-20') return false;
             const vals = _DEFEITOS_CAMPOS.map(c => parseFloat(r[c]) || 0);
             return vals.some(v => v > 0) && vals.every(v => v <= 1);
         });
