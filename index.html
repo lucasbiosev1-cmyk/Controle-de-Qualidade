@@ -9024,6 +9024,40 @@ function gerarBoletim() {
 
     const periodoStr = di||df ? `${di?fmtDate(di):'início'} a ${df?fmtDate(df):'hoje'}` : 'Todo o período';
 
+    // Contadores — critério página inicial
+    const temValBol = (r, campo) => {
+        const v = r[campo];
+        if (v === null || v === undefined) return false;
+        if (campo === 'ureatica' || campo === 'peroxido' || campo === 'rancidez') return true;
+        return parseFloat(v) > 0;
+    };
+
+    // Produção: cada campo conta 1, exceto granulo1/2/3 que juntos contam 1
+    const camposProdBol = ['dgm','dpg','umidade','densidade','proteina','fibra','mineral','calcio','fosforo','fundo'];
+    let analisesBoletim = 0;
+    if (incProd) {
+        prod_f.forEach(r => {
+            camposProdBol.forEach(c => { if (temValBol(r, c)) analisesBoletim++; });
+            // granulo1, granulo2, granulo3 juntos = 1 análise
+            if (temValBol(r,'granulo1') || temValBol(r,'granulo2') || temValBol(r,'granulo3')) analisesBoletim++;
+        });
+    }
+    // Classificação: defeitos todos = 1, umidade = +1, densidade = +1
+    const camposDefeitosBol = ['queimado','ardido','mofado','esverdeado','fermentando','chocho','picado','gessado','quebrado','germinado','carunchado','impureza'];
+    if (incClass) {
+        class_f.forEach(r => {
+            const temDefeito = camposDefeitosBol.some(c => temValBol(r, c));
+            if (temDefeito) analisesBoletim++;
+            if (temValBol(r, 'umidade'))   analisesBoletim++;
+            if (temValBol(r, 'densidade')) analisesBoletim++;
+        });
+    }
+    // Matéria Prima: cada campo preenchido = 1
+    const camposMPBol = ['proteina','solubil','umidade','densidade','mineral','acidez','ureatica','rancidez','peroxido','digestibilidade'];
+    if (incMP) {
+        mp_f.forEach(r => { camposMPBol.forEach(c => { if (temValBol(r, c)) analisesBoletim++; }); });
+    }
+
     // Contadores
     const nProd  = incProd  ? prod_f.length  : 0;
     const nClass = incClass ? class_f.length : 0;
@@ -9051,6 +9085,7 @@ function gerarBoletim() {
             ${incClass ? `<div class="bol-capa-stat"><div class="n">${nClass}</div><div class="l">🌽 Classificação</div></div>` : ''}
             ${incMP    ? `<div class="bol-capa-stat"><div class="n">${nMP}</div><div class="l">🧪 Matéria Prima</div></div>` : ''}
             <div class="bol-capa-stat"><div class="n">${nTotal}</div><div class="l">📊 Total Registros</div></div>
+            <div class="bol-capa-stat"><div class="n">${analisesBoletim}</div><div class="l">🔬 Total Análises</div></div>
         </div>
         <div class="bol-capa-period">📅 Período: ${periodoStr}</div>
         <div style="font-size:9px;opacity:0.5;margin-top:12px;letter-spacing:0.5px;">Emitido em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
