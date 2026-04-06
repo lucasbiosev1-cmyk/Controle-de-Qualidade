@@ -8734,13 +8734,21 @@ function renderizarTabelasParametros() {
 // ─────────────────────────────────────────────────────────────────────────────
 const MICO_STORAGE_KEY = 'sistema_mico_params_v2';
 
-// Estrutura: { afla: { leve: 0.1, moderado: 5, critico: 10 }, fumo: { leve: 0.1, moderado: 2000, critico: 4000 } }
+// Estrutura: { afla: { leve: 5, moderado: 10, critico: 10 }, fumo: { leve: 2000, moderado: 4000, critico: 4000 } }
 const MICO_DEFAULTS = {
-    afla: { leve: 0.1, moderado: 5,    critico: 10   },
-    fumo: { leve: 0.1, moderado: 2000, critico: 4000 }
+    afla: { leve: 5,    moderado: 10,   critico: 10   },
+    fumo: { leve: 2000, moderado: 4000, critico: 4000 }
 };
 
 let MICO_LIMITES = { ...MICO_DEFAULTS };
+
+// Carrega imediatamente do localStorage na inicialização
+(function() {
+    try {
+        const saved = localStorage.getItem(MICO_STORAGE_KEY);
+        if (saved) MICO_LIMITES = JSON.parse(saved);
+    } catch(e) {}
+})();
 
 function carregarMicoParams() {
     try {
@@ -8799,12 +8807,15 @@ function salvarMicoParams() {
     const msg = document.getElementById('msgSucessoParam');
     if (msg) { msg.textContent = '✅ Limites de micotoxinas salvos!'; msg.style.display='block'; setTimeout(()=>{ msg.style.display='none'; }, 3000); }
     // Atualiza relatórios que usam os parâmetros de micotoxinas
-    if (typeof renderRCMicotoxinas === 'function') {
-        // Re-executa o relatório de classificação que contém as micotoxinas
-        const btnRC = document.querySelector('[onclick*="gerarRelatorioClass"]') || document.querySelector('[onclick*="atualizarRelClass"]');
-        // Tenta re-renderizar pelo filtro atual
-        try { gerarRelatorioClass && gerarRelatorioClass(); } catch(e) {}
-    }
+    try {
+        // Tenta re-renderizar a seção de micotoxinas se o relatório já estiver aberto
+        const conteudo = document.getElementById('relClassConteudo');
+        if (conteudo && conteudo.innerHTML.length > 100) {
+            // Re-executa o botão de gerar relatório se existir
+            const btnGerar = document.getElementById('btnGerarRelClass') || document.querySelector('[onclick*="gerarRelClass"]');
+            if (btnGerar) btnGerar.click();
+        }
+    } catch(e) {}
     if (typeof exibirTabelaClass === 'function') exibirTabelaClass();
 }
 
@@ -10124,6 +10135,8 @@ let _rcMicoGraficoInst = null;
 function _rcMed(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
 
 function renderRCMicotoxinas(dados, di, df) {
+    // Sempre recarrega parâmetros do localStorage antes de calcular riscos
+    carregarMicoParams();
     // --- filtrar apenas registros com afla ou fumo > 0
     const comMico = dados.filter(r => (r.aflatoxinas||0) > 0 || (r.fumonisinas||0) > 0);
 
