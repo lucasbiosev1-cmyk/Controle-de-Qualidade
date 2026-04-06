@@ -1430,14 +1430,7 @@
                 <div class="form-group"><label>Data Fim:</label><input type="date" id="filterDataFimClass"></div>
                 <div class="form-group">
                     <label>Produto:</label>
-                    <select id="filterProdutoClass">
-                        <option value="">Todos</option>
-                        <option value="SOJA">SOJA</option>
-                        <option value="SOJA ESTOQUE 01">SOJA ESTOQUE 01</option>
-                        <option value="MILHO">MILHO</option>
-                        <option value="MILHO ESTOQUE 01">MILHO ESTOQUE 01</option>
-                        <option value="MILHO ESTOQUE 02">MILHO ESTOQUE 02</option>
-                    </select>
+                    <select id="filterProdutoClass"><option value="">Todos</option></select>
                 </div>
                 <div class="form-group">
                     <label>Fornecedor:</label>
@@ -4690,6 +4683,15 @@ function filtrarDadosClass() {
 }
 
 function popularFornecedoresClass() {
+    // Produtos
+    const selProd = document.getElementById('filterProdutoClass');
+    if (selProd) {
+        const atualProd = selProd.value;
+        const produtos = [...new Set(classificacoes.map(r => r.produto).filter(Boolean))].sort();
+        selProd.innerHTML = '<option value="">Todos</option>' +
+            produtos.map(p => `<option value="${p}"${p===atualProd?' selected':''}>${p}</option>`).join('');
+    }
+    // Fornecedores
     const sel = document.getElementById('filterFornecedorClass');
     if (!sel) return;
     const atual = sel.value;
@@ -6086,8 +6088,26 @@ function renderRCTabelaDetalhe(dados) {
         const av   = getAvariados(r);
         const bg   = i%2===0?'#fff':'#f9f9f9';
         const cor  = RC_PRODUTOS[r.produto]?.cor || '#333';
-        const avCor= av>1?'#e74c3c':'#27ae60';
+
+        // Cor do avariado baseada no parâmetro configurado (não hardcoded)
+        const cfgAv = getParam('class', r.produto.replace(/ /g,'_'), 'avariados', r.data);
+        const avFora = cfgAv && cfgAv.ativo && av > cfgAv.max;
+        const avCor  = avFora ? '#e74c3c' : '#27ae60';
+        const avStyle = avFora
+            ? 'padding:4px;text-align:center;font-weight:bold;color:#c0392b;background:#fde8e8;'
+            : 'padding:4px;text-align:center;font-weight:bold;color:#27ae60;';
+
         const status = statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data);
+
+        // Estilo para campos individuais de defeito baseado nos parâmetros
+        const tdDefeito = (campo) => {
+            const v = parseFloat(r[campo]) || 0;
+            const st = estiloFora(v, 'class', r.produto, campo, r.data);
+            const cls = st ? ' style="padding:4px;text-align:center;background:#fde8e8;color:#c0392b;font-weight:bold;"'
+                           : ' style="padding:4px;text-align:center;"';
+            return `<td${cls}>${v.toFixed(2)}</td>`;
+        };
+
         const n = (v,d=2) => (r[v]||0).toFixed(d);
         return `<tr style="background:${bg};">
             <td style="padding:4px 6px;white-space:nowrap;">${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td>
@@ -6095,21 +6115,21 @@ function renderRCTabelaDetalhe(dados) {
             <td style="padding:4px 6px;font-weight:bold;color:${cor};white-space:nowrap;">${r.produto}</td>
             <td style="padding:4px 6px;white-space:nowrap;">${r.fornecedor||''}</td>
             <td style="padding:4px;text-align:center;">${r.nf||''}</td>
-            <td style="padding:4px;text-align:center;font-weight:bold;color:${avCor};">${av.toFixed(2)}%</td>
-            <td style="padding:4px;text-align:center;">${n('queimado')}</td>
-            <td style="padding:4px;text-align:center;">${n('ardido')}</td>
-            <td style="padding:4px;text-align:center;">${n('mofado')}</td>
-            <td style="padding:4px;text-align:center;">${n('esverdeado')}</td>
-            <td style="padding:4px;text-align:center;">${n('fermentando')}</td>
-            <td style="padding:4px;text-align:center;">${n('chocho')}</td>
-            <td style="padding:4px;text-align:center;">${n('picado')}</td>
-            <td style="padding:4px;text-align:center;">${n('gessado')}</td>
-            <td style="padding:4px;text-align:center;">${n('quebrado')}</td>
-            <td style="padding:4px;text-align:center;">${n('germinado')}</td>
-            <td style="padding:4px;text-align:center;">${n('carunchado')}</td>
-            <td style="padding:4px;text-align:center;">${n('impureza')}</td>
-            <td style="padding:4px;text-align:center;">${n('umidade',2)}</td>
-            <td style="padding:4px;text-align:center;">${(r.densidade||0).toFixed(0)}</td>
+            <td style="${avStyle}">${av.toFixed(2)}%</td>
+            ${tdDefeito('queimado')}
+            ${tdDefeito('ardido')}
+            ${tdDefeito('mofado')}
+            ${tdDefeito('esverdeado')}
+            ${tdDefeito('fermentando')}
+            ${tdDefeito('chocho')}
+            ${tdDefeito('picado')}
+            ${tdDefeito('gessado')}
+            ${tdDefeito('quebrado')}
+            ${tdDefeito('germinado')}
+            ${tdDefeito('carunchado')}
+            ${tdDefeito('impureza')}
+            <td${estiloFora(r.umidade||0,'class',r.produto,'umidade',r.data)} style="padding:4px;text-align:center;">${n('umidade',2)}</td>
+            <td${estiloFora(r.densidade||0,'class',r.produto,'densidade',r.data)} style="padding:4px;text-align:center;">${(r.densidade||0).toFixed(0)}</td>
             <td style="padding:4px;text-align:center;">${(r.aflatoxinas||0).toFixed(2)}</td>
             <td style="padding:4px;text-align:center;">${(r.fumonisinas||0).toFixed(0)}</td>
             <td style="padding:4px;text-align:center;">${(r.zearalenona||0).toFixed(2)}</td>
@@ -9300,7 +9320,9 @@ function gerarTabelaClass(rows, compacto, destNC) {
         const avar = (r.queimado||0)+(r.ardido||0)+(r.mofado||0)+(r.fermentando||0)+
                      (r.chocho||0)+(r.gessado||0)+(r.germinado||0)+(r.picado||0)+(r.esverdeado||0)+
                      (r.quebrado||0)+(r.carunchado||0);
-        const avarCl = (destNC && avar>5) ? ' class="bol-td-fora"' : '';
+        const cfgAv = getParam('class', r.produto.replace(/ /g,'_'), 'avariados', r.data);
+        const avarFora = destNC && cfgAv && cfgAv.ativo && avar > cfgAv.max;
+        const avarCl = avarFora ? ' class="bol-td-fora"' : '';
         const aflatoxCl = (destNC && (r.aflatoxinas||0)>0) ? ' class="bol-td-alert"' : '';
         const status = statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data);
         const cl = (v,campo) => destNC ? estiloFora(v,'class',r.produto,campo,r.data).replace(' class="td-fora"',' class="bol-td-fora"') : '';
@@ -9322,6 +9344,7 @@ function gerarTabelaClass(rows, compacto, destNC) {
             <td${cl(r.germinado,'germinado')}>${(r.germinado||0).toFixed(2)}</td>
             <td${cl(r.carunchado,'carunchado')}>${(r.carunchado||0).toFixed(2)}</td>
             <td${cl(r.impureza,'impureza')}>${(r.impureza||0).toFixed(2)}</td>
+            <td${avarCl}>${avar.toFixed(2)}</td>
             <td${cl(r.umidade,'umidade')}>${(r.umidade||0).toFixed(2)}</td>
             <td${cl(r.densidade,'densidade')}>${(r.densidade||0).toFixed(0)}</td>
             <td${aflatoxCl}>${(r.aflatoxinas||0).toFixed(2)}</td>
