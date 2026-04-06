@@ -3290,6 +3290,10 @@
                                 <input type="checkbox" id="bolDestacarNC" checked style="cursor:pointer;width:13px;height:13px;">
                                 <span>Destacar fora dos limites</span>
                             </label>
+                            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;">
+                                <input type="checkbox" id="bolMostrarAnalises" checked style="cursor:pointer;width:13px;height:13px;">
+                                <span>Mostrar qtd. de análises</span>
+                            </label>
                         </div>
                     </div>
 
@@ -9005,6 +9009,7 @@ function gerarBoletim() {
     const agrupar  = document.getElementById('bolAgrupar').checked;
     const resumo   = document.getElementById('bolResumo').checked;
     const destNC   = document.getElementById('bolDestacarNC').checked;
+    const mostrarAnalises = document.getElementById('bolMostrarAnalises')?.checked ?? true;
 
     if (!incProd && !incClass && !incMP) {
         alert('Selecione pelo menos um módulo para incluir no boletim.');
@@ -9103,7 +9108,7 @@ function gerarBoletim() {
 
     // ---- SEÇÃO MATÉRIA PRIMA ----
     if (incMP) {
-        html += gerarSecaoMP(mp_f, agrupar, resumo, destNC, periodoStr);
+        html += gerarSecaoMP(mp_f, agrupar, resumo, destNC, periodoStr, mostrarAnalises, temValBol, camposMPBol);
     }
 
     if (nTotal === 0) {
@@ -9449,7 +9454,7 @@ function gerarTabelaClass(rows, compacto, destNC) {
     return `<table class="bol-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
 }
 
-function gerarSecaoMP(dados, agrupar, resumo, destNC, periodo) {
+function gerarSecaoMP(dados, agrupar, resumo, destNC, periodo, mostrarAnalises, temValBol, camposMPBol) {
     if (!dados.length) return `<div class="bol-secao-header">🧪 Matéria Prima</div><div class="bol-empty">Nenhum registro de matéria prima no período.</div>`;
 
     let secNum = (document.getElementById('bolIncluirProd').checked?1:0) + (document.getElementById('bolIncluirClass').checked?1:0) + 1;
@@ -9465,7 +9470,7 @@ function gerarSecaoMP(dados, agrupar, resumo, destNC, periodo) {
         const prods = Object.keys(grupos).sort();
         prods.forEach(prod => {
             const rows = grupos[prod].sort((a,b)=>a.data.localeCompare(b.data));
-            html += gerarGrupoMP(prod, rows, resumo, destNC);
+            html += gerarGrupoMP(prod, rows, resumo, destNC, mostrarAnalises, temValBol, camposMPBol);
         });
     } else {
         const rows = [...dados].sort((a,b)=>a.data.localeCompare(b.data));
@@ -9474,18 +9479,27 @@ function gerarSecaoMP(dados, agrupar, resumo, destNC, periodo) {
     return html;
 }
 
-function gerarGrupoMP(prod, rows, resumo, destNC) {
+function gerarGrupoMP(prod, rows, resumo, destNC, mostrarAnalises, temValBol, camposMPBol) {
     const ums  = rows.map(r=>r.umidade||0).filter(v=>v>0);
     const dens = rows.map(r=>r.densidade||0).filter(v=>v>0);
     const pers = rows.map(r=>r.peroxido||0).filter(v=>v>0);
     const aMedia = (arr) => arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : 0;
     const temAltoPer = rows.some(r=>(r.peroxido||0)>20);
 
+    // Conta análises deste grupo se solicitado
+    let qtdAnalisesHtml = '';
+    if (mostrarAnalises && typeof temValBol === 'function' && camposMPBol) {
+        let qtd = 0;
+        rows.forEach(r => { camposMPBol.forEach(c => { if (temValBol(r, c)) qtd++; }); });
+        qtdAnalisesHtml = `&nbsp;|&nbsp; 🔬 <strong>${qtd}</strong> análises`;
+    }
+
     const statsHtml = `<span class="bol-grupo-stats">
         n=${rows.length} &nbsp;|&nbsp;
         Umid. média: ${ums.length?aMedia(ums).toFixed(1)+'%':'-'} &nbsp;|&nbsp;
         Dens. média: ${dens.length?aMedia(dens).toFixed(0):'-'}
         ${temAltoPer?'&nbsp;|&nbsp; ⚠️ Peróxido elevado':''}
+        ${qtdAnalisesHtml}
     </span>`;
 
     let html = `<div style="margin:0 16px 14px;">
