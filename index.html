@@ -9831,7 +9831,7 @@ function gerarMensagemWhatsApp() {
         // --- ARMAZENAGEM DE GRÃOS ---
         if (silosSel.length > 0) {
             linhas.push(`*ARMAZENAGEM DE GRÃOS* Período: ${periodoStr(diMP, dfMP)}`);
-            linhas.push('Umidade:');
+            linhas.push();
             silosSel.forEach(s => {
                 const todos = classificacoes
                     .filter(r => (r.produto||'').toUpperCase() === s.key)
@@ -9872,7 +9872,7 @@ function gerarMensagemWhatsApp() {
             });
 
             if (alertasMP.length > 0) {
-                linhas.push('Fora do padrão:');
+                linhas.push();
                 alertasMP.forEach(a => linhas.push(a));
             } else {
                 linhas.push('Todos os registros dentro do parâmetro');
