@@ -32,24 +32,43 @@
         #sgq-loading-overlay {
             display: none;
             position: fixed; inset: 0; z-index: 99999;
-            background: rgba(10, 30, 127, 0.72);
-            backdrop-filter: blur(3px);
+            background: #f0f0ee;
             align-items: center; justify-content: center;
-            flex-direction: column; gap: 16px;
+            flex-direction: column; gap: 20px;
         }
         #sgq-loading-overlay.show { display: flex; }
+        .sgq-loading-logo {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+        }
+        .sgq-loading-logo-agronor {
+            font-family: 'Montserrat', Arial Black, sans-serif;
+            font-weight: 900; font-size: 36px;
+            color: #1a2a6e; letter-spacing: 2px;
+        }
+        .sgq-loading-logo-sub {
+            font-family: 'Montserrat', Arial, sans-serif;
+            font-weight: 700; font-size: 11px;
+            color: #c0392b; letter-spacing: 6px;
+            text-transform: uppercase;
+        }
+        .sgq-loading-divider {
+            width: 60px; height: 3px;
+            background: linear-gradient(to right, #1a2a6e, #c0392b);
+            border-radius: 4px;
+        }
         .sgq-spinner {
-            width: 44px; height: 44px;
-            border: 4px solid rgba(255,255,255,0.25);
-            border-top-color: #27ae60;
+            width: 36px; height: 36px;
+            border: 3px solid rgba(26, 42, 110, 0.15);
+            border-top-color: #1a2a6e;
             border-radius: 50%;
-            animation: sgq-spin 0.7s linear infinite;
+            animation: sgq-spin 0.8s linear infinite;
         }
         @keyframes sgq-spin { to { transform: rotate(360deg); } }
         .sgq-loading-text {
-            color: white; font-size: 13px; font-weight: 600;
-            letter-spacing: 1px; text-transform: uppercase;
+            color: #1a2a6e; font-size: 13px; font-weight: 700;
+            letter-spacing: 2px; text-transform: uppercase;
             font-family: 'Montserrat', Arial, sans-serif;
+            opacity: 0.7;
         }
 
         /* =========================================================
@@ -1192,8 +1211,13 @@
 
 <!-- ✅ MELHORIA: Loading overlay global -->
 <div id="sgq-loading-overlay">
+    <div class="sgq-loading-logo">
+        <div class="sgq-loading-logo-agronor">AGRONOR</div>
+        <div class="sgq-loading-logo-sub">ALIMENTOS</div>
+    </div>
+    <div class="sgq-loading-divider"></div>
     <div class="sgq-spinner"></div>
-    <div class="sgq-loading-text" id="sgq-loading-text">Aguarde...</div>
+    <div class="sgq-loading-text" id="sgq-loading-text">Bem-vindo! Sistema iniciando...</div>
 </div>
 
 <!-- ✅ MELHORIA: Container de notificações toast -->
@@ -4235,7 +4259,7 @@ async function fazerLogin() {
     btn.textContent = 'Verificando...';
     btn.disabled = true;
     err.classList.remove('show');
-    sgqMostrarLoading('Autenticando...');
+    sgqMostrarLoading('Bem-vindo! Sistema iniciando...');
 
     try {
         // ✅ Passo 1: busca o e-mail pelo username na tabela perfis
@@ -4339,7 +4363,7 @@ async function fazerLogin() {
         localStorage.removeItem('classificacoes');
         localStorage.removeItem('materias_primas');
 
-        sgqMostrarLoading('Carregando dados...');
+        sgqMostrarLoading('Carregando seus dados...');
         carregarTodosAsync().then(() => {
             sgqOcultarLoading();
             exibirTabelaProd();
@@ -4447,7 +4471,7 @@ function aplicarPermissoes() {
 
 async function fazerLogout() {
     if (!confirm('Tem certeza que deseja sair?')) return;
-    sgqMostrarLoading('Encerrando sessão...');
+    sgqMostrarLoading('Até logo! Encerrando sessão...');
     try {
         // ✅ SEGURANÇA: invalida o JWT server-side — não apenas limpa variáveis locais
         _registrarAuditoria('LOGOUT', 'auth', null, {}).catch(() => {});
@@ -9284,7 +9308,7 @@ function avg(arr) {
 }
 
 function gerarBoletim() {
-    sgqMostrarLoading('Gerando boletim...');
+    sgqMostrarLoading('Gerando boletim industrial...');
     setTimeout(() => {
     try {
     const di = document.getElementById('bolDataInicio').value;
@@ -12498,7 +12522,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     [tabCfg3, tabR, tabRC, tabRK, tabBol, tabEMP].forEach(t => { if(t) t.style.display = 'none'; });
 
     // ✅ Verifica se há sessão ativa (persiste entre abas/recargas)
-    sgqMostrarLoading('Verificando sessão...');
+    sgqMostrarLoading('Verificando acesso...');
     try {
         const { data: { session } } = await _sbClient.auth.getSession();
         if (session && session.user) {
@@ -12540,7 +12564,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                 aplicarPermissoes();
                 carregarParametros();
-                sgqMostrarLoading('Carregando dados...');
+                sgqMostrarLoading('Carregando seus dados...');
                 carregarTodosAsync().then(() => {
                     sgqOcultarLoading();
                     exibirTabelaProd();
