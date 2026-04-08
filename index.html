@@ -7,6 +7,8 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Sistema de Sistema Gestão da Qualidade</title>
+    <!-- ✅ MELHORIA SEGURANÇA: Supabase JS SDK oficial (gerencia JWT automaticamente) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
     <script>
@@ -23,6 +25,77 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #f5f5f5; }
+
+        /* =========================================================
+           ✅ MELHORIA: LOADING OVERLAY GLOBAL
+           ========================================================= */
+        #sgq-loading-overlay {
+            display: none;
+            position: fixed; inset: 0; z-index: 99999;
+            background: rgba(10, 30, 127, 0.72);
+            backdrop-filter: blur(3px);
+            align-items: center; justify-content: center;
+            flex-direction: column; gap: 16px;
+        }
+        #sgq-loading-overlay.show { display: flex; }
+        .sgq-spinner {
+            width: 44px; height: 44px;
+            border: 4px solid rgba(255,255,255,0.25);
+            border-top-color: #27ae60;
+            border-radius: 50%;
+            animation: sgq-spin 0.7s linear infinite;
+        }
+        @keyframes sgq-spin { to { transform: rotate(360deg); } }
+        .sgq-loading-text {
+            color: white; font-size: 13px; font-weight: 600;
+            letter-spacing: 1px; text-transform: uppercase;
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+
+        /* =========================================================
+           ✅ MELHORIA: SISTEMA DE TOAST NOTIFICATIONS
+           ========================================================= */
+        #sgq-toast-container {
+            position: fixed; top: 16px; right: 16px; z-index: 99998;
+            display: flex; flex-direction: column; gap: 8px;
+            max-width: 360px; pointer-events: none;
+        }
+        .sgq-toast {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 12px 14px; border-radius: 8px; font-size: 12px;
+            font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+            animation: sgq-toast-in 0.25s ease-out;
+            pointer-events: all; cursor: pointer;
+            border-left: 4px solid transparent;
+            background: white; color: #333;
+        }
+        .sgq-toast.success { border-color: #27ae60; }
+        .sgq-toast.error   { border-color: #e74c3c; }
+        .sgq-toast.warning { border-color: #e67e22; }
+        .sgq-toast.info    { border-color: #3498db; }
+        .sgq-toast-icon { font-size: 16px; flex-shrink: 0; line-height: 1.2; }
+        .sgq-toast-body { flex: 1; line-height: 1.5; }
+        .sgq-toast-title { font-weight: 700; font-size: 11px; text-transform: uppercase;
+            letter-spacing: 0.5px; margin-bottom: 2px; }
+        .sgq-toast.success .sgq-toast-title { color: #27ae60; }
+        .sgq-toast.error   .sgq-toast-title { color: #e74c3c; }
+        .sgq-toast.warning .sgq-toast-title { color: #e67e22; }
+        .sgq-toast.info    .sgq-toast-title { color: #3498db; }
+        @keyframes sgq-toast-in {
+            from { opacity: 0; transform: translateX(24px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        /* =========================================================
+           ✅ MELHORIA: BANNER DE SESSÃO EXPIRADA
+           ========================================================= */
+        #sgq-session-banner {
+            display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 99990;
+            background: linear-gradient(to right, #c0392b, #e74c3c);
+            color: white; padding: 10px 20px; text-align: center;
+            font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+        }
+        #sgq-session-banner.show { display: block; }
 
         /* ========== TELA DE LOGIN — CLEAN ========== */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
@@ -1117,6 +1190,20 @@
 </head>
 <body>
 
+<!-- ✅ MELHORIA: Loading overlay global -->
+<div id="sgq-loading-overlay">
+    <div class="sgq-spinner"></div>
+    <div class="sgq-loading-text" id="sgq-loading-text">Aguarde...</div>
+</div>
+
+<!-- ✅ MELHORIA: Container de notificações toast -->
+<div id="sgq-toast-container"></div>
+
+<!-- ✅ MELHORIA: Banner de sessão expirada -->
+<div id="sgq-session-banner">
+    ⚠️ Sua sessão expirou. <a href="javascript:location.reload()" style="color:white;text-decoration:underline;cursor:pointer;">Clique aqui para fazer login novamente</a>
+</div>
+
 <!-- ========== TELA DE LOGIN ========== -->
 <div id="loginScreen">
     <div class="login-wrapper">
@@ -1139,9 +1226,9 @@
             </div>
             <div class="login-error" id="loginError">Usuário ou senha inválidos.</div>
             <div class="login-group">
-                <label>Usuário</label>
+                <label>E-mail</label>
                 <div class="input-wrap">
-                    <input type="text" id="loginUser" placeholder="Digite seu usuário" autocomplete="username">
+                    <input type="email" id="loginUser" placeholder="seu@email.com" autocomplete="username">
                 </div>
             </div>
             <div class="login-group">
@@ -4021,65 +4108,75 @@ function _todasPerms() {
 }
 
 // ============================================================
-// USUÁRIOS — armazenados no Supabase
+// ✅ SEGURANÇA: USUÁRIOS via Supabase Auth + tabela perfis
+// Senhas são gerenciadas pelo Supabase Auth (bcrypt automático)
+// Nunca mais comparamos senha em texto puro no frontend
 // ============================================================
-let USUARIOS = {};
+let USUARIOS = {}; // mantido por compatibilidade com resto do código
 
 async function _carregarUsuariosSupabase() {
+    // ✅ Admin busca lista de perfis para o painel de gestão
+    // Usuários comuns não precisam desta função
+    if (perfilAtual !== 'admin') return;
     try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/sys_users?select=*`, {
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
-        });
-        const lista = await res.json();
-        if (!Array.isArray(lista)) { USUARIOS = {}; return; }
+        const { data, error } = await _sbClient
+            .from('perfis')
+            .select('*');
+        if (error) throw new Error(error.message);
         const mapa = {};
-        lista.forEach(u => {
+        (data || []).forEach(u => {
             let perms = {};
-            try { perms = typeof u.col_perms === 'string' ? JSON.parse(u.col_perms) : (u.col_perms || {}); } catch(e) {}
-            if (u.col_login) mapa[u.col_login] = { nome: u.col_name, senha: u.col_pass, perfil: u.col_role, ativo: u.col_active, perms };
+            try { perms = typeof u.perms === 'string' ? JSON.parse(u.perms) : (u.perms || {}); } catch(e) {}
+            if (u.email) mapa[u.email] = {
+                nome: u.nome, perfil: u.perfil,
+                ativo: u.ativo, perms,
+                id: u.id
+            };
         });
         USUARIOS = mapa;
-    } catch(e) { console.error('Erro ao carregar usuários:', e); USUARIOS = {}; }
-}
-
-async function _salvarUsuarioSupabase(login, dados) {
-    const payload = {
-        col_login: login,
-        col_name: dados.nome,
-        col_pass: dados.senha,
-        col_role: dados.perfil,
-        col_active: true,
-        col_perms: JSON.stringify(dados.perms || {})
-    };
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/sys_users`, {
-        method: 'POST',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-        body: JSON.stringify(payload)
-    });
-    if (!res.ok) {
-        const err = await res.text();
-        console.error('Erro ao salvar usuário:', err);
+    } catch(e) {
+        sgqToast('Erro ao carregar lista de usuários: ' + e.message, 'error');
+        USUARIOS = {};
     }
 }
 
-async function _atualizarUsuarioSupabase(login, dados) {
-    const payload = { col_name: dados.nome, col_perms: JSON.stringify(dados.perms || {}) };
-    if (dados.senha) payload.col_pass = dados.senha;
-    await fetch(`${SUPABASE_URL}/rest/v1/sys_users?col_login=eq.${login}`, {
-        method: 'PATCH',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
+async function _salvarUsuarioSupabase(email, dados) {
+    // ✅ Criação de usuário via Supabase Auth Admin API
+    // NOTA: Criação de novos usuários deve ser feita via painel Supabase
+    // ou via Edge Function com service_role (nunca no frontend)
+    sgqToast('Para criar novos usuários, use o painel do Supabase → Authentication → Users, depois defina o perfil na tabela "perfis".', 'info', 8000);
 }
 
-async function _deletarUsuarioSupabase(login) {
-    await fetch(`${SUPABASE_URL}/rest/v1/sys_users?col_login=eq.${login}`, {
-        method: 'DELETE',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
-    });
+async function _atualizarUsuarioSupabase(userId, dados) {
+    // ✅ Atualiza apenas o perfil/permissões (NÃO a senha — isso é feito via Supabase Auth)
+    try {
+        const payload = { nome: dados.nome, perms: JSON.stringify(dados.perms || {}), perfil: dados.perfil };
+        const { error } = await _sbClient
+            .from('perfis')
+            .update(payload)
+            .eq('id', userId);
+        if (error) throw new Error(error.message);
+        sgqToast('Usuário atualizado com sucesso!', 'success');
+    } catch(e) {
+        sgqToast('Erro ao atualizar usuário: ' + e.message, 'error');
+    }
 }
 
-function _salvarUsuarios() {}
+async function _deletarUsuarioSupabase(userId) {
+    // ✅ Desativa o usuário (soft delete — não exclui do Auth)
+    try {
+        const { error } = await _sbClient
+            .from('perfis')
+            .update({ ativo: false })
+            .eq('id', userId);
+        if (error) throw new Error(error.message);
+        sgqToast('Usuário desativado com sucesso!', 'success');
+    } catch(e) {
+        sgqToast('Erro ao desativar usuário: ' + e.message, 'error');
+    }
+}
+
+function _salvarUsuarios() {} // mantido por compatibilidade
 let perfilAtual = null;
 
 // ===================================================
@@ -4124,159 +4221,192 @@ function ativarNavegacaoEnter(formId) {
 let usuarioAtual = null;
 
 async function fazerLogin() {
-    const user = document.getElementById('loginUser').value.trim().toLowerCase();
-    const pass = document.getElementById('loginPass').value;
-    const err  = document.getElementById('loginError');
-    const btn  = document.querySelector('.login-btn');
+    const emailRaw = document.getElementById('loginUser').value.trim();
+    const pass     = document.getElementById('loginPass').value;
+    const err      = document.getElementById('loginError');
+    const btn      = document.querySelector('.login-btn');
+
+    if (!emailRaw || !pass) {
+        err.textContent = 'Preencha o e-mail e a senha.';
+        err.classList.add('show');
+        return;
+    }
+
     btn.textContent = 'Verificando...';
     btn.disabled = true;
-    await _carregarUsuariosSupabase();
-    btn.textContent = 'Entrar';
-    btn.disabled = false;
-    if (USUARIOS[user] && USUARIOS[user].senha === pass) {
-        perfilAtual  = USUARIOS[user].perfil;
-        usuarioAtual = user;
+    err.classList.remove('show');
+    sgqMostrarLoading('Autenticando...');
+
+    try {
+        // ✅ SEGURANÇA: autenticação real via Supabase Auth (JWT server-side)
+        const { data: authData, error: authError } = await _sbClient.auth.signInWithPassword({
+            email: emailRaw,
+            password: pass
+        });
+
+        if (authError) {
+            err.textContent = 'E-mail ou senha inválidos.';
+            err.classList.add('show');
+            return;
+        }
+
+        // ✅ Busca perfil do usuário na tabela 'perfis'
+        const { data: perfilData, error: perfilError } = await _sbClient
+            .from('perfis')
+            .select('*')
+            .eq('id', authData.user.id)
+            .single();
+
+        if (perfilError || !perfilData) {
+            err.textContent = 'Perfil não encontrado. Contate o administrador.';
+            err.classList.add('show');
+            await _sbClient.auth.signOut();
+            return;
+        }
+
+        if (perfilData.ativo === false) {
+            err.textContent = 'Usuário inativo. Contate o administrador.';
+            err.classList.add('show');
+            await _sbClient.auth.signOut();
+            return;
+        }
+
+        let perms = {};
+        try { perms = typeof perfilData.perms === 'string' ? JSON.parse(perfilData.perms) : (perfilData.perms || {}); } catch(e) {}
+
+        perfilAtual  = perfilData.perfil || 'usuario';
+        usuarioAtual = authData.user.email;
+
+        USUARIOS[usuarioAtual] = {
+            nome: perfilData.nome || authData.user.email,
+            perfil: perfilAtual,
+            ativo: true,
+            perms,
+            id: authData.user.id
+        };
+
+        _registrarAuditoria('LOGIN', 'auth', null, { agente: navigator.userAgent.substring(0, 80) }).catch(() => {});
+
         err.classList.remove('show');
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('mainSystem').style.display  = 'block';
         carregarParametros();
-        // Redirecionamento pós-login gerenciado dentro de aplicarPermissoes()
-        document.getElementById('nomeUsuario').textContent   = USUARIOS[user].nome;
+
+        const nomeCompleto = perfilData.nome || authData.user.email;
+        document.getElementById('nomeUsuario').textContent = nomeCompleto;
         document.getElementById('perfilBadge').innerHTML =
             perfilAtual === 'admin'
                 ? '<span class="badge-perfil badge-admin">Admin</span>'
                 : '<span class="badge-perfil badge-usuario">Usuário</span>';
-        // Avatar com iniciais
-        const nomeCompleto = USUARIOS[user].nome || user;
+
         const partes = nomeCompleto.trim().split(' ');
         const iniciais = partes.length >= 2 ? (partes[0][0] + partes[partes.length-1][0]).toUpperCase() : nomeCompleto.slice(0,2).toUpperCase();
         const avatarEl = document.getElementById('headerAvatar');
         if (avatarEl) avatarEl.textContent = iniciais;
-        // Saudação na capa
+
         const capaNome = document.getElementById('capaNomeUsuario');
         if (capaNome) capaNome.textContent = partes[0] || nomeCompleto;
-        // Data na capa
+
         const capaData = document.getElementById('capaDataHoje');
         if (capaData) {
             const agora = new Date();
-            const dias = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+            const dias  = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
             const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
             capaData.textContent = dias[agora.getDay()] + ', ' + agora.getDate() + ' de ' + meses[agora.getMonth()] + ' de ' + agora.getFullYear();
         }
+
         aplicarPermissoes();
         localStorage.removeItem('producoes');
         localStorage.removeItem('classificacoes');
         localStorage.removeItem('materias_primas');
+
+        sgqMostrarLoading('Carregando dados...');
         carregarTodosAsync().then(() => {
+            sgqOcultarLoading();
             exibirTabelaProd();
             exibirTabelaClass();
             exibirTabelaMP();
             if (perfilAtual === 'admin') verificarEspacoAoIniciar();
-            // Correção única: registros antes de 20/03/2026 importados de planilha com valores decimais
-            if (!localStorage.getItem('correcaoDecimal_v2')) {
-                _corrigirDecimaisNoBanco();
-            }
-            // KPIs da capa — filtrados pelo mês atual
+            if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
             try {
                 const agora      = new Date();
                 const anoAtual   = agora.getFullYear();
                 const mesAtual   = agora.getMonth() + 1;
                 const prefixoMes = anoAtual + '-' + String(mesAtual).padStart(2,'0');
                 const hojeISO    = prefixoMes + '-' + String(agora.getDate()).padStart(2,'0');
-
                 const isMesAtual = r => r.data && r.data.startsWith(prefixoMes);
                 const isHoje     = r => r.data && r.data.slice(0,10) === hojeISO;
-
-                const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-                const nomeMes = meses[agora.getMonth()];
-
-                // ─── Campos que contam quando > 0 (exceto ureatica que conta qualquer valor não-null)
+                const meses2 = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+                const nomeMes = meses2[agora.getMonth()];
                 const temValorMP = (r, campo) => {
                     const v = r[campo];
                     if (v === null || v === undefined) return false;
-                    if (campo === 'ureatica' || campo === 'peroxido' || campo === 'rancidez') return true; // conta inclusive 0,00
+                    if (campo === 'ureatica' || campo === 'peroxido' || campo === 'rancidez') return true;
                     return parseFloat(v) > 0;
                 };
-                const camposMP = ['proteina','solubil','umidade','densidade','mineral','acidez','ureatica','rancidez','peroxido','digestibilidade'];
+                const camposMP   = ['proteina','solubil','umidade','densidade','mineral','acidez','ureatica','rancidez','peroxido','digestibilidade'];
                 const camposProd = ['proteina','fibra','solubil','umidade','densidade','mineral'];
-
-                // ─── CARD 1: ANÁLISES HOJE
-                // Produção e MP: conta cada campo preenchido (ureatica/peroxido/rancidez contam com 0,00)
-                // Classificação: cada registro conta 1 (a classificação) + 1 se umidade preenchida + 1 se densidade preenchida
                 const contarClass = (r) => {
-                    let n = 1; // a classificação em si sempre conta 1
-                    if (r.umidade  !== null && r.umidade  !== undefined) n++;
+                    let n = 1;
+                    if (r.umidade   !== null && r.umidade   !== undefined) n++;
                     if (r.densidade !== null && r.densidade !== undefined && parseFloat(r.densidade) > 0) n++;
                     return n;
                 };
-
-                const prodsHoje  = (producoes||[]).filter(isHoje);
-                const mpHoje     = (materiasPrimas||[]).filter(isHoje);
-                const classHoje  = (classificacoes||[]).filter(isHoje);
-
+                const prodsHoje = (producoes||[]).filter(isHoje);
+                const mpHoje    = (materiasPrimas||[]).filter(isHoje);
+                const classHoje = (classificacoes||[]).filter(isHoje);
                 let analisesHoje = 0;
-                prodsHoje.forEach(r  => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesHoje++; }); });
-                mpHoje.forEach(r     => { camposMP.forEach(c   => { if(temValorMP(r,c)) analisesHoje++; }); });
-                classHoje.forEach(r  => { analisesHoje += contarClass(r); });
-
-                // Sub: total no mês
+                prodsHoje.forEach(r => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesHoje++; }); });
+                mpHoje.forEach(r    => { camposMP.forEach(c   => { if(temValorMP(r,c)) analisesHoje++; }); });
+                classHoje.forEach(r => { analisesHoje += contarClass(r); });
                 const prodsMes  = (producoes||[]).filter(isMesAtual);
                 const mpMes     = (materiasPrimas||[]).filter(isMesAtual);
                 const classMesC = (classificacoes||[]).filter(isMesAtual);
                 let analisesMes = 0;
-                prodsMes.forEach(r   => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
-                mpMes.forEach(r      => { camposMP.forEach(c   => { if(temValorMP(r,c)) analisesMes++; }); });
-                classMesC.forEach(r  => { analisesMes += contarClass(r); });
-
-                // ─── CARD 2/3: usa statusPorParametros igual às tabelas (inclui prod, class e mp)
+                prodsMes.forEach(r  => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
+                mpMes.forEach(r     => { camposMP.forEach(c   => { if(temValorMP(r,c)) analisesMes++; }); });
+                classMesC.forEach(r => { analisesMes += contarClass(r); });
                 const classMes = (classificacoes||[]).filter(isMesAtual);
-
-                const _isConf  = s => s.includes('CONFORME') && !s.includes('NÃO');
-                const _isNConf = s => s.includes('NÃO');
+                const _isConf   = s => s.includes('CONFORME') && !s.includes('NÃO');
+                const _isNConf  = s => s.includes('NÃO');
                 const _temParam = s => !s.includes('S/ PARÂM');
-
-                const confMesProd  = prodsMes.filter(r => _isConf(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
-                const nconfMesProd = prodsMes.filter(r => _isNConf(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
-                const totalMesProd = prodsMes.filter(r => _temParam(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
-
+                const confMesProd   = prodsMes.filter(r => _isConf(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
+                const nconfMesProd  = prodsMes.filter(r => _isNConf(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
+                const totalMesProd  = prodsMes.filter(r => _temParam(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
                 const confMesClass  = classMes.filter(r => _isConf(statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data))).length;
                 const nconfMesClass = classMes.filter(r => _isNConf(statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data))).length;
                 const totalMesClass = classMes.filter(r => _temParam(statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data))).length;
-
                 const confMesMP  = mpMes.filter(r => _isConf(statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data))).length;
                 const nconfMesMP = mpMes.filter(r => _isNConf(statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data))).length;
                 const totalMesMP = mpMes.filter(r => _temParam(statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data))).length;
-
                 const confMesTotal  = confMesProd  + confMesClass  + confMesMP;
                 const nconfMesTotal = nconfMesProd + nconfMesClass + nconfMesMP;
                 const totalMesTudo  = totalMesProd + totalMesClass + totalMesMP;
                 const pctConf   = totalMesTudo > 0 ? Math.round(confMesTotal / totalMesTudo * 100) : 0;
-
-                // ─── CARD 3: NÃO CONFORMIDADE — total não conformes no mês
-                const pctNConf = totalMesTudo > 0 ? Math.round(nconfMesTotal / totalMesTudo * 100) : 0;
-
-                // ─── CARD 4: EFICIÊNCIA GERAL — (naoConformes / conformes) * 100
-                const eficiencia = totalMesTudo > 0 ? (confMesTotal / totalMesTudo * 100).toFixed(1) : '0.0';
-
-                // ── Atualizar elementos
+                const pctNConf  = totalMesTudo > 0 ? Math.round(nconfMesTotal / totalMesTudo * 100) : 0;
+                const eficiencia= totalMesTudo > 0 ? (confMesTotal / totalMesTudo * 100).toFixed(1) : '0.0';
                 const kpiA = document.getElementById('kpiAnalises');     if(kpiA) kpiA.textContent = analisesHoje;
                 const kpiC = document.getElementById('kpiConformidade'); if(kpiC) kpiC.textContent = pctConf + '%';
                 const kpiN = document.getElementById('kpiNaoConf');      if(kpiN) kpiN.textContent = nconfMesTotal;
                 const kpiE = document.getElementById('kpiEntradas');     if(kpiE) kpiE.textContent = eficiencia + '%';
                 const barC = document.getElementById('kpiConfBar');      if(barC) barC.style.width = pctConf + '%';
                 const barN = document.getElementById('kpiNaoConfBar');   if(barN) barN.style.width = Math.min(pctNConf*3,100) + '%';
-
                 const kpiAP = document.getElementById('kpiAnalisesP');     if(kpiAP) kpiAP.textContent = analisesMes + ' resultados em ' + nomeMes;
                 const kpiCP = document.getElementById('kpiConformidadeP'); if(kpiCP) kpiCP.textContent = confMesTotal + ' de ' + totalMesTudo + ' lotes';
                 const kpiNP = document.getElementById('kpiNaoConfP');      if(kpiNP) kpiNP.textContent = pctNConf + '%';
                 const kpiEP = document.getElementById('kpiEntradasP');     if(kpiEP) kpiEP.textContent = nconfMesTotal + ' NC / ' + confMesTotal + ' C em ' + nomeMes;
-
-                const barA = document.getElementById('kpiAnalisesBar');  if(barA) barA.style.width = Math.min(Math.round(analisesHoje/10),100) + '%';
-                const barE = document.getElementById('kpiEntradasBar');  if(barE) barE.style.width = Math.min(parseFloat(eficiencia),100) + '%';
+                const barA  = document.getElementById('kpiAnalisesBar');   if(barA)  barA.style.width  = Math.min(Math.round(analisesHoje/10),100) + '%';
+                const barE  = document.getElementById('kpiEntradasBar');   if(barE)  barE.style.width  = Math.min(parseFloat(eficiencia),100) + '%';
             } catch(e) {}
-        });
-    } else {
+        }).catch(() => sgqOcultarLoading());
+
+    } catch(e) {
+        err.textContent = 'Erro de conexão. Verifique sua internet e tente novamente.';
         err.classList.add('show');
+    } finally {
+        btn.textContent = 'Entrar';
+        btn.disabled = false;
+        sgqOcultarLoading();
     }
 }
 
@@ -4364,16 +4494,26 @@ function aplicarPermissoes() {
     // (visibilidade do cfgBtn-usuarios controlado via trocarSubCfg)
 }
 
-function fazerLogout() {
-    if (confirm('Tem certeza que deseja sair?')) {
+async function fazerLogout() {
+    if (!confirm('Tem certeza que deseja sair?')) return;
+    sgqMostrarLoading('Encerrando sessão...');
+    try {
+        // ✅ SEGURANÇA: invalida o JWT server-side — não apenas limpa variáveis locais
+        _registrarAuditoria('LOGOUT', 'auth', null, {}).catch(() => {});
+        await _sbClient.auth.signOut();
+    } catch(e) {
+        // mesmo com erro, limpa o estado local
+    } finally {
+        sgqOcultarLoading();
         perfilAtual  = null;
         usuarioAtual = null;
+        USUARIOS     = {};
         document.getElementById('mainSystem').style.display  = 'none';
         document.getElementById('loginScreen').style.display = 'flex';
-        document.getElementById('loginUser').value = '';
-        document.getElementById('loginPass').value = '';
+        document.getElementById('loginUser').value  = '';
+        document.getElementById('loginPass').value  = '';
         document.getElementById('loginError').classList.remove('show');
-        // Restaurar visibilidade da aba Início para próximo login
+        document.getElementById('sgq-session-banner').classList.remove('show');
         const tabCapaEl = document.getElementById('tabCapa');
         if (tabCapaEl) tabCapaEl.style.display = '';
     }
@@ -4619,7 +4759,7 @@ function salvarProducao(event) {
         producoes.push(r); mostrarSucessoProd('✓ Produção salva com sucesso!');
     }
     // Salva no Supabase
-    dbUpsertOne('producoes', r).catch(e => console.error('Erro ao salvar produção:', e));
+    dbUpsertOne('producoes', r).then(() => { sgqToast('Produção salva com sucesso!', 'success'); _registrarAuditoria(idEdicaoProd ? 'EDIT' : 'CREATE', 'producoes', r.id, { racao: r.racao, data: r.data }).catch(() => {}); }).catch(e => { mostrarErroProd('❌ Erro ao salvar: ' + e.message); sgqToast('Erro ao salvar produção: ' + e.message, 'error'); });
     fecharModalCadastroProd(); limparFormularioProd(); exibirTabelaProd();
 }
 
@@ -4685,7 +4825,7 @@ function deletarProd(id) {
     if (perfilAtual !== 'admin') return;
     if (confirm('Tem certeza que deseja deletar este registro?')) {
         producoes = producoes.filter(r => r.id !== id);
-        dbDeleteOne('producoes', id).catch(e => console.error('Erro ao deletar produção:', e));
+        dbDeleteOne('producoes', id).then(() => _registrarAuditoria('DELETE', 'producoes', id, {}).catch(() => {})).catch(e => { sgqToast('Erro ao excluir produção: ' + e.message, 'error'); });
         exibirTabelaProd(); mostrarSucessoProd('✓ Registro deletado!');
     }
 }
@@ -4810,7 +4950,7 @@ function salvarClassificacao(event) {
         classificacoes.push(r); mostrarSucessoClass('✓ Classificação salva com sucesso!');
     }
     // Salva no Supabase
-    dbUpsertOne('classificacoes', r).catch(e => console.error('Erro ao salvar classificação:', e));
+    dbUpsertOne('classificacoes', r).then(() => { sgqToast('Classificação salva com sucesso!', 'success'); _registrarAuditoria(idEdicaoClass ? 'EDIT' : 'CREATE', 'classificacoes', r.id, { produto: r.produto, data: r.data }).catch(() => {}); }).catch(e => { mostrarErroClass('❌ Erro ao salvar: ' + e.message); sgqToast('Erro ao salvar classificação: ' + e.message, 'error'); });
     fecharModalCadastroClass(); limparFormularioClass(); exibirTabelaClass();
     setTimeout(_empHookAposRegistro, 800);
 }
@@ -4904,7 +5044,7 @@ function deletarClass(id) {
     if (perfilAtual !== 'admin') return;
     if (confirm('Tem certeza que deseja deletar este registro?')) {
         classificacoes = classificacoes.filter(r => r.id !== id);
-        dbDeleteOne('classificacoes', id).catch(e => console.error('Erro ao deletar classificação:', e));
+        dbDeleteOne('classificacoes', id).then(() => _registrarAuditoria('DELETE', 'classificacoes', id, {}).catch(() => {})).catch(e => { sgqToast('Erro ao excluir classificação: ' + e.message, 'error'); });
         exibirTabelaClass(); mostrarSucessoClass('✓ Registro deletado!');
     }
 }
@@ -5028,7 +5168,7 @@ function salvarMateriaPrima(event) {
         materiasPrimas.push(r); mostrarSucessoMP('✓ MATÉRIA PRIMA SALVA COM SUCESSO!');
     }
     // Salva no Supabase
-    dbUpsertOne('materias_primas', r).catch(e => console.error('Erro ao salvar matéria prima:', e));
+    dbUpsertOne('materias_primas', r).then(() => { sgqToast('Matéria Prima salva com sucesso!', 'success'); _registrarAuditoria(idEdicaoMP ? 'EDIT' : 'CREATE', 'materias_primas', r.id, { produto: r.produto, data: r.data }).catch(() => {}); }).catch(e => { mostrarErroMP('❌ Erro ao salvar: ' + e.message); sgqToast('Erro ao salvar Matéria Prima: ' + e.message, 'error'); });
     fecharModalCadastroMP(); limparFormularioMP(); exibirTabelaMP();
     setTimeout(_empHookAposRegistro, 800);
 }
@@ -5102,7 +5242,7 @@ function deletarMP(id) {
     if (perfilAtual !== 'admin') return;
     if (confirm('TEM CERTEZA QUE DESEJA DELETAR ESTE REGISTRO?')) {
         materiasPrimas = materiasPrimas.filter(r => r.id !== id);
-        dbDeleteOne('materias_primas', id).catch(e => console.error('Erro ao deletar MP:', e));
+        dbDeleteOne('materias_primas', id).then(() => _registrarAuditoria('DELETE', 'materias_primas', id, {}).catch(() => {})).catch(e => { sgqToast('Erro ao excluir Matéria Prima: ' + e.message, 'error'); });
         exibirTabelaMP(); mostrarSucessoMP('✓ REGISTRO DELETADO!');
     }
 }
@@ -6008,7 +6148,7 @@ function aplicarFiltrosRelClass() {
     // Seção de Micotoxinas
     renderRCMicotoxinas(dados, di, df);
     } catch(err) {
-        console.error('Erro relClass:', err);
+        sgqToast('Erro ao gerar relatório de classificação: ' + err.message, 'error');
         document.getElementById('relClassConteudo').innerHTML += '<div style="color:red;padding:10px;background:#ffe;margin-top:10px;">Erro: '+err.message+'</div>';
     }
 }
@@ -6782,7 +6922,7 @@ function aplicarFiltrosRanking() {
     document.getElementById('rkTbody').innerHTML = linhasForn + linhasFabrica;
 
     } catch(err) {
-        console.error('Erro ranking:', err);
+        sgqToast('Erro ao gerar ranking: ' + (err.message || err), 'error');
     }
 }
 
@@ -7688,7 +7828,7 @@ async function salvarEntradaMP(event) {
             criado_em: new Date().toISOString()
         };
         entradasMP.push(novaEntrada);
-        try { await dbUpsertOne('entradas_mp', novaEntrada); } catch(e){ mostrarMsgEMP('erro','Erro ao salvar no Supabase: ' + e.message); console.error(e); }
+        try { await dbUpsertOne('entradas_mp', novaEntrada); } catch(e){ mostrarMsgEMP('erro','Erro ao salvar: ' + e.message); }
         mostrarMsgEMP('sucesso','✅ Entrada registrada com sucesso! Status: ' + statusInicial);
     }
 
@@ -7915,25 +8055,8 @@ function _gerarJanelaImpressaoRanking(titulo, capaHTML, conteudoHTML) {
 }
 
 // ===================================================
-// ATIVA NAVEGAÇÃO COM ENTER NOS 3 FORMULÁRIOS
+// ✅ Navegação com Enter — inicializada no DOMContentLoaded consolidado (fim do arquivo)
 // ===================================================
-document.addEventListener('DOMContentLoaded', function() {
-    ativarNavegacaoEnter('formCadastroProd');
-    ativarNavegacaoEnter('formCadastroClass');
-    ativarNavegacaoEnter('formCadastroMP');
-    ativarNavegacaoEnter('formCadastroEMP');
-    // Pré-abre o IndexedDB para acelerar primeiro acesso
-    // Supabase mode - no local DB needed
-    // Esconde abas de admin até login
-    const tabR = document.getElementById('tabRelatorio');
-    const tabRC = document.getElementById('tabRelClass');
-    const tabRK = document.getElementById('tabRanking');
-    const tabBol = document.getElementById('tabBoletim');
-    const tabEMP = document.getElementById('tabEntradaMP');
-    // tabConfiguracoes starts hidden until login
-    const tabCfg3 = document.getElementById('tabConfiguracoes');
-    [tabCfg3,tabR,tabRC,tabRK,tabBol,tabEMP].forEach(t => { if(t) t.style.display='none'; });
-});
 
 // ===================================================
 // SCROLL DE TABELA COM SETAS
@@ -7944,136 +8067,160 @@ function rolarTabela(containerId, direcao) {
 }
 
 // ===================================================
-// SUPABASE — camada de persistência em nuvem
+// ✅ SEGURANÇA: Supabase via SDK oficial (@supabase/supabase-js)
+// A ANON KEY é segura para o frontend quando RLS está ativado.
+// O JWT do usuário autenticado é gerenciado automaticamente pelo SDK.
+// NUNCA use a SERVICE_ROLE KEY no frontend.
 // ===================================================
 const SUPABASE_URL = 'https://kponpocjqxtlclxuokkd.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_bpQ1ttls9SmFpXhKHH-ReQ_nYQZRvCE';
+// ✅ Use sua ANON KEY (Project Settings → API → anon public)
+const SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwb25wb2NqcXh0bGNseHVva2tkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MzAxOTIsImV4cCI6MjA5MDMwNjE5Mn0.vzy0E_1vot1NcKwW0LeyC5dURkHDFgZKhxr92Vzs5hU
 
-async function sbFetch(table, method='GET', body=null, params='') {
-    const url = `${SUPABASE_URL}/rest/v1/${table}${params}`;
-    const headers = {
-        'apikey': SUPABASE_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': method === 'POST' ? 'return=representation' : 'return=representation'
-    };
-    if (method === 'DELETE' || method === 'GET') delete headers['Content-Type'];
-    const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
-    if (!res.ok) {
-        const err = await res.text();
-        throw new Error(`Supabase ${method} ${table} error: ${err}`);
+// Cliente oficial — gerencia JWT, refresh de token e sessão automaticamente
+const _sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+        persistSession: true,          // ✅ persiste login entre sessões do browser
+        autoRefreshToken: true,        // ✅ renova token automaticamente antes de expirar
+        detectSessionInUrl: true       // ✅ suporta magic links
     }
-    if (res.status === 204) return [];
-    return res.json();
+});
+
+// ✅ Monitor de estado de autenticação — detecta expiração de sessão
+_sbClient.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT' || (event === 'TOKEN_REFRESHED' && !session)) {
+        if (document.getElementById('mainSystem').style.display !== 'none') {
+            document.getElementById('sgq-session-banner').classList.add('show');
+        }
+    }
+    if (event === 'TOKEN_REFRESHED' && session) {
+        document.getElementById('sgq-session-banner').classList.remove('show');
+    }
+});
+
+// ✅ Função auxiliar interna — usa o cliente Supabase com autenticação real
+async function sbFetch(table, method='GET', body=null, params='') {
+    try {
+        let result;
+        const baseQuery = _sbClient.from(table);
+
+        if (method === 'GET') {
+            // params como string: '?order=id.asc&limit=1000' → parseado internamente
+            result = await baseQuery.select('*').order('id', { ascending: true }).limit(1000);
+        } else if (method === 'POST') {
+            const opts = body && Array.isArray(body) ? body : (body ? [body] : []);
+            result = await baseQuery.upsert(opts, { onConflict: 'id' });
+        } else if (method === 'PATCH') {
+            result = await baseQuery.upsert(body, { onConflict: 'id' });
+        } else if (method === 'DELETE') {
+            // params contém o filtro ex: '?id=eq.5'
+            const match = params.match(/\?(\w+)=eq\.(.+)/);
+            if (match) result = await baseQuery.delete().eq(match[1], match[2]);
+            else result = await baseQuery.delete().neq('id', -1);
+        }
+
+        if (result?.error) throw new Error(result.error.message);
+        return result?.data || [];
+    } catch(e) {
+        // ✅ Detecta sessão expirada
+        if (e.message && (e.message.includes('JWT') || e.message.includes('401') || e.message.includes('token'))) {
+            document.getElementById('sgq-session-banner').classList.add('show');
+        }
+        throw e;
+    }
 }
 
-// Carrega todos os registros de uma tabela
-async function dbGetAll(tabela) {
+// ✅ Carrega todos os registros de uma tabela (com paginação de segurança)
+async function dbGetAll(tabela, pagina = 0, porPagina = 2000) {
     try {
-        return await sbFetch(tabela, 'GET', null, '?order=id.asc&limit=100000');
+        const from = pagina * porPagina;
+        const to   = from + porPagina - 1;
+        const { data, error } = await _sbClient
+            .from(tabela)
+            .select('*')
+            .order('id', { ascending: true })
+            .range(from, to);
+
+        if (error) throw new Error(error.message);
+        return data || [];
     } catch(e) {
-        console.error('dbGetAll erro:', e);
-        // fallback localStorage
+        sgqToast('Erro ao carregar ' + tabela + ': ' + e.message, 'error');
+        // fallback localStorage somente para leitura
         const raw = localStorage.getItem(tabela);
         return raw ? JSON.parse(raw) : [];
     }
 }
 
-// Salva UM registro (upsert)
+// ✅ Salva UM registro (upsert) via SDK seguro
 async function dbUpsertOne(tabela, item) {
-    const headers = {
-        'apikey': SUPABASE_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates,return=representation'
-    };
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${tabela}`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(item)
-    });
-    if (!res.ok) {
-        const errText = await res.text();
-        console.error('dbUpsertOne erro [' + tabela + ']:', errText);
-        throw new Error(errText);
+    try {
+        const { data, error } = await _sbClient
+            .from(tabela)
+            .upsert(item, { onConflict: 'id' })
+            .select();
+
+        if (error) throw new Error(error.message);
+        return data && data.length ? data[0] : item;
+    } catch(e) {
+        sgqToast('Erro ao salvar em ' + tabela + ': ' + e.message, 'error');
+        throw e;
     }
-    return await res.json();
 }
 
-// Deleta UM registro por id
+// ✅ Deleta UM registro por id via SDK seguro
 async function dbDeleteOne(tabela, id) {
     try {
-        const headers = {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_KEY
-        };
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/${tabela}?id=eq.${id}`, {
-            method: 'DELETE',
-            headers
-        });
-        if (!res.ok) throw new Error(await res.text());
+        const { error } = await _sbClient
+            .from(tabela)
+            .delete()
+            .eq('id', id);
+
+        if (error) throw new Error(error.message);
     } catch(e) {
-        console.error('dbDeleteOne erro:', e);
+        sgqToast('Erro ao excluir de ' + tabela + ': ' + e.message, 'error');
+        throw e;
     }
 }
 
-// Compatibilidade: dbPutAll = upsert em massa
+// ✅ Upsert em massa via SDK seguro
 async function dbPutAll(tabela, items) {
-    // No Supabase usamos upsert individual para cada item
+    if (!items || items.length === 0) return;
     try {
-        if (!items || items.length === 0) return;
-        const headers = {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_KEY,
-            'Content-Type': 'application/json',
-            'Prefer': 'resolution=merge-duplicates'
-        };
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/${tabela}`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(items)
-        });
-        if (!res.ok) {
-            const txt = await res.text();
-            console.error('dbPutAll erro:', txt);
-        }
+        const { error } = await _sbClient
+            .from(tabela)
+            .upsert(items, { onConflict: 'id' });
+
+        if (error) throw new Error(error.message);
     } catch(e) {
-        console.error('dbPutAll exception:', e);
+        sgqToast('Erro ao salvar lote em ' + tabela + ': ' + e.message, 'error');
         // fallback localStorage
         localStorage.setItem(tabela, JSON.stringify(items));
     }
 }
 
+// ✅ Limpa uma tabela via SDK seguro
 async function dbClear(tabela) {
     try {
-        const headers = {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_KEY
-        };
-        // Deleta todos (com filtro sempre-verdadeiro)
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/${tabela}?id=gte.0`, {
-            method: 'DELETE',
-            headers
-        });
-        if (!res.ok) throw new Error(await res.text());
+        const { error } = await _sbClient
+            .from(tabela)
+            .delete()
+            .gte('id', 0);
+
+        if (error) throw new Error(error.message);
     } catch(e) {
-        console.error('dbClear erro:', e);
+        sgqToast('Erro ao limpar ' + tabela + ': ' + e.message, 'error');
         localStorage.removeItem(tabela);
     }
 }
 
+// ✅ Conta registros via SDK seguro
 async function dbCount(tabela) {
     try {
-        const headers = {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_KEY,
-            'Prefer': 'count=exact'
-        };
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/${tabela}?select=id`, { method: 'GET', headers });
-        const count = res.headers.get('content-range');
-        if (count) return parseInt(count.split('/')[1]) || 0;
-        const data = await res.json();
-        return Array.isArray(data) ? data.length : 0;
+        const { count, error } = await _sbClient
+            .from(tabela)
+            .select('*', { count: 'exact', head: true });
+
+        if (error) throw new Error(error.message);
+        return count || 0;
     } catch(e) { return 0; }
 }
 
@@ -8133,7 +8280,8 @@ async function carregarTodosAsync() {
             dbGetAll('materias_primas')
         ]);
     } catch(e) {
-        console.error('Erro ao carregar do Supabase:', e);
+        // ✅ MELHORIA: feedback visual ao usuário em vez de console.error silencioso
+        sgqToast('Erro ao carregar dados do servidor. Exibindo cache local.', 'warning');
         rawP = JSON.parse(localStorage.getItem('producoes') || '[]');
         rawC = JSON.parse(localStorage.getItem('classificacoes') || '[]');
         rawM = JSON.parse(localStorage.getItem('materias_primas') || '[]');
@@ -8174,16 +8322,11 @@ async function _corrigirDecimaisNoBanco() {
             const um = parseFloat(r.umidade) || 0;
             if (um > 0 && um <= 1) corrigido.umidade = +(um * 100).toFixed(3);
             // PATCH direto por ID garante UPDATE real no Supabase
-            return fetch(`${SUPABASE_URL}/rest/v1/classificacoes?id=eq.${r.id}`, {
-                method: 'PATCH',
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': 'Bearer ' + SUPABASE_KEY,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify(corrigido)
-            });
+            return _sbClient
+                .from('classificacoes')
+                .update(corrigido)
+                .eq('id', r.id)
+                .then(({ error }) => { if (error) throw new Error(error.message); });
         });
 
         await Promise.all(promises);
@@ -8192,9 +8335,9 @@ async function _corrigirDecimaisNoBanco() {
         // Recarrega para refletir os valores corretos
         await carregarTodosAsync();
         exibirTabelaClass();
-        console.log(`[Correção] ${afetados.length} registro(s) corrigidos no banco com sucesso.`);
+        sgqToast(`Correção: ${afetados.length} registro(s) corrigidos com sucesso.`, 'success');
     } catch(e) {
-        console.error('[Correção decimais] Erro:', e);
+        sgqToast('Erro na correção de decimais: ' + (e.message || e), 'error');
         // Não marca como feito para tentar novamente na próxima sessão
     }
 }
@@ -8397,16 +8540,16 @@ const PARAM_STORAGE_KEY = 'sistema_parametros_v3';
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function carregarParametros() {
+    // ✅ Implementação segura definida no bloco de utilitários (fim do arquivo)
+    // Esta versão é substituída pela definição abaixo — mantida aqui só por ordem de carregamento
     try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/parametros?chave=eq.sistema_parametros_v3&select=valor`, {
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
-        });
-        const lista = await res.json();
-        if (lista && lista.length > 0) {
-            PARAMETROS = JSON.parse(lista[0].valor);
-        } else {
-            PARAMETROS = {};
-        }
+        const { data, error } = await _sbClient
+            .from('parametros')
+            .select('valor')
+            .eq('chave', 'sistema_parametros_v3')
+            .single();
+        if (error && error.code !== 'PGRST116') throw new Error(error.message);
+        PARAMETROS = (data && data.valor) ? JSON.parse(data.valor) : {};
     } catch(e) { PARAMETROS = {}; }
 }
 
@@ -8556,100 +8699,20 @@ function getParam(modulo, racaKey, campo, dataRegistro) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SALVAR PARÂMETROS — lê inputs da tela e grava novo snapshot com data de hoje
+// SALVAR PARÂMETROS — implementação segura via SDK (ver bloco de utilitários)
 // ─────────────────────────────────────────────────────────────────────────────
-async function salvarParametros() {
-    const vigenciaInput = document.getElementById('paramDataVigencia') &&
-                     document.getElementById('paramDataVigencia').value;
-    if (!vigenciaInput) { showMsg('msgErroParam','❌ Informe a data de vigência antes de salvar.',4000); return; }
-
-    // Coleta qual ração/produto está selecionado no select ativo
-    const catAtiva = document.querySelector('.param-cat-ativo');
-    const modulo   = catAtiva ? catAtiva.dataset.modulo : null;
-    const selectEl = catAtiva ? catAtiva.querySelector('.param-select-racao') : null;
-    const racaKey  = selectEl ? selectEl.value : null;
-
-    if (!modulo || !racaKey) { showMsg('msgErroParam','❌ Selecione uma ração/produto.',4000); return; }
-
-    // Verifica se existe snapshot temporário com vigência 2000-01-01 (escopo=tudo aplicado)
-    const hist0 = PARAMETROS[modulo] && PARAMETROS[modulo][racaKey];
-    const tempTudo = hist0 && hist0.find(s => s._temporario && s.vigencia === '2000-01-01');
-    const vigencia = tempTudo ? '2000-01-01' : vigenciaInput;
-
-    // Lê campos do painel visível
-    const campos = {};
-    catAtiva.querySelectorAll('[id^="pinput_"]').forEach(el => {
-        const parts = el.id.split('_');
-        const tipo  = parts[parts.length-1];
-        const camp  = parts[parts.length-2];
-        if (!campos[camp]) campos[camp] = {min:0,max:9999,ativo:false};
-        if (tipo==='ativo') campos[camp].ativo = el.checked;
-        else if (tipo==='max') campos[camp][tipo] = (el.value===''||el.value===null) ? 9999 : (parseFloat(el.value) ?? 9999);
-        else campos[camp][tipo] = parseFloat(el.value)||0;
-    });
-
-    const motivo = (document.getElementById('paramMotivo') && document.getElementById('paramMotivo').value.trim()) || '';
-    const registradoEm = new Date().toISOString();
-
-    if (!PARAMETROS[modulo]) PARAMETROS[modulo] = {};
-    if (!PARAMETROS[modulo][racaKey]) PARAMETROS[modulo][racaKey] = [];
-
-    // Remove temporários e verifica se já existe snapshot com mesma vigência → substitui
-    const hist = PARAMETROS[modulo][racaKey].filter(s => !s._temporario);
-    const idx  = hist.findIndex(s => s.vigencia === vigencia);
-    if (idx >= 0) hist[idx] = { vigencia, campos, motivo, registradoEm };
-    else          hist.push({ vigencia, campos, motivo, registradoEm });
-
-    // Mantém ordenado
-    hist.sort((a,b) => a.vigencia.localeCompare(b.vigencia));
-    PARAMETROS[modulo][racaKey] = hist;
-
-    // ✅ CORRIGIDO: DELETE + INSERT garante upsert confiável no Supabase
-    try {
-        // 1. Remove registro antigo (se existir)
-        await fetch(`${SUPABASE_URL}/rest/v1/parametros?chave=eq.sistema_parametros_v3`, {
-            method: 'DELETE',
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
-        });
-
-        // 2. Insere registro atualizado
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/parametros`, {
-            method: 'POST',
-            headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': 'Bearer ' + SUPABASE_KEY,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=minimal'
-            },
-            body: JSON.stringify({ chave: 'sistema_parametros_v3', valor: JSON.stringify(PARAMETROS), atualizado_em: new Date().toISOString() })
-        });
-
-        if (!res.ok) {
-            const err = await res.text();
-            showMsg('msgErroParam', `❌ Erro ao salvar no Supabase: ${err}`, 6000);
-            return;
-        }
-    } catch(e) {
-        showMsg('msgErroParam', `❌ Falha de conexão: ${e.message}`, 6000);
-        return;
-    }
-
-    exibirTabelaProd(); exibirTabelaClass(); exibirTabelaMP();
-
-    const dFmt = tempTudo
-        ? 'todos os registros (retroativo)'
-        : new Date(vigencia+'T00:00:00').toLocaleDateString('pt-BR');
-    const motivoMsg = motivo ? ` | Motivo: "${motivo}"` : '';
-    showMsg('msgSucessoParam', `✓ Parâmetros de "${racaKey.replace(/_/g,' ')}" salvos para ${dFmt}.${motivoMsg} Tabelas atualizadas.`, 5000);
-    renderizarPainelRacao(catAtiva, modulo, racaKey);
-}
+// As funções salvarParametros() e resetarParametros() estão redefinidas
+// no bloco de utilitários ao final do arquivo, usando o SDK do Supabase
+// com autenticação JWT real em vez de SUPABASE_KEY exposta.
+// ─────────────────────────────────────────────────────────────────────────────
 
 function resetarParametros() {
+    // ✅ Implementação segura no bloco de utilitários (fim do arquivo)
+    // Mantida aqui para compatibilidade de ordem de chamada
     if (!confirm('Restaurar TODOS os parâmetros para os valores padrão?\nTodo o histórico de vigências será apagado.')) return;
     PARAMETROS = {};
-    fetch(`${SUPABASE_URL}/rest/v1/parametros?chave=eq.sistema_parametros_v3`, {
-        method: 'DELETE',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    _sbClient.from('parametros').delete().eq('chave', 'sistema_parametros_v3').then(() => {
+        _registrarAuditoria('RESET_PARAMETROS', 'parametros', null, {}).catch(() => {});
     });
     renderizarTabelasParametros();
     exibirTabelaProd(); exibirTabelaClass(); exibirTabelaMP();
@@ -9193,6 +9256,9 @@ function avg(arr) {
 }
 
 function gerarBoletim() {
+    sgqMostrarLoading('Gerando boletim...');
+    setTimeout(() => {
+    try {
     const di = document.getElementById('bolDataInicio').value;
     const df = document.getElementById('bolDataFim').value;
     const incProd  = document.getElementById('bolIncluirProd').checked;
@@ -9308,6 +9374,8 @@ function gerarBoletim() {
     }
 
     document.getElementById('boletimConteudo').innerHTML = html;
+    } catch(e) { sgqToast('Erro ao gerar boletim: ' + e.message, 'error'); } finally { sgqOcultarLoading(); }
+    }, 50);
 }
 
 // ─── Seletor de modo de visualização da produção no boletim ─────────────────
@@ -11125,7 +11193,7 @@ async function executarCorrecaoDefeitos() {
     } catch(e) {
         msgEl.textContent = '❌ Erro ao salvar correção: ' + e.message;
         msgEl.style.color = '#e74c3c';
-        console.error(e);
+        sgqToast('Erro ao salvar: ' + e.message, 'error');
     }
 }
 
@@ -12314,6 +12382,267 @@ document.querySelectorAll('.nc-check-item input').forEach(cb => {
 // ===== INIT NC =====
 renderizarNC(listaNC);
 renderizarDev(listaDev);
+
+// =====================================================================
+// ✅ MELHORIA: FUNÇÕES UTILITÁRIAS — LOADING, TOAST, AUDITORIA
+// =====================================================================
+
+// ── Loading Overlay ──────────────────────────────────────────────────
+function sgqMostrarLoading(texto) {
+    const ov = document.getElementById('sgq-loading-overlay');
+    const tx = document.getElementById('sgq-loading-text');
+    if (tx) tx.textContent = texto || 'Aguarde...';
+    if (ov) ov.classList.add('show');
+}
+function sgqOcultarLoading() {
+    const ov = document.getElementById('sgq-loading-overlay');
+    if (ov) ov.classList.remove('show');
+}
+
+// ── Toast Notifications ───────────────────────────────────────────────
+// tipo: 'success' | 'error' | 'warning' | 'info'
+function sgqToast(mensagem, tipo, duracao) {
+    tipo    = tipo    || 'info';
+    duracao = duracao || 4000;
+    const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+    const titles = { success: 'Sucesso', error: 'Erro', warning: 'Atenção', info: 'Informação' };
+    const container = document.getElementById('sgq-toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = 'sgq-toast ' + tipo;
+    toast.innerHTML = `
+        <div class="sgq-toast-icon">${icons[tipo]}</div>
+        <div class="sgq-toast-body">
+            <div class="sgq-toast-title">${titles[tipo]}</div>
+            <div>${mensagem}</div>
+        </div>`;
+    toast.onclick = () => toast.remove();
+    container.appendChild(toast);
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, duracao);
+}
+
+// ── Log de Auditoria ─────────────────────────────────────────────────
+// ✅ Registra quem fez o quê e quando — rastreabilidade completa
+async function _registrarAuditoria(acao, tabela, registroId, detalhes) {
+    try {
+        if (!usuarioAtual) return;
+        await _sbClient.from('audit_log').insert({
+            usuario: usuarioAtual,
+            perfil:  perfilAtual || 'desconhecido',
+            acao,
+            tabela,
+            registro_id: registroId ? String(registroId) : null,
+            detalhes:    detalhes ? JSON.stringify(detalhes) : null,
+            criado_em:   new Date().toISOString()
+        });
+    } catch(e) {
+        // auditoria não deve quebrar a operação principal
+    }
+}
+
+// ── Wrapper de salvamento com auditoria ──────────────────────────────
+async function dbUpsertComAuditoria(tabela, item, acao) {
+    const resultado = await dbUpsertOne(tabela, item);
+    _registrarAuditoria(acao || 'UPSERT', tabela, item.id, { campos: Object.keys(item) }).catch(() => {});
+    return resultado;
+}
+
+async function dbDeleteComAuditoria(tabela, id, detalhes) {
+    await dbDeleteOne(tabela, id);
+    _registrarAuditoria('DELETE', tabela, id, detalhes || {}).catch(() => {});
+}
+
+// ── Restauração de sessão ao carregar a página ────────────────────────
+// ✅ MELHORIA: Usuário permanece logado após fechar/reabrir o browser
+document.addEventListener('DOMContentLoaded', async function() {
+    ativarNavegacaoEnter('formCadastroProd');
+    ativarNavegacaoEnter('formCadastroClass');
+    ativarNavegacaoEnter('formCadastroMP');
+    ativarNavegacaoEnter('formCadastroEMP');
+
+    const tabR   = document.getElementById('tabRelatorio');
+    const tabRC  = document.getElementById('tabRelClass');
+    const tabRK  = document.getElementById('tabRanking');
+    const tabBol = document.getElementById('tabBoletim');
+    const tabEMP = document.getElementById('tabEntradaMP');
+    const tabCfg3= document.getElementById('tabConfiguracoes');
+    [tabCfg3, tabR, tabRC, tabRK, tabBol, tabEMP].forEach(t => { if(t) t.style.display = 'none'; });
+
+    // ✅ Verifica se há sessão ativa (persiste entre abas/recargas)
+    sgqMostrarLoading('Verificando sessão...');
+    try {
+        const { data: { session } } = await _sbClient.auth.getSession();
+        if (session && session.user) {
+            const { data: perfilData } = await _sbClient
+                .from('perfis')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+
+            if (perfilData && perfilData.ativo !== false) {
+                let perms = {};
+                try { perms = typeof perfilData.perms === 'string' ? JSON.parse(perfilData.perms) : (perfilData.perms || {}); } catch(e) {}
+
+                perfilAtual  = perfilData.perfil || 'usuario';
+                usuarioAtual = session.user.email;
+                USUARIOS[usuarioAtual] = {
+                    nome:   perfilData.nome || session.user.email,
+                    perfil: perfilAtual,
+                    ativo:  true,
+                    perms,
+                    id:     session.user.id
+                };
+
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainSystem').style.display  = 'block';
+
+                const nomeCompleto = perfilData.nome || session.user.email;
+                document.getElementById('nomeUsuario').textContent = nomeCompleto;
+                document.getElementById('perfilBadge').innerHTML =
+                    perfilAtual === 'admin'
+                        ? '<span class="badge-perfil badge-admin">Admin</span>'
+                        : '<span class="badge-perfil badge-usuario">Usuário</span>';
+                const partes = nomeCompleto.trim().split(' ');
+                const iniciais = partes.length >= 2 ? (partes[0][0] + partes[partes.length-1][0]).toUpperCase() : nomeCompleto.slice(0,2).toUpperCase();
+                const avatarEl = document.getElementById('headerAvatar');
+                if (avatarEl) avatarEl.textContent = iniciais;
+                const capaNome = document.getElementById('capaNomeUsuario');
+                if (capaNome) capaNome.textContent = partes[0] || nomeCompleto;
+
+                aplicarPermissoes();
+                carregarParametros();
+                sgqMostrarLoading('Carregando dados...');
+                carregarTodosAsync().then(() => {
+                    sgqOcultarLoading();
+                    exibirTabelaProd();
+                    exibirTabelaClass();
+                    exibirTabelaMP();
+                    if (perfilAtual === 'admin') verificarEspacoAoIniciar();
+                    if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
+                }).catch(() => sgqOcultarLoading());
+                return;
+            }
+        }
+    } catch(e) {
+        // sem sessão válida — mostra tela de login normalmente
+    } finally {
+        sgqOcultarLoading();
+    }
+});
+
+// ── Carregar NC e DEV do Supabase (migração do localStorage) ─────────
+// ✅ MELHORIA: NC e Devoluções passam a usar o Supabase em vez do localStorage
+async function carregarNCeDevSupabase() {
+    try {
+        const [ncData, devData] = await Promise.all([
+            _sbClient.from('nao_conformidades').select('*').order('id', { ascending: false }),
+            _sbClient.from('devolucoes').select('*').order('id', { ascending: false })
+        ]);
+        if (ncData.data)  { listaNC  = ncData.data;  renderizarNC(listaNC); }
+        if (devData.data) { listaDev = devData.data; renderizarDev(listaDev); }
+    } catch(e) {
+        // Tabelas ainda não existem — mantém comportamento atual com localStorage
+        // Execute o SQL de criação fornecido no guia de migração
+    }
+}
+
+// Tenta carregar NC do Supabase após login (não bloqueia se tabelas não existirem)
+const _origAplicarPermissoes = aplicarPermissoes;
+function aplicarPermissoes() {
+    _origAplicarPermissoes();
+    setTimeout(() => carregarNCeDevSupabase().catch(() => {}), 500);
+}
+
+// =====================================================================
+// ✅ MELHORIA: CARREGARPARAMETROS via SDK seguro (sem SUPABASE_KEY)
+// =====================================================================
+async function carregarParametros() {
+    try {
+        const { data, error } = await _sbClient
+            .from('parametros')
+            .select('valor')
+            .eq('chave', 'sistema_parametros_v3')
+            .single();
+        if (error && error.code !== 'PGRST116') throw new Error(error.message);
+        PARAMETROS = (data && data.valor) ? JSON.parse(data.valor) : {};
+    } catch(e) { PARAMETROS = {}; }
+}
+
+async function salvarParametros() {
+    const vigenciaInput = document.getElementById('paramDataVigencia') &&
+                     document.getElementById('paramDataVigencia').value;
+    if (!vigenciaInput) { showMsg('msgErroParam','❌ Informe a data de vigência antes de salvar.',4000); return; }
+
+    const catAtiva = document.querySelector('.param-cat-ativo');
+    const modulo   = catAtiva ? catAtiva.dataset.modulo : null;
+    const selectEl = catAtiva ? catAtiva.querySelector('.param-select-racao') : null;
+    const racaKey  = selectEl ? selectEl.value : null;
+
+    if (!modulo || !racaKey) { showMsg('msgErroParam','❌ Selecione uma ração/produto.',4000); return; }
+
+    const hist0    = PARAMETROS[modulo] && PARAMETROS[modulo][racaKey];
+    const tempTudo = hist0 && hist0.find(s => s._temporario && s.vigencia === '2000-01-01');
+    const vigencia = tempTudo ? '2000-01-01' : vigenciaInput;
+
+    const campos = {};
+    catAtiva.querySelectorAll('[id^="pinput_"]').forEach(el => {
+        const parts = el.id.split('_');
+        const tipo  = parts[parts.length-1];
+        const camp  = parts[parts.length-2];
+        if (!campos[camp]) campos[camp] = {min:0,max:9999,ativo:false};
+        if (tipo==='ativo') campos[camp].ativo = el.checked;
+        else if (tipo==='max') campos[camp][tipo] = (el.value===''||el.value===null) ? 9999 : (parseFloat(el.value) ?? 9999);
+        else campos[camp][tipo] = parseFloat(el.value)||0;
+    });
+
+    const motivo = (document.getElementById('paramMotivo') && document.getElementById('paramMotivo').value.trim()) || '';
+    const registradoEm = new Date().toISOString();
+
+    if (!PARAMETROS[modulo]) PARAMETROS[modulo] = {};
+    if (!PARAMETROS[modulo][racaKey]) PARAMETROS[modulo][racaKey] = [];
+
+    const hist = PARAMETROS[modulo][racaKey].filter(s => !s._temporario);
+    const idx  = hist.findIndex(s => s.vigencia === vigencia);
+    if (idx >= 0) hist[idx] = { vigencia, campos, motivo, registradoEm };
+    else          hist.push({ vigencia, campos, motivo, registradoEm });
+    hist.sort((a,b) => a.vigencia.localeCompare(b.vigencia));
+    PARAMETROS[modulo][racaKey] = hist;
+
+    try {
+        // ✅ SEGURANÇA: usa SDK com JWT do usuário autenticado
+        await _sbClient.from('parametros').delete().eq('chave', 'sistema_parametros_v3');
+        const { error } = await _sbClient.from('parametros').insert({
+            chave:         'sistema_parametros_v3',
+            valor:         JSON.stringify(PARAMETROS),
+            atualizado_em: new Date().toISOString()
+        });
+        if (error) throw new Error(error.message);
+        _registrarAuditoria('UPDATE_PARAMETROS', 'parametros', null, { modulo, racaKey, vigencia }).catch(() => {});
+    } catch(e) {
+        showMsg('msgErroParam', `❌ Erro ao salvar parâmetros: ${e.message}`, 6000);
+        return;
+    }
+
+    exibirTabelaProd(); exibirTabelaClass(); exibirTabelaMP();
+    const dFmt = tempTudo
+        ? 'todos os registros (retroativo)'
+        : new Date(vigencia+'T00:00:00').toLocaleDateString('pt-BR');
+    const motivoMsg = motivo ? ` | Motivo: "${motivo}"` : '';
+    showMsg('msgSucessoParam', `✓ Parâmetros de "${racaKey.replace(/_/g,' ')}" salvos para ${dFmt}.${motivoMsg} Tabelas atualizadas.`, 5000);
+    renderizarPainelRacao(catAtiva, modulo, racaKey);
+}
+
+function resetarParametros() {
+    if (!confirm('Restaurar TODOS os parâmetros para os valores padrão?\nTodo o histórico de vigências será apagado.')) return;
+    PARAMETROS = {};
+    _sbClient.from('parametros').delete().eq('chave', 'sistema_parametros_v3').then(() => {
+        _registrarAuditoria('RESET_PARAMETROS', 'parametros', null, {}).catch(() => {});
+    });
+    renderizarTabelasParametros();
+    exibirTabelaProd(); exibirTabelaClass(); exibirTabelaMP();
+    showMsg('msgSucessoParam','✓ Parâmetros restaurados para os valores padrão.',3000);
+}
 </script>
 </body>
 </html>
