@@ -1226,9 +1226,9 @@
             </div>
             <div class="login-error" id="loginError">Usuário ou senha inválidos.</div>
             <div class="login-group">
-                <label>E-mail</label>
+                <label>Usuário</label>
                 <div class="input-wrap">
-                    <input type="email" id="loginUser" placeholder="seu@email.com" autocomplete="username">
+                    <input type="text" id="loginUser" placeholder="Digite seu usuário" autocomplete="username">
                 </div>
             </div>
             <div class="login-group">
@@ -4221,13 +4221,13 @@ function ativarNavegacaoEnter(formId) {
 let usuarioAtual = null;
 
 async function fazerLogin() {
-    const emailRaw = document.getElementById('loginUser').value.trim();
-    const pass     = document.getElementById('loginPass').value;
-    const err      = document.getElementById('loginError');
-    const btn      = document.querySelector('.login-btn');
+    const usernameRaw = document.getElementById('loginUser').value.trim().toLowerCase();
+    const pass        = document.getElementById('loginPass').value;
+    const err         = document.getElementById('loginError');
+    const btn         = document.querySelector('.login-btn');
 
-    if (!emailRaw || !pass) {
-        err.textContent = 'Preencha o e-mail e a senha.';
+    if (!usernameRaw || !pass) {
+        err.textContent = 'Preencha o usuário e a senha.';
         err.classList.add('show');
         return;
     }
@@ -4238,19 +4238,38 @@ async function fazerLogin() {
     sgqMostrarLoading('Autenticando...');
 
     try {
-        // ✅ SEGURANÇA: autenticação real via Supabase Auth (JWT server-side)
-        const { data: authData, error: authError } = await _sbClient.auth.signInWithPassword({
-            email: emailRaw,
-            password: pass
-        });
+        // ✅ Passo 1: busca o e-mail pelo username na tabela perfis
+        const { data: perfilLogin, error: perfilLoginError } = await _sbClient
+            .from('perfis')
+            .select('email, ativo')
+            .eq('username', usernameRaw)
+            .single();
 
-        if (authError) {
-            err.textContent = 'E-mail ou senha inválidos.';
+        if (perfilLoginError || !perfilLogin) {
+            err.textContent = 'Usuário não encontrado.';
             err.classList.add('show');
             return;
         }
 
-        // ✅ Busca perfil do usuário na tabela 'perfis'
+        if (perfilLogin.ativo === false) {
+            err.textContent = 'Usuário inativo. Contate o administrador.';
+            err.classList.add('show');
+            return;
+        }
+
+        // ✅ Passo 2: autentica com e-mail + senha via Supabase Auth (JWT server-side)
+        const { data: authData, error: authError } = await _sbClient.auth.signInWithPassword({
+            email: perfilLogin.email,
+            password: pass
+        });
+
+        if (authError) {
+            err.textContent = 'Senha incorreta.';
+            err.classList.add('show');
+            return;
+        }
+
+        // ✅ Busca perfil completo do usuário
         const { data: perfilData, error: perfilError } = await _sbClient
             .from('perfis')
             .select('*')
