@@ -4326,6 +4326,7 @@ async function fazerLogin() {
             exibirTabelaProd();
             exibirTabelaClass();
             exibirTabelaMP();
+            carregarNCeDevSupabase().catch(() => {});
             if (perfilAtual === 'admin') verificarEspacoAoIniciar();
             if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
             try {
@@ -12548,11 +12549,10 @@ async function carregarNCeDevSupabase() {
 }
 
 // Tenta carregar NC do Supabase após login (não bloqueia se tabelas não existirem)
-const _origAplicarPermissoes = aplicarPermissoes;
-function aplicarPermissoes() {
-    _origAplicarPermissoes();
-    setTimeout(() => carregarNCeDevSupabase().catch(() => {}), 500);
-}
+// ✅ CORRIGIDO: não sobrescreve aplicarPermissoes — NC carrega separadamente
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => carregarNCeDevSupabase().catch(() => {}), 2000);
+});
 
 // =====================================================================
 // ✅ MELHORIA: CARREGARPARAMETROS via SDK seguro (sem SUPABASE_KEY)
