@@ -4452,7 +4452,7 @@ function aplicarPermissoes() {
 
     // Relatórios
     const podeRel = isAdmin || perms.relatorios;
-    ['tabRelatorio','tabRelClass','tabRanking'].forEach(id => {
+    ['tabRelatorio','tabRelClass','tabRelMP','tabRanking'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = podeRel ? 'inline-block' : 'none';
     });
