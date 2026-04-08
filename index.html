@@ -1218,8 +1218,8 @@
                 ⚠️ Não Conformidade ▾
             </button>
             <div class="nav-dropdown-menu">
-                <button class="nav-dropdown-item" id="tabNC" onclick="trocarAba('naoConformidade', this);closeDropdowns();setTimeout(()=>mudarSubAbaNc('aba-nc-inner',document.getElementById('subTabNC')),50)">⚠️ Não Conformidade</button>
-                <button class="nav-dropdown-item" id="tabDev" onclick="trocarAba('naoConformidade', this);closeDropdowns();setTimeout(()=>mudarSubAbaNc('aba-dev-inner',document.getElementById('subTabDev')),50)">↩️ Devolução</button>
+                <button class="nav-dropdown-item" id="tabNC" onclick="trocarAba('naoConformidade', this);closeDropdowns();setTimeout(()=>mostrarSecaoNC('aba-nc-inner'),50)">⚠️ Não Conformidade</button>
+                <button class="nav-dropdown-item" id="tabDev" onclick="trocarAba('naoConformidade', this);closeDropdowns();setTimeout(()=>mostrarSecaoNC('aba-dev-inner'),50)">↩️ Devolução</button>
             </div>
         </div>
         <!-- CONFIGURAÇÕES -->
@@ -2381,12 +2381,6 @@
     <!-- ===== ABA NÃO CONFORMIDADE / DEVOLUÇÃO ===== -->
     <div id="aba-naoConformidade" class="tab-content">
         <div style="padding:0;">
-
-        <!-- SUB-ABAS INTERNAS: NC / DEVOLUÇÃO -->
-        <div class="nav-tabs" style="background:#1a3a9f;border-bottom:3px solid #0a1e7f;padding:0 20px;">
-            <button class="nav-tab active" id="subTabNC" onclick="mudarSubAbaNc('aba-nc-inner', this)" style="border-bottom-color:#e74c3c;">⚠️ Não Conformidade</button>
-            <button class="nav-tab" id="subTabDev" onclick="mudarSubAbaNc('aba-dev-inner', this)">↩️ Devolução</button>
-        </div>
 
         <!-- ABA: NÃO CONFORMIDADE -->
         <div id="aba-nc-inner" class="nc-sub-content active" style="padding:20px;">
@@ -11635,6 +11629,12 @@ function mudarSubAbaNc(id, btn) {
         btn.classList.add('active');
         btn.style.borderBottomColor = id === 'aba-nc-inner' ? '#e74c3c' : '#e67e22';
     }
+}
+
+function mostrarSecaoNC(id) {
+    document.querySelectorAll('.nc-sub-content').forEach(t => { t.style.display = 'none'; t.classList.remove('active'); });
+    const el = document.getElementById(id);
+    if (el) { el.style.display = 'block'; el.classList.add('active'); }
 }
 
 // ===== IMPRESSÃO / RELATÓRIO NC e DEV =====
