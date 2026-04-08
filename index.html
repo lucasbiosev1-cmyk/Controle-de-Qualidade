@@ -4329,76 +4329,7 @@ async function fazerLogin() {
             carregarNCeDevSupabase().catch(() => {});
             if (perfilAtual === 'admin') verificarEspacoAoIniciar();
             if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
-            try {
-                const agora      = new Date();
-                const anoAtual   = agora.getFullYear();
-                const mesAtual   = agora.getMonth() + 1;
-                const prefixoMes = anoAtual + '-' + String(mesAtual).padStart(2,'0');
-                const hojeISO    = prefixoMes + '-' + String(agora.getDate()).padStart(2,'0');
-                const isMesAtual = r => r.data && r.data.startsWith(prefixoMes);
-                const isHoje     = r => r.data && r.data.slice(0,10) === hojeISO;
-                const meses2 = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-                const nomeMes = meses2[agora.getMonth()];
-                const temValorMP = (r, campo) => {
-                    const v = r[campo];
-                    if (v === null || v === undefined) return false;
-                    if (campo === 'ureatica' || campo === 'peroxido' || campo === 'rancidez') return true;
-                    return parseFloat(v) > 0;
-                };
-                const camposMP   = ['proteina','solubil','umidade','densidade','mineral','acidez','ureatica','rancidez','peroxido','digestibilidade'];
-                const camposProd = ['proteina','fibra','solubil','umidade','densidade','mineral'];
-                const contarClass = (r) => {
-                    let n = 1;
-                    if (r.umidade   !== null && r.umidade   !== undefined) n++;
-                    if (r.densidade !== null && r.densidade !== undefined && parseFloat(r.densidade) > 0) n++;
-                    return n;
-                };
-                const prodsHoje = (producoes||[]).filter(isHoje);
-                const mpHoje    = (materiasPrimas||[]).filter(isHoje);
-                const classHoje = (classificacoes||[]).filter(isHoje);
-                let analisesHoje = 0;
-                prodsHoje.forEach(r => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesHoje++; }); });
-                mpHoje.forEach(r    => { camposMP.forEach(c   => { if(temValorMP(r,c)) analisesHoje++; }); });
-                classHoje.forEach(r => { analisesHoje += contarClass(r); });
-                const prodsMes  = (producoes||[]).filter(isMesAtual);
-                const mpMes     = (materiasPrimas||[]).filter(isMesAtual);
-                const classMesC = (classificacoes||[]).filter(isMesAtual);
-                let analisesMes = 0;
-                prodsMes.forEach(r  => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
-                mpMes.forEach(r     => { camposMP.forEach(c   => { if(temValorMP(r,c)) analisesMes++; }); });
-                classMesC.forEach(r => { analisesMes += contarClass(r); });
-                const classMes = (classificacoes||[]).filter(isMesAtual);
-                const _isConf   = s => s.includes('CONFORME') && !s.includes('NÃO');
-                const _isNConf  = s => s.includes('NÃO');
-                const _temParam = s => !s.includes('S/ PARÂM');
-                const confMesProd   = prodsMes.filter(r => _isConf(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
-                const nconfMesProd  = prodsMes.filter(r => _isNConf(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
-                const totalMesProd  = prodsMes.filter(r => _temParam(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
-                const confMesClass  = classMes.filter(r => _isConf(statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data))).length;
-                const nconfMesClass = classMes.filter(r => _isNConf(statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data))).length;
-                const totalMesClass = classMes.filter(r => _temParam(statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data))).length;
-                const confMesMP  = mpMes.filter(r => _isConf(statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data))).length;
-                const nconfMesMP = mpMes.filter(r => _isNConf(statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data))).length;
-                const totalMesMP = mpMes.filter(r => _temParam(statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data))).length;
-                const confMesTotal  = confMesProd  + confMesClass  + confMesMP;
-                const nconfMesTotal = nconfMesProd + nconfMesClass + nconfMesMP;
-                const totalMesTudo  = totalMesProd + totalMesClass + totalMesMP;
-                const pctConf   = totalMesTudo > 0 ? Math.round(confMesTotal / totalMesTudo * 100) : 0;
-                const pctNConf  = totalMesTudo > 0 ? Math.round(nconfMesTotal / totalMesTudo * 100) : 0;
-                const eficiencia= totalMesTudo > 0 ? (confMesTotal / totalMesTudo * 100).toFixed(1) : '0.0';
-                const kpiA = document.getElementById('kpiAnalises');     if(kpiA) kpiA.textContent = analisesHoje;
-                const kpiC = document.getElementById('kpiConformidade'); if(kpiC) kpiC.textContent = pctConf + '%';
-                const kpiN = document.getElementById('kpiNaoConf');      if(kpiN) kpiN.textContent = nconfMesTotal;
-                const kpiE = document.getElementById('kpiEntradas');     if(kpiE) kpiE.textContent = eficiencia + '%';
-                const barC = document.getElementById('kpiConfBar');      if(barC) barC.style.width = pctConf + '%';
-                const barN = document.getElementById('kpiNaoConfBar');   if(barN) barN.style.width = Math.min(pctNConf*3,100) + '%';
-                const kpiAP = document.getElementById('kpiAnalisesP');     if(kpiAP) kpiAP.textContent = analisesMes + ' resultados em ' + nomeMes;
-                const kpiCP = document.getElementById('kpiConformidadeP'); if(kpiCP) kpiCP.textContent = confMesTotal + ' de ' + totalMesTudo + ' lotes';
-                const kpiNP = document.getElementById('kpiNaoConfP');      if(kpiNP) kpiNP.textContent = pctNConf + '%';
-                const kpiEP = document.getElementById('kpiEntradasP');     if(kpiEP) kpiEP.textContent = nconfMesTotal + ' NC / ' + confMesTotal + ' C em ' + nomeMes;
-                const barA  = document.getElementById('kpiAnalisesBar');   if(barA)  barA.style.width  = Math.min(Math.round(analisesHoje/10),100) + '%';
-                const barE  = document.getElementById('kpiEntradasBar');   if(barE)  barE.style.width  = Math.min(parseFloat(eficiencia),100) + '%';
-            } catch(e) {}
+            atualizarKpisCapa();
         }).catch(() => sgqOcultarLoading());
 
     } catch(e) {
@@ -4585,6 +4516,83 @@ function trocarSubCfg(subAba, btn) {
 let producoes      = [];
 let classificacoes = [];
 let materiasPrimas = [];
+
+// =====================================================================
+// ✅ FUNÇÃO CENTRALIZADA: Atualiza os KPI cards da tela inicial (capa)
+// Chamada após login E após restauração de sessão
+// =====================================================================
+function atualizarKpisCapa() {
+    try {
+        const agora      = new Date();
+        const anoAtual   = agora.getFullYear();
+        const mesAtual   = agora.getMonth() + 1;
+        const prefixoMes = anoAtual + '-' + String(mesAtual).padStart(2,'0');
+        const hojeISO    = prefixoMes + '-' + String(agora.getDate()).padStart(2,'0');
+        const isMesAtual = r => r.data && r.data.startsWith(prefixoMes);
+        const isHoje     = r => r.data && r.data.slice(0,10) === hojeISO;
+        const meses2 = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+        const nomeMes = meses2[agora.getMonth()];
+        const temValorMP = (r, campo) => {
+            const v = r[campo];
+            if (v === null || v === undefined) return false;
+            if (campo === 'ureatica' || campo === 'peroxido' || campo === 'rancidez') return true;
+            return parseFloat(v) > 0;
+        };
+        const camposMP   = ['proteina','solubil','umidade','densidade','mineral','acidez','ureatica','rancidez','peroxido','digestibilidade'];
+        const camposProd = ['proteina','fibra','solubil','umidade','densidade','mineral'];
+        const contarClass = (r) => {
+            let n = 1;
+            if (r.umidade   !== null && r.umidade   !== undefined) n++;
+            if (r.densidade !== null && r.densidade !== undefined && parseFloat(r.densidade) > 0) n++;
+            return n;
+        };
+        const prodsHoje = (producoes||[]).filter(isHoje);
+        const mpHoje    = (materiasPrimas||[]).filter(isHoje);
+        const classHoje = (classificacoes||[]).filter(isHoje);
+        let analisesHoje = 0;
+        prodsHoje.forEach(r => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesHoje++; }); });
+        mpHoje.forEach(r    => { camposMP.forEach(c   => { if(temValorMP(r,c)) analisesHoje++; }); });
+        classHoje.forEach(r => { analisesHoje += contarClass(r); });
+        const prodsMes  = (producoes||[]).filter(isMesAtual);
+        const mpMes     = (materiasPrimas||[]).filter(isMesAtual);
+        const classMesC = (classificacoes||[]).filter(isMesAtual);
+        let analisesMes = 0;
+        prodsMes.forEach(r  => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
+        mpMes.forEach(r     => { camposMP.forEach(c   => { if(temValorMP(r,c)) analisesMes++; }); });
+        classMesC.forEach(r => { analisesMes += contarClass(r); });
+        const classMes = (classificacoes||[]).filter(isMesAtual);
+        const _isConf   = s => s.includes('CONFORME') && !s.includes('NÃO');
+        const _isNConf  = s => s.includes('NÃO');
+        const _temParam = s => !s.includes('S/ PARÂM');
+        const confMesProd   = prodsMes.filter(r => _isConf(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
+        const nconfMesProd  = prodsMes.filter(r => _isNConf(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
+        const totalMesProd  = prodsMes.filter(r => _temParam(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
+        const confMesClass  = classMes.filter(r => _isConf(statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data))).length;
+        const nconfMesClass = classMes.filter(r => _isNConf(statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data))).length;
+        const totalMesClass = classMes.filter(r => _temParam(statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data))).length;
+        const confMesMP  = mpMes.filter(r => _isConf(statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data))).length;
+        const nconfMesMP = mpMes.filter(r => _isNConf(statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data))).length;
+        const totalMesMP = mpMes.filter(r => _temParam(statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data))).length;
+        const confMesTotal  = confMesProd  + confMesClass  + confMesMP;
+        const nconfMesTotal = nconfMesProd + nconfMesClass + nconfMesMP;
+        const totalMesTudo  = totalMesProd + totalMesClass + totalMesMP;
+        const pctConf    = totalMesTudo > 0 ? Math.round(confMesTotal / totalMesTudo * 100) : 0;
+        const pctNConf   = totalMesTudo > 0 ? Math.round(nconfMesTotal / totalMesTudo * 100) : 0;
+        const eficiencia = totalMesTudo > 0 ? (confMesTotal / totalMesTudo * 100).toFixed(1) : '0.0';
+        const kpiA = document.getElementById('kpiAnalises');     if(kpiA) kpiA.textContent = analisesHoje;
+        const kpiC = document.getElementById('kpiConformidade'); if(kpiC) kpiC.textContent = pctConf + '%';
+        const kpiN = document.getElementById('kpiNaoConf');      if(kpiN) kpiN.textContent = nconfMesTotal;
+        const kpiE = document.getElementById('kpiEntradas');     if(kpiE) kpiE.textContent = eficiencia + '%';
+        const barC = document.getElementById('kpiConfBar');      if(barC) barC.style.width = pctConf + '%';
+        const barN = document.getElementById('kpiNaoConfBar');   if(barN) barN.style.width = Math.min(pctNConf*3,100) + '%';
+        const kpiAP = document.getElementById('kpiAnalisesP');     if(kpiAP) kpiAP.textContent = analisesMes + ' resultados em ' + nomeMes;
+        const kpiCP = document.getElementById('kpiConformidadeP'); if(kpiCP) kpiCP.textContent = confMesTotal + ' de ' + totalMesTudo + ' lotes';
+        const kpiNP = document.getElementById('kpiNaoConfP');      if(kpiNP) kpiNP.textContent = pctNConf + '%';
+        const kpiEP = document.getElementById('kpiEntradasP');     if(kpiEP) kpiEP.textContent = nconfMesTotal + ' NC / ' + confMesTotal + ' C em ' + nomeMes;
+        const barA  = document.getElementById('kpiAnalisesBar');   if(barA)  barA.style.width  = Math.min(Math.round(analisesHoje/10),100) + '%';
+        const barE  = document.getElementById('kpiEntradasBar');   if(barE)  barE.style.width  = Math.min(parseFloat(eficiencia),100) + '%';
+    } catch(e) {}
+}
 
 // ===================================================
 // DADOS_PLANILHA removido — tudo vem do Supabase
@@ -12519,6 +12527,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     exibirTabelaProd();
                     exibirTabelaClass();
                     exibirTabelaMP();
+                    atualizarKpisCapa();
                     if (perfilAtual === 'admin') verificarEspacoAoIniciar();
                     if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
                 }).catch(() => sgqOcultarLoading());
