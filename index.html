@@ -1212,6 +1212,16 @@
         </div>
         <!-- ENTRADAS (cadastro MP) -->
         <button class="nav-tab" id="tabEntradaMP" onclick="trocarAba('entradaMP', this)">📥 Entradas Mat. Prima</button>
+        <!-- NÃO CONFORMIDADE / DEVOLUÇÃO dropdown -->
+        <div class="nav-dropdown" id="ndNaoConformidade">
+            <button class="nav-tab nav-dropdown-btn" id="tabNaoConformidade" onclick="toggleDropdown('ndNaoConformidade')">
+                ⚠️ Não Conformidade ▾
+            </button>
+            <div class="nav-dropdown-menu">
+                <button class="nav-dropdown-item" id="tabNC" onclick="trocarAba('naoConformidade', this);closeDropdowns();setTimeout(()=>mudarSubAbaNc('aba-nc-inner',document.getElementById('subTabNC')),50)">⚠️ Não Conformidade</button>
+                <button class="nav-dropdown-item" id="tabDev" onclick="trocarAba('naoConformidade', this);closeDropdowns();setTimeout(()=>mudarSubAbaNc('aba-dev-inner',document.getElementById('subTabDev')),50)">↩️ Devolução</button>
+            </div>
+        </div>
         <!-- CONFIGURAÇÕES -->
         <button class="nav-tab" id="tabConfiguracoes" onclick="trocarAba('configuracoes', this)">⚙️ Configurações</button>
     </div>
@@ -2367,6 +2377,188 @@
             </div><!-- fim rankingConteudo -->
         </div><!-- fim relatorio-container -->
     </div><!-- fim aba-ranking -->
+
+    <!-- ===== ABA NÃO CONFORMIDADE / DEVOLUÇÃO ===== -->
+    <div id="aba-naoConformidade" class="tab-content">
+        <div style="padding:0;">
+
+        <!-- SUB-ABAS INTERNAS: NC / DEVOLUÇÃO -->
+        <div class="nav-tabs" style="background:#1a3a9f;border-bottom:3px solid #0a1e7f;padding:0 20px;">
+            <button class="nav-tab active" id="subTabNC" onclick="mudarSubAbaNc('aba-nc-inner', this)" style="border-bottom-color:#e74c3c;">⚠️ Não Conformidade</button>
+            <button class="nav-tab" id="subTabDev" onclick="mudarSubAbaNc('aba-dev-inner', this)">↩️ Devolução</button>
+        </div>
+
+        <!-- ABA: NÃO CONFORMIDADE -->
+        <div id="aba-nc-inner" class="nc-sub-content active" style="padding:20px;">
+            <div class="container" style="background:white;border-radius:4px;padding:20px;box-shadow:0 2px 4px rgba(0,0,0,0.1);margin-bottom:20px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid #ecf0f1;">
+                    <div style="font-size:15px;font-weight:bold;color:#0a1e7f;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:8px;">
+                        <span style="width:28px;height:28px;border-radius:50%;background:#fadbd8;color:#e74c3c;display:flex;align-items:center;justify-content:center;font-size:14px;">⚠️</span>
+                        Registro de Não Conformidades
+                    </div>
+                    <button onclick="abrirModalNC()" style="background:#e74c3c;color:white;padding:10px 20px;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:bold;text-transform:uppercase;">+ Nova NC</button>
+                </div>
+
+                <!-- FILTROS NC -->
+                <div style="background:#ecf0f1;padding:15px;border-radius:4px;margin-bottom:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:flex-end;">
+                    <div>
+                        <label style="display:block;font-weight:bold;font-size:11px;margin-bottom:4px;color:#444;">Data Início</label>
+                        <input type="date" id="nc-fi" style="width:100%;padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:bold;font-size:11px;margin-bottom:4px;color:#444;">Data Fim</label>
+                        <input type="date" id="nc-ff" style="width:100%;padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:bold;font-size:11px;margin-bottom:4px;color:#444;">Tipo</label>
+                        <select id="nc-tipo-f" style="width:100%;padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
+                            <option value="">Todos</option>
+                            <option>Matéria-Prima</option><option>Processo</option><option>Produto Acabado</option>
+                            <option>Equipamento</option><option>Fornecedor</option><option>Ambiental</option><option>Outro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:bold;font-size:11px;margin-bottom:4px;color:#444;">Gravidade</label>
+                        <select id="nc-grav-f" style="width:100%;padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
+                            <option value="">Todas</option>
+                            <option>Crítica</option><option>Maior</option><option>Menor</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:bold;font-size:11px;margin-bottom:4px;color:#444;">Status</label>
+                        <select id="nc-status-f" style="width:100%;padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
+                            <option value="">Todos</option>
+                            <option>Pendente</option><option>Em Análise</option><option>Aprovado</option><option>Reprovado</option><option>Encerrado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:bold;font-size:11px;margin-bottom:4px;color:#444;">Responsável</label>
+                        <input type="text" id="nc-resp-f" placeholder="Nome..." style="width:100%;padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
+                    </div>
+                    <div style="display:flex;gap:6px;align-items:flex-end;">
+                        <button onclick="filtrarNC()" style="background:#3498db;color:white;padding:8px 15px;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:12px;display:flex;align-items:center;gap:4px;">🔍 Filtrar</button>
+                        <button onclick="limparFiltrosNC()" style="background:#95a5a6;color:white;padding:8px 12px;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:12px;">✕</button>
+                    </div>
+                    <div style="display:flex;gap:6px;align-items:flex-end;">
+                        <button onclick="exportarNC()" style="background:#7f8c8d;color:white;padding:8px 14px;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:11px;display:flex;align-items:center;gap:4px;">📥 Excel</button>
+                    </div>
+                </div>
+
+                <!-- TABELA NC -->
+                <div style="overflow-x:auto;border:1px solid #ddd;border-radius:4px;">
+                    <table id="tabelaNC" style="width:100%;border-collapse:collapse;font-size:11px;">
+                        <thead>
+                            <tr style="background:#34495e;color:white;">
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Nº NC</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Data</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Tipo</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Descrição</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Produto/Item</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Fornecedor</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Gravidade</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Responsável</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Status</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Prazo</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ncBody">
+                            <tr><td colspan="11">
+                                <div style="text-align:center;padding:40px 20px;color:#95a5a6;">
+                                    <div style="font-size:48px;margin-bottom:12px;opacity:0.4;">📋</div>
+                                    <p style="font-size:13px;">Nenhuma não conformidade registrada. Clique em <strong>+ Nova NC</strong> para começar.</p>
+                                </div>
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA: DEVOLUÇÃO -->
+        <div id="aba-dev-inner" class="nc-sub-content" style="padding:20px;display:none;">
+            <div class="container" style="background:white;border-radius:4px;padding:20px;box-shadow:0 2px 4px rgba(0,0,0,0.1);margin-bottom:20px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid #ecf0f1;">
+                    <div style="font-size:15px;font-weight:bold;color:#0a1e7f;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:8px;">
+                        <span style="width:28px;height:28px;border-radius:50%;background:#fdebd0;color:#e67e22;display:flex;align-items:center;justify-content:center;font-size:14px;">↩️</span>
+                        Registro de Devoluções
+                    </div>
+                    <button onclick="abrirModalDev()" style="background:#e67e22;color:white;padding:10px 20px;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:bold;text-transform:uppercase;">+ Nova Devolução</button>
+                </div>
+
+                <!-- FILTROS DEV -->
+                <div style="background:#ecf0f1;padding:15px;border-radius:4px;margin-bottom:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:flex-end;">
+                    <div>
+                        <label style="display:block;font-weight:bold;font-size:11px;margin-bottom:4px;color:#444;">Data Início</label>
+                        <input type="date" id="dev-fi" style="width:100%;padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:bold;font-size:11px;margin-bottom:4px;color:#444;">Data Fim</label>
+                        <input type="date" id="dev-ff" style="width:100%;padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:bold;font-size:11px;margin-bottom:4px;color:#444;">Fornecedor</label>
+                        <input type="text" id="dev-forn-f" placeholder="Fornecedor..." style="width:100%;padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:bold;font-size:11px;margin-bottom:4px;color:#444;">Motivo</label>
+                        <select id="dev-motivo-f" style="width:100%;padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
+                            <option value="">Todos</option>
+                            <option>Qualidade Fora do Padrão</option><option>Produto Avariado</option>
+                            <option>Quantidade Incorreta</option><option>Produto Errado</option>
+                            <option>Contaminação</option><option>Prazo de Validade</option><option>Outro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:bold;font-size:11px;margin-bottom:4px;color:#444;">Empresa</label>
+                        <select id="dev-status-f" style="width:100%;padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
+                            <option value="">Todos</option>
+                            <option>Agronor Alimentos</option><option>Em Trânsito</option>
+                            <option>Devolvido</option><option>Retido/Quarentena</option><option>Destruído</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;gap:6px;align-items:flex-end;">
+                        <button onclick="filtrarDev()" style="background:#3498db;color:white;padding:8px 15px;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:12px;display:flex;align-items:center;gap:4px;">🔍 Filtrar</button>
+                        <button onclick="limparFiltrosDev()" style="background:#95a5a6;color:white;padding:8px 12px;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:12px;">✕</button>
+                    </div>
+                    <div style="display:flex;gap:6px;align-items:flex-end;">
+                        <button onclick="exportarDev()" style="background:#7f8c8d;color:white;padding:8px 14px;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:11px;display:flex;align-items:center;gap:4px;">📥 Excel</button>
+                    </div>
+                </div>
+
+                <!-- TABELA DEV -->
+                <div style="overflow-x:auto;border:1px solid #ddd;border-radius:4px;">
+                    <table id="tabelaDev" style="width:100%;border-collapse:collapse;font-size:11px;">
+                        <thead>
+                            <tr style="background:#34495e;color:white;">
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Nº Dev</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">NC Vinculada</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Data</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Produto</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Fornecedor</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Qtd / Unid</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Motivo</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Responsável</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Status</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">NF Devolução</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="devBody">
+                            <tr><td colspan="11">
+                                <div style="text-align:center;padding:40px 20px;color:#95a5a6;">
+                                    <div style="font-size:48px;margin-bottom:12px;opacity:0.4;">↩️</div>
+                                    <p style="font-size:13px;">Nenhuma devolução registrada. Clique em <strong>+ Nova Devolução</strong> para começar.</p>
+                                </div>
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        </div><!-- fim aba-naoConformidade inner -->
+    </div><!-- fim aba-naoConformidade -->
 
     <!-- ===== ABA PARÂMETROS ===== -->
     <!-- ===== ABA CONFIGURAÇÕES (agrupa: Parâmetros, Backup, Memória, Usuários, Alerta WhatsApp) ===== -->
@@ -4224,6 +4416,12 @@ function trocarAba(aba, btn) {
     }
     document.getElementById('aba-' + aba).classList.add('active');
     btn.classList.add('active');
+    // Se o botão clicado é item de dropdown, marca o botão pai como ativo também
+    const parentDropdown = btn.closest('.nav-dropdown');
+    if (parentDropdown) {
+        const parentBtn = parentDropdown.querySelector('.nav-dropdown-btn');
+        if (parentBtn) parentBtn.classList.add('active');
+    }
     if (aba === 'relatorio') inicializarRelatorio();
     if (aba === 'relClass')  inicializarRelClass();
     if (aba === 'ranking')   inicializarRanking();
@@ -10938,3 +11136,1184 @@ async function executarCorrecaoDefeitos() {
 }
 
 </script>
+
+<!-- ============================================================ -->
+<!-- ESTILOS NC/DEVOLUÇÃO -->
+<!-- ============================================================ -->
+<style>
+/* ===== NC BADGES ===== */
+.nc-badge-pendente   { background:#fef9e7;color:#d4ac0d;border:1px solid #f9e79f; }
+.nc-badge-em-analise { background:#eaf4fb;color:#2e86c1;border:1px solid #aed6f1; }
+.nc-badge-aprovado   { background:#eafaf1;color:#1e8449;border:1px solid #a9dfbf; }
+.nc-badge-reprovado  { background:#fdedec;color:#c0392b;border:1px solid #f5b7b1; }
+.nc-badge-encerrado  { background:#f2f3f4;color:#717d7e;border:1px solid #d5dbdb; }
+.nc-badge-devolvido  { background:#f9ebea;color:#a93226;border:1px solid #e6b0aa; }
+.nc-badge-retido     { background:#fef5e7;color:#ca6f1e;border:1px solid #f8c471; }
+.nc-badge-high       { background:#fadbd8;color:#e74c3c; }
+.nc-badge-med        { background:#fdebd0;color:#e67e22; }
+.nc-badge-low        { background:#fdfefe;color:#95a5a6;border:1px solid #ddd; }
+.nc-num-badge        { background:#c0392b;color:white;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:bold;font-family:monospace; }
+/* ===== NC MODAL ===== */
+.nc-modal { display:none;position:fixed;z-index:3000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.55);overflow-y:auto;padding:20px; }
+.nc-modal.show { display:flex;align-items:flex-start;justify-content:center; }
+.nc-modal-content { background:white;border-radius:6px;width:95%;max-width:820px;margin-top:16px;box-shadow:0 8px 32px rgba(0,0,0,0.3);overflow:hidden; }
+.nc-modal-header { padding:16px 20px;display:flex;justify-content:space-between;align-items:center;color:white; }
+.nc-modal-header.red { background:linear-gradient(to right,#c0392b,#e74c3c); }
+.nc-modal-header.orange { background:linear-gradient(to right,#d35400,#e67e22); }
+.nc-modal-header h2 { font-size:16px;font-weight:bold; }
+.nc-modal-header small { font-size:11px;opacity:0.8;display:block;margin-top:2px; }
+.nc-modal-close { background:none;border:none;color:white;font-size:24px;cursor:pointer;line-height:1;opacity:0.8; }
+.nc-modal-close:hover { opacity:1; }
+.nc-modal-body { padding:20px;max-height:80vh;overflow-y:auto; }
+.nc-modal-footer { padding:14px 20px;background:#f8f9fa;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:10px; }
+/* ===== NC FORM ===== */
+.nc-form-section { background:#f8f9fa;border:1px solid #e8ecf0;border-radius:6px;padding:16px;margin-bottom:14px; }
+.nc-form-section h3 { font-size:11px;font-weight:bold;text-transform:uppercase;color:#fff;padding:5px 10px;border-radius:3px;margin-bottom:12px;letter-spacing:0.5px;display:inline-block; }
+.nc-form-section h3.red { background:#c0392b; }
+.nc-form-section h3.blue { background:#0a1e7f; }
+.nc-form-section h3.orange { background:#d35400; }
+.nc-form-section h3.green { background:#229954; }
+.nc-form-section h3.purple { background:#6c3483; }
+.nc-form-section h3.gray { background:#34495e; }
+.nc-form-grid { display:grid;gap:12px; }
+.nc-grid-2 { grid-template-columns:repeat(2,1fr); }
+.nc-grid-3 { grid-template-columns:repeat(3,1fr); }
+.nc-grid-4 { grid-template-columns:repeat(4,1fr); }
+.nc-form-group { display:flex;flex-direction:column;gap:4px; }
+.nc-form-group label { font-size:10px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.8px; }
+.nc-form-group input, .nc-form-group select, .nc-form-group textarea { padding:8px 10px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;font-family:Arial,sans-serif;background:#fff;color:#333;transition:border-color 0.15s; }
+.nc-form-group input:focus, .nc-form-group select:focus, .nc-form-group textarea:focus { outline:none;border-color:#0a1e7f;box-shadow:0 0 0 3px rgba(10,30,127,0.08); }
+.nc-form-group textarea { resize:vertical;min-height:64px; }
+.nc-full { grid-column:1/-1; }
+.nc-req { color:#e74c3c;margin-left:2px; }
+/* ===== BUTTONS NC ===== */
+.nc-btn { padding:10px 20px;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:bold;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.3px; }
+.nc-btn-primary { background:#27ae60;color:white; } .nc-btn-primary:hover { background:#229954; }
+.nc-btn-danger { background:#e74c3c;color:white; } .nc-btn-danger:hover { background:#c0392b; }
+.nc-btn-info { background:#3498db;color:white; } .nc-btn-info:hover { background:#2980b9; }
+.nc-btn-secondary { background:#95a5a6;color:white; } .nc-btn-secondary:hover { background:#7f8c8d; }
+.nc-btn-sm { padding:6px 12px;font-size:11px; }
+/* ===== CLASSIF TABLE ===== */
+.nc-classif-table { width:100%;border-collapse:collapse;font-size:12px;margin-top:8px; }
+.nc-classif-table th { background:#d35400;color:white;padding:8px 10px;text-align:center;font-size:11px;font-weight:bold;text-transform:uppercase; }
+.nc-classif-table td { padding:6px 8px;border-bottom:1px solid #eee;text-align:center; }
+.nc-classif-table tr:nth-child(even) td { background:#fef5e7; }
+.nc-classif-input { width:100%;padding:5px 7px;border:1px solid #ddd;border-radius:3px;font-size:12px;text-align:center; }
+.nc-classif-input:focus { outline:none;border-color:#e67e22; }
+.nc-classif-input-nome { text-align:left !important; }
+.nc-btn-add-row { background:#27ae60;color:white;border:none;border-radius:4px;padding:7px 14px;font-size:12px;font-weight:bold;cursor:pointer;margin-top:10px; }
+.nc-btn-rem-row { background:#e74c3c;color:white;border:none;border-radius:50%;width:22px;height:22px;font-size:14px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center; }
+/* ===== EVIDÊNCIAS ===== */
+.nc-evidencias-section { background:#f0f4ff;border:2px dashed #7f9cf5;border-radius:8px;padding:16px;margin-top:10px; }
+.nc-evidencias-section h4 { font-size:11px;font-weight:bold;color:#0a1e7f;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px; }
+.nc-upload-area { border:2px dashed #bdc3c7;border-radius:6px;padding:18px;text-align:center;cursor:pointer;background:white;transition:all 0.2s;margin-bottom:12px; }
+.nc-upload-area:hover { border-color:#0a1e7f;background:#f8f9ff; }
+.nc-upload-area input[type=file] { display:none; }
+.nc-upload-area .nc-upload-icon { font-size:28px;margin-bottom:6px; }
+.nc-upload-area p { font-size:12px;color:#7f8c8d;margin:0; }
+.nc-upload-btn-label { display:inline-block;background:#0a1e7f;color:white;padding:7px 14px;border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;margin-top:8px;transition:background 0.2s; }
+.nc-upload-btn-label:hover { background:#1a3a9f; }
+.nc-imgs-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:8px; }
+.nc-img-thumb { position:relative;border-radius:6px;overflow:hidden;border:2px solid #e0e0e0;background:#f5f5f5;aspect-ratio:1;cursor:pointer; }
+.nc-img-thumb img { width:100%;height:100%;object-fit:cover;display:block; }
+.nc-img-thumb .nc-img-remove { position:absolute;top:4px;right:4px;background:rgba(231,76,60,0.9);color:white;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1; }
+.nc-imgs-count { font-size:11px;color:#666;margin-top:4px;font-weight:bold; }
+/* ===== ALERT NC ===== */
+.nc-alert { padding:10px 14px;border-radius:4px;font-size:12px;margin-bottom:14px;border-left:4px solid; }
+.nc-alert-danger { background:#fdedec;color:#922b21;border-color:#e74c3c; }
+.nc-alert-warning { background:#fef9e7;color:#7d6608;border-color:#f1c40f; }
+/* ===== PRINT NC ===== */
+.nc-print-report { display:none; }
+/* ===== ESTILOS DO RELATÓRIO DE IMPRESSÃO NC/DEV ===== */
+.nc-report-header { background:linear-gradient(to right,#0a1e7f,#1a3a9f);color:white;padding:18px 24px;border-radius:4px 4px 0 0;margin-bottom:20px; }
+.nc-report-header h1 { font-size:16px;font-weight:bold;margin-bottom:4px; }
+.nc-report-meta { font-size:11px;opacity:0.8; }
+.nc-report-section-title { font-size:12px;font-weight:bold;text-transform:uppercase;color:#0a1e7f;border-bottom:2px solid #0a1e7f;padding-bottom:4px;margin:16px 0 10px; }
+.nc-report-field { display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-bottom:12px; }
+.nc-report-field-item { background:#f8f9fa;border:1px solid #e8ecf0;border-radius:4px;padding:8px 10px; }
+.nc-report-field-item label { display:block;font-size:9px;font-weight:bold;text-transform:uppercase;color:#888;margin-bottom:3px; }
+.nc-report-field-item span { font-size:12px;color:#2c3e50;font-weight:600; }
+.nc-report-imgs { display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px; }
+.nc-report-img-item { text-align:center; }
+.nc-report-img-item img { max-width:180px;max-height:130px;border:1px solid #ddd;border-radius:4px;display:block; }
+.nc-report-img-item .cap { font-size:9px;color:#888;margin-top:3px; }
+.nc-report-sign-area { display:flex;gap:30px;margin-top:30px;padding-top:16px;border-top:1px solid #ddd; }
+.nc-sign-block { flex:1;text-align:center; }
+.nc-sign-space { height:40px; }
+.nc-sign-line { border-top:1px solid #333;margin:4px 0; }
+.nc-sign-label { font-size:11px;font-weight:bold;color:#333; }
+.nc-sign-sub { font-size:10px;color:#888; }
+@media print {
+    body > *:not(#ncPrintArea) { display:none !important; }
+    #ncPrintArea { display:block !important;position:static !important;width:100% !important;padding:0 !important; }
+    .nc-report-header { -webkit-print-color-adjust:exact;print-color-adjust:exact; }
+    .nc-report-section-title { -webkit-print-color-adjust:exact;print-color-adjust:exact; }
+}
+/* ===== CHECK ITEMS ===== */
+.nc-check-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px; }
+.nc-check-item { display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #e0e0e0;border-radius:4px;background:white;cursor:pointer;font-size:11px;color:#444;transition:all 0.15s;user-select:none; }
+.nc-check-item:hover { border-color:#e74c3c;background:#fff5f5; }
+.nc-check-item input[type=checkbox] { accent-color:#e74c3c;width:14px;height:14px; }
+.nc-check-item.checked { border-color:#e74c3c;background:#fdf2f2;color:#c0392b;font-weight:bold; }
+@media (max-width:768px) { .nc-grid-2,.nc-grid-3,.nc-grid-4 { grid-template-columns:1fr; } }
+</style>
+
+<!-- ============================================================ -->
+<!-- MODAL: CADASTRO DE NÃO CONFORMIDADE -->
+<!-- ============================================================ -->
+<div id="modalNC" class="nc-modal">
+    <div class="nc-modal-content">
+        <div class="nc-modal-header red">
+            <div>
+                <h2>⚠️ <span id="modalNCTitulo">Nova Não Conformidade</span></h2>
+                <small id="modalNCNumero">Preenchimento obrigatório dos campos marcados com *</small>
+            </div>
+            <button class="nc-modal-close" onclick="fecharModalNC()">×</button>
+        </div>
+        <div class="nc-modal-body">
+            <!-- IDENTIFICAÇÃO -->
+            <div class="nc-form-section">
+                <h3 class="red">1. Identificação</h3>
+                <div class="nc-form-grid nc-grid-4">
+                    <div class="nc-form-group">
+                        <label>Nº NC (Auto)</label>
+                        <input type="text" id="nc-numero" readonly placeholder="Gerado automaticamente" style="background:#f0f0f0;color:#888;">
+                    </div>
+                    <div class="nc-form-group">
+                        <label>Data de Abertura <span class="nc-req">*</span></label>
+                        <input type="date" id="nc-data">
+                    </div>
+                    <div class="nc-form-group">
+                        <label>Tipo de NC <span class="nc-req">*</span></label>
+                        <select id="nc-tipo">
+                            <option value="">Selecione...</option>
+                            <option>Matéria-Prima</option><option>Processo</option><option>Produto Acabado</option>
+                            <option>Equipamento</option><option>Fornecedor</option><option>Ambiental</option><option>Outro</option>
+                        </select>
+                    </div>
+                    <div class="nc-form-group">
+                        <label>Gravidade <span class="nc-req">*</span></label>
+                        <select id="nc-gravidade" onchange="atualizarGravidade()">
+                            <option value="">Selecione...</option>
+                            <option>Crítica</option><option>Maior</option><option>Menor</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="alerta-gravidade" style="display:none;margin-top:10px;"></div>
+            </div>
+            <!-- PRODUTO/FORNECEDOR -->
+            <div class="nc-form-section">
+                <h3 class="blue">2. Produto / Fornecedor</h3>
+                <div class="nc-form-grid nc-grid-3">
+                    <div class="nc-form-group">
+                        <label>Produto / Item <span class="nc-req">*</span></label>
+                        <input type="text" id="nc-produto" placeholder="Ex: Milho, Soja, Ração...">
+                    </div>
+                    <div class="nc-form-group">
+                        <label>Lote / Nº NF</label>
+                        <input type="text" id="nc-lote" placeholder="Ex: LOTE-2025-001">
+                    </div>
+                    <div class="nc-form-group">
+                        <label>Fornecedor / Origem</label>
+                        <input type="text" id="nc-fornecedor" placeholder="Nome do fornecedor...">
+                    </div>
+                    <div class="nc-form-group">
+                        <label>Local de Detecção</label>
+                        <select id="nc-local">
+                            <option value="">Selecione...</option>
+                            <option>Recepção / Portaria</option><option>Laboratório</option><option>Armazém</option>
+                            <option>Linha de Produção</option><option>Expedição</option><option>Pós-venda / Cliente</option>
+                        </select>
+                    </div>
+                    <input type="hidden" id="nc-qtd">
+                    <input type="hidden" id="nc-unidade" value="kg">
+                </div>
+            </div>
+            <!-- DESCRIÇÃO -->
+            <div class="nc-form-section">
+                <h3 class="orange">3. Descrição da Não Conformidade</h3>
+                <div class="nc-form-grid">
+                    <div class="nc-form-group nc-full">
+                        <label>Descrição Detalhada <span class="nc-req">*</span></label>
+                        <textarea id="nc-descricao" rows="3" placeholder="Descreva a não conformidade detectada de forma clara e objetiva..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <!-- CAUSAS -->
+            <div class="nc-form-section">
+                <h3 class="gray">Causas Prováveis</h3>
+                <div class="nc-check-grid" id="causasGrid">
+                    <label class="nc-check-item"><input type="checkbox" value="Falha de processo"> Falha de processo</label>
+                    <label class="nc-check-item"><input type="checkbox" value="Falha de fornecedor"> Falha de fornecedor</label>
+                    <label class="nc-check-item"><input type="checkbox" value="Falha de equipamento"> Falha de equipamento</label>
+                    <label class="nc-check-item"><input type="checkbox" value="Falha humana"> Falha humana</label>
+                    <label class="nc-check-item"><input type="checkbox" value="Contaminação"> Contaminação</label>
+                    <label class="nc-check-item"><input type="checkbox" value="Desvio de parâmetro"> Desvio de parâmetro</label>
+                    <label class="nc-check-item"><input type="checkbox" value="Transporte/armazenagem"> Transporte/armazenagem</label>
+                    <label class="nc-check-item"><input type="checkbox" value="Outro"> Outro</label>
+                </div>
+            </div>
+            <!-- AÇÃO IMEDIATA -->
+            <div class="nc-form-section">
+                <h3 class="green">4. Ação Imediata / Disposição do Material</h3>
+                <div class="nc-form-grid nc-grid-2">
+                    <div class="nc-form-group">
+                        <label>Disposição do Material</label>
+                        <select id="nc-disposicao">
+                            <option value="">Selecione...</option>
+                            <option>Liberado p/ uso</option><option>Retrabalhado / Reprocessado</option>
+                            <option>Retido em Quarentena</option><option>Devolvido ao Fornecedor</option>
+                            <option>Descartado / Destruído</option><option>Aguardando decisão</option>
+                        </select>
+                    </div>
+                    <div class="nc-form-group">
+                        <label>Responsável pela Ação</label>
+                        <input type="text" id="nc-resp-acao" placeholder="Nome do responsável...">
+                    </div>
+                    <div class="nc-form-group nc-full">
+                        <label>Ação Imediata Tomada</label>
+                        <textarea id="nc-acao-imediata" rows="2" placeholder="Descreva a ação imediata realizada para conter o problema..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <!-- AÇÃO CORRETIVA -->
+            <div class="nc-form-section">
+                <h3 class="purple">5. Ação Corretiva / Preventiva</h3>
+                <div class="nc-form-grid nc-grid-2">
+                    <div class="nc-form-group">
+                        <label>Responsável pela Correção <span class="nc-req">*</span></label>
+                        <input type="text" id="nc-responsavel" placeholder="Nome do responsável...">
+                    </div>
+                    <div class="nc-form-group">
+                        <label>Prazo para Conclusão</label>
+                        <input type="date" id="nc-prazo">
+                    </div>
+                    <div class="nc-form-group nc-full">
+                        <label>Causa Raiz</label>
+                        <textarea id="nc-causa-raiz" rows="2" placeholder="Descreva a análise da causa raiz..."></textarea>
+                    </div>
+                    <div class="nc-form-group nc-full">
+                        <label>Ação Corretiva / Preventiva Proposta</label>
+                        <textarea id="nc-acao-corretiva" rows="2" placeholder="Descreva a ação corretiva e/ou preventiva a ser implementada..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <!-- STATUS -->
+            <div class="nc-form-section">
+                <h3 class="gray">6. Status</h3>
+                <div class="nc-form-grid nc-grid-3">
+                    <div class="nc-form-group">
+                        <label>Status Atual</label>
+                        <select id="nc-status">
+                            <option>Pendente</option><option>Em Análise</option>
+                            <option>Aprovado</option><option>Reprovado</option><option>Encerrado</option>
+                        </select>
+                    </div>
+                    <div class="nc-form-group">
+                        <label>Data de Encerramento</label>
+                        <input type="date" id="nc-data-enc">
+                    </div>
+                    <div class="nc-form-group">
+                        <label>Eficácia da Ação</label>
+                        <select id="nc-eficacia">
+                            <option value="">Não avaliado</option>
+                            <option>Eficaz</option><option>Parcialmente Eficaz</option><option>Não Eficaz</option>
+                        </select>
+                    </div>
+                    <div class="nc-form-group nc-full">
+                        <label>Observações</label>
+                        <textarea id="nc-obs" rows="2" placeholder="Observações adicionais..."></textarea>
+                    </div>
+                    <!-- EVIDÊNCIAS -->
+                    <div class="nc-form-group nc-full">
+                        <div class="nc-evidencias-section">
+                            <h4>📷 Evidências Fotográficas</h4>
+                            <div class="nc-upload-area" id="ncUploadArea"
+                                ondragover="event.preventDefault();this.style.borderColor='#27ae60'"
+                                ondragleave="this.style.borderColor='#bdc3c7'"
+                                ondrop="event.preventDefault();this.style.borderColor='#bdc3c7';handleFilesNC(event.dataTransfer.files,'nc')">
+                                <div class="nc-upload-icon">🖼️</div>
+                                <p><strong>Arraste imagens aqui</strong> ou clique para selecionar</p>
+                                <label class="nc-upload-btn-label">
+                                    📂 Selecionar Imagens
+                                    <input type="file" id="ncFileInput" multiple accept="image/*" onchange="handleFilesNC(this.files,'nc')">
+                                </label>
+                            </div>
+                            <div class="nc-imgs-count" id="ncImgsCount"></div>
+                            <div class="nc-imgs-grid" id="ncImgsGrid"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="nc-edit-id" value="">
+        </div>
+        <div class="nc-modal-footer">
+            <button class="nc-btn nc-btn-secondary" onclick="fecharModalNC()">Cancelar</button>
+            <button class="nc-btn nc-btn-info" onclick="imprimirRelatorioNC('nc')" title="Gerar relatório para impressão">🖨️ Imprimir</button>
+            <button class="nc-btn nc-btn-primary" onclick="salvarNC()">💾 Salvar NC</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODAL: CADASTRO DE DEVOLUÇÃO -->
+<!-- ============================================================ -->
+<div id="modalDev" class="nc-modal">
+    <div class="nc-modal-content">
+        <div class="nc-modal-header orange">
+            <div>
+                <h2>↩️ <span id="modalDevTitulo">Nova Devolução</span></h2>
+                <small id="modalDevNumero">Registro de devolução ao fornecedor</small>
+            </div>
+            <button class="nc-modal-close" onclick="fecharModalDev()">×</button>
+        </div>
+        <div class="nc-modal-body">
+            <!-- IDENTIFICAÇÃO DEV -->
+            <div class="nc-form-section">
+                <h3 class="orange">1. Identificação da Devolução</h3>
+                <div class="nc-form-grid nc-grid-3">
+                    <div class="nc-form-group">
+                        <label>Nº Devolução (Auto)</label>
+                        <input type="text" id="dev-numero" readonly placeholder="Gerado automaticamente" style="background:#f0f0f0;color:#888;">
+                    </div>
+                    <div class="nc-form-group">
+                        <label>Data <span class="nc-req">*</span></label>
+                        <input type="date" id="dev-data">
+                    </div>
+                    <div class="nc-form-group">
+                        <label>Tipo de Devolução</label>
+                        <select id="dev-tipo">
+                            <option>Produto / Matéria-Prima</option><option>Embalagem</option>
+                            <option>Insumo</option><option>Equipamento</option><option>Outro</option>
+                        </select>
+                    </div>
+                    <input type="hidden" id="dev-nc-vinc" value="">
+                </div>
+            </div>
+            <!-- PRODUTO/FORNECEDOR DEV -->
+            <div class="nc-form-section">
+                <h3 class="blue">2. Produto e Fornecedor</h3>
+                <div class="nc-form-grid nc-grid-3">
+                    <div class="nc-form-group">
+                        <label>Produto <span class="nc-req">*</span></label>
+                        <input type="text" id="dev-produto" placeholder="Ex: Milho, Soja, Embalagem...">
+                    </div>
+                    <div class="nc-form-group">
+                        <label>Lote / Nº NF de Entrada</label>
+                        <input type="text" id="dev-lote" placeholder="Ex: LOTE-2025-001">
+                    </div>
+                    <div class="nc-form-group">
+                        <label>Fornecedor <span class="nc-req">*</span></label>
+                        <input type="text" id="dev-fornecedor" placeholder="Razão social ou nome...">
+                    </div>
+                    <input type="hidden" id="dev-cnpj">
+                    <input type="hidden" id="dev-qtd">
+                    <input type="hidden" id="dev-unidade">
+                </div>
+            </div>
+            <!-- MOTIVO DEV -->
+            <div class="nc-form-section">
+                <h3 class="red">3. Motivo da Devolução</h3>
+                <div class="nc-form-grid nc-grid-2">
+                    <div class="nc-form-group">
+                        <label>Motivo Principal <span class="nc-req">*</span></label>
+                        <select id="dev-motivo">
+                            <option value="">Selecione...</option>
+                            <option>Qualidade Fora do Padrão</option><option>Produto Avariado / Danificado</option>
+                            <option>Quantidade Incorreta</option><option>Produto Errado (Entrega Incorreta)</option>
+                            <option>Contaminação</option><option>Prazo de Validade Vencido/Próximo</option>
+                            <option>Embalagem Danificada</option><option>Documentação Incorreta</option><option>Outro</option>
+                        </select>
+                    </div>
+                    <div class="nc-form-group">
+                        <label>Parâmetro Não Conforme</label>
+                        <input type="text" id="dev-parametro" placeholder="Ex: Umidade 16%, Ardido 5%...">
+                    </div>
+                    <div class="nc-form-group nc-full">
+                        <label>Descrição do Motivo</label>
+                        <textarea id="dev-desc-motivo" rows="2" placeholder="Detalhe o motivo da devolução..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <!-- CLASSIFICAÇÃO GRÃOS DEV -->
+            <div class="nc-form-section">
+                <h3 class="orange">4. Classificação de Grãos</h3>
+                <table class="nc-classif-table" id="classifTable">
+                    <thead>
+                        <tr>
+                            <th style="width:38%;text-align:left;">Defeito</th>
+                            <th style="width:25%;">Resultado (%)</th>
+                            <th style="width:25%;">Parâmetro (%)</th>
+                            <th style="width:12%;">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="classifBody"></tbody>
+                </table>
+                <button class="nc-btn-add-row" onclick="adicionarLinhaClassif()">＋ Adicionar Defeito</button>
+            </div>
+            <!-- CAMPOS OCULTOS DEV -->
+            <input type="hidden" id="dev-nf">
+            <input type="hidden" id="dev-dt-coleta">
+            <input type="hidden" id="dev-transportadora">
+            <input type="hidden" id="dev-contato">
+            <input type="hidden" id="dev-responsavel">
+            <input type="hidden" id="dev-valor">
+            <input type="hidden" id="dev-disposicao">
+            <input type="hidden" id="dev-status" value="Aguardando Coleta">
+            <input type="hidden" id="dev-dt-conclusao">
+            <input type="hidden" id="dev-edit-id" value="">
+            <!-- OBSERVAÇÕES DEV -->
+            <div class="nc-form-section">
+                <h3 class="green">5. Observações e Evidências</h3>
+                <div class="nc-form-grid">
+                    <input type="hidden" id="dev-obs" value="">
+                    <div class="nc-form-group nc-full">
+                        <div class="nc-evidencias-section">
+                            <h4>📷 Evidências Fotográficas</h4>
+                            <div class="nc-upload-area" id="devUploadArea"
+                                ondragover="event.preventDefault();this.style.borderColor='#27ae60'"
+                                ondragleave="this.style.borderColor='#bdc3c7'"
+                                ondrop="event.preventDefault();this.style.borderColor='#bdc3c7';handleFilesNC(event.dataTransfer.files,'dev')">
+                                <div class="nc-upload-icon">🖼️</div>
+                                <p><strong>Arraste imagens aqui</strong> ou clique para selecionar</p>
+                                <label class="nc-upload-btn-label">
+                                    📂 Selecionar Imagens
+                                    <input type="file" id="devFileInput" multiple accept="image/*" onchange="handleFilesNC(this.files,'dev')">
+                                </label>
+                            </div>
+                            <div class="nc-imgs-count" id="devImgsCount"></div>
+                            <div class="nc-imgs-grid" id="devImgsGrid"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="nc-modal-footer">
+            <button class="nc-btn nc-btn-secondary" onclick="fecharModalDev()">Cancelar</button>
+            <button class="nc-btn nc-btn-info" onclick="imprimirRelatorioNC('dev')" title="Gerar relatório para impressão">🖨️ Imprimir</button>
+            <button class="nc-btn nc-btn-primary" onclick="salvarDev()">💾 Salvar Devolução</button>
+        </div>
+    </div>
+</div>
+
+<!-- ÁREA DE IMPRESSÃO NC -->
+<div id="ncPrintArea" class="nc-print-report"></div>
+
+<!-- ============================================================ -->
+<!-- SCRIPT: NC / DEVOLUÇÃO -->
+<!-- ============================================================ -->
+<script>
+// ===== STORAGE NC (usa IndexedDB do sistema principal se disponível, senão sessionStorage) =====
+const _ncStore = {};
+const ncStorage = {
+    getItem(k)    { try { return localStorage.getItem(k) || sessionStorage.getItem(k); } catch(e) { return _ncStore[k] ?? null; } },
+    setItem(k, v) { try { localStorage.setItem(k, v); } catch(e) { try { sessionStorage.setItem(k, v); } catch(e2) { _ncStore[k] = v; } } }
+};
+
+let listaNC  = JSON.parse(ncStorage.getItem('sgq_nc')  || '[]');
+let listaDev = JSON.parse(ncStorage.getItem('sgq_dev') || '[]');
+let ncIdSeq  = parseInt(ncStorage.getItem('sgq_nc_seq')  || '1');
+let devIdSeq = parseInt(ncStorage.getItem('sgq_dev_seq') || '1');
+
+function salvarStorageNC() {
+    ncStorage.setItem('sgq_nc',      JSON.stringify(listaNC));
+    ncStorage.setItem('sgq_dev',     JSON.stringify(listaDev));
+    ncStorage.setItem('sgq_nc_seq',  String(ncIdSeq));
+    ncStorage.setItem('sgq_dev_seq', String(devIdSeq));
+}
+
+// ===== SUB-ABA NC/DEV =====
+function mudarSubAbaNc(id, btn) {
+    document.querySelectorAll('.nc-sub-content').forEach(t => { t.style.display = 'none'; t.classList.remove('active'); });
+    document.getElementById(id).style.display = 'block';
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('#aba-naoConformidade .nav-tab').forEach(t => {
+        t.classList.remove('active');
+        t.style.borderBottomColor = 'transparent';
+    });
+    if (btn) {
+        btn.classList.add('active');
+        btn.style.borderBottomColor = id === 'aba-nc-inner' ? '#e74c3c' : '#e67e22';
+    }
+}
+
+// ===== IMPRESSÃO / RELATÓRIO NC e DEV =====
+function imprimirRelatorioNC(tipo) {
+    const printArea = document.getElementById('ncPrintArea');
+    if (!printArea) { alert('Área de impressão não encontrada.'); return; }
+
+    if (tipo === 'nc') {
+        const num     = document.getElementById('nc-numero')?.value || '-';
+        const data    = ncFmtData(document.getElementById('nc-data')?.value);
+        const tipoNC  = document.getElementById('nc-tipo')?.value || '-';
+        const grav    = document.getElementById('nc-gravidade')?.value || '-';
+        const produto = document.getElementById('nc-produto')?.value || '-';
+        const lote    = document.getElementById('nc-lote')?.value || '-';
+        const forn    = document.getElementById('nc-fornecedor')?.value || '-';
+        const local   = document.getElementById('nc-local')?.value || '-';
+        const desc    = document.getElementById('nc-descricao')?.value || '-';
+        const acaoIm  = document.getElementById('nc-acao-imediata')?.value || '-';
+        const disp    = document.getElementById('nc-disposicao')?.value || '-';
+        const respA   = document.getElementById('nc-resp-acao')?.value || '-';
+        const resp    = document.getElementById('nc-responsavel')?.value || '-';
+        const prazo   = ncFmtData(document.getElementById('nc-prazo')?.value);
+        const cauRaiz = document.getElementById('nc-causa-raiz')?.value || '-';
+        const acaoCor = document.getElementById('nc-acao-corretiva')?.value || '-';
+        const status  = document.getElementById('nc-status')?.value || '-';
+        const dataEnc = ncFmtData(document.getElementById('nc-data-enc')?.value);
+        const efic    = document.getElementById('nc-eficacia')?.value || '-';
+        const obs     = document.getElementById('nc-obs')?.value || '-';
+        const causas  = Array.from(document.querySelectorAll('#nc-causasGrid input:checked, #causasGrid input:checked')).map(cb => cb.value).join(', ') || '-';
+        const gravColor = grav === 'Crítica' ? '#c0392b' : grav === 'Maior' ? '#e67e22' : '#27ae60';
+
+        const imgsHtml = (ncImagens && ncImagens.length)
+            ? `<div class="nc-report-section-title">📷 Evidências Fotográficas (${ncImagens.length})</div>
+               <div class="nc-report-imgs">${ncImagens.map(img => `
+                <div class="nc-report-img-item">
+                    <img src="${img.dataUrl}" alt="${img.name}">
+                    <div class="cap">${img.name}</div>
+                </div>`).join('')}</div>`
+            : '<p style="color:#95a5a6;font-size:11px;">Nenhuma evidência fotográfica registrada.</p>';
+
+        printArea.innerHTML = `
+        <div class="nc-report-header">
+            <h1>🏭 Sistema de Gestão da Qualidade — SGQ</h1>
+            <div class="nc-report-meta">RELATÓRIO DE NÃO CONFORMIDADE &nbsp;|&nbsp; Emitido em: ${new Date().toLocaleString('pt-BR')}</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <span style="font-size:22px;font-weight:900;color:#c0392b;">${num}</span>
+            <span style="padding:5px 16px;border-radius:20px;background:${gravColor};color:white;font-weight:bold;font-size:13px;">⚠️ ${grav}</span>
+            <span style="font-size:12px;color:#666;">Status: <strong>${status}</strong></span>
+        </div>
+
+        <div class="nc-report-section-title">1. Identificação</div>
+        <div class="nc-report-field">
+            <div class="nc-report-field-item"><label>Data de Abertura</label><span>${data}</span></div>
+            <div class="nc-report-field-item"><label>Tipo de NC</label><span>${tipoNC}</span></div>
+            <div class="nc-report-field-item"><label>Produto / Item</label><span>${produto}</span></div>
+            <div class="nc-report-field-item"><label>Lote / Nº NF</label><span>${lote}</span></div>
+            <div class="nc-report-field-item"><label>Fornecedor / Origem</label><span>${forn}</span></div>
+            <div class="nc-report-field-item"><label>Local de Detecção</label><span>${local}</span></div>
+        </div>
+
+        <div class="nc-report-section-title">2. Descrição da Não Conformidade</div>
+        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#fdf2f2;border-left:4px solid #e74c3c;border-radius:3px;margin-bottom:14px;">${desc}</p>
+
+        <div class="nc-report-section-title">3. Causas Identificadas</div>
+        <p style="font-size:12px;margin-bottom:14px;">${causas}</p>
+
+        <div class="nc-report-section-title">4. Ação Imediata / Disposição do Material</div>
+        <div class="nc-report-field">
+            <div class="nc-report-field-item"><label>Disposição do Material</label><span>${disp}</span></div>
+            <div class="nc-report-field-item"><label>Responsável pela Ação</label><span>${respA}</span></div>
+        </div>
+        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#eafaf1;border-left:4px solid #27ae60;border-radius:3px;margin-bottom:14px;">${acaoIm}</p>
+
+        <div class="nc-report-section-title">5. Análise de Causa Raiz</div>
+        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#f8f9fa;border:1px solid #ddd;border-radius:3px;margin-bottom:14px;">${cauRaiz}</p>
+
+        <div class="nc-report-section-title">6. Ação Corretiva / Preventiva</div>
+        <div class="nc-report-field" style="margin-bottom:8px;">
+            <div class="nc-report-field-item"><label>Responsável pela Correção</label><span>${resp}</span></div>
+            <div class="nc-report-field-item"><label>Prazo para Conclusão</label><span>${prazo}</span></div>
+        </div>
+        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#f8f9fa;border:1px solid #ddd;border-radius:3px;margin-bottom:14px;">${acaoCor}</p>
+
+        <div class="nc-report-section-title">7. Encerramento</div>
+        <div class="nc-report-field">
+            <div class="nc-report-field-item"><label>Data de Encerramento</label><span>${dataEnc}</span></div>
+            <div class="nc-report-field-item"><label>Eficácia da Ação</label><span>${efic}</span></div>
+        </div>
+
+        <div class="nc-report-section-title">8. Observações</div>
+        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#f8f9fa;border:1px solid #ddd;border-radius:3px;margin-bottom:14px;">${obs}</p>
+
+        ${imgsHtml}
+
+        <div class="nc-report-sign-area">
+            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Resp. Técnico</div><div class="nc-sign-sub">CRQ 04473318</div></div>
+            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Classificador</div><div class="nc-sign-sub">&nbsp;</div></div>
+            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Supervisor de Produção</div><div class="nc-sign-sub">&nbsp;</div></div>
+        </div>`;
+
+    } else {
+        // DEV
+        const num     = document.getElementById('dev-numero')?.value || '-';
+        const data    = ncFmtData(document.getElementById('dev-data')?.value);
+        const tipoDev = document.getElementById('dev-tipo')?.value || '-';
+        const produto = document.getElementById('dev-produto')?.value || '-';
+        const lote    = document.getElementById('dev-lote')?.value || '-';
+        const forn    = document.getElementById('dev-fornecedor')?.value || '-';
+        const motivo  = document.getElementById('dev-motivo')?.value || '-';
+        const param   = document.getElementById('dev-parametro')?.value || '-';
+        const descMot = document.getElementById('dev-desc-motivo')?.value || '-';
+        const obs     = document.getElementById('dev-obs')?.value || '-';
+        const status  = document.getElementById('dev-status')?.value || '-';
+
+        const imgsHtml = (devImagens && devImagens.length)
+            ? `<div class="nc-report-section-title">📷 Evidências Fotográficas (${devImagens.length})</div>
+               <div class="nc-report-imgs">${devImagens.map(img => `
+                <div class="nc-report-img-item">
+                    <img src="${img.dataUrl}" alt="${img.name}">
+                    <div class="cap">${img.name}</div>
+                </div>`).join('')}</div>`
+            : '<p style="color:#95a5a6;font-size:11px;">Nenhuma evidência fotográfica registrada.</p>';
+
+        const classifRows = Array.from(document.querySelectorAll('#classifBody tr'));
+        let classifHtml = '';
+        if (classifRows.length > 0) {
+            const rowsHtml = classifRows.map(tr => {
+                const cells = tr.querySelectorAll('input');
+                const defeito   = cells[0]?.value || '-';
+                const resultado = parseFloat(cells[1]?.value || 0);
+                const parametro = parseFloat(cells[2]?.value || 0);
+                const nc = resultado > parametro;
+                return `<tr>
+                    <td style="text-align:left;font-weight:600;">${defeito}</td>
+                    <td style="font-weight:bold;color:${nc ? '#e74c3c' : '#27ae60'};">${resultado.toFixed(2)}%</td>
+                    <td style="color:#7f8c8d;">${parametro.toFixed(2)}%</td>
+                    <td style="color:${nc ? '#e74c3c' : '#27ae60'};font-weight:bold;">${nc ? '⚠ NC' : '✔ OK'}</td>
+                </tr>`;
+            }).join('');
+            classifHtml = `
+            <div class="nc-report-section-title">3. Classificação de Grãos</div>
+            <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;">
+                <thead>
+                    <tr style="background:#d35400;color:white;">
+                        <th style="padding:7px 10px;text-align:left;font-size:11px;">Defeito</th>
+                        <th style="padding:7px 10px;text-align:center;font-size:11px;">Resultado (%)</th>
+                        <th style="padding:7px 10px;text-align:center;font-size:11px;">Parâmetro (%)</th>
+                        <th style="padding:7px 10px;text-align:center;font-size:11px;">Situação</th>
+                    </tr>
+                </thead>
+                <tbody>${rowsHtml}</tbody>
+            </table>`;
+        }
+
+        printArea.innerHTML = `
+        <div class="nc-report-header" style="background:linear-gradient(to right,#d35400,#e67e22);">
+            <h1>🏭 Sistema de Gestão da Qualidade — SGQ</h1>
+            <div class="nc-report-meta">RELATÓRIO DE DEVOLUÇÃO &nbsp;|&nbsp; Emitido em: ${new Date().toLocaleString('pt-BR')}</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <span style="font-size:22px;font-weight:900;color:#d35400;">${num}</span>
+            <span style="font-size:12px;color:#666;">Status: <strong>${status}</strong></span>
+        </div>
+
+        <div class="nc-report-section-title">1. Identificação</div>
+        <div class="nc-report-field">
+            <div class="nc-report-field-item"><label>Data</label><span>${data}</span></div>
+            <div class="nc-report-field-item"><label>Tipo de Devolução</label><span>${tipoDev}</span></div>
+            <div class="nc-report-field-item"><label>Produto</label><span>${produto}</span></div>
+            <div class="nc-report-field-item"><label>Lote / NF Entrada</label><span>${lote}</span></div>
+            <div class="nc-report-field-item"><label>Fornecedor</label><span>${forn}</span></div>
+        </div>
+
+        <div class="nc-report-section-title">2. Motivo da Devolução</div>
+        <div class="nc-report-field" style="margin-bottom:8px;">
+            <div class="nc-report-field-item"><label>Motivo Principal</label><span>${motivo}</span></div>
+            <div class="nc-report-field-item"><label>Parâmetro Não Conforme</label><span>${param}</span></div>
+        </div>
+        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#fef5e7;border-left:4px solid #e67e22;border-radius:3px;margin-bottom:14px;">${descMot}</p>
+
+        ${classifHtml}
+
+        ${imgsHtml}
+
+        <div class="nc-report-sign-area">
+            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Resp. Técnico</div><div class="nc-sign-sub">CRQ 04473318</div></div>
+            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Classificador</div><div class="nc-sign-sub">&nbsp;</div></div>
+            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Supervisor de Produção</div><div class="nc-sign-sub">&nbsp;</div></div>
+        </div>`;
+    }
+
+    printArea.style.display = 'block';
+    setTimeout(() => {
+        window.print();
+        setTimeout(() => { printArea.style.display = 'none'; }, 500);
+    }, 150);
+}
+
+// ===== HELPERS NC =====
+function ncFmtData(d) {
+    if (!d) return '-';
+    const [y, m, dia] = d.split('-');
+    return `${dia}/${m}/${y}`;
+}
+function ncBadgeStatus(s) {
+    const m = {
+        'Pendente':'nc-badge-pendente','Em Análise':'nc-badge-em-analise',
+        'Aprovado':'nc-badge-aprovado','Reprovado':'nc-badge-reprovado',
+        'Encerrado':'nc-badge-encerrado','Aguardando Coleta':'nc-badge-pendente',
+        'Em Trânsito':'nc-badge-em-analise','Devolvido':'nc-badge-devolvido',
+        'Retido/Quarentena':'nc-badge-retido','Destruído':'nc-badge-encerrado',
+    };
+    return `<span class="badge ${m[s]||'nc-badge-pendente'}" style="display:inline-block;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;">${s||'-'}</span>`;
+}
+function ncBadgeGravidade(g) {
+    const m = { 'Crítica':'nc-badge-high','Maior':'nc-badge-med','Menor':'nc-badge-low' };
+    return `<span class="badge ${m[g]||''}" style="display:inline-block;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;">${g||'-'}</span>`;
+}
+
+// ===== MODAL NC =====
+function abrirModalNC(id = null) {
+    limparFormNC();
+    const hoje = new Date().toISOString().slice(0,10);
+    document.getElementById('nc-data').value = hoje;
+    if (id === null) {
+        document.getElementById('nc-numero').value = 'NC-' + String(ncIdSeq).padStart(4, '0');
+        document.getElementById('modalNCTitulo').textContent = 'Nova Não Conformidade';
+        document.getElementById('modalNCNumero').textContent = 'Preenchimento obrigatório dos campos marcados com *';
+        document.getElementById('nc-edit-id').value = '';
+    } else {
+        const nc = listaNC.find(n => n.id === id);
+        if (!nc) return;
+        preencherFormNC(nc);
+        document.getElementById('modalNCTitulo').textContent = 'Editar Não Conformidade';
+        document.getElementById('modalNCNumero').textContent = nc.numero;
+        document.getElementById('nc-edit-id').value = id;
+    }
+    document.getElementById('modalNC').classList.add('show');
+}
+
+function fecharModalNC() { document.getElementById('modalNC').classList.remove('show'); }
+
+function limparFormNC() {
+    ['nc-numero','nc-data','nc-produto','nc-lote','nc-qtd','nc-fornecedor',
+     'nc-descricao','nc-acao-imediata','nc-causa-raiz','nc-acao-corretiva',
+     'nc-responsavel','nc-resp-acao','nc-prazo','nc-data-enc','nc-obs','nc-edit-id']
+        .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    ['nc-tipo','nc-gravidade','nc-local','nc-disposicao','nc-status','nc-eficacia']
+        .forEach(id => { const el = document.getElementById(id); if(el) el.selectedIndex = 0; });
+    document.querySelectorAll('#causasGrid input').forEach(cb => cb.checked = false);
+    const ag = document.getElementById('alerta-gravidade');
+    if (ag) ag.style.display = 'none';
+    ncImagens = []; renderImgsNC('nc');
+}
+
+function preencherFormNC(nc) {
+    const ids = ['nc-numero','nc-data','nc-tipo','nc-gravidade','nc-produto','nc-lote','nc-fornecedor',
+                 'nc-local','nc-descricao','nc-disposicao','nc-resp-acao','nc-acao-imediata',
+                 'nc-responsavel','nc-prazo','nc-causa-raiz','nc-acao-corretiva','nc-status','nc-data-enc','nc-eficacia','nc-obs'];
+    const vals = ['numero','data','tipo','gravidade','produto','lote','fornecedor',
+                  'local','descricao','disposicao','respAcao','acaoImediata',
+                  'responsavel','prazo','causaRaiz','acaoCorretiva','status','dataEnc','eficacia','obs'];
+    ids.forEach((id, i) => { const el = document.getElementById(id); if(el) el.value = nc[vals[i]] || ''; });
+    const causas = nc.causas || [];
+    document.querySelectorAll('#causasGrid input').forEach(cb => { cb.checked = causas.includes(cb.value); });
+    atualizarGravidade();
+    ncImagens = nc.imagens || []; renderImgsNC('nc');
+}
+
+function atualizarGravidade() {
+    const g = document.getElementById('nc-gravidade').value;
+    const el = document.getElementById('alerta-gravidade');
+    if (!el) return;
+    if (g === 'Crítica') {
+        el.innerHTML = '<div class="nc-alert nc-alert-danger">⚠️ <strong>NC CRÍTICA:</strong> Requer ação imediata e notificação à liderança. Prazo máximo: 24h.</div>';
+        el.style.display = 'block';
+    } else if (g === 'Maior') {
+        el.innerHTML = '<div class="nc-alert nc-alert-warning">⚡ <strong>NC MAIOR:</strong> Requer plano de ação formal com prazo definido. Prazo máximo: 7 dias.</div>';
+        el.style.display = 'block';
+    } else { el.style.display = 'none'; }
+}
+
+function salvarNC() {
+    const data = document.getElementById('nc-data').value;
+    const tipo = document.getElementById('nc-tipo').value;
+    const gravidade = document.getElementById('nc-gravidade').value;
+    const produto = document.getElementById('nc-produto').value.trim();
+    const descricao = document.getElementById('nc-descricao').value.trim();
+    const responsavel = document.getElementById('nc-responsavel').value.trim();
+    if (!data || !tipo || !gravidade || !produto || !descricao || !responsavel) {
+        alert('Preencha todos os campos obrigatórios (*).');
+        return;
+    }
+    const editId = document.getElementById('nc-edit-id').value;
+    const causas = Array.from(document.querySelectorAll('#causasGrid input:checked')).map(cb => cb.value);
+    const nc = {
+        id: editId ? parseInt(editId) : Date.now(),
+        numero: document.getElementById('nc-numero').value,
+        data, tipo, gravidade, produto,
+        lote:          document.getElementById('nc-lote').value,
+        qtd:           document.getElementById('nc-qtd').value,
+        unidade:       document.getElementById('nc-unidade').value,
+        fornecedor:    document.getElementById('nc-fornecedor').value,
+        local:         document.getElementById('nc-local').value,
+        descricao, causas,
+        disposicao:    document.getElementById('nc-disposicao').value,
+        respAcao:      document.getElementById('nc-resp-acao').value,
+        acaoImediata:  document.getElementById('nc-acao-imediata').value,
+        responsavel,
+        prazo:         document.getElementById('nc-prazo').value,
+        causaRaiz:     document.getElementById('nc-causa-raiz').value,
+        acaoCorretiva: document.getElementById('nc-acao-corretiva').value,
+        status:        document.getElementById('nc-status').value,
+        dataEnc:       document.getElementById('nc-data-enc').value,
+        eficacia:      document.getElementById('nc-eficacia').value,
+        obs:           document.getElementById('nc-obs').value,
+        imagens: ncImagens.slice(),
+    };
+    if (editId) {
+        const idx = listaNC.findIndex(n => n.id == editId);
+        if (idx > -1) listaNC[idx] = nc;
+    } else { listaNC.push(nc); ncIdSeq++; }
+    salvarStorageNC();
+    fecharModalNC();
+    renderizarNC(listaNC);
+}
+
+function excluirNC(id) {
+    if (!confirm('Deseja excluir esta NC?')) return;
+    listaNC = listaNC.filter(n => n.id !== id);
+    salvarStorageNC(); renderizarNC(listaNC);
+}
+
+function renderizarNC(lista) {
+    const tbody = document.getElementById('ncBody');
+    if (!lista || !lista.length) {
+        tbody.innerHTML = '<tr><td colspan="11"><div style="text-align:center;padding:40px 20px;color:#95a5a6;"><div style="font-size:48px;margin-bottom:12px;opacity:0.4;">📋</div><p style="font-size:13px;">Nenhuma não conformidade registrada. Clique em <strong>+ Nova NC</strong> para começar.</p></div></td></tr>';
+        return;
+    }
+    tbody.innerHTML = lista.map(nc => {
+        const prazoVenc = nc.prazo && new Date(nc.prazo) < new Date() && nc.status !== 'Encerrado'
+            ? `<span style="color:#e74c3c;font-weight:bold;">${ncFmtData(nc.prazo)} ⚠️</span>`
+            : ncFmtData(nc.prazo);
+        return `<tr style="border-bottom:1px solid #ecf0f1;">
+            <td style="padding:7px 6px;text-align:center;"><span class="nc-num-badge">${nc.numero}</span></td>
+            <td style="padding:7px 6px;text-align:center;">${ncFmtData(nc.data)}</td>
+            <td style="padding:7px 6px;text-align:center;">${nc.tipo||'-'}</td>
+            <td style="padding:7px 6px;text-align:left;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${nc.descricao||''}">${nc.descricao||'-'}</td>
+            <td style="padding:7px 6px;text-align:center;">${nc.produto||'-'}</td>
+            <td style="padding:7px 6px;text-align:center;">${nc.fornecedor||'-'}</td>
+            <td style="padding:7px 6px;text-align:center;">${ncBadgeGravidade(nc.gravidade)}</td>
+            <td style="padding:7px 6px;text-align:center;">${nc.responsavel||'-'}</td>
+            <td style="padding:7px 6px;text-align:center;">${ncBadgeStatus(nc.status)}</td>
+            <td style="padding:7px 6px;text-align:center;">${prazoVenc}</td>
+            <td style="padding:7px 6px;text-align:center;">
+                <button class="nc-btn nc-btn-info nc-btn-sm" onclick="abrirModalNC(${nc.id})" title="Editar">✏️</button>
+                <button class="nc-btn nc-btn-danger nc-btn-sm" onclick="excluirNC(${nc.id})" title="Excluir" style="margin-left:4px;">🗑️</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function filtrarNC() {
+    const fi   = document.getElementById('nc-fi').value;
+    const ff   = document.getElementById('nc-ff').value;
+    const tipo = document.getElementById('nc-tipo-f').value;
+    const grav = document.getElementById('nc-grav-f').value;
+    const st   = document.getElementById('nc-status-f').value;
+    const resp = (document.getElementById('nc-resp-f').value||'').toLowerCase();
+    renderizarNC(listaNC.filter(nc => {
+        if (fi && nc.data < fi) return false;
+        if (ff && nc.data > ff) return false;
+        if (tipo && nc.tipo !== tipo) return false;
+        if (grav && nc.gravidade !== grav) return false;
+        if (st && nc.status !== st) return false;
+        if (resp && !(nc.responsavel||'').toLowerCase().includes(resp)) return false;
+        return true;
+    }));
+}
+
+function limparFiltrosNC() {
+    ['nc-fi','nc-ff','nc-resp-f'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+    ['nc-tipo-f','nc-grav-f','nc-status-f'].forEach(id => { const el = document.getElementById(id); if(el) el.selectedIndex=0; });
+    renderizarNC(listaNC);
+}
+
+function exportarNC() {
+    if (!listaNC.length) { alert('Nenhum dado para exportar.'); return; }
+    if (typeof XLSX === 'undefined') { alert('Biblioteca XLSX não carregada.'); return; }
+    const dados = listaNC.map(nc => ({
+        'Nº NC': nc.numero, 'Data': ncFmtData(nc.data), 'Tipo': nc.tipo,
+        'Gravidade': nc.gravidade, 'Produto': nc.produto, 'Lote': nc.lote,
+        'Fornecedor': nc.fornecedor, 'Local': nc.local, 'Descrição': nc.descricao,
+        'Causas': (nc.causas||[]).join('; '), 'Disposição': nc.disposicao,
+        'Ação Imediata': nc.acaoImediata, 'Responsável': nc.responsavel,
+        'Prazo': ncFmtData(nc.prazo), 'Causa Raiz': nc.causaRaiz,
+        'Ação Corretiva': nc.acaoCorretiva, 'Status': nc.status,
+        'Data Encerramento': ncFmtData(nc.dataEnc), 'Eficácia': nc.eficacia, 'Observações': nc.obs
+    }));
+    const ws = XLSX.utils.json_to_sheet(dados);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Não Conformidades');
+    XLSX.writeFile(wb, `NC_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.xlsx`);
+}
+
+// ===== MODAL DEVOLUÇÃO =====
+function abrirModalDev(id = null) {
+    limparFormDev();
+    atualizarSelectNC();
+    const hoje = new Date().toISOString().slice(0,10);
+    document.getElementById('dev-data').value = hoje;
+    if (id === null) {
+        document.getElementById('dev-numero').value = 'DEV-' + String(devIdSeq).padStart(4, '0');
+        document.getElementById('modalDevTitulo').textContent = 'Nova Devolução';
+        document.getElementById('modalDevNumero').textContent = 'Registro de devolução ao fornecedor';
+        document.getElementById('dev-edit-id').value = '';
+        carregarClassifPadrao();
+    } else {
+        const dev = listaDev.find(d => d.id === id);
+        if (!dev) return;
+        preencherFormDev(dev);
+        document.getElementById('modalDevTitulo').textContent = 'Editar Devolução';
+        document.getElementById('modalDevNumero').textContent = dev.numero;
+        document.getElementById('dev-edit-id').value = id;
+        limparClassif();
+        if (dev.classificacao && dev.classificacao.length > 0)
+            dev.classificacao.forEach(c => adicionarLinhaClassif(c.defeito, c.resultado, c.parametro));
+        else carregarClassifPadrao();
+    }
+    document.getElementById('modalDev').classList.add('show');
+}
+
+function fecharModalDev() { document.getElementById('modalDev').classList.remove('show'); }
+
+function limparFormDev() {
+    ['dev-numero','dev-data','dev-produto','dev-lote','dev-fornecedor','dev-cnpj',
+     'dev-qtd','dev-parametro','dev-desc-motivo','dev-nf','dev-dt-coleta',
+     'dev-transportadora','dev-contato','dev-responsavel','dev-valor',
+     'dev-dt-conclusao','dev-obs','dev-edit-id']
+        .forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+    ['dev-tipo','dev-motivo'].forEach(id => { const el = document.getElementById(id); if(el) el.selectedIndex=0; });
+    devImagens = []; renderImgsNC('dev');
+}
+
+function preencherFormDev(dev) {
+    const map = { 'dev-numero':'numero','dev-data':'data','dev-nc-vinc':'ncVinc','dev-tipo':'tipo',
+                  'dev-produto':'produto','dev-lote':'lote','dev-fornecedor':'fornecedor',
+                  'dev-cnpj':'cnpj','dev-qtd':'qtd','dev-unidade':'unidade','dev-motivo':'motivo',
+                  'dev-parametro':'parametro','dev-desc-motivo':'descMotivo','dev-nf':'nf',
+                  'dev-dt-coleta':'dtColeta','dev-transportadora':'transportadora',
+                  'dev-contato':'contato','dev-responsavel':'responsavel','dev-valor':'valor',
+                  'dev-disposicao':'disposicao','dev-status':'status','dev-dt-conclusao':'dtConclusao','dev-obs':'obs' };
+    Object.entries(map).forEach(([id, key]) => { const el = document.getElementById(id); if(el) el.value = dev[key] || ''; });
+    devImagens = dev.imagens || []; renderImgsNC('dev');
+}
+
+function atualizarSelectNC() {
+    // campo é hidden, não precisa popular select
+}
+
+function salvarDev() {
+    const data = document.getElementById('dev-data').value;
+    const produto = document.getElementById('dev-produto').value.trim();
+    const fornecedor = document.getElementById('dev-fornecedor').value.trim();
+    const motivo = document.getElementById('dev-motivo').value;
+    if (!data || !produto || !fornecedor || !motivo) {
+        alert('Preencha todos os campos obrigatórios (*).');
+        return;
+    }
+    const classifData = Array.from(document.querySelectorAll('#classifBody tr')).map(tr => {
+        const inputs = tr.querySelectorAll('input');
+        return { defeito: inputs[0]?.value||'', resultado: inputs[1]?.value||'', parametro: inputs[2]?.value||'' };
+    }).filter(c => c.defeito);
+    const editId = document.getElementById('dev-edit-id').value;
+    const dev = {
+        id: editId ? parseInt(editId) : Date.now(),
+        numero: document.getElementById('dev-numero').value,
+        data, produto, fornecedor, motivo,
+        ncVinc: document.getElementById('dev-nc-vinc').value,
+        tipo: document.getElementById('dev-tipo').value,
+        lote: document.getElementById('dev-lote').value,
+        cnpj: document.getElementById('dev-cnpj').value,
+        qtd: document.getElementById('dev-qtd').value,
+        unidade: document.getElementById('dev-unidade').value,
+        parametro: document.getElementById('dev-parametro').value,
+        descMotivo: document.getElementById('dev-desc-motivo').value,
+        nf: document.getElementById('dev-nf').value,
+        dtColeta: document.getElementById('dev-dt-coleta').value,
+        transportadora: document.getElementById('dev-transportadora').value,
+        contato: document.getElementById('dev-contato').value,
+        responsavel: document.getElementById('dev-responsavel').value,
+        valor: document.getElementById('dev-valor').value,
+        disposicao: document.getElementById('dev-disposicao').value,
+        status: document.getElementById('dev-status').value || 'Aguardando Coleta',
+        dtConclusao: document.getElementById('dev-dt-conclusao').value,
+        obs: document.getElementById('dev-obs').value,
+        classificacao: classifData,
+        imagens: devImagens.slice(),
+    };
+    if (editId) {
+        const idx = listaDev.findIndex(d => d.id == editId);
+        if (idx > -1) listaDev[idx] = dev;
+    } else { listaDev.push(dev); devIdSeq++; }
+    salvarStorageNC(); fecharModalDev(); renderizarDev(listaDev);
+}
+
+function excluirDev(id) {
+    if (!confirm('Deseja excluir esta devolução?')) return;
+    listaDev = listaDev.filter(d => d.id !== id);
+    salvarStorageNC(); renderizarDev(listaDev);
+}
+
+function renderizarDev(lista) {
+    const tbody = document.getElementById('devBody');
+    if (!lista || !lista.length) {
+        tbody.innerHTML = '<tr><td colspan="11"><div style="text-align:center;padding:40px 20px;color:#95a5a6;"><div style="font-size:48px;margin-bottom:12px;opacity:0.4;">↩️</div><p style="font-size:13px;">Nenhuma devolução registrada. Clique em <strong>+ Nova Devolução</strong> para começar.</p></div></td></tr>';
+        return;
+    }
+    tbody.innerHTML = lista.map(dev => `<tr style="border-bottom:1px solid #ecf0f1;">
+        <td style="padding:7px 6px;text-align:center;"><span class="nc-num-badge" style="background:#d35400;">${dev.numero}</span></td>
+        <td style="padding:7px 6px;text-align:center;">${dev.ncVinc ? `<span class="nc-num-badge" style="font-size:9px;">${dev.ncVinc}</span>` : '-'}</td>
+        <td style="padding:7px 6px;text-align:center;">${ncFmtData(dev.data)}</td>
+        <td style="padding:7px 6px;text-align:center;">${dev.produto||'-'}</td>
+        <td style="padding:7px 6px;text-align:center;">${dev.fornecedor||'-'}</td>
+        <td style="padding:7px 6px;text-align:center;">${dev.qtd||'-'} ${dev.unidade||''}</td>
+        <td style="padding:7px 6px;text-align:left;">${dev.motivo||'-'}</td>
+        <td style="padding:7px 6px;text-align:center;">${dev.responsavel||'-'}</td>
+        <td style="padding:7px 6px;text-align:center;">${ncBadgeStatus(dev.status)}</td>
+        <td style="padding:7px 6px;text-align:center;">${dev.nf||'-'}</td>
+        <td style="padding:7px 6px;text-align:center;">
+            <button class="nc-btn nc-btn-info nc-btn-sm" onclick="abrirModalDev(${dev.id})" title="Editar">✏️</button>
+            <button class="nc-btn nc-btn-danger nc-btn-sm" onclick="excluirDev(${dev.id})" title="Excluir" style="margin-left:4px;">🗑️</button>
+        </td>
+    </tr>`).join('');
+}
+
+function filtrarDev() {
+    const fi   = document.getElementById('dev-fi').value;
+    const ff   = document.getElementById('dev-ff').value;
+    const forn = (document.getElementById('dev-forn-f').value||'').toLowerCase();
+    const mot  = document.getElementById('dev-motivo-f').value;
+    const st   = document.getElementById('dev-status-f').value;
+    renderizarDev(listaDev.filter(d => {
+        if (fi && d.data < fi) return false;
+        if (ff && d.data > ff) return false;
+        if (forn && !(d.fornecedor||'').toLowerCase().includes(forn)) return false;
+        if (mot && d.motivo !== mot) return false;
+        if (st && d.status !== st) return false;
+        return true;
+    }));
+}
+
+function limparFiltrosDev() {
+    ['dev-fi','dev-ff','dev-forn-f'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+    ['dev-motivo-f','dev-status-f'].forEach(id => { const el = document.getElementById(id); if(el) el.selectedIndex=0; });
+    renderizarDev(listaDev);
+}
+
+function exportarDev() {
+    if (!listaDev.length) { alert('Nenhum dado para exportar.'); return; }
+    if (typeof XLSX === 'undefined') { alert('Biblioteca XLSX não carregada.'); return; }
+    const dados = listaDev.map(d => ({
+        'Nº Dev': d.numero, 'NC Vinculada': d.ncVinc, 'Data': ncFmtData(d.data),
+        'Tipo': d.tipo, 'Produto': d.produto, 'Lote': d.lote,
+        'Fornecedor': d.fornecedor, 'Qtd': d.qtd, 'Unidade': d.unidade,
+        'Motivo': d.motivo, 'Parâmetro NC': d.parametro, 'Descrição': d.descMotivo,
+        'NF Devolução': d.nf, 'Responsável': d.responsavel,
+        'Status': d.status, 'Observações': d.obs
+    }));
+    const ws = XLSX.utils.json_to_sheet(dados);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Devoluções');
+    XLSX.writeFile(wb, `DEV_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.xlsx`);
+}
+
+// ===== EVIDÊNCIAS / IMAGENS NC =====
+let ncImagens = [];
+let devImagens = [];
+
+function handleFilesNC(files, tipo) {
+    Array.from(files).forEach(f => {
+        if (!f.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            const obj = { name: f.name, dataUrl: e.target.result };
+            if (tipo === 'nc') { ncImagens.push(obj); renderImgsNC('nc'); }
+            else { devImagens.push(obj); renderImgsNC('dev'); }
+        };
+        reader.readAsDataURL(f);
+    });
+}
+
+function renderImgsNC(tipo) {
+    const imgs = tipo === 'nc' ? ncImagens : devImagens;
+    const grid = document.getElementById(tipo === 'nc' ? 'ncImgsGrid' : 'devImgsGrid');
+    const count = document.getElementById(tipo === 'nc' ? 'ncImgsCount' : 'devImgsCount');
+    if (!grid) return;
+    count.textContent = imgs.length ? `${imgs.length} imagem(ns) selecionada(s)` : '';
+    grid.innerHTML = imgs.map((img, i) => `
+        <div class="nc-img-thumb">
+            <img src="${img.dataUrl}" alt="${img.name}" onclick="verImgNC(${i},'${tipo}')">
+            <button class="nc-img-remove" onclick="removerImgNC(${i},'${tipo}')">×</button>
+            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:white;font-size:9px;padding:3px 5px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${img.name}</div>
+        </div>`).join('');
+}
+
+function removerImgNC(idx, tipo) {
+    if (tipo === 'nc') ncImagens.splice(idx, 1);
+    else devImagens.splice(idx, 1);
+    renderImgsNC(tipo);
+}
+
+function verImgNC(idx, tipo) {
+    const imgs = tipo === 'nc' ? ncImagens : devImagens;
+    if (imgs[idx]) window.open(imgs[idx].dataUrl, '_blank');
+}
+
+// ===== CLASSIFICAÇÃO GRÃOS =====
+const DEFEITOS_PADRAO_NC = [
+    { nome: 'Queimado', param: 2.00 }, { nome: 'Ardido', param: 2.00 },
+    { nome: 'Fermentado', param: 3.00 }, { nome: 'Gessado', param: 3.00 },
+    { nome: 'Carunchado', param: 3.00 }, { nome: 'Mofado', param: 3.00 },
+];
+
+function adicionarLinhaClassif(nome='', resultado='', parametro='') {
+    const tbody = document.getElementById('classifBody');
+    if (!tbody) return;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td><input class="nc-classif-input nc-classif-input-nome" type="text" placeholder="Ex: Ardido" value="${nome}"></td>
+        <td><input class="nc-classif-input" type="number" step="0.01" min="0" placeholder="0,00" value="${resultado}" oninput="ncAtualizarCorLinha(this)"></td>
+        <td><input class="nc-classif-input" type="number" step="0.01" min="0" placeholder="0,00" value="${parametro}" oninput="ncAtualizarCorLinha(this)"></td>
+        <td style="text-align:center;"><button class="nc-btn-rem-row" onclick="removerLinhaClassif(this)" title="Remover">−</button></td>`;
+    tbody.appendChild(tr);
+    if (resultado !== '' && parametro !== '') ncAtualizarCorLinha(tr.querySelector('input[type=number]'));
+}
+
+function removerLinhaClassif(btn) { btn.closest('tr').remove(); }
+
+function ncAtualizarCorLinha(input) {
+    const tr = input.closest('tr');
+    const inputs = tr.querySelectorAll('input[type=number]');
+    const res = parseFloat(inputs[0]?.value || 0);
+    const par = parseFloat(inputs[1]?.value || 0);
+    inputs[0].parentElement.style.color = res > par ? '#e74c3c' : '#27ae60';
+}
+
+function limparClassif() { const tb = document.getElementById('classifBody'); if(tb) tb.innerHTML = ''; }
+
+function carregarClassifPadrao() {
+    limparClassif();
+    DEFEITOS_PADRAO_NC.forEach(d => adicionarLinhaClassif(d.nome, '', d.param));
+}
+
+// ===== FECHAR MODAL AO CLICAR FORA =====
+['modalNC','modalDev'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
+});
+
+// ===== CHECK-ITEMS NC =====
+document.querySelectorAll('.nc-check-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+        if (e.target.tagName === 'INPUT') return;
+        const cb = this.querySelector('input');
+        cb.checked = !cb.checked;
+        this.classList.toggle('checked', cb.checked);
+    });
+});
+document.querySelectorAll('.nc-check-item input').forEach(cb => {
+    cb.addEventListener('change', function() {
+        this.closest('.nc-check-item').classList.toggle('checked', this.checked);
+    });
+});
+
+// ===== INIT NC =====
+renderizarNC(listaNC);
+renderizarDev(listaDev);
+</script>
+</body>
+</html>
