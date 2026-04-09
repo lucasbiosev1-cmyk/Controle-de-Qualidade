@@ -119,12 +119,13 @@
         /* ========== TELA DE LOGIN — CLEAN ========== */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
         #loginScreen {
-            display: flex; align-items: center; justify-content: center;
+            display: none; align-items: center; justify-content: center;
             min-height: 100vh;
             background: #f0f0ee;
             position: relative; overflow: hidden;
             font-family: 'Montserrat', Arial, sans-serif;
         }
+        #loginScreen.show { display: flex; }
         #loginScreen::before { content: none; }
         #loginScreen::after  { content: none; }
         .login-wrapper {
@@ -4484,7 +4485,7 @@ async function fazerLogout() {
         usuarioAtual = null;
         USUARIOS     = {};
         document.getElementById('mainSystem').style.display  = 'none';
-        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('loginScreen').classList.add('show');
         document.getElementById('loginUser').value  = '';
         document.getElementById('loginPass').value  = '';
         document.getElementById('loginError').classList.remove('show');
@@ -11987,7 +11988,7 @@ function abrirModalNC(id = null) {
         document.getElementById('modalNCNumero').textContent = 'Preenchimento obrigatório dos campos marcados com *';
         document.getElementById('nc-edit-id').value = '';
     } else {
-        const nc = listaNC.find(n => n.id === id);
+        const nc = listaNC.find(n => String(n.id) === String(id));
         if (!nc) return;
         preencherFormNC(nc);
         document.getElementById('modalNCTitulo').textContent = 'Editar Não Conformidade';
@@ -12196,15 +12197,16 @@ function abrirModalDev(id = null) {
         document.getElementById('dev-edit-id').value = '';
         carregarClassifPadrao();
     } else {
-        const dev = listaDev.find(d => d.id === id);
+        const dev = listaDev.find(d => String(d.id) === String(id));
         if (!dev) return;
         preencherFormDev(dev);
         document.getElementById('modalDevTitulo').textContent = 'Editar Devolução';
         document.getElementById('modalDevNumero').textContent = dev.numero;
         document.getElementById('dev-edit-id').value = id;
         limparClassif();
-        if (dev.classificacao && dev.classificacao.length > 0)
-            dev.classificacao.forEach(c => adicionarLinhaClassif(c.defeito, c.resultado, c.parametro));
+        const classifDev = typeof dev.classificacao === 'string' ? JSON.parse(dev.classificacao || '[]') : (dev.classificacao || []);
+        if (classifDev && classifDev.length > 0)
+            classifDev.forEach(c => adicionarLinhaClassif(c.defeito, c.resultado, c.parametro));
         else carregarClassifPadrao();
     }
     document.getElementById('modalDev').classList.add('show');
@@ -12627,6 +12629,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         // sem sessão válida — mostra tela de login normalmente
     } finally {
         sgqOcultarLoading();
+        // Se o mainSystem não foi exibido, mostra o login
+        if (document.getElementById('mainSystem').style.display !== 'block') {
+            document.getElementById('loginScreen').classList.add('show');
+        }
     }
 });
 
