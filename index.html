@@ -3280,17 +3280,20 @@
                     <input type="text" id="novoUsuarioNome" placeholder="Ex: João Silva" autocomplete="off">
                 </div>
                 <div class="form-usuario-group">
-                    <label>Login (usuário)</label>
-                    <input type="text" id="novoUsuarioLogin" placeholder="Ex: joao" autocomplete="off">
+                    <label>Username (login do sistema)</label>
+                    <input type="text" id="novoUsuarioLogin" placeholder="Ex: gildeglan" autocomplete="off">
                 </div>
-                <div class="form-usuario-group">
-                    <label>Senha</label>
-                    <input type="password" id="novoUsuarioSenha" placeholder="Digite a senha" autocomplete="new-password">
+                <div class="form-usuario-group" id="grupoEmailUsuario">
+                    <label>E-mail (cadastrado no Supabase Auth)</label>
+                    <input type="email" id="novoUsuarioEmail" placeholder="Ex: gildeglan@empresa.com" autocomplete="off">
+                    <small style="color:#888;font-size:10px;margin-top:3px;display:block;">⚠️ O e-mail deve ser o mesmo cadastrado no painel do Supabase Authentication.</small>
                 </div>
-                <div class="form-usuario-group">
-                    <label>Confirmar Senha</label>
-                    <input type="password" id="novoUsuarioSenhaConf" placeholder="Repita a senha" autocomplete="new-password">
+                <div class="form-usuario-group" id="grupoSenhaUsuario" style="display:none;">
+                    <label>Senha <span style="color:#aaa;font-size:10px;">(gerenciada pelo Supabase Auth)</span></label>
+                    <input type="password" id="novoUsuarioSenha" placeholder="Não aplicável" autocomplete="new-password" disabled style="background:#f5f5f5;color:#aaa;">
+                    <small style="color:#888;font-size:10px;margin-top:3px;display:block;">A senha é definida diretamente no painel Supabase Authentication.</small>
                 </div>
+                <input type="hidden" id="novoUsuarioSenhaConf">
                 <div class="perm-section-title">🔐 Permissões de Acesso</div>
                 <div class="perm-modal-grid" id="permModalGrid"></div>
                 <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
@@ -4142,7 +4145,6 @@ let USUARIOS = {}; // mantido por compatibilidade com resto do código
 
 async function _carregarUsuariosSupabase() {
     // ✅ Admin busca lista de perfis para o painel de gestão
-    // Usuários comuns não precisam desta função
     if (perfilAtual !== 'admin') return;
     try {
         const { data, error } = await _sbClient
@@ -4153,10 +4155,13 @@ async function _carregarUsuariosSupabase() {
         (data || []).forEach(u => {
             let perms = {};
             try { perms = typeof u.perms === 'string' ? JSON.parse(u.perms) : (u.perms || {}); } catch(e) {}
-            if (u.email) mapa[u.email] = {
+            const chave = u.username || u.email;
+            if (chave) mapa[chave] = {
                 nome: u.nome, perfil: u.perfil,
                 ativo: u.ativo, perms,
-                id: u.id
+                id: u.id,
+                email: u.email,
+                username: u.username || chave
             };
         });
         USUARIOS = mapa;
@@ -4167,16 +4172,47 @@ async function _carregarUsuariosSupabase() {
 }
 
 async function _salvarUsuarioSupabase(email, dados) {
-    // ✅ Criação de usuário via Supabase Auth Admin API
-    // NOTA: Criação de novos usuários deve ser feita via painel Supabase
-    // ou via Edge Function com service_role (nunca no frontend)
-    sgqToast('Para criar novos usuários, use o painel do Supabase → Authentication → Users, depois defina o perfil na tabela "perfis".', 'info', 8000);
+    // ✅ Insere o perfil na tabela "perfis" vinculando ao UUID gerado pelo Supabase Auth.
+    // IMPORTANTE: O usuário JÁ deve existir no Supabase Auth antes de cadastrar aqui.
+    // O campo "id" da tabela perfis deve ser o mesmo UUID do Supabase Auth (auth.users.id).
+    try {
+        // Passo 1: busca o UUID do usuário no Auth via função RPC ou via tabela auth.users
+        // Como o frontend não tem acesso direto a auth.users, usamos a função RPC get_user_id_by_email
+        // que deve existir no Supabase (ver instruções abaixo).
+        const { data: rpcData, error: rpcError } = await _sbClient
+            .rpc('get_user_id_by_email', { p_email: email });
+
+        if (rpcError || !rpcData) {
+            // Fallback: insere sem id e avisa o admin para vincular manualmente
+            sgqToast('⚠️ Não foi possível localizar o UUID do usuário "' + email + '" no Supabase Auth. Verifique se o e-mail foi cadastrado corretamente no Authentication.', 'error', 8000);
+            return;
+        }
+
+        const uuid = rpcData; // UUID retornado pela função RPC
+
+        const payload = {
+            id:       uuid,       // ← UUID do Supabase Auth — vínculo principal
+            email:    email,
+            username: dados.username,
+            nome:     dados.nome,
+            perfil:   dados.perfil || 'usuario',
+            perms:    JSON.stringify(dados.perms || {}),
+            ativo:    true
+        };
+
+        const { error } = await _sbClient.from('perfis').insert(payload);
+        if (error) throw new Error(error.message);
+        sgqToast('Usuário "' + dados.nome + '" cadastrado com sucesso! Login: ' + dados.username, 'success', 5000);
+    } catch(e) {
+        sgqToast('Erro ao cadastrar usuário: ' + e.message, 'error');
+    }
 }
 
 async function _atualizarUsuarioSupabase(userId, dados) {
-    // ✅ Atualiza apenas o perfil/permissões (NÃO a senha — isso é feito via Supabase Auth)
+    // ✅ Atualiza nome e permissões na tabela perfis (senha é gerenciada pelo Supabase Auth)
     try {
-        const payload = { nome: dados.nome, perms: JSON.stringify(dados.perms || {}), perfil: dados.perfil };
+        const payload = { nome: dados.nome, perms: JSON.stringify(dados.perms || {}) };
+        if (dados.perfil) payload.perfil = dados.perfil;
         const { error } = await _sbClient
             .from('perfis')
             .update(payload)
@@ -4320,14 +4356,16 @@ async function fazerLogin() {
         try { perms = typeof perfilData.perms === 'string' ? JSON.parse(perfilData.perms) : (perfilData.perms || {}); } catch(e) {}
 
         perfilAtual  = perfilData.perfil || 'usuario';
-        usuarioAtual = authData.user.email;
+        usuarioAtual = perfilData.username || authData.user.email; // username como identidade no sistema
 
         USUARIOS[usuarioAtual] = {
-            nome: perfilData.nome || authData.user.email,
-            perfil: perfilAtual,
-            ativo: true,
+            nome:     perfilData.nome || authData.user.email,
+            perfil:   perfilAtual,
+            ativo:    true,
             perms,
-            id: authData.user.id
+            id:       authData.user.id,
+            email:    authData.user.email,
+            username: perfilData.username || authData.user.email
         };
 
         _registrarAuditoria('LOGIN', 'auth', null, { agente: navigator.userAgent.substring(0, 80) }).catch(() => {});
@@ -4470,8 +4508,11 @@ function aplicarPermissoes() {
         if (_btnNovaDev) _btnNovaDev.style.display = 'none';
     }
 
-    // Aba Usuários — só admin (controlado dentro de cfg)
-    // (visibilidade do cfgBtn-usuarios controlado via trocarSubCfg)
+    // Aba Usuários — só admin vê o botão e o painel
+    const cfgBtnUsuarios = document.getElementById('cfgBtn-usuarios');
+    if (cfgBtnUsuarios) cfgBtnUsuarios.style.display = isAdmin ? '' : 'none';
+    const cfgPanelUsuarios = document.getElementById('cfg-panel-usuarios');
+    if (cfgPanelUsuarios && !isAdmin) cfgPanelUsuarios.style.display = 'none';
 }
 
 async function fazerLogout() {
@@ -10292,7 +10333,7 @@ async function renderizarListaUsuarios() {
                     <div class="user-avatar ${avatarClass}">${avatarIcon}</div>
                     <div>
                         <div class="user-name">${u.nome} ${badgeHtml}</div>
-                        <div class="user-login">login: <strong>${login}</strong></div>
+                        <div class="user-login">login: <strong>${u.username || login}</strong> <span style="font-size:9px;color:#bbb;margin-left:4px;">${u.email || ''}</span></div>
                     </div>
                 </div>
                 <div class="user-actions">${btnEditar}${btnDeletar}</div>
@@ -10356,15 +10397,20 @@ function updatePermItemStyle(key) {
 }
 
 function abrirModalNovoUsuario() {
+    if (perfilAtual !== 'admin') { sgqToast('Acesso restrito ao administrador.', 'error'); return; }
     document.getElementById('modalUsuarioTitulo').textContent = '➕ Adicionar Usuário';
     document.getElementById('editandoLoginUsuario').value = '';
     document.getElementById('novoUsuarioNome').value  = '';
     document.getElementById('novoUsuarioLogin').value = '';
+    document.getElementById('novoUsuarioEmail').value = '';
     document.getElementById('novoUsuarioSenha').value = '';
-    document.getElementById('novoUsuarioSenhaConf').value = '';
     document.getElementById('msgErroUsuario').style.display = 'none';
+    document.getElementById('grupoEmailUsuario').style.display = '';
+    document.getElementById('novoUsuarioLogin').readOnly = false;
+    document.getElementById('novoUsuarioLogin').style.background = '';
+    document.getElementById('novoUsuarioEmail').readOnly = false;
+    document.getElementById('novoUsuarioEmail').style.background = '';
 
-    // Permissões padrão para novo usuário (todas desmarcadas)
     const defaultPerms = {};
     PERMS_DISPONIVEIS.forEach(pd => defaultPerms[pd.key] = false);
     document.getElementById('permModalGrid').innerHTML = _buildPermGrid(defaultPerms, false);
@@ -10374,18 +10420,23 @@ function abrirModalNovoUsuario() {
 }
 
 function abrirModalEditarUsuario(login) {
+    if (perfilAtual !== 'admin') { sgqToast('Acesso restrito ao administrador.', 'error'); return; }
     const u = USUARIOS[login];
     if (!u) return;
 
     document.getElementById('modalUsuarioTitulo').textContent = '✏️ Editar Usuário';
     document.getElementById('editandoLoginUsuario').value = login;
     document.getElementById('novoUsuarioNome').value  = u.nome;
-    document.getElementById('novoUsuarioLogin').value = login;
+    document.getElementById('novoUsuarioLogin').value = u.username || login;
     document.getElementById('novoUsuarioLogin').readOnly = true;
     document.getElementById('novoUsuarioLogin').style.background = '#f5f5f5';
+    // Email em modo edição: mostrar mas bloqueado (não pode mudar o email vinculado ao Auth)
+    document.getElementById('novoUsuarioEmail').value = u.email || '';
+    document.getElementById('novoUsuarioEmail').readOnly = true;
+    document.getElementById('novoUsuarioEmail').style.background = '#f5f5f5';
     document.getElementById('novoUsuarioSenha').value = '';
-    document.getElementById('novoUsuarioSenhaConf').value = '';
     document.getElementById('msgErroUsuario').style.display = 'none';
+    document.getElementById('grupoEmailUsuario').style.display = '';
 
     const isAdminUser = u.perfil === 'admin';
     document.getElementById('permModalGrid').innerHTML = _buildPermGrid(u.perms || {}, isAdminUser);
@@ -10404,26 +10455,26 @@ function fecharModalUsuario() {
     const loginInput = document.getElementById('novoUsuarioLogin');
     loginInput.readOnly = false;
     loginInput.style.background = '';
+    const emailInput = document.getElementById('novoUsuarioEmail');
+    if (emailInput) { emailInput.readOnly = false; emailInput.style.background = ''; }
 }
 
 function salvarUsuario() {
+    if (perfilAtual !== 'admin') { sgqToast('Acesso restrito ao administrador.', 'error'); return; }
     const errDiv = document.getElementById('msgErroUsuario');
     errDiv.style.display = 'none';
 
     const editando  = document.getElementById('editandoLoginUsuario').value;
     const nome      = document.getElementById('novoUsuarioNome').value.trim();
     const loginRaw  = document.getElementById('novoUsuarioLogin').value.trim().toLowerCase();
-    const senha     = document.getElementById('novoUsuarioSenha').value;
-    const senhaConf = document.getElementById('novoUsuarioSenhaConf').value;
+    const emailRaw  = document.getElementById('novoUsuarioEmail').value.trim().toLowerCase();
 
     // Validações
-    if (!nome) { _erroUsuario('Informe o nome do usuário.'); return; }
-    if (!loginRaw) { _erroUsuario('Informe o login.'); return; }
-    if (!/^[a-z0-9_]+$/.test(loginRaw)) { _erroUsuario('Login inválido. Use apenas letras minúsculas, números e _.'); return; }
-    if (!editando && USUARIOS[loginRaw]) { _erroUsuario('Este login já está em uso. Escolha outro.'); return; }
-    if (!editando && !senha) { _erroUsuario('Informe uma senha.'); return; }
-    if (senha && senha !== senhaConf) { _erroUsuario('As senhas não coincidem.'); return; }
-    if (senha && senha.length < 4) { _erroUsuario('A senha deve ter pelo menos 4 caracteres.'); return; }
+    if (!nome)     { _erroUsuario('Informe o nome completo.'); return; }
+    if (!loginRaw) { _erroUsuario('Informe o username (login do sistema).'); return; }
+    if (!editando && !/^[a-z0-9_]+$/.test(loginRaw)) { _erroUsuario('Username inválido. Use apenas letras minúsculas, números e _.'); return; }
+    if (!editando && !emailRaw) { _erroUsuario('Informe o e-mail cadastrado no Supabase Authentication.'); return; }
+    if (!editando && USUARIOS[loginRaw]) { _erroUsuario('Este username já está em uso. Escolha outro.'); return; }
 
     // Coleta permissões
     const perms = {};
@@ -10433,14 +10484,16 @@ function salvarUsuario() {
     });
 
     if (editando) {
-        USUARIOS[editando].nome = nome;
-        if (senha) USUARIOS[editando].senha = senha;
+        // Edição: atualiza nome e permissões
+        USUARIOS[editando].nome  = nome;
         if (USUARIOS[editando].perfil !== 'admin') USUARIOS[editando].perms = perms;
-        _atualizarUsuarioSupabase(editando, { nome, senha: senha || USUARIOS[editando].senha, perms }).then(() => renderizarListaUsuarios());
+        const userId = USUARIOS[editando]?.id || editando;
+        _atualizarUsuarioSupabase(userId, { nome, perms }).then(() => renderizarListaUsuarios());
     } else {
-        const novo = { senha, perfil: 'usuario', nome, perms, ativo: true };
-        USUARIOS[loginRaw] = novo;
-        _salvarUsuarioSupabase(loginRaw, novo).then(() => renderizarListaUsuarios());
+        // Criação: insere na tabela perfis vinculando ao email do Supabase Auth
+        const novo = { email: emailRaw, username: loginRaw, nome, perfil: 'usuario', perms, ativo: true };
+        USUARIOS[loginRaw] = { ...novo, id: null };
+        _salvarUsuarioSupabase(emailRaw, novo).then(() => renderizarListaUsuarios());
     }
 
     fecharModalUsuario();
@@ -10454,11 +10507,13 @@ function _erroUsuario(msg) {
 }
 
 function deletarUsuario(login) {
+    if (perfilAtual !== 'admin') { sgqToast('Acesso restrito ao administrador.', 'error'); return; }
     if (login === usuarioAtual) { alert('Você não pode remover o usuário que está logado.'); return; }
     if (USUARIOS[login] && USUARIOS[login].perfil === 'admin') { alert('Não é possível remover o administrador principal.'); return; }
     if (!confirm(`Remover o usuário "${USUARIOS[login]?.nome || login}"?\nEsta ação não pode ser desfeita.`)) return;
+    const userId = USUARIOS[login]?.id || login; // usa UUID da tabela perfis
     delete USUARIOS[login];
-    _deletarUsuarioSupabase(login).then(() => renderizarListaUsuarios());
+    _deletarUsuarioSupabase(userId).then(() => renderizarListaUsuarios());
 }
 
 // ============================================================
@@ -12667,13 +12722,15 @@ document.addEventListener('DOMContentLoaded', async function() {
                 try { perms = typeof perfilData.perms === 'string' ? JSON.parse(perfilData.perms) : (perfilData.perms || {}); } catch(e) {}
 
                 perfilAtual  = perfilData.perfil || 'usuario';
-                usuarioAtual = session.user.email;
+                usuarioAtual = perfilData.username || session.user.email;
                 USUARIOS[usuarioAtual] = {
-                    nome:   perfilData.nome || session.user.email,
-                    perfil: perfilAtual,
-                    ativo:  true,
+                    nome:     perfilData.nome || session.user.email,
+                    perfil:   perfilAtual,
+                    ativo:    true,
                     perms,
-                    id:     session.user.id
+                    id:       session.user.id,
+                    email:    session.user.email,
+                    username: perfilData.username || session.user.email
                 };
 
                 document.getElementById('loginScreen').style.display = 'none';
