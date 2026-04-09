@@ -11917,7 +11917,6 @@ function imprimirRelatorioNC(tipo) {
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
             <span style="font-size:22px;font-weight:900;color:#d35400;">${num}</span>
-            <span style="font-size:12px;color:#666;">Status: <strong>${status}</strong></span>
         </div>
 
         <div class="nc-report-section-title">1. Identificação</div>
@@ -12038,7 +12037,7 @@ function atualizarGravidade() {
     } else { el.style.display = 'none'; }
 }
 
-function salvarNC() {
+async function salvarNC() {
     const data = document.getElementById('nc-data').value;
     const tipo = document.getElementById('nc-tipo').value;
     const gravidade = document.getElementById('nc-gravidade').value;
@@ -12074,19 +12073,39 @@ function salvarNC() {
         obs:           document.getElementById('nc-obs').value,
         imagens: ncImagens.slice(),
     };
-    if (editId) {
-        const idx = listaNC.findIndex(n => n.id == editId);
-        if (idx > -1) listaNC[idx] = nc;
-    } else { listaNC.push(nc); ncIdSeq++; }
-    salvarStorageNC();
-    fecharModalNC();
-    renderizarNC(listaNC);
+    try {
+        sgqMostrarLoading('Salvando NC...');
+        const { error } = await _sbClient
+            .from('nao_conformidades')
+            .upsert(nc, { onConflict: 'id' });
+        if (error) throw error;
+        if (editId) {
+            const idx = listaNC.findIndex(n => n.id == editId);
+            if (idx > -1) listaNC[idx] = nc;
+        } else { listaNC.push(nc); ncIdSeq++; }
+        salvarStorageNC();
+        fecharModalNC();
+        renderizarNC(listaNC);
+        sgqOcultarLoading();
+        sgqToast('success', 'NC Salva!', 'Não conformidade registrada no servidor com sucesso.');
+    } catch(e) {
+        sgqOcultarLoading();
+        sgqToast('error', 'Erro ao salvar NC', e.message || 'Falha ao conectar com o servidor.');
+    }
 }
 
-function excluirNC(id) {
+async function excluirNC(id) {
     if (!confirm('Deseja excluir esta NC?')) return;
-    listaNC = listaNC.filter(n => n.id !== id);
-    salvarStorageNC(); renderizarNC(listaNC);
+    try {
+        const { error } = await _sbClient.from('nao_conformidades').delete().eq('id', id);
+        if (error) throw error;
+        listaNC = listaNC.filter(n => n.id !== id);
+        salvarStorageNC();
+        renderizarNC(listaNC);
+        sgqToast('success', 'NC Excluída', 'Registro removido do servidor.');
+    } catch(e) {
+        sgqToast('error', 'Erro ao excluir NC', e.message || 'Falha ao conectar com o servidor.');
+    }
 }
 
 function renderizarNC(lista) {
@@ -12216,7 +12235,7 @@ function atualizarSelectNC() {
     // campo é hidden, não precisa popular select
 }
 
-function salvarDev() {
+async function salvarDev() {
     const data = document.getElementById('dev-data').value;
     const produto = document.getElementById('dev-produto').value.trim();
     const fornecedor = document.getElementById('dev-fornecedor').value.trim();
@@ -12234,38 +12253,60 @@ function salvarDev() {
         id: editId ? parseInt(editId) : Date.now(),
         numero: document.getElementById('dev-numero').value,
         data, produto, fornecedor, motivo,
-        ncVinc: document.getElementById('dev-nc-vinc').value,
-        tipo: document.getElementById('dev-tipo').value,
-        lote: document.getElementById('dev-lote').value,
-        cnpj: document.getElementById('dev-cnpj').value,
-        qtd: document.getElementById('dev-qtd').value,
-        unidade: document.getElementById('dev-unidade').value,
-        parametro: document.getElementById('dev-parametro').value,
-        descMotivo: document.getElementById('dev-desc-motivo').value,
-        nf: document.getElementById('dev-nf').value,
-        dtColeta: document.getElementById('dev-dt-coleta').value,
+        ncVinc:         document.getElementById('dev-nc-vinc').value,
+        tipo:           document.getElementById('dev-tipo').value,
+        lote:           document.getElementById('dev-lote').value,
+        cnpj:           document.getElementById('dev-cnpj').value,
+        qtd:            document.getElementById('dev-qtd').value,
+        unidade:        document.getElementById('dev-unidade').value,
+        parametro:      document.getElementById('dev-parametro').value,
+        descMotivo:     document.getElementById('dev-desc-motivo').value,
+        nf:             document.getElementById('dev-nf').value,
+        dtColeta:       document.getElementById('dev-dt-coleta').value,
         transportadora: document.getElementById('dev-transportadora').value,
-        contato: document.getElementById('dev-contato').value,
-        responsavel: document.getElementById('dev-responsavel').value,
-        valor: document.getElementById('dev-valor').value,
-        disposicao: document.getElementById('dev-disposicao').value,
-        status: document.getElementById('dev-status').value || 'Aguardando Coleta',
-        dtConclusao: document.getElementById('dev-dt-conclusao').value,
-        obs: document.getElementById('dev-obs').value,
-        classificacao: classifData,
-        imagens: devImagens.slice(),
+        contato:        document.getElementById('dev-contato').value,
+        responsavel:    document.getElementById('dev-responsavel').value,
+        valor:          document.getElementById('dev-valor').value,
+        disposicao:     document.getElementById('dev-disposicao').value,
+        status:         document.getElementById('dev-status').value || 'Aguardando Coleta',
+        dtConclusao:    document.getElementById('dev-dt-conclusao').value,
+        obs:            document.getElementById('dev-obs').value,
+        classificacao:  classifData,
+        imagens:        devImagens.slice(),
     };
-    if (editId) {
-        const idx = listaDev.findIndex(d => d.id == editId);
-        if (idx > -1) listaDev[idx] = dev;
-    } else { listaDev.push(dev); devIdSeq++; }
-    salvarStorageNC(); fecharModalDev(); renderizarDev(listaDev);
+    try {
+        sgqMostrarLoading('Salvando Devolução...');
+        const { error } = await _sbClient
+            .from('devolucoes')
+            .upsert(dev, { onConflict: 'id' });
+        if (error) throw error;
+        if (editId) {
+            const idx = listaDev.findIndex(d => d.id == editId);
+            if (idx > -1) listaDev[idx] = dev;
+        } else { listaDev.push(dev); devIdSeq++; }
+        salvarStorageNC();
+        fecharModalDev();
+        renderizarDev(listaDev);
+        sgqOcultarLoading();
+        sgqToast('success', 'Devolução Salva!', 'Devolução registrada no servidor com sucesso.');
+    } catch(e) {
+        sgqOcultarLoading();
+        sgqToast('error', 'Erro ao salvar Devolução', e.message || 'Falha ao conectar com o servidor.');
+    }
 }
 
-function excluirDev(id) {
+async function excluirDev(id) {
     if (!confirm('Deseja excluir esta devolução?')) return;
-    listaDev = listaDev.filter(d => d.id !== id);
-    salvarStorageNC(); renderizarDev(listaDev);
+    try {
+        const { error } = await _sbClient.from('devolucoes').delete().eq('id', id);
+        if (error) throw error;
+        listaDev = listaDev.filter(d => d.id !== id);
+        salvarStorageNC();
+        renderizarDev(listaDev);
+        sgqToast('success', 'Devolução Excluída', 'Registro removido do servidor.');
+    } catch(e) {
+        sgqToast('error', 'Erro ao excluir Devolução', e.message || 'Falha ao conectar com o servidor.');
+    }
 }
 
 function renderizarDev(lista) {
@@ -12566,6 +12607,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 carregarParametros();
                 sgqMostrarLoading('Carregando seus dados...');
                 carregarTodosAsync().then(() => {
+                    return carregarNCeDevSupabase().catch(() => {});
+                }).then(() => {
                     sgqOcultarLoading();
                     exibirTabelaProd();
                     exibirTabelaClass();
@@ -12600,11 +12643,7 @@ async function carregarNCeDevSupabase() {
     }
 }
 
-// Tenta carregar NC do Supabase após login (não bloqueia se tabelas não existirem)
-// ✅ CORRIGIDO: não sobrescreve aplicarPermissoes — NC carrega separadamente
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => carregarNCeDevSupabase().catch(() => {}), 2000);
-});
+// NC e Devoluções são carregadas após login via carregarTodosAsync (integrado ao fluxo de login).
 
 // =====================================================================
 // ✅ MELHORIA: CARREGARPARAMETROS via SDK seguro (sem SUPABASE_KEY)
