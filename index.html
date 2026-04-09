@@ -12961,34 +12961,210 @@ function fecharModalVisualizarNC() {
     document.getElementById('modalVisualizarNC').classList.remove('show');
 }
 function imprimirVisualizacao() {
-    const conteudo = document.getElementById('ncvModalBody').innerHTML;
     const titulo = document.getElementById('ncvModalTitulo').textContent;
-    const win = window.open('', '_blank', 'width=900,height=700');
-    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
-    <title>${titulo}</title>
-    <style>
-        body{font-family:Arial,sans-serif;background:#fff;margin:0;padding:20px;color:#333;}
-        .ncv-header-bar{background:#f8f9fa;border-left:5px solid #c0392b;padding:14px 18px;border-radius:4px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;}
-        .ncv-section-title{font-size:11px;font-weight:bold;text-transform:uppercase;color:#fff;background:#34495e;padding:5px 10px;border-radius:3px;margin:14px 0 8px;letter-spacing:.5px;display:inline-block;}
-        .ncv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
-        .ncv-field{background:#f8f9fa;border:1px solid #e8ecf0;border-radius:4px;padding:8px 10px;}
-        .ncv-label{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
-        .ncv-value{font-size:12px;color:#333;font-weight:600;}
-        .ncv-text-block{background:#f8f9fa;border:1px solid #e0e0e0;border-left:3px solid #3498db;border-radius:3px;padding:10px 12px;font-size:12px;line-height:1.6;margin-bottom:12px;}
-        table{width:100%;border-collapse:collapse;font-size:12px;}
-        th{background:#d35400;color:white;padding:7px 10px;}
-        td{padding:5px 10px;border-bottom:1px solid #eee;}
-        img{max-width:140px;max-height:100px;margin:4px;}
-        @media print{body{padding:10px;} button{display:none;}}
-    </style></head><body>
-    <div style="text-align:center;margin-bottom:18px;">
-        <div style="font-size:18px;font-weight:900;text-transform:uppercase;color:#0a1e7f;">AGRONOR ALIMENTOS</div>
-        <div style="font-size:13px;color:#666;">${titulo}</div>
-    </div>
-    ${conteudo}
-    </body></html>`);
+    const isDev  = titulo.includes('Devolução') || titulo.includes('DEV-');
+
+    // Detecta se é devolução e tenta pegar o objeto completo
+    let devObj = null;
+    if (isDev) {
+        const match = titulo.match(/DEV-\d+/);
+        if (match) devObj = listaDev.find(d => d.numero === match[0]);
+    }
+
+    const win = window.open('', '_blank', 'width=1000,height=800');
+
+    if (isDev && devObj) {
+        // ===================== IMPRESSÃO RICA — DEVOLUÇÃO =====================
+        const dev = devObj;
+        const classif = typeof dev.classificacao === 'string' ? JSON.parse(dev.classificacao || '[]') : (dev.classificacao || []);
+        const imgs    = typeof dev.imagens === 'string' ? JSON.parse(dev.imagens || '[]') : (dev.imagens || []);
+
+        const fmtData = (d) => {
+            if (!d) return '-';
+            const parts = d.split('-');
+            return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : d;
+        };
+
+        const classifRows = classif.map((c, i) => {
+            const r = parseFloat(c.resultado || 0), p = parseFloat(c.parametro || 0);
+            const nc2 = r > p;
+            return `<tr style="background:${i % 2 === 0 ? '#fff' : '#fef5e7'};">
+                <td style="padding:6px 10px;font-weight:600;border-bottom:1px solid #f0d9c0;">${c.defeito || '-'}</td>
+                <td style="text-align:center;color:${nc2 ? '#c0392b' : '#27ae60'};font-weight:bold;border-bottom:1px solid #f0d9c0;">${r.toFixed(2)}%</td>
+                <td style="text-align:center;color:#7f8c8d;border-bottom:1px solid #f0d9c0;">${p.toFixed(2)}%</td>
+                <td style="text-align:center;border-bottom:1px solid #f0d9c0;">
+                    <span style="color:${nc2 ? '#c0392b' : '#27ae60'};font-weight:bold;font-size:11px;">
+                        ${nc2 ? '▲ NC' : '✔ OK'}
+                    </span>
+                </td>
+            </tr>`;
+        }).join('');
+
+        const classifTable = classif.length ? `
+            <div class="sec-title">3. Parâmetros Avaliados</div>
+            <table>
+                <thead><tr>
+                    <th>Avaliados</th>
+                    <th>Resultado (%)</th>
+                    <th>Parâmetro (%)</th>
+                    <th>Situação</th>
+                </tr></thead>
+                <tbody>${classifRows}</tbody>
+            </table>` : '';
+
+        const imgsSection = imgs.length ? `
+            <div class="sec-title">📷 Evidências Fotográficas (${imgs.length})</div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;">
+                ${imgs.map(img => `<div style="text-align:center;">
+                    <img src="${img.dataUrl}" style="max-width:150px;max-height:110px;border-radius:3px;border:1px solid #ddd;display:block;">
+                    <div style="font-size:8px;color:#999;margin-top:3px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${img.name || ''}</div>
+                </div>`).join('')}
+            </div>` : '';
+
+        const emitido = new Date().toLocaleString('pt-BR');
+        const loteNf  = [dev.lote, dev.placa ? 'Placa ' + dev.placa : ''].filter(Boolean).join(' / ');
+
+        win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+        <title>Relatório de Devolução — ${dev.numero}</title>
+        <style>
+            *{margin:0;padding:0;box-sizing:border-box;}
+            body{font-family:Arial,sans-serif;background:#fff;color:#333;font-size:12px;}
+            /* CABEÇALHO */
+            .page-header{background:linear-gradient(135deg,#c0392b 0%,#d35400 100%);color:#fff;padding:14px 24px 10px;display:flex;justify-content:space-between;align-items:center;}
+            .header-brand{font-size:18px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
+            .header-sub{font-size:9px;letter-spacing:1px;opacity:.85;margin-top:2px;}
+            .header-meta{text-align:right;font-size:9px;opacity:.85;line-height:1.6;}
+            /* FAIXA NÚMERO */
+            .dev-banner{background:#fff;border-bottom:3px solid #d35400;padding:12px 24px;display:flex;align-items:center;gap:16px;}
+            .dev-num{font-size:26px;font-weight:900;color:#d35400;letter-spacing:1px;}
+            .dev-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;background:#eaf7f0;color:#27ae60;border:1px solid #a9dfbf;letter-spacing:.5px;text-transform:uppercase;}
+            /* CONTEÚDO */
+            .content{padding:16px 24px;}
+            /* TÍTULO DE SEÇÃO */
+            .sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#fff;background:#7f8c8d;padding:4px 10px;margin:14px 0 8px;display:block;}
+            /* GRID DE CAMPOS */
+            .field-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+            .field-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px;}
+            .field-full{grid-column:1/-1;}
+            .field{background:#f9fafb;border:1px solid #e4e8ed;border-radius:3px;padding:7px 10px;}
+            .field-label{font-size:8px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+            .field-value{font-size:12px;color:#2c3e50;font-weight:600;line-height:1.4;}
+            .field-value.normal{font-weight:400;line-height:1.6;}
+            /* TABELA PARÂMETROS */
+            table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px;}
+            thead tr{background:#d35400;color:#fff;}
+            th{padding:7px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;}
+            th:not(:first-child){text-align:center;}
+            /* ASSINATURAS */
+            .sign-row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:30px;padding-top:20px;border-top:1px solid #e0e0e0;}
+            .sign-box{text-align:center;}
+            .sign-line{border-bottom:1px solid #333;margin-bottom:5px;height:36px;}
+            .sign-label{font-size:9px;color:#777;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+            .sign-sub{font-size:9px;color:#aaa;margin-top:2px;}
+            /* PRINT */
+            @media print{
+                body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+                button{display:none!important;}
+                .page-header{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+            }
+        </style></head><body>
+        <!-- CABEÇALHO -->
+        <div class="page-header">
+            <div>
+                <div class="header-brand">AGRONOR ALIMENTOS</div>
+                <div class="header-sub">🔖 Sistema de Gestão da Qualidade — SGQ</div>
+                <div class="header-sub" style="margin-top:2px;">RELATÓRIO DE DEVOLUÇÃO | Emitido em: ${emitido}</div>
+            </div>
+        </div>
+
+        <!-- NÚMERO DA DEVOLUÇÃO -->
+        <div class="dev-banner">
+            <div class="dev-num">${dev.numero}</div>
+            <div class="dev-badge">${dev.status || 'Concluída'}</div>
+        </div>
+
+        <div class="content">
+            <!-- 1. IDENTIFICAÇÃO -->
+            <div class="sec-title">1. Identificação</div>
+            <div class="field-grid">
+                <div class="field"><div class="field-label">Data</div><div class="field-value">${fmtData(dev.data)}</div></div>
+                <div class="field"><div class="field-label">Tipo de Devolução</div><div class="field-value">${dev.tipo || '-'}</div></div>
+                <div class="field"><div class="field-label">Produto</div><div class="field-value">${dev.produto || '-'}</div></div>
+                <div class="field"><div class="field-label">Lote / Nº NF</div><div class="field-value">${dev.lote || '-'}</div></div>
+                <div class="field"><div class="field-label">Fornecedor</div><div class="field-value">${dev.fornecedor || '-'}</div></div>
+                <div class="field"><div class="field-label">Placa do Veículo</div><div class="field-value">${dev.placa || '-'}</div></div>
+            </div>
+
+            <!-- 2. MOTIVO -->
+            <div class="sec-title">2. Motivo da Devolução</div>
+            <div class="field-grid">
+                <div class="field"><div class="field-label">Motivo Principal</div><div class="field-value">${dev.motivo || '-'}</div></div>
+                ${dev.parametro ? `<div class="field"><div class="field-label">Parâmetro Não Conforme</div><div class="field-value">${dev.parametro}</div></div>` : ''}
+                ${dev.desc_motivo ? `<div class="field field-full"><div class="field-label">Descrição do Motivo</div><div class="field-value normal">${dev.desc_motivo}</div></div>` : ''}
+            </div>
+
+            <!-- 3. PARÂMETROS -->
+            ${classifTable}
+
+            <!-- FOTOS -->
+            ${imgsSection}
+
+            <!-- ASSINATURAS -->
+            <div class="sign-row">
+                <div class="sign-box">
+                    <div class="sign-line"></div>
+                    <div class="sign-label">Resp. Técnico</div>
+                    <div class="sign-sub">CRQ ____________</div>
+                </div>
+                <div class="sign-box">
+                    <div class="sign-line"></div>
+                    <div class="sign-label">Analista</div>
+                </div>
+                <div class="sign-box">
+                    <div class="sign-line"></div>
+                    <div class="sign-label">Supervisor de Produção</div>
+                </div>
+            </div>
+        </div>
+        </body></html>`);
+
+    } else {
+        // ===================== IMPRESSÃO GENÉRICA — NC / outros =====================
+        const conteudo = document.getElementById('ncvModalBody').innerHTML;
+        win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+        <title>${titulo}</title>
+        <style>
+            *{margin:0;padding:0;box-sizing:border-box;}
+            body{font-family:Arial,sans-serif;background:#fff;margin:0;padding:20px;color:#333;font-size:12px;}
+            .page-header{background:linear-gradient(135deg,#1a2a6e 0%,#c0392b 100%);color:#fff;padding:14px 24px 10px;margin:-20px -20px 18px;display:flex;justify-content:space-between;align-items:center;}
+            .header-brand{font-size:16px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
+            .header-sub{font-size:9px;letter-spacing:1px;opacity:.85;margin-top:2px;}
+            .ncv-header-bar{background:#f8f9fa;border-left:5px solid #c0392b;padding:14px 18px;border-radius:4px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;}
+            .ncv-section-title{font-size:10px;font-weight:bold;text-transform:uppercase;color:#fff;background:#34495e;padding:5px 10px;border-radius:3px;margin:14px 0 8px;letter-spacing:.5px;display:inline-block;}
+            .ncv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+            .ncv-field{background:#f8f9fa;border:1px solid #e8ecf0;border-radius:4px;padding:8px 10px;}
+            .ncv-label{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+            .ncv-value{font-size:12px;color:#333;font-weight:600;}
+            .ncv-text-block{background:#f8f9fa;border:1px solid #e0e0e0;border-left:3px solid #3498db;border-radius:3px;padding:10px 12px;font-size:12px;line-height:1.6;margin-bottom:12px;color:#333;}
+            table{width:100%;border-collapse:collapse;font-size:12px;}
+            th{background:#d35400;color:white;padding:7px 10px;}
+            td{padding:5px 10px;border-bottom:1px solid #eee;}
+            img{max-width:140px;max-height:100px;margin:4px;border-radius:3px;}
+            @media print{body{padding:10px;} button{display:none;} .page-header{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+        </style></head><body>
+        <div class="page-header">
+            <div>
+                <div class="header-brand">AGRONOR ALIMENTOS</div>
+                <div class="header-sub">Sistema de Gestão da Qualidade — SGQ</div>
+            </div>
+            <div style="text-align:right;font-size:9px;opacity:.85;">${titulo}<br>${new Date().toLocaleString('pt-BR')}</div>
+        </div>
+        ${conteudo}
+        </body></html>`);
+    }
+
     win.document.close();
-    setTimeout(() => win.print(), 400);
+    setTimeout(() => win.print(), 500);
 }
 
 
