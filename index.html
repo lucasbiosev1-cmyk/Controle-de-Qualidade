@@ -11852,7 +11852,7 @@ function imprimirRelatorioNC(tipo) {
         ${imgsHtml}
 
         <div class="nc-report-sign-area">
-            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Resp. Técnico</div><div class="nc-sign-sub">CRQ 04473318</div></div>
+            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Lucas Lima</div><div class="nc-sign-sub">Resp. Técnico · CRQ 04473318</div></div>
             <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Classificador</div><div class="nc-sign-sub">&nbsp;</div></div>
             <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Supervisor de Produção</div><div class="nc-sign-sub">&nbsp;</div></div>
         </div>`;
@@ -11942,7 +11942,7 @@ function imprimirRelatorioNC(tipo) {
         ${imgsHtml}
 
         <div class="nc-report-sign-area">
-            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Resp. Técnico</div><div class="nc-sign-sub">CRQ 04473318</div></div>
+            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Lucas Lima</div><div class="nc-sign-sub">Resp. Técnico · CRQ 04473318</div></div>
             <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Classificador</div><div class="nc-sign-sub">&nbsp;</div></div>
             <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Supervisor de Produção</div><div class="nc-sign-sub">&nbsp;</div></div>
         </div>`;
@@ -12077,7 +12077,7 @@ async function salvarNC() {
     };
     try {
         sgqMostrarLoading('Salvando NC...');
-        const { error } = await _sbClient
+        const { data, error } = await _sbClient
             .from('nao_conformidades')
             .upsert(nc, { onConflict: 'id' });
         if (error) throw error;
@@ -12089,10 +12089,12 @@ async function salvarNC() {
         fecharModalNC();
         renderizarNC(listaNC);
         sgqOcultarLoading();
-        sgqToast('success', 'NC Salva!', 'Não conformidade registrada no servidor com sucesso.');
+        sgqToast('✅ NC salva com sucesso no servidor!', 'success');
     } catch(e) {
+        console.error('Erro salvarNC:', e);
         sgqOcultarLoading();
-        sgqToast('error', 'Erro ao salvar NC', e.message || 'Falha ao conectar com o servidor.');
+        sgqToast('❌ Erro ao salvar NC: ' + (e.message || 'Falha ao conectar com o servidor.'), 'error');
+        alert('Erro ao salvar NC: ' + (e.message || JSON.stringify(e)));
     }
 }
 
@@ -12104,9 +12106,9 @@ async function excluirNC(id) {
         listaNC = listaNC.filter(n => n.id !== id);
         salvarStorageNC();
         renderizarNC(listaNC);
-        sgqToast('success', 'NC Excluída', 'Registro removido do servidor.');
+        sgqToast('🗑️ NC excluída do servidor.', 'success');
     } catch(e) {
-        sgqToast('error', 'Erro ao excluir NC', e.message || 'Falha ao conectar com o servidor.');
+        sgqToast('❌ Erro ao excluir NC: ' + (e.message || 'Falha ao conectar.'), 'error');
     }
 }
 
@@ -12278,7 +12280,7 @@ async function salvarDev() {
     };
     try {
         sgqMostrarLoading('Salvando Devolução...');
-        const { error } = await _sbClient
+        const { data, error } = await _sbClient
             .from('devolucoes')
             .upsert(dev, { onConflict: 'id' });
         if (error) throw error;
@@ -12290,10 +12292,12 @@ async function salvarDev() {
         fecharModalDev();
         renderizarDev(listaDev);
         sgqOcultarLoading();
-        sgqToast('success', 'Devolução Salva!', 'Devolução registrada no servidor com sucesso.');
+        sgqToast('✅ Devolução salva com sucesso no servidor!', 'success');
     } catch(e) {
+        console.error('Erro salvarDev:', e);
         sgqOcultarLoading();
-        sgqToast('error', 'Erro ao salvar Devolução', e.message || 'Falha ao conectar com o servidor.');
+        sgqToast('❌ Erro ao salvar Devolução: ' + (e.message || 'Falha ao conectar com o servidor.'), 'error');
+        alert('Erro ao salvar Devolução: ' + (e.message || JSON.stringify(e)));
     }
 }
 
@@ -12305,9 +12309,9 @@ async function excluirDev(id) {
         listaDev = listaDev.filter(d => d.id !== id);
         salvarStorageNC();
         renderizarDev(listaDev);
-        sgqToast('success', 'Devolução Excluída', 'Registro removido do servidor.');
+        sgqToast('🗑️ Devolução excluída do servidor.', 'success');
     } catch(e) {
-        sgqToast('error', 'Erro ao excluir Devolução', e.message || 'Falha ao conectar com o servidor.');
+        sgqToast('❌ Erro ao excluir Devolução: ' + (e.message || 'Falha ao conectar.'), 'error');
     }
 }
 
