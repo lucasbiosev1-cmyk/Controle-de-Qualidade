@@ -11651,20 +11651,34 @@ async function executarCorrecaoDefeitos() {
                 </div>
             </div>
             <!-- CLASSIFICAÇÃO GRÃOS DEV -->
-            <div class="nc-form-section">
-                <h3 class="orange">4. Classificação de Grãos</h3>
-                <table class="nc-classif-table" id="classifTable">
-                    <thead>
-                        <tr>
-                            <th style="width:38%;text-align:left;">Defeito</th>
-                            <th style="width:25%;">Resultado (%)</th>
-                            <th style="width:25%;">Parâmetro (%)</th>
-                            <th style="width:12%;">Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody id="classifBody"></tbody>
-                </table>
-                <button class="nc-btn-add-row" onclick="adicionarLinhaClassif()">＋ Adicionar Defeito</button>
+            <div class="nc-form-section" id="secaoClassifGraos">
+                <h3 class="orange" style="display:flex;align-items:center;gap:10px;">
+                    4. Parâmetros Avaliados
+                    <label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:400;color:#95a5a6;cursor:pointer;margin-left:auto;user-select:none;" title="Ocultar ou mostrar esta seção">
+                        <input type="checkbox" id="toggleClassifGraos" checked
+                            onchange="
+                                const corpo = document.getElementById('classifGraosCorpo');
+                                corpo.style.display = this.checked ? '' : 'none';
+                                document.getElementById('toggleClassifLabel').textContent = this.checked ? 'Ocultar' : 'Mostrar';
+                            "
+                            style="accent-color:#e67e22;width:13px;height:13px;cursor:pointer;">
+                        <span id="toggleClassifLabel" style="font-size:11px;color:#aaa;">Ocultar</span>
+                    </label>
+                </h3>
+                <div id="classifGraosCorpo">
+                    <table class="nc-classif-table" id="classifTable">
+                        <thead>
+                            <tr>
+                                <th style="width:38%;text-align:left;">Defeito</th>
+                                <th style="width:25%;">Resultado (%)</th>
+                                <th style="width:25%;">Parâmetro (%)</th>
+                                <th style="width:12%;">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="classifBody"></tbody>
+                    </table>
+                    <button class="nc-btn-add-row" onclick="adicionarLinhaClassif()">＋ Adicionar Defeito</button>
+                </div>
             </div>
             <!-- CAMPOS OCULTOS DEV -->
             <input type="hidden" id="dev-nf">
@@ -11898,7 +11912,7 @@ function imprimirRelatorioNC(tipo) {
                 </tr>`;
             }).join('');
             classifHtml = `
-            <div class="nc-report-section-title">3. Classificação de Grãos</div>
+            <div class="nc-report-section-title">3. Parâmetros Avaliados</div>
             <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;">
                 <thead>
                     <tr style="background:#d35400;color:white;">
