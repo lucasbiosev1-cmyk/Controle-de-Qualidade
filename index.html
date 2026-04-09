@@ -2638,7 +2638,6 @@
                         <thead>
                             <tr style="background:#34495e;color:white;">
                                 <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Nº Dev</th>
-                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">NC Vinculada</th>
                                 <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Data</th>
                                 <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Produto</th>
                                 <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Fornecedor</th>
@@ -2650,7 +2649,7 @@
                             </tr>
                         </thead>
                         <tbody id="devBody">
-                            <tr><td colspan="11">
+                            <tr><td colspan="10">
                                 <div style="text-align:center;padding:40px 20px;color:#95a5a6;">
                                     <div style="font-size:48px;margin-bottom:12px;opacity:0.4;">↩️</div>
                                     <p style="font-size:13px;">Nenhuma devolução registrada. Clique em <strong>+ Nova Devolução</strong> para começar.</p>
@@ -12246,7 +12245,7 @@ function limparFormDev() {
 }
 
 function preencherFormDev(dev) {
-    const map = { 'dev-numero':'numero','dev-data':'data','dev-nc-vinc':'nc_vinc','dev-tipo':'tipo',
+    const map = { 'dev-numero':'numero','dev-data':'data','dev-tipo':'tipo',
                   'dev-produto':'produto','dev-lote':'lote','dev-fornecedor':'fornecedor',
                   'dev-placa':'placa','dev-motivo':'motivo','dev-status':'status' };
     Object.entries(map).forEach(([id, key]) => { const el = document.getElementById(id); if(el) el.value = dev[key] || ''; });
@@ -12285,7 +12284,6 @@ async function salvarDev() {
         id:             editId ? parseInt(editId) : Date.now(),
         numero:         numeroCalculado,
         data, produto, fornecedor, motivo,
-        nc_vinc:        document.getElementById('dev-nc-vinc').value,
         tipo:           document.getElementById('dev-tipo').value,
         lote:           document.getElementById('dev-lote').value,
         placa:          document.getElementById('dev-placa') ? document.getElementById('dev-placa').value.toUpperCase() : '',
@@ -12330,12 +12328,11 @@ async function excluirDev(id) {
 function renderizarDev(lista) {
     const tbody = document.getElementById('devBody');
     if (!lista || !lista.length) {
-        tbody.innerHTML = '<tr><td colspan="11"><div style="text-align:center;padding:40px 20px;color:#95a5a6;"><div style="font-size:48px;margin-bottom:12px;opacity:0.4;">↩️</div><p style="font-size:13px;">Nenhuma devolução registrada. Clique em <strong>+ Nova Devolução</strong> para começar.</p></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10"><div style="text-align:center;padding:40px 20px;color:#95a5a6;"><div style="font-size:48px;margin-bottom:12px;opacity:0.4;">↩️</div><p style="font-size:13px;">Nenhuma devolução registrada. Clique em <strong>+ Nova Devolução</strong> para começar.</p></div></td></tr>';
         return;
     }
     tbody.innerHTML = lista.map(dev => `<tr style="border-bottom:1px solid #ecf0f1;">
         <td style="padding:7px 6px;text-align:center;"><span class="nc-num-badge" style="background:#d35400;">${dev.numero}</span></td>
-        <td style="padding:7px 6px;text-align:center;">${dev.ncVinc ? `<span class="nc-num-badge" style="font-size:9px;">${dev.ncVinc}</span>` : '-'}</td>
         <td style="padding:7px 6px;text-align:center;">${ncFmtData(dev.data)}</td>
         <td style="padding:7px 6px;text-align:center;">${dev.produto||'-'}</td>
         <td style="padding:7px 6px;text-align:center;">${dev.fornecedor||'-'}</td>
@@ -12376,7 +12373,7 @@ function exportarDev() {
     if (!listaDev.length) { alert('Nenhum dado para exportar.'); return; }
     if (typeof XLSX === 'undefined') { alert('Biblioteca XLSX não carregada.'); return; }
     const dados = listaDev.map(d => ({
-        'Nº Dev': d.numero, 'NC Vinculada': d.ncVinc, 'Data': ncFmtData(d.data),
+        'Nº Dev': d.numero, 'Data': ncFmtData(d.data),
         'Tipo': d.tipo, 'Produto': d.produto, 'Lote': d.lote,
         'Fornecedor': d.fornecedor, 'Qtd': d.qtd, 'Unidade': d.unidade,
         'Motivo': d.motivo, 'Parâmetro NC': d.parametro, 'Descrição': d.descMotivo,
