@@ -11621,6 +11621,10 @@ async function executarCorrecaoDefeitos() {
                         <label>Fornecedor <span class="nc-req">*</span></label>
                         <input type="text" id="dev-fornecedor" placeholder="Razão social ou nome...">
                     </div>
+                    <div class="nc-form-group">
+                        <label>Placa do Veículo</label>
+                        <input type="text" id="dev-placa" placeholder="Ex: ABC-1234 ou ABC1D23" maxlength="8" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+                    </div>
                     <input type="hidden" id="dev-cnpj">
                     <input type="hidden" id="dev-qtd">
                     <input type="hidden" id="dev-unidade">
@@ -12229,7 +12233,7 @@ function abrirModalDev(id = null) {
 function fecharModalDev() { document.getElementById('modalDev').classList.remove('show'); }
 
 function limparFormDev() {
-    ['dev-numero','dev-data','dev-produto','dev-lote','dev-fornecedor','dev-cnpj',
+    ['dev-numero','dev-data','dev-produto','dev-lote','dev-fornecedor','dev-placa','dev-cnpj',
      'dev-qtd','dev-parametro','dev-desc-motivo','dev-nf','dev-dt-coleta',
      'dev-transportadora','dev-contato','dev-responsavel','dev-valor',
      'dev-dt-conclusao','dev-obs','dev-edit-id']
@@ -12242,6 +12246,7 @@ function preencherFormDev(dev) {
     const map = { 'dev-numero':'numero','dev-data':'data','dev-nc-vinc':'nc_vinc','dev-tipo':'tipo',
                   'dev-produto':'produto','dev-lote':'lote','dev-fornecedor':'fornecedor',
                   'dev-cnpj':'cnpj','dev-qtd':'qtd','dev-unidade':'unidade','dev-motivo':'motivo',
+                  'dev-placa':'placa',
                   'dev-parametro':'parametro','dev-desc-motivo':'desc_motivo','dev-nf':'nf',
                   'dev-dt-coleta':'dt_coleta','dev-transportadora':'transportadora',
                   'dev-contato':'contato','dev-responsavel':'responsavel','dev-valor':'valor',
@@ -12276,6 +12281,7 @@ async function salvarDev() {
         nc_vinc:        document.getElementById('dev-nc-vinc').value,
         tipo:           document.getElementById('dev-tipo').value,
         lote:           document.getElementById('dev-lote').value,
+        placa:          document.getElementById('dev-placa') ? document.getElementById('dev-placa').value.toUpperCase() : '',
         cnpj:           document.getElementById('dev-cnpj').value,
         qtd:            document.getElementById('dev-qtd').value,
         unidade:        document.getElementById('dev-unidade').value,
