@@ -12102,7 +12102,7 @@ function imprimirRelatorioNC(tipo) {
             <div class="nc-report-field-item"><label>Motivo Principal</label><span>${motivo}</span></div>
             <div class="nc-report-field-item"><label>Parâmetro Não Conforme</label><span>${param}</span></div>
         </div>
-        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#fef5e7;border-left:4px solid #e67e22;border-radius:3px;margin-bottom:14px;">${descMot}</p>
+        ${descMot && descMot !== '-' ? `<p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#fef5e7;border-left:4px solid #e67e22;border-radius:3px;margin-bottom:14px;">${descMot}</p>` : ''}
 
         ${classifHtml}
 
