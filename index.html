@@ -11433,6 +11433,10 @@ async function executarCorrecaoDefeitos() {
                         <input type="text" id="nc-fornecedor" placeholder="Nome do fornecedor...">
                     </div>
                     <div class="nc-form-group">
+                        <label>Placa do Veículo</label>
+                        <input type="text" id="nc-placa" placeholder="Ex: ABC-1234 ou ABC1D23" maxlength="8" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+                    </div>
+                    <div class="nc-form-group">
                         <label>Local de Detecção</label>
                         <select id="nc-local">
                             <option value="">Selecione...</option>
@@ -12019,7 +12023,7 @@ function abrirModalNC(id = null) {
 function fecharModalNC() { document.getElementById('modalNC').classList.remove('show'); }
 
 function limparFormNC() {
-    ['nc-numero','nc-data','nc-produto','nc-lote','nc-qtd','nc-fornecedor',
+    ['nc-numero','nc-data','nc-produto','nc-lote','nc-qtd','nc-fornecedor','nc-placa',
      'nc-descricao','nc-acao-imediata','nc-causa-raiz','nc-acao-corretiva',
      'nc-responsavel','nc-resp-acao','nc-prazo','nc-data-enc','nc-obs','nc-edit-id']
         .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
@@ -12032,10 +12036,10 @@ function limparFormNC() {
 }
 
 function preencherFormNC(nc) {
-    const ids = ['nc-numero','nc-data','nc-tipo','nc-gravidade','nc-produto','nc-lote','nc-fornecedor',
+    const ids = ['nc-numero','nc-data','nc-tipo','nc-gravidade','nc-produto','nc-lote','nc-fornecedor','nc-placa',
                  'nc-local','nc-descricao','nc-disposicao','nc-resp-acao','nc-acao-imediata',
                  'nc-responsavel','nc-prazo','nc-causa-raiz','nc-acao-corretiva','nc-status','nc-data-enc','nc-eficacia','nc-obs'];
-    const vals = ['numero','data','tipo','gravidade','produto','lote','fornecedor',
+    const vals = ['numero','data','tipo','gravidade','produto','lote','fornecedor','placa',
                   'local','descricao','disposicao','resp_acao','acao_imediata',
                   'responsavel','prazo','causa_raiz','acao_corretiva','status','data_enc','eficacia','obs'];
     ids.forEach((id, i) => { const el = document.getElementById(id); if(el) el.value = nc[vals[i]] || ''; });
@@ -12080,6 +12084,7 @@ async function salvarNC() {
         qtd:            document.getElementById('nc-qtd').value,
         unidade:        document.getElementById('nc-unidade').value,
         fornecedor:     document.getElementById('nc-fornecedor').value,
+        placa:          document.getElementById('nc-placa') ? document.getElementById('nc-placa').value.toUpperCase() : '',
         local:          document.getElementById('nc-local').value,
         descricao,
         causas:         JSON.stringify(causas),
