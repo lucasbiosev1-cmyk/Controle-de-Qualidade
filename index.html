@@ -4124,7 +4124,8 @@ const PERMS_DISPONIVEIS = [
     { key: 'entrada_mp',     label: 'Entrada Mat. Prima',   icon: '📥',  desc: 'Acessar aba de entrada de matéria prima' },
     { key: 'entrada_excluir',label: 'Excluir Entradas',     icon: '🗑️',  desc: 'Excluir registros de entrada de matéria prima' },
     { key: 'entrada_editar', label: 'Editar Entradas',      icon: '🔧',  desc: 'Modificar registros de entrada de matéria prima' },
-    { key: 'entrada_aprovar',label: 'Aprovar/Reprovar Ent.',icon: '✅',  desc: 'Aprovar ou reprovar entradas de matéria prima' },
+    { key: 'entrada_aprovar',  label: 'Aprovar/Reprovar Ent.',  icon: '✅',  desc: 'Aprovar ou reprovar entradas de matéria prima' },
+    { key: 'nao_conformidade', label: 'Não Conformidade/Dev.',   icon: '⚠️',  desc: 'Acessar aba de Não Conformidade e Devoluções' },
     // ── Restrições específicas ──────────────────────────────────────────
     { key: 'ocultar_producao', label: 'Ocultar aba Produção',      icon: '🚫', desc: 'Esconde a aba Produção para este usuário', restricao: true },
     { key: 'somente_ver_nc',   label: 'Somente visualizar NC/Dev', icon: '👁️', desc: 'Impede criar/editar/excluir NC e Devoluções', restricao: true },
@@ -4441,13 +4442,17 @@ function aplicarPermissoes() {
     document.getElementById('thAcaoClass').style.display = podeCadastro ? 'table-cell' : 'none';
     document.getElementById('thAcaoMP').style.display    = podeCadastro ? 'table-cell' : 'none';
 
-    // Abas principais — visíveis só com permissão de cadastro
+    // Abas filhas de Lançamentos — visíveis só com permissão de cadastro
     const _tabProd = document.getElementById('tabProducao');
     const _tabClass = document.getElementById('tabClassificacao');
     const _tabMP    = document.getElementById('tabMateriaPrima');
     if (_tabProd) _tabProd.style.display = podeCadastro ? 'inline-block' : 'none';
     if (_tabClass) _tabClass.style.display = podeCadastro ? 'inline-block' : 'none';
     if (_tabMP)    _tabMP.style.display    = podeCadastro ? 'inline-block' : 'none';
+
+    // Dropdown pai "Lançamentos" — só aparece se tiver ao menos uma aba filha visível
+    const ndLancamentos = document.getElementById('ndLancamentos');
+    if (ndLancamentos) ndLancamentos.style.display = podeCadastro ? 'inline-flex' : 'none';
 
     // Aba Entrada de Matéria Prima
     const podeEntradaMP = isAdmin || perms.entrada_mp;
@@ -4465,7 +4470,7 @@ function aplicarPermissoes() {
     const tabCfg2 = document.getElementById('tabConfiguracoes');
     if (tabCfg2) tabCfg2.style.display = temConfig ? 'inline-block' : 'none';
 
-    // Relatórios
+    // Relatórios — itens filhos
     const podeRel = isAdmin || perms.relatorios;
     ['tabRelatorio','tabRelClass','tabRelMP','tabRanking'].forEach(id => {
         const el = document.getElementById(id);
@@ -4475,6 +4480,15 @@ function aplicarPermissoes() {
     // Boletim
     const tabBol = document.getElementById('tabBoletim');
     if (tabBol) tabBol.style.display = (isAdmin || perms.boletim) ? 'inline-block' : 'none';
+
+    // Dropdown pai "Relatórios" — só aparece se tiver ao menos um filho visível
+    const ndRelatorios = document.getElementById('ndRelatorios');
+    if (ndRelatorios) ndRelatorios.style.display = (podeRel || (isAdmin || perms.boletim)) ? 'inline-flex' : 'none';
+
+    // Dropdown pai "Não Conformidade" — controlado pela permissão nc
+    const podeNC = isAdmin || perms.nao_conformidade;
+    const ndNC = document.getElementById('ndNaoConformidade');
+    if (ndNC) ndNC.style.display = podeNC ? 'inline-flex' : 'none';
 
     // Carrega entradas ao logar
     if (podeEntradaMP) {
