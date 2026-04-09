@@ -11673,7 +11673,7 @@ async function executarCorrecaoDefeitos() {
             <input type="hidden" id="dev-responsavel">
             <input type="hidden" id="dev-valor">
             <input type="hidden" id="dev-disposicao">
-            <input type="hidden" id="dev-status" value="Aguardando Coleta">
+            <input type="hidden" id="dev-status" value="Concluída">
             <input type="hidden" id="dev-dt-conclusao">
             <input type="hidden" id="dev-edit-id" value="">
             <!-- OBSERVAÇÕES DEV -->
@@ -11965,7 +11965,7 @@ function ncBadgeStatus(s) {
     const m = {
         'Pendente':'nc-badge-pendente','Em Análise':'nc-badge-em-analise',
         'Aprovado':'nc-badge-aprovado','Reprovado':'nc-badge-reprovado',
-        'Encerrado':'nc-badge-encerrado','Aguardando Coleta':'nc-badge-pendente',
+        'Encerrado':'nc-badge-encerrado','Concluída':'nc-badge-aprovado',
         'Em Trânsito':'nc-badge-em-analise','Devolvido':'nc-badge-devolvido',
         'Retido/Quarentena':'nc-badge-retido','Destruído':'nc-badge-encerrado',
     };
@@ -12017,13 +12017,14 @@ function preencherFormNC(nc) {
                  'nc-local','nc-descricao','nc-disposicao','nc-resp-acao','nc-acao-imediata',
                  'nc-responsavel','nc-prazo','nc-causa-raiz','nc-acao-corretiva','nc-status','nc-data-enc','nc-eficacia','nc-obs'];
     const vals = ['numero','data','tipo','gravidade','produto','lote','fornecedor',
-                  'local','descricao','disposicao','respAcao','acaoImediata',
-                  'responsavel','prazo','causaRaiz','acaoCorretiva','status','dataEnc','eficacia','obs'];
+                  'local','descricao','disposicao','resp_acao','acao_imediata',
+                  'responsavel','prazo','causa_raiz','acao_corretiva','status','data_enc','eficacia','obs'];
     ids.forEach((id, i) => { const el = document.getElementById(id); if(el) el.value = nc[vals[i]] || ''; });
-    const causas = nc.causas || [];
+    const causas = typeof nc.causas === 'string' ? JSON.parse(nc.causas || '[]') : (nc.causas || []);
     document.querySelectorAll('#causasGrid input').forEach(cb => { cb.checked = causas.includes(cb.value); });
     atualizarGravidade();
-    ncImagens = nc.imagens || []; renderImgsNC('nc');
+    ncImagens = typeof nc.imagens === 'string' ? JSON.parse(nc.imagens || '[]') : (nc.imagens || []);
+    renderImgsNC('nc');
 }
 
 function atualizarGravidade() {
@@ -12077,8 +12078,7 @@ async function salvarNC() {
         imagens:        JSON.stringify(ncImagens.slice()),
     };
     try {
-        sgqMostrarLoading('Salvando NC...');
-        const { data, error } = await _sbClient
+        const { error } = await _sbClient
             .from('nao_conformidades')
             .upsert(nc, { onConflict: 'id' });
         if (error) throw error;
@@ -12089,11 +12089,9 @@ async function salvarNC() {
         salvarStorageNC();
         fecharModalNC();
         renderizarNC(listaNC);
-        sgqOcultarLoading();
-        sgqToast('✅ NC salva com sucesso no servidor!', 'success');
+        sgqToast('✅ NC salva com sucesso!', 'success');
     } catch(e) {
         console.error('Erro salvarNC:', e);
-        sgqOcultarLoading();
         sgqToast('❌ Erro ao salvar NC: ' + (e.message || 'Falha ao conectar com o servidor.'), 'error');
         alert('Erro ao salvar NC: ' + (e.message || JSON.stringify(e)));
     }
@@ -12225,15 +12223,16 @@ function limparFormDev() {
 }
 
 function preencherFormDev(dev) {
-    const map = { 'dev-numero':'numero','dev-data':'data','dev-nc-vinc':'ncVinc','dev-tipo':'tipo',
+    const map = { 'dev-numero':'numero','dev-data':'data','dev-nc-vinc':'nc_vinc','dev-tipo':'tipo',
                   'dev-produto':'produto','dev-lote':'lote','dev-fornecedor':'fornecedor',
                   'dev-cnpj':'cnpj','dev-qtd':'qtd','dev-unidade':'unidade','dev-motivo':'motivo',
-                  'dev-parametro':'parametro','dev-desc-motivo':'descMotivo','dev-nf':'nf',
-                  'dev-dt-coleta':'dtColeta','dev-transportadora':'transportadora',
+                  'dev-parametro':'parametro','dev-desc-motivo':'desc_motivo','dev-nf':'nf',
+                  'dev-dt-coleta':'dt_coleta','dev-transportadora':'transportadora',
                   'dev-contato':'contato','dev-responsavel':'responsavel','dev-valor':'valor',
-                  'dev-disposicao':'disposicao','dev-status':'status','dev-dt-conclusao':'dtConclusao','dev-obs':'obs' };
+                  'dev-disposicao':'disposicao','dev-status':'status','dev-dt-conclusao':'dt_conclusao','dev-obs':'obs' };
     Object.entries(map).forEach(([id, key]) => { const el = document.getElementById(id); if(el) el.value = dev[key] || ''; });
-    devImagens = dev.imagens || []; renderImgsNC('dev');
+    devImagens = typeof dev.imagens === 'string' ? JSON.parse(dev.imagens || '[]') : (dev.imagens || []);
+    renderImgsNC('dev');
 }
 
 function atualizarSelectNC() {
@@ -12273,15 +12272,14 @@ async function salvarDev() {
         responsavel:    document.getElementById('dev-responsavel').value,
         valor:          document.getElementById('dev-valor').value,
         disposicao:     document.getElementById('dev-disposicao').value,
-        status:         document.getElementById('dev-status').value || 'Aguardando Coleta',
+        status:         document.getElementById('dev-status').value || 'Concluída',
         dt_conclusao:   document.getElementById('dev-dt-conclusao').value,
         obs:            document.getElementById('dev-obs').value,
         classificacao:  JSON.stringify(classifData),
         imagens:        JSON.stringify(devImagens.slice()),
     };
     try {
-        sgqMostrarLoading('Salvando Devolução...');
-        const { data, error } = await _sbClient
+        const { error } = await _sbClient
             .from('devolucoes')
             .upsert(dev, { onConflict: 'id' });
         if (error) throw error;
@@ -12292,11 +12290,9 @@ async function salvarDev() {
         salvarStorageNC();
         fecharModalDev();
         renderizarDev(listaDev);
-        sgqOcultarLoading();
-        sgqToast('✅ Devolução salva com sucesso no servidor!', 'success');
+        sgqToast('✅ Devolução salva com sucesso!', 'success');
     } catch(e) {
         console.error('Erro salvarDev:', e);
-        sgqOcultarLoading();
         sgqToast('❌ Erro ao salvar Devolução: ' + (e.message || 'Falha ao conectar com o servidor.'), 'error');
         alert('Erro ao salvar Devolução: ' + (e.message || JSON.stringify(e)));
     }
