@@ -2502,7 +2502,7 @@
                         <span style="width:28px;height:28px;border-radius:50%;background:#fadbd8;color:#e74c3c;display:flex;align-items:center;justify-content:center;font-size:14px;">⚠️</span>
                         Registro de Não Conformidades
                     </div>
-                    <button onclick="abrirModalNC()" style="background:#e74c3c;color:white;padding:10px 20px;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:bold;text-transform:uppercase;">+ Nova NC</button>
+                    <button id="btnNovaNC" onclick="abrirModalNC()" style="background:#e74c3c;color:white;padding:10px 20px;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:bold;text-transform:uppercase;">+ Nova NC</button>
                 </div>
 
                 <!-- FILTROS NC -->
@@ -2589,7 +2589,7 @@
                         <span style="width:28px;height:28px;border-radius:50%;background:#fdebd0;color:#e67e22;display:flex;align-items:center;justify-content:center;font-size:14px;">↩️</span>
                         Registro de Devoluções
                     </div>
-                    <button onclick="abrirModalDev()" style="background:#e67e22;color:white;padding:10px 20px;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:bold;text-transform:uppercase;">+ Nova Devolução</button>
+                    <button id="btnNovaDev" onclick="abrirModalDev()" style="background:#e67e22;color:white;padding:10px 20px;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:bold;text-transform:uppercase;">+ Nova Devolução</button>
                 </div>
 
                 <!-- FILTROS DEV -->
@@ -4122,6 +4122,9 @@ const PERMS_DISPONIVEIS = [
     { key: 'entrada_excluir',label: 'Excluir Entradas',     icon: '🗑️',  desc: 'Excluir registros de entrada de matéria prima' },
     { key: 'entrada_editar', label: 'Editar Entradas',      icon: '🔧',  desc: 'Modificar registros de entrada de matéria prima' },
     { key: 'entrada_aprovar',label: 'Aprovar/Reprovar Ent.',icon: '✅',  desc: 'Aprovar ou reprovar entradas de matéria prima' },
+    // ── Restrições específicas ──────────────────────────────────────────
+    { key: 'ocultar_producao', label: 'Ocultar aba Produção',      icon: '🚫', desc: 'Esconde a aba Produção para este usuário', restricao: true },
+    { key: 'somente_ver_nc',   label: 'Somente visualizar NC/Dev', icon: '👁️', desc: 'Impede criar/editar/excluir NC e Devoluções', restricao: true },
 ];
 
 function _todasPerms() {
@@ -4449,19 +4452,22 @@ function aplicarPermissoes() {
     _cv('capaCardRelMP',        isAdmin || podeRel);
     _cv('capaCardEntradaMP',    isAdmin || podeEntradaMP);
 
-    // Redirecionar para a primeira tela com acesso ao logar
-    if (!isAdmin) {
-        // Prioridade: Entradas MP > Relatórios > Cadastro/Produção
-        if (podeEntradaMP) {
-            trocarAba('entradaMP', document.getElementById('tabEntradaMP'));
-        } else if (podeRel) {
-            trocarAba('relatorio', document.getElementById('tabRelatorio'));
-        } else if (podeCadastro) {
-            trocarAba('producao', document.getElementById('tabProducao'));
-        }
-        // Ocultar aba Início para usuários comuns (o dashboard é para admin)
-        const tabCapaEl = document.getElementById('tabCapa');
-        if (tabCapaEl) tabCapaEl.style.display = 'none';
+    // ✅ SEMPRE inicia na tela Início (capa) independente do perfil
+    const tabCapaEl = document.getElementById('tabCapa');
+    if (tabCapaEl) tabCapaEl.style.display = '';
+    trocarAba('capa', document.getElementById('tabCapa'));
+
+    // ✅ Restrições configuráveis por usuário (definidas no painel de usuários)
+    const _tabProdGil = document.getElementById('tabProducao');
+    const _btnNovaNC  = document.getElementById('btnNovaNC');
+    const _btnNovaDev = document.getElementById('btnNovaDev');
+
+    if (!isAdmin && perms.ocultar_producao) {
+        if (_tabProdGil) _tabProdGil.style.display = 'none';
+    }
+    if (!isAdmin && perms.somente_ver_nc) {
+        if (_btnNovaNC)  _btnNovaNC.style.display  = 'none';
+        if (_btnNovaDev) _btnNovaDev.style.display = 'none';
     }
 
     // Aba Usuários — só admin (controlado dentro de cfg)
@@ -10255,11 +10261,22 @@ async function renderizarListaUsuarios() {
             ? '<span class="badge-perfil badge-admin" style="font-size:11px;">Admin</span>'
             : '<span class="badge-perfil badge-usuario" style="font-size:11px;">Usuário</span>';
 
-        // Permissões em badges
-        const permsHtml = PERMS_DISPONIVEIS.map(pd => {
+        // Permissões em badges (separadas de restrições)
+        const normais    = PERMS_DISPONIVEIS.filter(pd => !pd.restricao);
+        const restricoes = PERMS_DISPONIVEIS.filter(pd =>  pd.restricao);
+
+        const permsHtml = normais.map(pd => {
             const ativa = isAdminUser || (u.perms && u.perms[pd.key]);
             return `<span class="badge-perm ${ativa ? 'badge-perm-on' : 'badge-perm-off'}">${pd.icon} ${pd.label}</span>`;
         }).join('');
+
+        const restricoesAtivas = restricoes.filter(pd => !isAdminUser && u.perms && u.perms[pd.key]);
+        const restricoesHtml = restricoesAtivas.length
+            ? `<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">
+                <span style="font-size:9px;font-weight:bold;color:#c0392b;text-transform:uppercase;letter-spacing:.5px;align-self:center;">Restrições:</span>
+                ${restricoesAtivas.map(pd => `<span class="badge-perm" style="background:#fadbd8;color:#c0392b;border:1px solid #f5b7b1;">${pd.icon} ${pd.label}</span>`).join('')}
+               </div>`
+            : '';
 
         // Não permite deletar o próprio admin logado
         const podeEditar = !(login === usuarioAtual && isAdminUser && Object.values(USUARIOS).filter(x=>x.perfil==='admin').length === 1);
@@ -10283,21 +10300,43 @@ async function renderizarListaUsuarios() {
             <div style="margin-top:4px;">
                 <div style="font-size:10px;font-weight:bold;color:#888;text-transform:uppercase;margin-bottom:6px;">Permissões</div>
                 <div style="display:flex;flex-wrap:wrap;gap:4px;">${permsHtml}</div>
+                ${restricoesHtml}
             </div>
         </div>`;
     }).join('');
 }
 
 function _buildPermGrid(perms, isAdmin) {
-    return PERMS_DISPONIVEIS.map(pd => {
-        const checked = isAdmin || (perms && perms[pd.key]);
+    const normais     = PERMS_DISPONIVEIS.filter(pd => !pd.restricao);
+    const restricoes  = PERMS_DISPONIVEIS.filter(pd =>  pd.restricao);
+
+    const buildItem = pd => {
+        // Restrições: marcado = restrito (invertido visualmente)
+        const checked = isAdmin
+            ? (pd.restricao ? false : true)   // admin: permissões on, restrições off
+            : (perms && perms[pd.key]);
         const disabledAttr = isAdmin ? 'disabled' : '';
+        const styleItem = pd.restricao
+            ? `border-left:3px solid #e74c3c;`
+            : '';
         return `
-        <div class="perm-modal-item ${checked ? 'checked' : ''}" id="perm-item-${pd.key}" onclick="${isAdmin ? '' : `togglePermModal('${pd.key}')`}">
-            <input type="checkbox" id="perm-${pd.key}" ${checked ? 'checked' : ''} ${disabledAttr} onchange="updatePermItemStyle('${pd.key}')">
+        <div class="perm-modal-item ${checked ? 'checked' : ''}" id="perm-item-${pd.key}"
+             style="${styleItem}"
+             onclick="${isAdmin ? '' : `togglePermModal('${pd.key}')`}"
+             title="${pd.desc}">
+            <input type="checkbox" id="perm-${pd.key}" ${checked ? 'checked' : ''} ${disabledAttr}
+                   onchange="updatePermItemStyle('${pd.key}')">
             <label for="perm-${pd.key}" style="${isAdmin ? 'color:#aaa;cursor:default;' : ''}">${pd.icon} ${pd.label}</label>
         </div>`;
-    }).join('');
+    };
+
+    return `
+        ${normais.map(buildItem).join('')}
+        <div style="grid-column:1/-1;margin-top:10px;margin-bottom:4px;padding:6px 10px;background:#fdf2f2;border:1px solid #f5b7b1;border-radius:4px;">
+            <span style="font-size:10px;font-weight:bold;color:#c0392b;text-transform:uppercase;letter-spacing:.5px;">🚫 Restrições — marque para BLOQUEAR o acesso</span>
+        </div>
+        ${restricoes.map(buildItem).join('')}
+    `;
 }
 
 function togglePermModal(key) {
@@ -11735,6 +11774,40 @@ async function executarCorrecaoDefeitos() {
 <div id="ncPrintArea" class="nc-print-report"></div>
 
 <!-- ============================================================ -->
+<!-- MODAL: VISUALIZAÇÃO DE NC/DEVOLUÇÃO (somente leitura) -->
+<!-- ============================================================ -->
+<style>
+.ncv-modal { display:none;position:fixed;z-index:4000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.6);overflow-y:auto;padding:20px; }
+.ncv-modal.show { display:flex;align-items:flex-start;justify-content:center; }
+.ncv-modal-content { background:white;border-radius:8px;width:95%;max-width:860px;margin-top:16px;box-shadow:0 8px 40px rgba(0,0,0,0.35);overflow:hidden; }
+.ncv-modal-header { padding:16px 20px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to right,#2c3e50,#34495e);color:white; }
+.ncv-modal-header h2 { font-size:16px;font-weight:bold;margin:0; }
+.ncv-modal-body { padding:24px;max-height:80vh;overflow-y:auto; }
+.ncv-modal-footer { padding:14px 20px;background:#f8f9fa;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:10px; }
+.ncv-header-bar { background:#f8f9fa;border-left:5px solid #c0392b;padding:14px 18px;border-radius:4px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px; }
+.ncv-section-title { font-size:11px;font-weight:bold;text-transform:uppercase;color:#fff;background:#34495e;padding:5px 10px;border-radius:3px;margin:14px 0 8px;letter-spacing:.5px;display:inline-block; }
+.ncv-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px; }
+.ncv-field { background:#f8f9fa;border:1px solid #e8ecf0;border-radius:4px;padding:8px 10px; }
+.ncv-label { font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px; }
+.ncv-value { font-size:12px;color:#333;font-weight:600; }
+.ncv-text-block { background:#f8f9fa;border:1px solid #e0e0e0;border-left:3px solid #3498db;border-radius:3px;padding:10px 12px;font-size:12px;line-height:1.6;margin-bottom:12px;color:#333; }
+@media (max-width:600px) { .ncv-grid { grid-template-columns:1fr 1fr; } }
+</style>
+<div id="modalVisualizarNC" class="ncv-modal">
+    <div class="ncv-modal-content">
+        <div class="ncv-modal-header">
+            <h2 id="ncvModalTitulo">Visualizar Registro</h2>
+            <button style="background:none;border:none;color:white;font-size:24px;cursor:pointer;line-height:1;opacity:.8;" onclick="fecharModalVisualizarNC()">×</button>
+        </div>
+        <div class="ncv-modal-body" id="ncvModalBody"></div>
+        <div class="ncv-modal-footer">
+            <button class="nc-btn nc-btn-secondary" onclick="fecharModalVisualizarNC()">Fechar</button>
+            <button class="nc-btn nc-btn-info" onclick="imprimirVisualizacao()">🖨️ Imprimir</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
 <!-- SCRIPT: NC / DEVOLUÇÃO -->
 <!-- ============================================================ -->
 <script>
@@ -12155,8 +12228,9 @@ function renderizarNC(lista) {
             <td style="padding:7px 6px;text-align:center;">${ncBadgeStatus(nc.status)}</td>
             <td style="padding:7px 6px;text-align:center;">${prazoVenc}</td>
             <td style="padding:7px 6px;text-align:center;">
-                <button class="nc-btn nc-btn-info nc-btn-sm" onclick="abrirModalNC(${nc.id})" title="Editar">✏️</button>
-                <button class="nc-btn nc-btn-danger nc-btn-sm" onclick="excluirNC(${nc.id})" title="Excluir" style="margin-left:4px;">🗑️</button>
+                <button class="nc-btn nc-btn-sm" style="background:#6c757d;color:white;" onclick="visualizarNC(${nc.id})" title="Visualizar">👁️</button>
+                ${_podeEditarNC() ? `<button class="nc-btn nc-btn-info nc-btn-sm" onclick="abrirModalNC(${nc.id})" title="Editar" style="margin-left:4px;">✏️</button>` : ''}
+                ${_podeEditarNC() ? `<button class="nc-btn nc-btn-danger nc-btn-sm" onclick="excluirNC(${nc.id})" title="Excluir" style="margin-left:4px;">🗑️</button>` : ''}
             </td>
         </tr>`;
     }).join('');
@@ -12341,8 +12415,9 @@ function renderizarDev(lista) {
         <td style="padding:7px 6px;text-align:left;">${dev.motivo||'-'}</td>
         <td style="padding:7px 6px;text-align:center;">${ncBadgeStatus(dev.status)}</td>
         <td style="padding:7px 6px;text-align:center;">
-            <button class="nc-btn nc-btn-info nc-btn-sm" onclick="abrirModalDev(${dev.id})" title="Editar">✏️</button>
-            <button class="nc-btn nc-btn-danger nc-btn-sm" onclick="excluirDev(${dev.id})" title="Excluir" style="margin-left:4px;">🗑️</button>
+            <button class="nc-btn nc-btn-sm" style="background:#6c757d;color:white;" onclick="visualizarDev(${dev.id})" title="Visualizar">👁️</button>
+            ${_podeEditarNC() ? `<button class="nc-btn nc-btn-info nc-btn-sm" onclick="abrirModalDev(${dev.id})" title="Editar" style="margin-left:4px;">✏️</button>` : ''}
+            ${_podeEditarNC() ? `<button class="nc-btn nc-btn-danger nc-btn-sm" onclick="excluirDev(${dev.id})" title="Excluir" style="margin-left:4px;">🗑️</button>` : ''}
         </td>
     </tr>`).join('');
 }
@@ -12661,7 +12736,176 @@ async function carregarNCeDevSupabase() {
     }
 }
 
-// NC e Devoluções são carregadas após login via carregarTodosAsync (integrado ao fluxo de login).
+// =====================================================================
+// ✅ CONTROLE DE PERMISSÃO NC/DEV — baseado na flag somente_ver_nc
+// =====================================================================
+function _podeEditarNC() {
+    if (perfilAtual === 'admin') return true;
+    const user = USUARIOS[usuarioAtual] || {};
+    let perms = user.perms || {};
+    if (typeof perms === 'string') { try { perms = JSON.parse(perms); } catch(e) { perms = {}; } }
+    return !perms.somente_ver_nc;
+}
+
+// =====================================================================
+// ✅ VISUALIZAÇÃO NC — estilo relatório/impressão (somente leitura)
+// =====================================================================
+function visualizarNC(id) {
+    const nc = listaNC.find(n => String(n.id) === String(id));
+    if (!nc) return;
+    const causas = typeof nc.causas === 'string' ? JSON.parse(nc.causas || '[]') : (nc.causas || []);
+    const gravColor = nc.gravidade === 'Crítica' ? '#c0392b' : nc.gravidade === 'Maior' ? '#e67e22' : '#27ae60';
+    const imgs = typeof nc.imagens === 'string' ? JSON.parse(nc.imagens || '[]') : (nc.imagens || []);
+    const imgsHtml = imgs.length
+        ? `<div class="ncv-section-title">📷 Evidências Fotográficas</div>
+           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">${imgs.map(img => `<img src="${img.dataUrl}" style="max-width:140px;max-height:100px;border-radius:4px;border:1px solid #ddd;">`).join('')}</div>`
+        : '';
+    const fld = (label, val) => `<div class="ncv-field"><div class="ncv-label">${label}</div><div class="ncv-value">${val||'-'}</div></div>`;
+    document.getElementById('ncvModalBody').innerHTML = `
+        <div class="ncv-header-bar">
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                <span style="font-size:20px;font-weight:900;color:#c0392b;">${nc.numero}</span>
+                <span style="padding:4px 14px;border-radius:20px;background:${gravColor};color:white;font-weight:bold;font-size:12px;">⚠️ ${nc.gravidade||'-'}</span>
+                ${ncBadgeStatus(nc.status)}
+            </div>
+            <div style="font-size:11px;color:#888;">Emitido em: ${new Date().toLocaleString('pt-BR')}</div>
+        </div>
+        <div class="ncv-section-title">1. Identificação</div>
+        <div class="ncv-grid">
+            ${fld('Data de Abertura', ncFmtData(nc.data))}
+            ${fld('Tipo de NC', nc.tipo)}
+            ${fld('Produto / Item', nc.produto)}
+            ${fld('Lote / Nº NF', nc.lote)}
+            ${fld('Fornecedor / Origem', nc.fornecedor)}
+            ${fld('Local de Detecção', nc.local)}
+            ${fld('Placa do Veículo', nc.placa)}
+        </div>
+        <div class="ncv-section-title">2. Descrição da Não Conformidade</div>
+        <div class="ncv-text-block">${nc.descricao||'-'}</div>
+        <div class="ncv-section-title">3. Causas Identificadas</div>
+        <div class="ncv-text-block">${causas.length ? causas.join(', ') : '-'}</div>
+        <div class="ncv-section-title">4. Ação Imediata / Disposição do Material</div>
+        <div class="ncv-grid">
+            ${fld('Disposição do Material', nc.disposicao)}
+            ${fld('Responsável pela Ação', nc.resp_acao)}
+        </div>
+        <div class="ncv-text-block">${nc.acao_imediata||'-'}</div>
+        <div class="ncv-section-title">5. Ação Corretiva / Preventiva</div>
+        <div class="ncv-grid">
+            ${fld('Responsável pela Correção', nc.responsavel)}
+            ${fld('Prazo para Conclusão', ncFmtData(nc.prazo))}
+        </div>
+        <div class="ncv-section-title">6. Análise de Causa Raiz</div>
+        <div class="ncv-text-block">${nc.causa_raiz||'-'}</div>
+        <div class="ncv-section-title">Ação Corretiva</div>
+        <div class="ncv-text-block">${nc.acao_corretiva||'-'}</div>
+        <div class="ncv-section-title">7. Encerramento</div>
+        <div class="ncv-grid">
+            ${fld('Data de Encerramento', ncFmtData(nc.data_enc))}
+            ${fld('Eficácia da Ação', nc.eficacia)}
+        </div>
+        <div class="ncv-section-title">8. Observações</div>
+        <div class="ncv-text-block">${nc.obs||'-'}</div>
+        ${imgsHtml}
+    `;
+    document.getElementById('ncvModalTitulo').textContent = '📋 Não Conformidade — ' + nc.numero;
+    document.getElementById('modalVisualizarNC').classList.add('show');
+}
+
+function visualizarDev(id) {
+    const dev = listaDev.find(d => String(d.id) === String(id));
+    if (!dev) return;
+    const classif = typeof dev.classificacao === 'string' ? JSON.parse(dev.classificacao || '[]') : (dev.classificacao || []);
+    const imgs = typeof dev.imagens === 'string' ? JSON.parse(dev.imagens || '[]') : (dev.imagens || []);
+    const imgsHtml = imgs.length
+        ? `<div class="ncv-section-title">📷 Evidências Fotográficas</div>
+           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">${imgs.map(img => `<img src="${img.dataUrl}" style="max-width:140px;max-height:100px;border-radius:4px;border:1px solid #ddd;">`).join('')}</div>`
+        : '';
+    const fld = (label, val) => `<div class="ncv-field"><div class="ncv-label">${label}</div><div class="ncv-value">${val||'-'}</div></div>`;
+    let classifHtml = '';
+    if (classif.length) {
+        classifHtml = `<div class="ncv-section-title">3. Parâmetros Avaliados</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;">
+            <thead><tr style="background:#d35400;color:white;">
+                <th style="padding:7px 10px;text-align:left;">Avaliado</th>
+                <th style="padding:7px 10px;">Resultado (%)</th>
+                <th style="padding:7px 10px;">Parâmetro (%)</th>
+                <th style="padding:7px 10px;">Status</th>
+            </tr></thead>
+            <tbody>${classif.map((c, i) => {
+                const r = parseFloat(c.resultado||0), p = parseFloat(c.parametro||0);
+                const nc2 = r > p;
+                return `<tr style="background:${i%2===0?'#fff':'#fef5e7'};">
+                    <td style="padding:5px 10px;font-weight:600;">${c.defeito||'-'}</td>
+                    <td style="text-align:center;color:${nc2?'#e74c3c':'#27ae60'};font-weight:bold;">${r.toFixed(2)}%</td>
+                    <td style="text-align:center;color:#7f8c8d;">${p.toFixed(2)}%</td>
+                    <td style="text-align:center;color:${nc2?'#e74c3c':'#27ae60'};font-weight:bold;">${nc2?'⚠ NC':'✔ OK'}</td>
+                </tr>`;
+            }).join('')}</tbody>
+        </table>`;
+    }
+    document.getElementById('ncvModalBody').innerHTML = `
+        <div class="ncv-header-bar" style="border-left-color:#d35400;">
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                <span style="font-size:20px;font-weight:900;color:#d35400;">${dev.numero}</span>
+                ${ncBadgeStatus(dev.status)}
+            </div>
+            <div style="font-size:11px;color:#888;">Emitido em: ${new Date().toLocaleString('pt-BR')}</div>
+        </div>
+        <div class="ncv-section-title">1. Identificação da Devolução</div>
+        <div class="ncv-grid">
+            ${fld('Data', ncFmtData(dev.data))}
+            ${fld('Tipo de Devolução', dev.tipo)}
+            ${fld('Produto', dev.produto)}
+            ${fld('Lote / Nº NF', dev.lote)}
+            ${fld('Fornecedor', dev.fornecedor)}
+            ${fld('Placa do Veículo', dev.placa)}
+        </div>
+        <div class="ncv-section-title">2. Motivo da Devolução</div>
+        <div class="ncv-grid">
+            ${fld('Motivo Principal', dev.motivo)}
+        </div>
+        ${classifHtml}
+        ${imgsHtml}
+    `;
+    document.getElementById('ncvModalTitulo').textContent = '↩️ Devolução — ' + dev.numero;
+    document.getElementById('modalVisualizarNC').classList.add('show');
+}
+
+function fecharModalVisualizarNC() {
+    document.getElementById('modalVisualizarNC').classList.remove('show');
+}
+function imprimirVisualizacao() {
+    const conteudo = document.getElementById('ncvModalBody').innerHTML;
+    const titulo = document.getElementById('ncvModalTitulo').textContent;
+    const win = window.open('', '_blank', 'width=900,height=700');
+    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+    <title>${titulo}</title>
+    <style>
+        body{font-family:Arial,sans-serif;background:#fff;margin:0;padding:20px;color:#333;}
+        .ncv-header-bar{background:#f8f9fa;border-left:5px solid #c0392b;padding:14px 18px;border-radius:4px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;}
+        .ncv-section-title{font-size:11px;font-weight:bold;text-transform:uppercase;color:#fff;background:#34495e;padding:5px 10px;border-radius:3px;margin:14px 0 8px;letter-spacing:.5px;display:inline-block;}
+        .ncv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+        .ncv-field{background:#f8f9fa;border:1px solid #e8ecf0;border-radius:4px;padding:8px 10px;}
+        .ncv-label{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+        .ncv-value{font-size:12px;color:#333;font-weight:600;}
+        .ncv-text-block{background:#f8f9fa;border:1px solid #e0e0e0;border-left:3px solid #3498db;border-radius:3px;padding:10px 12px;font-size:12px;line-height:1.6;margin-bottom:12px;}
+        table{width:100%;border-collapse:collapse;font-size:12px;}
+        th{background:#d35400;color:white;padding:7px 10px;}
+        td{padding:5px 10px;border-bottom:1px solid #eee;}
+        img{max-width:140px;max-height:100px;margin:4px;}
+        @media print{body{padding:10px;} button{display:none;}}
+    </style></head><body>
+    <div style="text-align:center;margin-bottom:18px;">
+        <div style="font-size:18px;font-weight:900;text-transform:uppercase;color:#0a1e7f;">AGRONOR ALIMENTOS</div>
+        <div style="font-size:13px;color:#666;">${titulo}</div>
+    </div>
+    ${conteudo}
+    </body></html>`);
+    win.document.close();
+    setTimeout(() => win.print(), 400);
+}
+
 
 // =====================================================================
 // ✅ MELHORIA: CARREGARPARAMETROS via SDK seguro (sem SUPABASE_KEY)
