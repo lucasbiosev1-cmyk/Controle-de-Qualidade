@@ -12390,7 +12390,7 @@ function fecharModalDev() { document.getElementById('modalDev').classList.remove
 
 function limparFormDev() {
     ['dev-numero','dev-data','dev-produto','dev-lote','dev-fornecedor','dev-placa',
-     'dev-edit-id']
+     'dev-edit-id','dev-parametro','dev-desc-motivo']
         .forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
     ['dev-tipo','dev-motivo'].forEach(id => { const el = document.getElementById(id); if(el) el.selectedIndex=0; });
     devImagens = []; renderImgsNC('dev');
@@ -12399,7 +12399,8 @@ function limparFormDev() {
 function preencherFormDev(dev) {
     const map = { 'dev-numero':'numero','dev-data':'data','dev-tipo':'tipo',
                   'dev-produto':'produto','dev-lote':'lote','dev-fornecedor':'fornecedor',
-                  'dev-placa':'placa','dev-motivo':'motivo','dev-status':'status' };
+                  'dev-placa':'placa','dev-motivo':'motivo','dev-status':'status',
+                  'dev-parametro':'parametro','dev-desc-motivo':'desc_motivo' };
     Object.entries(map).forEach(([id, key]) => { const el = document.getElementById(id); if(el) el.value = dev[key] || ''; });
     devImagens = typeof dev.imagens === 'string' ? JSON.parse(dev.imagens || '[]') : (dev.imagens || []);
     renderImgsNC('dev');
@@ -12439,6 +12440,8 @@ async function salvarDev() {
         tipo:           document.getElementById('dev-tipo').value,
         lote:           document.getElementById('dev-lote').value,
         placa:          document.getElementById('dev-placa') ? document.getElementById('dev-placa').value.toUpperCase() : '',
+        parametro:      document.getElementById('dev-parametro')?.value || '',
+        desc_motivo:    document.getElementById('dev-desc-motivo')?.value || '',
         status:         document.getElementById('dev-status').value || 'Concluída',
         classificacao:  JSON.stringify(classifData),
         imagens:        JSON.stringify(devImagens.slice()),
@@ -12944,6 +12947,8 @@ function visualizarDev(id) {
         <div class="ncv-section-title">2. Motivo da Devolução</div>
         <div class="ncv-grid">
             ${fld('Motivo Principal', dev.motivo)}
+            ${dev.parametro ? fld('Parâmetro Não Conforme', dev.parametro) : ''}
+            ${dev.desc_motivo ? `<div class="ncv-field" style="grid-column:1/-1"><div class="ncv-label">Descrição do Motivo</div><div class="ncv-value" style="font-weight:400;line-height:1.5;">${dev.desc_motivo}</div></div>` : ''}
         </div>
         ${classifHtml}
         ${imgsHtml}
