@@ -2569,7 +2569,7 @@
                             </tr>
                         </thead>
                         <tbody id="ncBody">
-                            <tr><td colspan="11">
+                            <tr><td colspan="10">
                                 <div style="text-align:center;padding:40px 20px;color:#95a5a6;">
                                     <div style="font-size:48px;margin-bottom:12px;opacity:0.4;">📋</div>
                                     <p style="font-size:13px;">Nenhuma não conformidade registrada. Clique em <strong>+ Nova NC</strong> para começar.</p>
@@ -2642,11 +2642,10 @@
                                 <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Data</th>
                                 <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Produto</th>
                                 <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Fornecedor</th>
-                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Qtd / Unid</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">NF Entrada</th>
+                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Placa Veículo</th>
                                 <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Motivo</th>
-                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Responsável</th>
                                 <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Status</th>
-                                <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">NF Devolução</th>
                                 <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Ações</th>
                             </tr>
                         </thead>
@@ -12214,7 +12213,8 @@ function abrirModalDev(id = null) {
     const hoje = new Date().toISOString().slice(0,10);
     document.getElementById('dev-data').value = hoje;
     if (id === null) {
-        document.getElementById('dev-numero').value = 'DEV-' + String(devIdSeq).padStart(4, '0');
+        // Número provisório até o fornecedor ser informado; será recalculado no salvarDev()
+        document.getElementById('dev-numero').value = 'DEV-????';
         document.getElementById('modalDevTitulo').textContent = 'Nova Devolução';
         document.getElementById('modalDevNumero').textContent = 'Registro de devolução ao fornecedor';
         document.getElementById('dev-edit-id').value = '';
@@ -12238,10 +12238,8 @@ function abrirModalDev(id = null) {
 function fecharModalDev() { document.getElementById('modalDev').classList.remove('show'); }
 
 function limparFormDev() {
-    ['dev-numero','dev-data','dev-produto','dev-lote','dev-fornecedor','dev-placa','dev-cnpj',
-     'dev-qtd','dev-parametro','dev-desc-motivo','dev-nf','dev-dt-coleta',
-     'dev-transportadora','dev-contato','dev-responsavel','dev-valor',
-     'dev-dt-conclusao','dev-obs','dev-edit-id']
+    ['dev-numero','dev-data','dev-produto','dev-lote','dev-fornecedor','dev-placa',
+     'dev-edit-id']
         .forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
     ['dev-tipo','dev-motivo'].forEach(id => { const el = document.getElementById(id); if(el) el.selectedIndex=0; });
     devImagens = []; renderImgsNC('dev');
@@ -12250,12 +12248,7 @@ function limparFormDev() {
 function preencherFormDev(dev) {
     const map = { 'dev-numero':'numero','dev-data':'data','dev-nc-vinc':'nc_vinc','dev-tipo':'tipo',
                   'dev-produto':'produto','dev-lote':'lote','dev-fornecedor':'fornecedor',
-                  'dev-cnpj':'cnpj','dev-qtd':'qtd','dev-unidade':'unidade','dev-motivo':'motivo',
-                  'dev-placa':'placa',
-                  'dev-parametro':'parametro','dev-desc-motivo':'desc_motivo','dev-nf':'nf',
-                  'dev-dt-coleta':'dt_coleta','dev-transportadora':'transportadora',
-                  'dev-contato':'contato','dev-responsavel':'responsavel','dev-valor':'valor',
-                  'dev-disposicao':'disposicao','dev-status':'status','dev-dt-conclusao':'dt_conclusao','dev-obs':'obs' };
+                  'dev-placa':'placa','dev-motivo':'motivo','dev-status':'status' };
     Object.entries(map).forEach(([id, key]) => { const el = document.getElementById(id); if(el) el.value = dev[key] || ''; });
     devImagens = typeof dev.imagens === 'string' ? JSON.parse(dev.imagens || '[]') : (dev.imagens || []);
     renderImgsNC('dev');
@@ -12279,29 +12272,24 @@ async function salvarDev() {
         return { defeito: inputs[0]?.value||'', resultado: inputs[1]?.value||'', parametro: inputs[2]?.value||'' };
     }).filter(c => c.defeito);
     const editId = document.getElementById('dev-edit-id').value;
+
+    // Calcula o número sequencial por fornecedor
+    const qtdForn = listaDev.filter(d =>
+        (d.fornecedor || '').trim().toLowerCase() === fornecedor.toLowerCase() &&
+        (editId ? String(d.id) !== String(editId) : true)
+    ).length + 1;
+    const numeroCalculado = 'DEV-' + String(qtdForn).padStart(4, '0');
+    document.getElementById('dev-numero').value = numeroCalculado;
+
     const dev = {
         id:             editId ? parseInt(editId) : Date.now(),
-        numero:         document.getElementById('dev-numero').value,
+        numero:         numeroCalculado,
         data, produto, fornecedor, motivo,
         nc_vinc:        document.getElementById('dev-nc-vinc').value,
         tipo:           document.getElementById('dev-tipo').value,
         lote:           document.getElementById('dev-lote').value,
         placa:          document.getElementById('dev-placa') ? document.getElementById('dev-placa').value.toUpperCase() : '',
-        cnpj:           document.getElementById('dev-cnpj').value,
-        qtd:            document.getElementById('dev-qtd').value,
-        unidade:        document.getElementById('dev-unidade').value,
-        parametro:      document.getElementById('dev-parametro').value,
-        desc_motivo:    document.getElementById('dev-desc-motivo').value,
-        nf:             document.getElementById('dev-nf').value,
-        dt_coleta:      document.getElementById('dev-dt-coleta').value,
-        transportadora: document.getElementById('dev-transportadora').value,
-        contato:        document.getElementById('dev-contato').value,
-        responsavel:    document.getElementById('dev-responsavel').value,
-        valor:          document.getElementById('dev-valor').value,
-        disposicao:     document.getElementById('dev-disposicao').value,
         status:         document.getElementById('dev-status').value || 'Concluída',
-        dt_conclusao:   document.getElementById('dev-dt-conclusao').value,
-        obs:            document.getElementById('dev-obs').value,
         classificacao:  JSON.stringify(classifData),
         imagens:        JSON.stringify(devImagens.slice()),
     };
@@ -12351,11 +12339,10 @@ function renderizarDev(lista) {
         <td style="padding:7px 6px;text-align:center;">${ncFmtData(dev.data)}</td>
         <td style="padding:7px 6px;text-align:center;">${dev.produto||'-'}</td>
         <td style="padding:7px 6px;text-align:center;">${dev.fornecedor||'-'}</td>
-        <td style="padding:7px 6px;text-align:center;">${dev.qtd||'-'} ${dev.unidade||''}</td>
+        <td style="padding:7px 6px;text-align:center;">${dev.lote||'-'}</td>
+        <td style="padding:7px 6px;text-align:center;">${dev.placa||'-'}</td>
         <td style="padding:7px 6px;text-align:left;">${dev.motivo||'-'}</td>
-        <td style="padding:7px 6px;text-align:center;">${dev.responsavel||'-'}</td>
         <td style="padding:7px 6px;text-align:center;">${ncBadgeStatus(dev.status)}</td>
-        <td style="padding:7px 6px;text-align:center;">${dev.nf||'-'}</td>
         <td style="padding:7px 6px;text-align:center;">
             <button class="nc-btn nc-btn-info nc-btn-sm" onclick="abrirModalDev(${dev.id})" title="Editar">✏️</button>
             <button class="nc-btn nc-btn-danger nc-btn-sm" onclick="excluirDev(${dev.id})" title="Excluir" style="margin-left:4px;">🗑️</button>
