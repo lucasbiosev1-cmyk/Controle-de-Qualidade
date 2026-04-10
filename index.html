@@ -427,8 +427,15 @@
             .nav-tab { padding: 8px 12px; font-size: 11px; }
         }
 
+        /* ========== ELEMENTOS MOBILE — OCULTOS EM DESKTOP ========== */
+        #mobileNavBar { display: none; }
+        #mobileMenuPanel { display: none; }
+        #mobileMenuOverlay { display: none; }
+
         /* ========== RESPONSIVO MOBILE COMPLETO ========== */
         @media (max-width: 600px) {
+            #mobileMenuPanel { display: block; }
+            #mobileMenuOverlay { display: none; /* controlado por JS */ }
             /* HEADER */
             .header { padding: 10px 12px; flex-wrap: wrap; gap: 8px; }
             .header h1 { font-size: 15px; }
@@ -450,8 +457,8 @@
             #mobileMenuBtn span::after  { top: 6px; }
             #mobileMenuOverlay { display: none; position: fixed; inset: 0; z-index: 8000; background: rgba(0,0,0,0.45); }
             #mobileMenuOverlay.open { display: block; }
-            #mobileMenuPanel { position: fixed; top: 0; left: 0; bottom: 0; width: 80vw; max-width: 300px; z-index: 8001; background: #1a2a6e; overflow-y: auto; transform: translateX(-100%); transition: transform .25s ease; }
-            #mobileMenuPanel.open { transform: translateX(0); }
+            #mobileMenuPanel { position: fixed; top: 0; left: 0; bottom: 0; width: 80vw; max-width: 300px; z-index: 8001; background: #1a2a6e; overflow-y: auto; transform: translateX(-100%); transition: transform .25s ease; visibility: hidden; }
+            #mobileMenuPanel.open { transform: translateX(0); visibility: visible; }
             .mob-menu-header { padding: 20px 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: space-between; }
             .mob-menu-title { color: white; font-weight: 800; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', Arial, sans-serif; }
             .mob-close { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 22px; cursor: pointer; padding: 4px; line-height: 1; }
@@ -4763,13 +4770,18 @@ function mobNavNC(secao, titulo) {
 (function() {
     function ajustarNav() {
         const mob = document.getElementById('mobileNavBar');
+        const panel = document.getElementById('mobileMenuPanel');
+        const overlay = document.getElementById('mobileMenuOverlay');
         const desk = document.querySelector('.nav-tabs');
         if (!mob || !desk) return;
         if (window.innerWidth <= 600) {
             mob.style.display = 'flex';
+            if (panel) panel.style.display = 'block';
             desk.style.display = 'none';
         } else {
             mob.style.display = 'none';
+            if (panel) { panel.style.display = 'none'; panel.classList.remove('open'); }
+            if (overlay) { overlay.style.display = 'none'; overlay.classList.remove('open'); }
             desk.style.display = 'flex';
         }
     }
