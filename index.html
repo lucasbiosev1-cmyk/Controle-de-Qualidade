@@ -5579,16 +5579,18 @@ function renderCards(e, analNome, eDPG) {
 }
 
 function renderGraficoLinha(di, df, dados, analise, analNome, cor, racoesAlvo) {
-    // Gerar datas do período
-    const datas = [];
-    const cur   = new Date(di+'T00:00:00');
-    const fim   = new Date(df+'T00:00:00');
-    while (cur <= fim) { datas.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate()+1); }
+    // Usar apenas as datas que possuem registro real (sem gaps/nulos no eixo X)
+    const todasDatas = [];
+    const cur = new Date(di+'T00:00:00');
+    const fim = new Date(df+'T00:00:00');
+    while (cur <= fim) { todasDatas.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate()+1); }
 
-    // Média por dia
+    // Filtrar apenas datas com pelo menos 1 registro
+    const datas = todasDatas.filter(d => dados.some(r => r.data === d));
+
+    // Valor por dia (somente datas com registro — sem nulls)
     const mediaDia = datas.map(d => {
         const dd = dados.filter(r => r.data === d);
-        if (!dd.length) return null;
         return parseFloat((dd.reduce((s,r)=>s+getValor(r,analise),0)/dd.length).toFixed(2));
     });
 
@@ -5628,8 +5630,8 @@ function renderGraficoLinha(di, df, dados, analise, analNome, cor, racoesAlvo) {
         label: analNome, data: mediaDia,
         borderColor: cor, backgroundColor: cor+'22',
         borderWidth: 2.5, fill: true, tension: 0.4,
-        pointRadius: 4, pointBackgroundColor: cor,
-        pointBorderColor: '#fff', pointBorderWidth: 2, spanGaps: true
+        pointRadius: 5, pointBackgroundColor: cor,
+        pointBorderColor: '#fff', pointBorderWidth: 2, spanGaps: false
     }];
 
     if (temMin) {
