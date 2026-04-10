@@ -1409,7 +1409,7 @@
             <button class="mob-item" onclick="mobNavNC('aba-dev-inner','Devolução')">↩️ Devolução</button>
         </div>
         <div class="mob-section">
-            <button class="mob-item" onclick="mobNav('configuracoes','Configurações')">⚙️ Configurações</button>
+            <button class="mob-item" id="mobBtnConfiguracoes" onclick="mobNav('configuracoes','Configurações')">⚙️ Configurações</button>
         </div>
     </div>
 
@@ -4298,7 +4298,6 @@ const PERMS_DISPONIVEIS = [
     { key: 'entrada_aprovar',  label: 'Aprovar/Reprovar Ent.',  icon: '✅',  desc: 'Aprovar ou reprovar entradas de matéria prima' },
     { key: 'nao_conformidade', label: 'Não Conformidade/Dev.',   icon: '⚠️',  desc: 'Acessar aba de Não Conformidade e Devoluções' },
     // ── Restrições específicas ──────────────────────────────────────────
-    { key: 'ocultar_producao', label: 'Ocultar aba Produção',      icon: '🚫', desc: 'Esconde a aba Produção para este usuário', restricao: true },
     { key: 'somente_ver_nc',   label: 'Somente visualizar NC/Dev', icon: '👁️', desc: 'Impede criar/editar/excluir NC e Devoluções', restricao: true },
 ];
 
@@ -4641,6 +4640,8 @@ function aplicarPermissoes() {
     const temConfig = isAdmin || perms.backup || perms.memoria || perms.parametros || perms.whatsapp;
     const tabCfg2 = document.getElementById('tabConfiguracoes');
     if (tabCfg2) tabCfg2.style.display = temConfig ? 'inline-block' : 'none';
+    const mobCfg = document.getElementById('mobBtnConfiguracoes');
+    if (mobCfg) mobCfg.style.display = temConfig ? 'block' : 'none';
 
     // Relatórios — itens filhos
     const podeRel = isAdmin || perms.relatorios;
@@ -4682,13 +4683,9 @@ function aplicarPermissoes() {
     trocarAba('capa', document.getElementById('tabCapa'));
 
     // ✅ Restrições configuráveis por usuário (definidas no painel de usuários)
-    const _tabProdGil = document.getElementById('tabProducao');
     const _btnNovaNC  = document.getElementById('btnNovaNC');
     const _btnNovaDev = document.getElementById('btnNovaDev');
 
-    if (!isAdmin && perms.ocultar_producao) {
-        if (_tabProdGil) _tabProdGil.style.display = 'none';
-    }
     if (!isAdmin && perms.somente_ver_nc) {
         if (_btnNovaNC)  _btnNovaNC.style.display  = 'none';
         if (_btnNovaDev) _btnNovaDev.style.display = 'none';
