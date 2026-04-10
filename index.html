@@ -6744,9 +6744,9 @@ function renderRCGraficoLinha(di, df, dados, produtosAlvo, _semRebuildarChk) {
         _rcGrafDados = dados;
     }
 
-    const datas = [];
-    const cur = new Date(di+'T00:00:00'), fim = new Date(df+'T00:00:00');
-    while (cur <= fim) { datas.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate()+1); }
+    // ✅ CORREÇÃO: usar apenas dias que realmente tiveram análise
+    const todasDatasComDados = [...new Set(dados.map(r => r.data))].sort();
+    const datas = todasDatasComDados;
     const labelsX = datas.map(d => new Date(d+'T00:00:00').toLocaleDateString('pt-BR'));
 
     // Uma linha por produto se múltiplos, senão linha única
