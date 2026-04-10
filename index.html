@@ -5281,7 +5281,7 @@ function exibirTabelaProd() {
     tbody.innerHTML = filtrados.map(r => {
         const status = statusPorParametros(r, 'prod', r.racao, CAMPOS_PROD, r.data);
         const acaoTd = isAdmin
-            ? `<td><button class="btn-action btn-delete" onclick="deletarProd(${r.id})">Del</button></td>`
+            ? `<td><button class="btn-action btn-edit" onclick="abrirModalEdicaoProd(${r.id})" title="Editar">✏️</button><button class="btn-action btn-delete" onclick="deletarProd(${r.id})">Del</button></td>`
             : '';
         const racaoCell = r.obs
             ? `<td style="white-space:normal;text-align:left;min-width:150px;text-transform:uppercase;"><span class="obs-tooltip-wrap">${r.racao}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span></td>`
@@ -5363,7 +5363,13 @@ function abrirModalEdicaoClass(id) {
     document.getElementById('cadDataClass').value                 = dataParaDisplay(r.data);
     document.getElementById('cadHoraClass').value                 = r.hora;
     document.getElementById('cadNFClass').value                   = r.nf;
-    document.getElementById('cadLocalClass').value                = r.local;
+    // Busca case-insensitive pois o valor pode estar em maiúsculas no banco
+    (function() {
+        const sel = document.getElementById('cadLocalClass');
+        const rLocalUpper = (r.local || '').toUpperCase();
+        let matched = Array.from(sel.options).find(o => o.value.toUpperCase() === rLocalUpper);
+        sel.value = matched ? matched.value : r.local;
+    })();
     document.getElementById('cadFornecedorClass').value           = r.fornecedor;
     document.getElementById('cadProdutoClass').value              = r.produto;
     document.getElementById('cadQueimadoClass').value             = r.queimado;
@@ -5429,7 +5435,7 @@ function salvarClassificacao(event) {
     const r = {
         id: idEdicaoClass || Date.now(), data,
         hora:        document.getElementById('cadHoraClass').value,
-        nf: nf.toUpperCase(), local: local.toUpperCase(), fornecedor: fornecedor.toUpperCase(), produto: produto.toUpperCase(),
+        nf: nf.toUpperCase(), local: local, fornecedor: fornecedor.toUpperCase(), produto: produto.toUpperCase(),
         queimado:    _pfC('cadQueimadoClass'),
         esverdeado:  _pfC('cadEsverdeadoClass'),
         picado:      _pfC('cadPicadoClass'),
@@ -5475,7 +5481,7 @@ function exibirTabelaClass() {
         const avariado = getAvariados(r); // queimado+ardido+mofado+fermentando+chocho+gessado+germinado+picado+esverdeado
         const status = statusPorParametros(r, 'class', r.produto, CAMPOS_CLASS, r.data);
         const acaoTd = isAdmin
-            ? `<td><button class="btn-action btn-delete" onclick="deletarClass(${r.id})">Del</button></td>`
+            ? `<td><button class="btn-action btn-edit" onclick="abrirModalEdicaoClass(${r.id})" title="Editar">✏️</button><button class="btn-action btn-delete" onclick="deletarClass(${r.id})">Del</button></td>`
             : '';
         const fornCell = r.obs
             ? `<td style="white-space:normal;text-align:left;min-width:130px;text-transform:uppercase;"><span class="obs-tooltip-wrap">${r.fornecedor}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span></td>`
@@ -5690,7 +5696,7 @@ function exibirTabelaMP() {
     const isAdmin = perfilAtual === 'admin';
     tbody.innerHTML = filtrados.map(r => {
         const acaoTd = isAdmin
-            ? `<td><button class="btn-action btn-delete" onclick="deletarMP(${r.id})">Del</button></td>`
+            ? `<td><button class="btn-action btn-edit" onclick="abrirModalEdicaoMP(${r.id})" title="Editar">✏️</button><button class="btn-action btn-delete" onclick="deletarMP(${r.id})">Del</button></td>`
             : '';
         const fornCellMP = r.obs
             ? `<td style="white-space:normal;text-align:left;min-width:150px;text-transform:uppercase;"><span class="obs-tooltip-wrap">${r.fornecedor}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span></td>`
