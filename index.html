@@ -436,12 +436,17 @@
         @media (max-width: 600px) {
             #mobileMenuPanel { display: block; }
             #mobileMenuOverlay { display: none; /* controlado por JS */ }
-            /* HEADER */
-            .header { padding: 10px 12px; flex-wrap: wrap; gap: 8px; }
-            .header h1 { font-size: 15px; }
-            .header-left { gap: 10px; flex-wrap: wrap; }
-            .header-user { font-size: 10px; }
-            .btn-logout { padding: 5px 10px; font-size: 11px; }
+            /* HEADER — compacto no mobile */
+            #mainHeader { padding: 8px 12px !important; height: auto !important; min-height: 50px; }
+            .header-left { gap: 8px !important; }
+            /* Esconde separador e subtítulo */
+            #headerDivider { display: none !important; }
+            #headerSubtitle { display: none !important; }
+            /* Logo menor */
+            #mainHeader svg { width: 100px !important; }
+            /* Esconde nome/perfil, mantém avatar */
+            #headerUserInfo { display: none !important; }
+            .btn-logout { padding: 6px 12px; font-size: 11px; }
             .theme-switcher { display: none; }
 
             /* NAVEGAÇÃO - scroll horizontal */
@@ -469,7 +474,7 @@
             .mob-item.active { color: #27ae60; }
             /* Esconde a nav horizontal no mobile */
             .nav-tabs { display: none !important; }
-            #mobileNavBar { display: flex; align-items: center; gap: 8px; background: #1a3a9f; padding: 6px 12px; border-bottom: 3px solid #0a1e7f; }
+            #mobileNavBar { display: flex; align-items: center; gap: 8px; background: #1a3a9f; padding: 8px 12px; border-bottom: 3px solid #0a1e7f; position: relative; z-index: 100; width: 100%; box-sizing: border-box; }
             #mobileNavTitle { flex: 1; color: white; font-size: 12px; font-weight: 700; font-family: 'Montserrat', Arial, sans-serif; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
             /* CONTEÚDO */
@@ -1340,20 +1345,20 @@
 <!-- ========== SISTEMA PRINCIPAL ========== -->
 <div id="mainSystem">
 
-    <div class="header" style="padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;">
+    <div class="header" id="mainHeader" style="padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;">
         <div class="header-left" style="display:flex;align-items:center;gap:16px;">
             <!-- Logo somente texto -->
             <svg viewBox="0 0 160 44" width="140" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0;">
                 <text x="0" y="28" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="19" fill="#ffffff" letter-spacing=".5">AGRONOR</text>
                 <text x="1" y="40" font-family="Montserrat,Arial,sans-serif" font-weight="700" font-size="7" fill="#c0392b" letter-spacing="3.5">ALIMENTOS</text>
             </svg>
-            <div style="width:1px;height:24px;background:rgba(255,255,255,0.15);"></div>
-            <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.55);letter-spacing:1.5px;text-transform:uppercase;font-family:'Montserrat',Arial,sans-serif;">Gestão da Qualidade</div>
+            <div id="headerDivider" style="width:1px;height:24px;background:rgba(255,255,255,0.15);"></div>
+            <div id="headerSubtitle" style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.55);letter-spacing:1.5px;text-transform:uppercase;font-family:'Montserrat',Arial,sans-serif;">Gestão da Qualidade</div>
         </div>
         <div style="display:flex;align-items:center;gap:14px;">
             <div style="display:flex;align-items:center;gap:8px;">
                 <div style="width:28px;height:28px;border-radius:50%;background:#c0392b;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;" id="headerAvatar">U</div>
-                <div>
+                <div id="headerUserInfo">
                     <div class="header-user" style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">
                         <span id="nomeUsuario"></span>
                     </div>
