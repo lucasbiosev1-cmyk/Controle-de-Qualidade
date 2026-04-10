@@ -4319,7 +4319,8 @@ async function _carregarUsuariosSupabase() {
     try {
         const { data, error } = await _sbClient
             .from('perfis')
-            .select('*');
+            .select('*')
+            .eq('ativo', true);
         if (error) throw new Error(error.message);
         const mapa = {};
         (data || []).forEach(u => {
