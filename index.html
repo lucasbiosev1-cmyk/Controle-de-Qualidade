@@ -438,9 +438,32 @@
             .theme-switcher { display: none; }
 
             /* NAVEGAÇÃO - scroll horizontal */
-            .nav-tabs { overflow-x: auto; overflow-y: hidden; white-space: nowrap; display: flex; padding: 0 8px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+            .nav-tabs { overflow-x: auto; overflow-y: visible; white-space: nowrap; display: flex; padding: 0 8px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
             .nav-tabs::-webkit-scrollbar { display: none; }
             .nav-tab { padding: 8px 10px; font-size: 10px; flex-shrink: 0; }
+            .nav-dropdown-menu { position: fixed; top: auto; left: 0; right: 0; z-index: 9999; border-radius: 0; min-width: 100vw; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+            /* Hamburguer mobile */
+            #mobileMenuBtn { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: rgba(255,255,255,0.12); border: none; border-radius: 8px; cursor: pointer; flex-shrink: 0; }
+            #mobileMenuBtn span { display: block; width: 20px; height: 2px; background: white; border-radius: 2px; position: relative; }
+            #mobileMenuBtn span::before, #mobileMenuBtn span::after { content: ''; display: block; width: 20px; height: 2px; background: white; border-radius: 2px; position: absolute; left: 0; transition: transform .2s; }
+            #mobileMenuBtn span::before { top: -6px; }
+            #mobileMenuBtn span::after  { top: 6px; }
+            #mobileMenuOverlay { display: none; position: fixed; inset: 0; z-index: 8000; background: rgba(0,0,0,0.45); }
+            #mobileMenuOverlay.open { display: block; }
+            #mobileMenuPanel { position: fixed; top: 0; left: 0; bottom: 0; width: 80vw; max-width: 300px; z-index: 8001; background: #1a2a6e; overflow-y: auto; transform: translateX(-100%); transition: transform .25s ease; }
+            #mobileMenuPanel.open { transform: translateX(0); }
+            .mob-menu-header { padding: 20px 18px 14px; border-bottom: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: space-between; }
+            .mob-menu-title { color: white; font-weight: 800; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', Arial, sans-serif; }
+            .mob-close { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 22px; cursor: pointer; padding: 4px; line-height: 1; }
+            .mob-section { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
+            .mob-section-label { font-size: 9px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.4); padding: 8px 18px 4px; font-family: 'Montserrat', Arial, sans-serif; }
+            .mob-item { display: block; width: 100%; padding: 13px 18px; background: none; border: none; color: rgba(255,255,255,0.85); font-size: 13px; font-weight: 600; text-align: left; cursor: pointer; font-family: 'Montserrat', Arial, sans-serif; transition: background .15s; }
+            .mob-item:hover, .mob-item:active { background: rgba(255,255,255,0.1); color: white; }
+            .mob-item.active { color: #27ae60; }
+            /* Esconde a nav horizontal no mobile */
+            .nav-tabs { display: none !important; }
+            #mobileNavBar { display: flex; align-items: center; gap: 8px; background: #1a3a9f; padding: 6px 12px; border-bottom: 3px solid #0a1e7f; }
+            #mobileNavTitle { flex: 1; color: white; font-size: 12px; font-weight: 700; font-family: 'Montserrat', Arial, sans-serif; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
             /* CONTEÚDO */
             .tab-content { padding: 10px; }
@@ -1189,6 +1212,45 @@
         .capa-rodape strong { color: #bbb; font-weight: 600; }
         /* ocultar elementos antigos */
         .capa-badge, .capa-logo-circle, .capa-title, .capa-sub, .capa-divider { display: none !important; }
+
+        /* ── KPI cards — linha de módulos ── */
+        .capa-kpi-modulos { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 8px; }
+        .kpi-mod { background:#f8f8f7; border-radius:9px; padding:10px 14px; border-left:3px solid #ddd; }
+        .kpi-mod-label { font-size:9px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:#aaa; font-family:'Montserrat',Arial,sans-serif; margin-bottom:4px; }
+        .kpi-mod-row { display:flex; align-items:baseline; gap:6px; }
+        .kpi-mod-val { font-size:20px; font-weight:900; font-family:'Montserrat',Arial,sans-serif; line-height:1; }
+        .kpi-mod-pct { font-size:11px; font-weight:700; font-family:'Montserrat',Arial,sans-serif; }
+        .kpi-mod-bar { height:4px; background:#eee; border-radius:4px; margin-top:6px; overflow:hidden; }
+        .kpi-mod-bar-fill { height:100%; border-radius:4px; transition:width .6s ease; }
+        .kpi-mod-sub { font-size:9px; color:#bbb; font-weight:600; font-family:'Montserrat',Arial,sans-serif; margin-top:3px; }
+
+        /* ── Seta de tendência ── */
+        .kpi-trend { font-size:11px; font-weight:800; margin-left:6px; font-family:'Montserrat',Arial,sans-serif; }
+        .trend-up   { color:#27ae60; }
+        .trend-down { color:#c0392b; }
+        .trend-eq   { color:#aaa; }
+
+        /* ── Painel de alertas ── */
+        .capa-alertas { margin-bottom:18px; }
+        .capa-alertas-titulo { font-size:9.5px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:#c0c0be; margin-bottom:10px; font-family:'Montserrat',Arial,sans-serif; display:flex; align-items:center; gap:8px; }
+        .alerta-badge-count { background:#c0392b; color:#fff; border-radius:20px; padding:1px 7px; font-size:9px; }
+        .alerta-item { display:flex; align-items:flex-start; gap:10px; background:#fff; border:0.5px solid #e8e8e6; border-left:3px solid #ccc; border-radius:8px; padding:10px 14px; margin-bottom:7px; cursor:pointer; transition:box-shadow .15s; }
+        .alerta-item:hover { box-shadow:0 2px 10px rgba(0,0,0,0.07); }
+        .alerta-item.critico { border-left-color:#c0392b; }
+        .alerta-item.alto    { border-left-color:#e67e22; }
+        .alerta-item.medio   { border-left-color:#f39c12; }
+        .alerta-icone { font-size:15px; flex-shrink:0; margin-top:1px; }
+        .alerta-corpo { flex:1; min-width:0; }
+        .alerta-titulo { font-size:11px; font-weight:700; color:#2c3e50; font-family:'Montserrat',Arial,sans-serif; margin-bottom:2px; }
+        .alerta-desc   { font-size:10px; color:#888; font-weight:500; font-family:'Montserrat',Arial,sans-serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .alerta-tag { font-size:9px; font-weight:800; padding:2px 7px; border-radius:10px; white-space:nowrap; flex-shrink:0; align-self:center; font-family:'Montserrat',Arial,sans-serif; }
+        .tag-nc-critico { background:#fef0ee; color:#c0392b; }
+        .tag-nc-alto    { background:#fff3e0; color:#e67e22; }
+        .tag-param      { background:#fef9ee; color:#e5a000; }
+        .tag-vencido    { background:#fef0ee; color:#c0392b; }
+        .sem-alertas { text-align:center; padding:18px; color:#bbb; font-size:11px; font-family:'Montserrat',Arial,sans-serif; background:#f8f8f7; border-radius:8px; border:0.5px dashed #ddd; }
+        @media (max-width:900px) { .capa-kpi-modulos { grid-template-columns:1fr 1fr 1fr; } }
+        @media (max-width:600px) { .capa-kpi-modulos { grid-template-columns:1fr; } }
         @media (max-width: 900px) { .capa-kpis { grid-template-columns: repeat(2,1fr); } .capa-cards { grid-template-columns: repeat(2,1fr); } }
         @media (max-width: 600px) { .capa-cards { grid-template-columns: 1fr; } .capa-bottom { grid-template-columns: 1fr; } .capa-kpis { grid-template-columns: repeat(2,1fr); } }
 
@@ -1295,12 +1357,56 @@
         </div>
     </div>
 
+    <!-- Mobile nav bar (só aparece em telas pequenas) -->
+    <div id="mobileNavBar" style="display:none;">
+        <button id="mobileMenuBtn" onclick="abrirMenuMobile()" aria-label="Menu">
+            <span></span>
+        </button>
+        <span id="mobileNavTitle">SGQ — Início</span>
+    </div>
+    <!-- Overlay e painel mobile -->
+    <div id="mobileMenuOverlay" onclick="fecharMenuMobile()"></div>
+    <div id="mobileMenuPanel">
+        <div class="mob-menu-header">
+            <span class="mob-menu-title">Menu</span>
+            <button class="mob-close" onclick="fecharMenuMobile()">✕</button>
+        </div>
+        <div class="mob-section">
+            <button class="mob-item" onclick="mobNav('capa','Início')">🏠 Início</button>
+        </div>
+        <div class="mob-section">
+            <div class="mob-section-label">Lançamentos</div>
+            <button class="mob-item" onclick="mobNav('producao','Produção')">🌾 Produção</button>
+            <button class="mob-item" onclick="mobNav('materiaPrima','Matéria Prima')">🧪 Matéria Prima</button>
+            <button class="mob-item" onclick="mobNav('classificacao','Classificação')">🌽 Classificação</button>
+        </div>
+        <div class="mob-section">
+            <div class="mob-section-label">Relatórios</div>
+            <button class="mob-item" onclick="mobNav('relatorio','Rel. Produção')">📊 Rel. Produção</button>
+            <button class="mob-item" onclick="mobNav('relClass','Rel. Classificação')">📊 Rel. Classificação</button>
+            <button class="mob-item" onclick="mobNav('relMP','Rel. Mat. Prima')">🧪 Rel. Mat. Prima</button>
+            <button class="mob-item" onclick="mobNav('ranking','Ranking')">🏆 Ranking</button>
+            <button class="mob-item" onclick="mobNav('boletim','Boletim Industrial')">📋 Boletim Industrial</button>
+        </div>
+        <div class="mob-section">
+            <button class="mob-item" onclick="mobNav('entradaMP','Entradas Mat. Prima')">📥 Entradas Mat. Prima</button>
+        </div>
+        <div class="mob-section">
+            <div class="mob-section-label">Não Conformidade</div>
+            <button class="mob-item" onclick="mobNavNC('aba-nc-inner','Não Conformidade')">⚠️ Não Conformidade</button>
+            <button class="mob-item" onclick="mobNavNC('aba-dev-inner','Devolução')">↩️ Devolução</button>
+        </div>
+        <div class="mob-section">
+            <button class="mob-item" onclick="mobNav('configuracoes','Configurações')">⚙️ Configurações</button>
+        </div>
+    </div>
+
     <div class="nav-tabs" style="flex-wrap:nowrap;align-items:stretch;padding:0;">
         <!-- CAPA -->
         <button class="nav-tab active" id="tabCapa" onclick="trocarAba('capa', this)">🏠 Início</button>
         <!-- LANÇAMENTOS dropdown -->
         <div class="nav-dropdown" id="ndLancamentos">
-            <button class="nav-tab nav-dropdown-btn" id="tabLancamentos" onclick="toggleDropdown('ndLancamentos')">
+            <button class="nav-tab nav-dropdown-btn" id="tabLancamentos" onclick=\"toggleDropdown('ndLancamentos', event)\">
                 🌾 Lançamentos ▾
             </button>
             <div class="nav-dropdown-menu">
@@ -1311,7 +1417,7 @@
         </div>
         <!-- RELATÓRIOS dropdown -->
         <div class="nav-dropdown" id="ndRelatorios">
-            <button class="nav-tab nav-dropdown-btn" id="tabRelatorios" onclick="toggleDropdown('ndRelatorios')">
+            <button class="nav-tab nav-dropdown-btn" id="tabRelatorios" onclick=\"toggleDropdown('ndRelatorios', event)\">
                 📊 Relatórios ▾
             </button>
             <div class="nav-dropdown-menu">
@@ -1326,7 +1432,7 @@
         <button class="nav-tab" id="tabEntradaMP" onclick="trocarAba('entradaMP', this)">📥 Entradas Mat. Prima</button>
         <!-- NÃO CONFORMIDADE / DEVOLUÇÃO dropdown -->
         <div class="nav-dropdown" id="ndNaoConformidade">
-            <button class="nav-tab nav-dropdown-btn" id="tabNaoConformidade" onclick="toggleDropdown('ndNaoConformidade')">
+            <button class="nav-tab nav-dropdown-btn" id="tabNaoConformidade" onclick=\"toggleDropdown('ndNaoConformidade', event)\">
                 ⚠️ Não Conformidade ▾
             </button>
             <div class="nav-dropdown-menu">
@@ -1354,6 +1460,7 @@
 
                 <!-- KPIs -->
                 <div class="capa-kpis">
+                    <!-- Card 1: Análises Hoje -->
                     <div class="capa-kpi">
                         <div class="capa-kpi-accent" style="background:#1a2a6e;"></div>
                         <div class="capa-kpi-top">
@@ -1367,44 +1474,94 @@
                         </div>
                         <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiAnalisesBar" style="width:0%;background:#1a2a6e;"></div></div>
                     </div>
+                    <!-- Card 2: Conformidade Produção -->
                     <div class="capa-kpi">
                         <div class="capa-kpi-accent" style="background:#27ae60;"></div>
                         <div class="capa-kpi-top">
-                            <div class="capa-kpi-label">Conformidade</div>
-                            <div class="capa-kpi-icon" style="background:#edfaf4;">✅</div>
+                            <div class="capa-kpi-label">Conformidade — Produção</div>
+                            <div class="capa-kpi-icon" style="background:#edfaf4;">🌾</div>
                         </div>
-                        <div class="capa-kpi-value" id="kpiConformidade" style="color:#27ae60;">—</div>
+                        <div style="display:flex;align-items:baseline;gap:4px;">
+                            <div class="capa-kpi-value" id="kpiConfProd" style="color:#27ae60;">—</div>
+                            <span class="kpi-trend" id="kpiConfProdTrend"></span>
+                        </div>
                         <div class="capa-kpi-row">
-                            <div class="capa-kpi-sub capa-kpi-up">Lotes conformes</div>
-                            <span class="capa-kpi-badge" id="kpiConformidadeP" style="background:#edfaf4;color:#27ae60;">—</span>
+                            <div class="capa-kpi-sub capa-kpi-up">Lotes dentro do limite</div>
+                            <span class="capa-kpi-badge" id="kpiConfProdP" style="background:#edfaf4;color:#27ae60;">—</span>
                         </div>
-                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiConfBar" style="width:0%;background:#27ae60;"></div></div>
+                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiConfProdBar" style="width:0%;background:#27ae60;"></div></div>
                     </div>
+                    <!-- Card 3: NC abertas na aba NC -->
                     <div class="capa-kpi">
                         <div class="capa-kpi-accent" style="background:#c0392b;"></div>
                         <div class="capa-kpi-top">
-                            <div class="capa-kpi-label">Não Conformes</div>
+                            <div class="capa-kpi-label">NC em Aberto</div>
                             <div class="capa-kpi-icon" style="background:#fef0ee;">⚠️</div>
                         </div>
-                        <div class="capa-kpi-value" id="kpiNaoConf" style="color:#c0392b;">—</div>
+                        <div class="capa-kpi-value" id="kpiNcAbertas" style="color:#c0392b;">—</div>
                         <div class="capa-kpi-row">
-                            <div class="capa-kpi-sub capa-kpi-down">Requer atenção</div>
-                            <span class="capa-kpi-badge" id="kpiNaoConfP" style="background:#fef0ee;color:#c0392b;">—</span>
+                            <div class="capa-kpi-sub capa-kpi-down" id="kpiNcVencidaSub">Aguardando ação</div>
+                            <span class="capa-kpi-badge" id="kpiNcVencidaP" style="background:#fef0ee;color:#c0392b;">—</span>
                         </div>
-                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiNaoConfBar" style="width:0%;background:#c0392b;"></div></div>
+                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiNcBar" style="width:0%;background:#c0392b;"></div></div>
                     </div>
+                    <!-- Card 4: Conformidade MP -->
                     <div class="capa-kpi">
-                        <div class="capa-kpi-accent" style="background:#f39c12;"></div>
+                        <div class="capa-kpi-accent" style="background:#8e44ad;"></div>
                         <div class="capa-kpi-top">
-                            <div class="capa-kpi-label">Eficiência Geral</div>
-                            <div class="capa-kpi-icon" style="background:#fff8e1;">📊</div>
+                            <div class="capa-kpi-label">Conformidade — Mat. Prima</div>
+                            <div class="capa-kpi-icon" style="background:#f5eef8;">🧪</div>
                         </div>
-                        <div class="capa-kpi-value" id="kpiEntradas" style="color:#e67e22;">—</div>
+                        <div style="display:flex;align-items:baseline;gap:4px;">
+                            <div class="capa-kpi-value" id="kpiConfMP" style="color:#8e44ad;">—</div>
+                            <span class="kpi-trend" id="kpiConfMPTrend"></span>
+                        </div>
                         <div class="capa-kpi-row">
-                            <div class="capa-kpi-sub" style="color:#aaa;">Conformes ÷ Total × 100</div>
-                            <span class="capa-kpi-badge" id="kpiEntradasP" style="background:#fff8e1;color:#e67e22;">—</span>
+                            <div class="capa-kpi-sub" style="color:#aaa;">MP dentro dos parâmetros</div>
+                            <span class="capa-kpi-badge" id="kpiConfMPP" style="background:#f5eef8;color:#8e44ad;">—</span>
                         </div>
-                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiEntradasBar" style="width:0%;background:#f39c12;"></div></div>
+                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiConfMPBar" style="width:0%;background:#8e44ad;"></div></div>
+                    </div>
+                </div>
+
+                <!-- Linha de módulos: Classificação + S/ parâmetro -->
+                <div class="capa-kpi-modulos" style="margin-bottom:18px;">
+                    <div class="kpi-mod" style="border-left-color:#e67e22;">
+                        <div class="kpi-mod-label">Classificação de Grãos</div>
+                        <div class="kpi-mod-row">
+                            <span class="kpi-mod-val" id="kpiConfClassVal" style="color:#e67e22;">—</span>
+                            <span class="kpi-mod-pct" id="kpiConfClassPct" style="color:#e67e22;">—</span>
+                        </div>
+                        <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiConfClassBar" style="background:#e67e22;width:0%;"></div></div>
+                        <div class="kpi-mod-sub" id="kpiConfClassSub">—</div>
+                    </div>
+                    <div class="kpi-mod" style="border-left-color:#bbb;">
+                        <div class="kpi-mod-label">Registros S/ Parâmetro</div>
+                        <div class="kpi-mod-row">
+                            <span class="kpi-mod-val" id="kpiSemParamVal" style="color:#999;">—</span>
+                        </div>
+                        <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiSemParamBar" style="background:#bbb;width:0%;"></div></div>
+                        <div class="kpi-mod-sub" id="kpiSemParamSub">excluídos do índice de conformidade</div>
+                    </div>
+                    <div class="kpi-mod" style="border-left-color:#1a2a6e;">
+                        <div class="kpi-mod-label">Conformidade Geral (mês)</div>
+                        <div class="kpi-mod-row">
+                            <span class="kpi-mod-val" id="kpiConfGeralVal" style="color:#1a2a6e;">—</span>
+                            <span class="kpi-mod-pct" id="kpiConfGeralTrend" style="color:#888;"></span>
+                        </div>
+                        <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiConfGeralBar" style="background:#1a2a6e;width:0%;"></div></div>
+                        <div class="kpi-mod-sub" id="kpiConfGeralSub">Prod + MP + Class com parâmetro</div>
+                    </div>
+                </div>
+
+                <!-- Painel de Alertas -->
+                <div class="capa-alertas">
+                    <div class="capa-alertas-titulo">
+                        Alertas ativos
+                        <span class="alerta-badge-count" id="alertaCount" style="display:none;">0</span>
+                    </div>
+                    <div id="painelAlertas">
+                        <div class="sem-alertas">Calculando alertas...</div>
                     </div>
                 </div>
 
@@ -4558,7 +4715,8 @@ async function fazerLogout() {
 // NAVEGAÇÃO
 // ===================================================
 // ===== MENU DROPDOWN =====
-function toggleDropdown(id) {
+function toggleDropdown(id, event) {
+    if (event) { event.stopPropagation(); event.preventDefault(); }
     const el = document.getElementById(id);
     const isOpen = el.classList.contains('open');
     closeDropdowns();
@@ -4570,6 +4728,57 @@ function closeDropdowns() {
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.nav-dropdown')) closeDropdowns();
 });
+// Mobile: fecha dropdown ao tocar fora (touchstart é mais confiável que click no iOS)
+document.addEventListener('touchstart', function(e) {
+    if (!e.target.closest('.nav-dropdown')) closeDropdowns();
+}, { passive: true });
+
+// ── MENU MOBILE ──────────────────────────────────────────────
+function abrirMenuMobile() {
+    document.getElementById('mobileMenuOverlay').classList.add('open');
+    document.getElementById('mobileMenuPanel').classList.add('open');
+}
+function fecharMenuMobile() {
+    document.getElementById('mobileMenuOverlay').classList.remove('open');
+    document.getElementById('mobileMenuPanel').classList.remove('open');
+}
+function mobNav(aba, titulo) {
+    fecharMenuMobile();
+    const btn = document.getElementById('tab' + aba.charAt(0).toUpperCase() + aba.slice(1)) || { classList: { add:()=>{}, remove:()=>{} } };
+    trocarAba(aba, btn);
+    const t = document.getElementById('mobileNavTitle');
+    if (t) t.textContent = 'SGQ — ' + titulo;
+    // marca item ativo no painel mobile
+    document.querySelectorAll('.mob-item').forEach(i => i.classList.remove('active'));
+}
+function mobNavNC(secao, titulo) {
+    fecharMenuMobile();
+    const btn = document.getElementById('tabNC') || { classList:{ add:()=>{}, remove:()=>{} } };
+    trocarAba('naoConformidade', btn);
+    setTimeout(() => mostrarSecaoNC(secao), 60);
+    const t = document.getElementById('mobileNavTitle');
+    if (t) t.textContent = 'SGQ — ' + titulo;
+}
+// Detecta mobile e mostra/esconde barra correta
+(function() {
+    function ajustarNav() {
+        const mob = document.getElementById('mobileNavBar');
+        const desk = document.querySelector('.nav-tabs');
+        if (!mob || !desk) return;
+        if (window.innerWidth <= 600) {
+            mob.style.display = 'flex';
+            desk.style.display = 'none';
+        } else {
+            mob.style.display = 'none';
+            desk.style.display = 'flex';
+        }
+    }
+    window.addEventListener('resize', ajustarNav);
+    document.addEventListener('DOMContentLoaded', ajustarNav);
+    // Fallback imediato caso DOMContentLoaded já tenha disparado
+    if (document.readyState !== 'loading') ajustarNav();
+})();
+// ─────────────────────────────────────────────────────────────
 
 function trocarAba(aba, btn) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -4631,10 +4840,18 @@ function atualizarKpisCapa() {
         const mesAtual   = agora.getMonth() + 1;
         const prefixoMes = anoAtual + '-' + String(mesAtual).padStart(2,'0');
         const hojeISO    = prefixoMes + '-' + String(agora.getDate()).padStart(2,'0');
+
+        // Mês anterior
+        const mesAntNum  = mesAtual === 1 ? 12 : mesAtual - 1;
+        const anoAnt     = mesAtual === 1 ? anoAtual - 1 : anoAtual;
+        const prefixoAnt = anoAnt + '-' + String(mesAntNum).padStart(2,'0');
+
         const isMesAtual = r => r.data && r.data.startsWith(prefixoMes);
+        const isMesAnt   = r => r.data && r.data.startsWith(prefixoAnt);
         const isHoje     = r => r.data && r.data.slice(0,10) === hojeISO;
         const meses2 = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
         const nomeMes = meses2[agora.getMonth()];
+
         const temValorMP = (r, campo) => {
             const v = r[campo];
             if (v === null || v === undefined) return false;
@@ -4649,6 +4866,8 @@ function atualizarKpisCapa() {
             if (r.densidade !== null && r.densidade !== undefined && parseFloat(r.densidade) > 0) n++;
             return n;
         };
+
+        // ── Análises hoje ──
         const prodsHoje = (producoes||[]).filter(isHoje);
         const mpHoje    = (materiasPrimas||[]).filter(isHoje);
         const classHoje = (classificacoes||[]).filter(isHoje);
@@ -4656,45 +4875,204 @@ function atualizarKpisCapa() {
         prodsHoje.forEach(r => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesHoje++; }); });
         mpHoje.forEach(r    => { camposMP.forEach(c   => { if(temValorMP(r,c)) analisesHoje++; }); });
         classHoje.forEach(r => { analisesHoje += contarClass(r); });
-        const prodsMes  = (producoes||[]).filter(isMesAtual);
-        const mpMes     = (materiasPrimas||[]).filter(isMesAtual);
-        const classMesC = (classificacoes||[]).filter(isMesAtual);
         let analisesMes = 0;
-        prodsMes.forEach(r  => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
-        mpMes.forEach(r     => { camposMP.forEach(c   => { if(temValorMP(r,c)) analisesMes++; }); });
-        classMesC.forEach(r => { analisesMes += contarClass(r); });
-        const classMes = (classificacoes||[]).filter(isMesAtual);
+        (producoes||[]).filter(isMesAtual).forEach(r => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
+        (materiasPrimas||[]).filter(isMesAtual).forEach(r => { camposMP.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
+        (classificacoes||[]).filter(isMesAtual).forEach(r => { analisesMes += contarClass(r); });
+
+        // ── Helpers de status ──
         const _isConf   = s => s.includes('CONFORME') && !s.includes('NÃO');
         const _isNConf  = s => s.includes('NÃO');
         const _temParam = s => !s.includes('S/ PARÂM');
-        const confMesProd   = prodsMes.filter(r => _isConf(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
-        const nconfMesProd  = prodsMes.filter(r => _isNConf(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
-        const totalMesProd  = prodsMes.filter(r => _temParam(statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data))).length;
-        const confMesClass  = classMes.filter(r => _isConf(statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data))).length;
-        const nconfMesClass = classMes.filter(r => _isNConf(statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data))).length;
-        const totalMesClass = classMes.filter(r => _temParam(statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data))).length;
-        const confMesMP  = mpMes.filter(r => _isConf(statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data))).length;
-        const nconfMesMP = mpMes.filter(r => _isNConf(statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data))).length;
-        const totalMesMP = mpMes.filter(r => _temParam(statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data))).length;
-        const confMesTotal  = confMesProd  + confMesClass  + confMesMP;
-        const nconfMesTotal = nconfMesProd + nconfMesClass + nconfMesMP;
-        const totalMesTudo  = totalMesProd + totalMesClass + totalMesMP;
-        const pctConf    = totalMesTudo > 0 ? Math.round(confMesTotal / totalMesTudo * 100) : 0;
-        const pctNConf   = totalMesTudo > 0 ? Math.round(nconfMesTotal / totalMesTudo * 100) : 0;
-        const eficiencia = totalMesTudo > 0 ? (confMesTotal / totalMesTudo * 100).toFixed(1) : '0.0';
-        const kpiA = document.getElementById('kpiAnalises');     if(kpiA) kpiA.textContent = analisesHoje;
-        const kpiC = document.getElementById('kpiConformidade'); if(kpiC) kpiC.textContent = pctConf + '%';
-        const kpiN = document.getElementById('kpiNaoConf');      if(kpiN) kpiN.textContent = nconfMesTotal;
-        const kpiE = document.getElementById('kpiEntradas');     if(kpiE) kpiE.textContent = eficiencia + '%';
-        const barC = document.getElementById('kpiConfBar');      if(barC) barC.style.width = pctConf + '%';
-        const barN = document.getElementById('kpiNaoConfBar');   if(barN) barN.style.width = Math.min(pctNConf*3,100) + '%';
-        const kpiAP = document.getElementById('kpiAnalisesP');     if(kpiAP) kpiAP.textContent = analisesMes + ' resultados em ' + nomeMes;
-        const kpiCP = document.getElementById('kpiConformidadeP'); if(kpiCP) kpiCP.textContent = confMesTotal + ' de ' + totalMesTudo + ' lotes';
-        const kpiNP = document.getElementById('kpiNaoConfP');      if(kpiNP) kpiNP.textContent = pctNConf + '%';
-        const kpiEP = document.getElementById('kpiEntradasP');     if(kpiEP) kpiEP.textContent = nconfMesTotal + ' NC / ' + confMesTotal + ' C em ' + nomeMes;
-        const barA  = document.getElementById('kpiAnalisesBar');   if(barA)  barA.style.width  = Math.min(Math.round(analisesHoje/10),100) + '%';
-        const barE  = document.getElementById('kpiEntradasBar');   if(barE)  barE.style.width  = Math.min(parseFloat(eficiencia),100) + '%';
-    } catch(e) {}
+        const _semParam = s => s.includes('S/ PARÂM');
+
+        // ── Produção — mês atual e anterior ──
+        const prodsMes = (producoes||[]).filter(isMesAtual);
+        const prodsMesAnt = (producoes||[]).filter(isMesAnt);
+        const confProd    = prodsMes.filter(r => _isConf(_spProd(r))).length;
+        const nconfProd   = prodsMes.filter(r => _isNConf(_spProd(r))).length;
+        const totalProd   = prodsMes.filter(r => _temParam(_spProd(r))).length;
+        const semParamProd = prodsMes.filter(r => _semParam(_spProd(r))).length;
+        const pctProd     = totalProd > 0 ? Math.round(confProd / totalProd * 100) : 0;
+        const confProdAnt = prodsMesAnt.filter(r => _isConf(_spProd(r))).length;
+        const totalProdAnt = prodsMesAnt.filter(r => _temParam(_spProd(r))).length;
+        const pctProdAnt  = totalProdAnt > 0 ? Math.round(confProdAnt / totalProdAnt * 100) : null;
+        function _spProd(r) { return statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data); }
+
+        // ── MP — mês atual e anterior ──
+        const mpMes = (materiasPrimas||[]).filter(isMesAtual);
+        const mpMesAnt = (materiasPrimas||[]).filter(isMesAnt);
+        const confMP    = mpMes.filter(r => _isConf(_spMP(r))).length;
+        const nconfMP   = mpMes.filter(r => _isNConf(_spMP(r))).length;
+        const totalMP   = mpMes.filter(r => _temParam(_spMP(r))).length;
+        const semParamMP = mpMes.filter(r => _semParam(_spMP(r))).length;
+        const pctMP     = totalMP > 0 ? Math.round(confMP / totalMP * 100) : 0;
+        const confMPAnt = mpMesAnt.filter(r => _isConf(_spMP(r))).length;
+        const totalMPAnt = mpMesAnt.filter(r => _temParam(_spMP(r))).length;
+        const pctMPAnt  = totalMPAnt > 0 ? Math.round(confMPAnt / totalMPAnt * 100) : null;
+        function _spMP(r) { return statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data); }
+
+        // ── Classificação ──
+        const classMes = (classificacoes||[]).filter(isMesAtual);
+        const confClass   = classMes.filter(r => _isConf(_spClass(r))).length;
+        const nconfClass  = classMes.filter(r => _isNConf(_spClass(r))).length;
+        const totalClass  = classMes.filter(r => _temParam(_spClass(r))).length;
+        const semParamClass = classMes.filter(r => _semParam(_spClass(r))).length;
+        const pctClass    = totalClass > 0 ? Math.round(confClass / totalClass * 100) : 0;
+        function _spClass(r) { return statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data); }
+
+        // ── Geral (todos os módulos) ──
+        const confTotal  = confProd + confMP + confClass;
+        const totalTudo  = totalProd + totalMP + totalClass;
+        const semParamTotal = semParamProd + semParamMP + semParamClass;
+        const pctGeral   = totalTudo > 0 ? Math.round(confTotal / totalTudo * 100) : 0;
+
+        // ── NC abertas (aba Não Conformidade) ──
+        const ncAbertas  = (listaNC||[]).filter(n => n.status === 'Pendente' || n.status === 'Em Análise');
+        const ncCriticas = ncAbertas.filter(n => n.gravidade === 'Crítica');
+        const hoje = new Date(); hoje.setHours(0,0,0,0);
+        const ncVencidas = ncAbertas.filter(n => {
+            if (!n.prazo) return false;
+            const p = new Date(n.prazo + 'T00:00:00'); return p < hoje;
+        });
+
+        // ── Tendência helper ──
+        function tendencia(atual, anterior) {
+            if (anterior === null) return '<span class="kpi-trend trend-eq">—</span>';
+            const diff = atual - anterior;
+            if (diff > 0) return '<span class="kpi-trend trend-up">↑ ' + diff + 'pp</span>';
+            if (diff < 0) return '<span class="kpi-trend trend-down">↓ ' + Math.abs(diff) + 'pp</span>';
+            return '<span class="kpi-trend trend-eq">= igual</span>';
+        }
+        function corConf(pct) { return pct >= 80 ? '#27ae60' : pct >= 60 ? '#e67e22' : '#c0392b'; }
+
+        // ── Card 1: Análises Hoje ──
+        const kpiA = document.getElementById('kpiAnalises'); if(kpiA) kpiA.textContent = analisesHoje;
+        const kpiAP = document.getElementById('kpiAnalisesP'); if(kpiAP) kpiAP.textContent = analisesMes + ' resultados em ' + nomeMes;
+        const barA = document.getElementById('kpiAnalisesBar'); if(barA) barA.style.width = Math.min(Math.round(analisesHoje/10),100) + '%';
+
+        // ── Card 2: Conformidade Produção ──
+        const corProd = corConf(pctProd);
+        const kpiCP = document.getElementById('kpiConfProd'); if(kpiCP) { kpiCP.textContent = pctProd + '%'; kpiCP.style.color = corProd; }
+        const kpiCPT = document.getElementById('kpiConfProdTrend'); if(kpiCPT) kpiCPT.innerHTML = tendencia(pctProd, pctProdAnt);
+        const kpiCPP = document.getElementById('kpiConfProdP'); if(kpiCPP) kpiCPP.textContent = confProd + ' de ' + totalProd + ' lotes';
+        const barCP = document.getElementById('kpiConfProdBar'); if(barCP) { barCP.style.width = pctProd + '%'; barCP.style.background = corProd; }
+
+        // ── Card 3: NC abertas ──
+        const kpiNC = document.getElementById('kpiNcAbertas'); if(kpiNC) kpiNC.textContent = ncAbertas.length;
+        const kpiNCSub = document.getElementById('kpiNcVencidaSub');
+        if(kpiNCSub) kpiNCSub.textContent = ncVencidas.length > 0 ? ncVencidas.length + ' prazo(s) vencido(s)' : ncCriticas.length + ' crítica(s)';
+        const kpiNCP = document.getElementById('kpiNcVencidaP'); if(kpiNCP) kpiNCP.textContent = ncCriticas.length + ' NC críticas';
+        const barNC = document.getElementById('kpiNcBar'); if(barNC) barNC.style.width = Math.min(ncAbertas.length * 5, 100) + '%';
+
+        // ── Card 4: Conformidade MP ──
+        const corMP = corConf(pctMP);
+        const kpiCMP = document.getElementById('kpiConfMP'); if(kpiCMP) { kpiCMP.textContent = pctMP + '%'; kpiCMP.style.color = corMP; }
+        const kpiCMPT = document.getElementById('kpiConfMPTrend'); if(kpiCMPT) kpiCMPT.innerHTML = tendencia(pctMP, pctMPAnt);
+        const kpiCMPP = document.getElementById('kpiConfMPP'); if(kpiCMPP) kpiCMPP.textContent = confMP + ' de ' + totalMP + ' laudos';
+        const barCMP = document.getElementById('kpiConfMPBar'); if(barCMP) { barCMP.style.width = pctMP + '%'; barCMP.style.background = corMP; }
+
+        // ── Módulo Classificação ──
+        const corClass = corConf(pctClass);
+        const kpiClassV = document.getElementById('kpiConfClassVal'); if(kpiClassV) { kpiClassV.textContent = pctClass + '%'; kpiClassV.style.color = corClass; }
+        const kpiClassPct = document.getElementById('kpiConfClassPct'); if(kpiClassPct) { kpiClassPct.textContent = confClass + '/' + totalClass; kpiClassPct.style.color = corClass; }
+        const barClass = document.getElementById('kpiConfClassBar'); if(barClass) { barClass.style.width = pctClass + '%'; barClass.style.background = corClass; }
+        const kpiClassSub = document.getElementById('kpiConfClassSub'); if(kpiClassSub) kpiClassSub.textContent = nconfClass + ' NC detectadas em ' + nomeMes;
+
+        // ── Módulo S/ Parâmetro ──
+        const kpiSPV = document.getElementById('kpiSemParamVal'); if(kpiSPV) kpiSPV.textContent = semParamTotal;
+        const barSP = document.getElementById('kpiSemParamBar'); if(barSP) barSP.style.width = Math.min(semParamTotal * 2, 100) + '%';
+
+        // ── Módulo Geral ──
+        const corGeral = corConf(pctGeral);
+        const kpiGV = document.getElementById('kpiConfGeralVal'); if(kpiGV) { kpiGV.textContent = pctGeral + '%'; kpiGV.style.color = corGeral; }
+        const barG = document.getElementById('kpiConfGeralBar'); if(barG) { barG.style.width = pctGeral + '%'; barG.style.background = corGeral; }
+
+        // ── Alertas ──
+        _renderizarAlertas({ pctProd, pctProdAnt, pctMP, pctMPAnt, pctClass, ncVencidas, ncCriticas, nomeMes });
+
+        // ── Compatibilidade com IDs legados (usados em outros lugares do código) ──
+        const kpiC = document.getElementById('kpiConformidade'); if(kpiC) kpiC.textContent = pctGeral + '%';
+        const kpiN = document.getElementById('kpiNaoConf'); if(kpiN) kpiN.textContent = (nconfProd + nconfMP + nconfClass);
+        const kpiE = document.getElementById('kpiEntradas'); if(kpiE) kpiE.textContent = pctGeral + '%';
+        const kpiCP2 = document.getElementById('kpiConformidadeP'); if(kpiCP2) kpiCP2.textContent = confTotal + ' de ' + totalTudo + ' lotes';
+        const kpiNP = document.getElementById('kpiNaoConfP'); if(kpiNP) kpiNP.textContent = (totalTudo > 0 ? Math.round((nconfProd+nconfMP+nconfClass)/totalTudo*100) : 0) + '%';
+        const kpiEP = document.getElementById('kpiEntradasP'); if(kpiEP) kpiEP.textContent = (nconfProd+nconfMP+nconfClass) + ' NC / ' + confTotal + ' C em ' + nomeMes;
+        const barCL = document.getElementById('kpiConfBar'); if(barCL) barCL.style.width = pctGeral + '%';
+        const barNL = document.getElementById('kpiNaoConfBar'); if(barNL) barNL.style.width = Math.min((totalTudo > 0 ? Math.round((nconfProd+nconfMP+nconfClass)/totalTudo*100) : 0)*3,100) + '%';
+        const barEL = document.getElementById('kpiEntradasBar'); if(barEL) barEL.style.width = Math.min(pctGeral,100) + '%';
+
+    } catch(e) { console.error('atualizarKpisCapa:', e); }
+}
+
+function _renderizarAlertas({ pctProd, pctProdAnt, pctMP, pctMPAnt, pctClass, ncVencidas, ncCriticas, nomeMes }) {
+    const painel = document.getElementById('painelAlertas');
+    const badge  = document.getElementById('alertaCount');
+    if (!painel) return;
+    const alertas = [];
+
+    // NC vencidas
+    ncVencidas.forEach(nc => {
+        alertas.push({ nivel:'critico', icone:'🚨', titulo: 'NC ' + (nc.numero||'') + ' com prazo vencido', desc: (nc.produto||'') + ' — ' + (nc.gravidade||'') + ' — Resp: ' + (nc.responsavel||'-'), tag:'VENCIDA', tagClass:'tag-vencido', acao: () => { trocarAba('naoConformidade', document.getElementById('tabNC')); setTimeout(()=>mostrarSecaoNC('aba-nc-inner'),50); } });
+    });
+
+    // NC críticas abertas sem prazo vencido
+    ncCriticas.filter(nc => !ncVencidas.includes(nc)).forEach(nc => {
+        alertas.push({ nivel:'alto', icone:'⚠️', titulo: 'NC crítica em aberto — ' + (nc.produto||''), desc: 'Responsável: ' + (nc.responsavel||'-') + ' | Status: ' + (nc.status||'-'), tag:'CRÍTICA', tagClass:'tag-nc-critico', acao: () => { trocarAba('naoConformidade', document.getElementById('tabNC')); setTimeout(()=>mostrarSecaoNC('aba-nc-inner'),50); } });
+    });
+
+    // Queda de conformidade Produção
+    if (pctProdAnt !== null && pctProd < pctProdAnt) {
+        const queda = pctProdAnt - pctProd;
+        if (queda >= 10) alertas.push({ nivel:'alto', icone:'📉', titulo: 'Queda de ' + queda + 'pp na conformidade de Produção', desc: 'Mês anterior: ' + pctProdAnt + '% → ' + nomeMes + ': ' + pctProd + '%. Verifique os parâmetros fora do limite.', tag:'TENDÊNCIA', tagClass:'tag-param', acao: () => trocarAba('relatorio', document.getElementById('tabRelatorio')) });
+    }
+
+    // Conformidade produção abaixo de 60%
+    if (pctProd > 0 && pctProd < 60) {
+        alertas.push({ nivel: pctProd < 40 ? 'critico' : 'alto', icone:'📊', titulo: 'Conformidade de Produção abaixo do esperado: ' + pctProd + '%', desc: 'Meta recomendada: ≥ 80%. Acesse o Relatório de Produção para identificar os parâmetros críticos.', tag: pctProd < 40 ? 'CRÍTICO' : 'ATENÇÃO', tagClass: pctProd < 40 ? 'tag-nc-critico' : 'tag-nc-alto', acao: () => trocarAba('relatorio', document.getElementById('tabRelatorio')) });
+    }
+
+    // Conformidade MP abaixo de 60%
+    if (pctMP > 0 && pctMP < 60) {
+        alertas.push({ nivel: pctMP < 40 ? 'critico' : 'alto', icone:'🧪', titulo: 'Conformidade de Mat. Prima abaixo do esperado: ' + pctMP + '%', desc: 'Revise os laudos de análise e o cadastro de fornecedores.', tag: pctMP < 40 ? 'CRÍTICO' : 'ATENÇÃO', tagClass: pctMP < 40 ? 'tag-nc-critico' : 'tag-nc-alto', acao: () => trocarAba('relMP', document.getElementById('tabRelMP')) });
+    }
+
+    // Conformidade Classificação abaixo de 60%
+    if (pctClass > 0 && pctClass < 60) {
+        alertas.push({ nivel:'medio', icone:'🌽', titulo: 'Conformidade de Classificação: ' + pctClass + '%', desc: 'Verifique os parâmetros de grãos e insumos no mês atual.', tag:'ATENÇÃO', tagClass:'tag-param', acao: () => trocarAba('relClass', document.getElementById('tabRelClass')) });
+    }
+
+    // Alertas de DGM fora do limite nos últimos 3 dias
+    const tres = new Date(); tres.setDate(tres.getDate()-3);
+    const tresDias = tres.toISOString().split('T')[0];
+    const prodsRecentes = (producoes||[]).filter(r => r.data >= tresDias);
+    const dgmForaLimite = prodsRecentes.filter(r => {
+        const racKey = (r.racao||'').replace(/ /g,'_');
+        const cfg = getParam('prod', racKey, 'dgm', r.data);
+        if (!cfg || !cfg.ativo) return false;
+        const v = parseFloat(r.dgm);
+        if (isNaN(v)) return false;
+        if (cfg.min > 0 && v < cfg.min) return true;
+        if (cfg.max < 9999 && v > cfg.max) return true;
+        return false;
+    });
+    if (dgmForaLimite.length > 0) {
+        const racoesFora = [...new Set(dgmForaLimite.map(r => r.racao))].slice(0,3).join(', ');
+        alertas.push({ nivel:'alto', icone:'📏', titulo: 'DGM fora do limite em ' + dgmForaLimite.length + ' registro(s) nos últimos 3 dias', desc: 'Rações: ' + racoesFora + '. Acesse o Relatório de Produção para detalhes.', tag:'DGM', tagClass:'tag-param', acao: () => trocarAba('relatorio', document.getElementById('tabRelatorio')) });
+    }
+
+    // Renderiza
+    if (badge) { badge.textContent = alertas.length; badge.style.display = alertas.length > 0 ? 'inline' : 'none'; }
+    if (alertas.length === 0) { painel.innerHTML = '<div class="sem-alertas">Nenhum alerta ativo — sistema operando normalmente.</div>'; return; }
+    painel.innerHTML = alertas.map(a => `
+        <div class="alerta-item ${a.nivel}" onclick="(${a.acao.toString()})()">
+            <span class="alerta-icone">${a.icone}</span>
+            <div class="alerta-corpo">
+                <div class="alerta-titulo">${a.titulo}</div>
+                <div class="alerta-desc">${a.desc}</div>
+            </div>
+            <span class="alerta-tag ${a.tagClass}">${a.tag}</span>
+        </div>`).join('');
 }
 
 // ===================================================
@@ -9301,22 +9679,23 @@ carregarMicoParams();
 function statusPorParametros(registro, modulo, racaoOuProduto, campos, dataRegistro) {
     if (!racaoOuProduto) return '<span class="badge" style="background:#ecf0f1;color:#95a5a6;">S/ PARÂM.</span>';
     const chaveKey = racaoOuProduto.replace(/ /g, '_');
-    let algumAtivo = false;
-    let algumFora  = false;
+    let algumAtivoComValor = false; // campo ativo E com valor lançado
+    let algumFora = false;
     campos.forEach(c => {
         const cfg = getParam(modulo, chaveKey, c.key, dataRegistro || null);
-        if (!cfg || !cfg.ativo) return;
-        algumAtivo = true;
+        if (!cfg || !cfg.ativo) return; // não marcado como ativo → ignora
         // Campo calculado: avariados totais
         const v = c.calculado && c.key === 'avariados'
             ? getAvariados(registro)
             : parseFloat(registro[c.key]);
-        if (isNaN(v)) return;
+        if (isNaN(v)) return; // ativo mas sem valor lançado → análise não realizada, ignora
+        algumAtivoComValor = true;
         const semMin = cfg.min === 0;
         const semMax = cfg.max >= 9999;
         if ((!semMin && v < cfg.min) || (!semMax && v > cfg.max)) algumFora = true;
     });
-    if (!algumAtivo) return '<span class="badge" style="background:#ecf0f1;color:#95a5a6;">S/ PARÂM.</span>';
+    // S/ PARÂM. só se nenhum campo ativo tiver valor lançado
+    if (!algumAtivoComValor) return '<span class="badge" style="background:#ecf0f1;color:#95a5a6;">S/ PARÂM.</span>';
     return algumFora
         ? '<span class="badge badge-nao-conforme">NÃO CONFORME</span>'
         : '<span class="badge badge-conforme">CONFORME</span>';
