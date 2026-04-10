@@ -3447,10 +3447,12 @@
                 <div class="form-usuario-group">
                     <label>Nome Completo</label>
                     <input type="text" id="novoUsuarioNome" placeholder="Ex: João Silva" autocomplete="off">
+                    <small style="color:#888;font-size:10px;margin-top:3px;display:block;">⚠️ Informe o nome real da pessoa, não o e-mail.</small>
                 </div>
                 <div class="form-usuario-group">
                     <label>Username (login do sistema)</label>
-                    <input type="text" id="novoUsuarioLogin" placeholder="Ex: gildeglan" autocomplete="off">
+                    <input type="text" id="novoUsuarioLogin" placeholder="Ex: eudo, joao_silva (sem @)" autocomplete="off">
+                    <small style="color:#888;font-size:10px;margin-top:3px;display:block;">⚠️ Use apenas letras, números e _ — sem espaços ou @.</small>
                 </div>
                 <div class="form-usuario-group" id="grupoEmailUsuario">
                     <label>E-mail (cadastrado no Supabase Auth)</label>
@@ -4319,8 +4321,7 @@ async function _carregarUsuariosSupabase() {
     try {
         const { data, error } = await _sbClient
             .from('perfis')
-            .select('*')
-            .eq('ativo', true);
+            .select('*');
         if (error) throw new Error(error.message);
         const mapa = {};
         (data || []).forEach(u => {
@@ -10890,7 +10891,9 @@ function salvarUsuario() {
 
     // Validações
     if (!nome)     { _erroUsuario('Informe o nome completo.'); return; }
+    if (nome === emailRaw) { _erroUsuario('O campo "Nome Completo" não pode ser igual ao e-mail. Informe o nome real da pessoa.'); return; }
     if (!loginRaw) { _erroUsuario('Informe o username (login do sistema).'); return; }
+    if (loginRaw.includes('@')) { _erroUsuario('O username (login) não pode ser um e-mail. Use apenas letras, números e _ (ex: eudo, joao_silva).'); return; }
     if (!editando && !/^[a-z0-9_]+$/.test(loginRaw)) { _erroUsuario('Username inválido. Use apenas letras minúsculas, números e _.'); return; }
     if (!editando && !emailRaw) { _erroUsuario('Informe o e-mail cadastrado no Supabase Authentication.'); return; }
     if (!editando && USUARIOS[loginRaw]) { _erroUsuario('Este username já está em uso. Escolha outro.'); return; }
