@@ -2408,7 +2408,6 @@
                             <tr style="background:#34495e;color:white;">
                                 <th style="padding:7px 10px;text-align:left;">PRODUTO</th>
                                 <th style="padding:7px;">REG.</th>
-                                <th style="padding:7px;">AVARIADOS<br>MÉD.%</th>
                                 <th style="padding:7px;">QUEIMADO<br>MÉD.%</th>
                                 <th style="padding:7px;">ARDIDO<br>MÉD.%</th>
                                 <th style="padding:7px;">MOFADO<br>MÉD.%</th>
@@ -2444,7 +2443,6 @@
                                 <th style="padding:5px 7px;text-align:left;white-space:nowrap;">PRODUTO</th>
                                 <th style="padding:5px 7px;text-align:left;white-space:nowrap;">FORNECEDOR</th>
                                 <th style="padding:5px 4px;white-space:nowrap;">NF</th>
-                                <th style="padding:5px 4px;white-space:nowrap;">AVARIAD.<br>TOT.%</th>
                                 <th style="padding:5px 4px;white-space:nowrap;">QUEIMADO<br>%</th>
                                 <th style="padding:5px 4px;white-space:nowrap;">ARDIDO<br>%</th>
                                 <th style="padding:5px 4px;white-space:nowrap;">MOFADO<br>%</th>
@@ -7724,12 +7722,8 @@ function renderRCTabelaProd(dados) {
     if (!prods.length) { document.getElementById('rcTbodyProd').innerHTML = '<tr><td colspan="20" style="text-align:center;padding:12px;color:#999;">Nenhum dado no período</td></tr>'; return; }
     document.getElementById('rcTbodyProd').innerHTML = prods.map((p,i) => {
         const dd  = dados.filter(r=>r.produto===p);
-        const av  = med(dd.map(r=>getAvariados(r)));
         const cor = RC_PRODUTOS[p]?.cor || '#7f8c8d';
         const bg  = i%2===0?'#fff':'#f9f9f9';
-        const cfgAv  = getParam('class', p.replace(/ /g,'_'), 'avariados', dd[dd.length-1]?.data || null);
-        const avFora = cfgAv && cfgAv.ativo && av > cfgAv.max;
-        const avCor  = avFora ? '#e74c3c' : '#27ae60';
         // Monta um registro sintético com as médias para avaliar conformidade
         const registroMedio = {
             produto: p, data: dd[dd.length-1]?.data || null,
@@ -7757,7 +7751,6 @@ function renderRCTabelaProd(dados) {
         return `<tr style="background:${bg};">
             <td style="padding:7px 10px;font-weight:bold;color:${cor};border-left:4px solid ${cor};white-space:nowrap;">${p}</td>
             <td style="padding:7px;text-align:center;">${dd.length}</td>
-            <td style="padding:7px;text-align:center;font-weight:bold;color:${avCor};">${av.toFixed(2)}%</td>
             <td style="padding:7px;text-align:center;">${f('queimado')}</td>
             <td style="padding:7px;text-align:center;">${f('ardido')}</td>
             <td style="padding:7px;text-align:center;">${f('mofado')}</td>
@@ -7786,17 +7779,8 @@ function renderRCTabelaDetalhe(dados) {
     }
     const sorted = [...dados].sort((a,b)=>a.data.localeCompare(b.data)||a.hora.localeCompare(b.hora));
     document.getElementById('rcTbodyDetalhe').innerHTML = sorted.map((r,i) => {
-        const av   = getAvariados(r);
         const bg   = i%2===0?'#fff':'#f9f9f9';
         const cor  = RC_PRODUTOS[r.produto]?.cor || '#333';
-
-        // Cor do avariado baseada no parâmetro configurado (não hardcoded)
-        const cfgAv = getParam('class', r.produto.replace(/ /g,'_'), 'avariados', r.data);
-        const avFora = cfgAv && cfgAv.ativo && av > cfgAv.max;
-        const avCor  = avFora ? '#e74c3c' : '#27ae60';
-        const avStyle = avFora
-            ? 'padding:4px;text-align:center;font-weight:bold;color:#c0392b;background:#fde8e8;'
-            : 'padding:4px;text-align:center;font-weight:bold;color:#27ae60;';
 
         const status = statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data);
 
@@ -7816,7 +7800,6 @@ function renderRCTabelaDetalhe(dados) {
             <td style="padding:4px 6px;font-weight:bold;color:${cor};white-space:nowrap;">${r.produto}</td>
             <td style="padding:4px 6px;white-space:nowrap;">${r.fornecedor||''}</td>
             <td style="padding:4px;text-align:center;">${r.nf||''}</td>
-            <td style="${avStyle}">${av.toFixed(2)}%</td>
             ${tdDefeito('queimado')}
             ${tdDefeito('ardido')}
             ${tdDefeito('mofado')}
@@ -11078,15 +11061,9 @@ function gerarTabelaClass(rows, compacto, destNC) {
     const th = (t,s='') => `<th${s}>${t}</th>`;
     let thead = `<tr>${th('Data')}${th('Hora')}`;
     if (!compacto) thead += th('Produto');
-    thead += `${th('Fornecedor')}${th('NF')}${th('Queimado')}${th('Ardido')}${th('Mofado')}${th('Esverdeado')}${th('Ferment.')}${th('Chocho')}${th('Picado')}${th('Gessado')}${th('Quebrado')}${th('Germin.')}${th('Carunch.')}${th('Impureza')}${th('AVARIAD.%','style="background:#c0392b;color:white;"')}${th('Umidade%')}${th('Densidade')}${th('Aflatox.')}${th('Fumonisinas')}${th('Local')}${th('Status')}</tr>`;
+    thead += `${th('Fornecedor')}${th('NF')}${th('Queimado')}${th('Ardido')}${th('Mofado')}${th('Esverdeado')}${th('Ferment.')}${th('Chocho')}${th('Picado')}${th('Gessado')}${th('Quebrado')}${th('Germin.')}${th('Carunch.')}${th('Impureza')}${th('Umidade%')}${th('Densidade')}${th('Aflatox.')}${th('Fumonisinas')}${th('Local')}${th('Status')}</tr>`;
 
     const tbody = rows.map(r => {
-        const avar = (r.queimado||0)+(r.ardido||0)+(r.mofado||0)+(r.fermentando||0)+
-                     (r.chocho||0)+(r.gessado||0)+(r.germinado||0)+(r.picado||0)+(r.esverdeado||0)+
-                     (r.quebrado||0)+(r.carunchado||0);
-        const cfgAv = getParam('class', r.produto.replace(/ /g,'_'), 'avariados', r.data);
-        const avarFora = destNC && cfgAv && cfgAv.ativo && avar > cfgAv.max;
-        const avarCl = avarFora ? ' class="bol-td-fora"' : '';
         const aflatoxCl = (destNC && (r.aflatoxinas||0)>0) ? ' class="bol-td-alert"' : '';
         const status = statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data);
         const cl = (v,campo) => destNC ? estiloFora(v,'class',r.produto,campo,r.data).replace(' class="td-fora"',' class="bol-td-fora"') : '';
@@ -11108,7 +11085,6 @@ function gerarTabelaClass(rows, compacto, destNC) {
             <td${cl(r.germinado,'germinado')}>${(r.germinado||0).toFixed(2)}</td>
             <td${cl(r.carunchado,'carunchado')}>${(r.carunchado||0).toFixed(2)}</td>
             <td${cl(r.impureza,'impureza')}>${(r.impureza||0).toFixed(2)}</td>
-            <td${avarCl}>${avar.toFixed(2)}</td>
             <td${cl(r.umidade,'umidade')}>${(r.umidade||0).toFixed(2)}</td>
             <td${cl(r.densidade,'densidade')}>${(r.densidade||0).toFixed(0)}</td>
             <td${aflatoxCl}>${(r.aflatoxinas||0).toFixed(2)}</td>
