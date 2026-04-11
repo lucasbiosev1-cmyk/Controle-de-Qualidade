@@ -5063,7 +5063,7 @@ function _renderizarAlertas({ pctProd, pctProdAnt, pctMP, pctMPAnt, pctClass, nc
 
     // Conformidade Classificação abaixo de 60%
     if (pctClass > 0 && pctClass < 60) {
-        alertas.push({ nivel:'medio', icone:'🌽', titulo: 'Conformidade de Classificação: ' + pctClass + '%', desc: 'Verifique os parâmetros de grãos e insumos no mês atual.', tag:'ATENÇÃO', tagClass:'tag-param', acao: () => trocarAba('relClass', document.getElementById('tabRelClass')) });
+        alertas.push({ nivel: pctClass < 40 ? 'critico' : 'medio', icone:'🌽', titulo: 'Conformidade de Classificação: ' + pctClass + '%', desc: 'Meta recomendada: ≥ 80%. Verifique os parâmetros de grãos e insumos no mês atual.', tag: pctClass < 40 ? 'CRÍTICO' : 'ATENÇÃO', tagClass: pctClass < 40 ? 'tag-nc-critico' : 'tag-param', acao: () => trocarAba('relClass', document.getElementById('tabRelClass')) });
     }
 
     // Alertas de DGM fora do limite nos últimos 3 dias
