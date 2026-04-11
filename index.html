@@ -2939,6 +2939,10 @@
                 <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">🚔 Controlados PF</div>
                 <div id="reagCardPF" style="font-size:26px;font-weight:900;color:#8e44ad;">0</div>
             </div>
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #27ae60;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">💰 Custo em Estoque</div>
+                <div id="reagCardCusto" style="font-size:18px;font-weight:900;color:#27ae60;">—</div>
+            </div>
         </div>
 
         <!-- FILTROS -->
@@ -2972,12 +2976,13 @@
                             <th style="padding:10px 8px;text-align:center;">VALIDADE</th>
                             <th style="padding:10px 8px;text-align:center;">ENTRADA</th>
                             <th style="padding:10px 8px;text-align:center;">NOTA FISCAL</th>
+                            <th style="padding:10px 8px;text-align:center;">CUSTO UNIT.</th>
                             <th style="padding:10px 8px;text-align:center;">STATUS</th>
                             <th style="padding:10px 8px;text-align:center;">AÇÕES</th>
                         </tr>
                     </thead>
                     <tbody id="reagTbody">
-                        <tr><td colspan="10" style="text-align:center;padding:40px;color:#aaa;">Nenhum reagente cadastrado.</td></tr>
+                        <tr><td colspan="11" style="text-align:center;padding:40px;color:#aaa;">Nenhum reagente cadastrado.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -2996,11 +3001,12 @@
                                 <th style="padding:9px 8px;text-align:center;">DATA ENTRADA</th>
                                 <th style="padding:9px 8px;text-align:center;">FORNECEDOR</th>
                                 <th style="padding:9px 8px;text-align:center;">ITENS</th>
+                                <th style="padding:9px 8px;text-align:center;">CUSTO TOTAL</th>
                                 <th style="padding:9px 8px;text-align:center;">AÇÕES</th>
                             </tr>
                         </thead>
                         <tbody id="reagNotasTbody">
-                            <tr><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">Nenhuma entrada registrada.</td></tr>
+                            <tr><td colspan="7" style="text-align:center;padding:30px;color:#aaa;">Nenhuma entrada registrada.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -3044,6 +3050,10 @@
                 <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Vencendo (60d)</div>
                 <div id="matCardVencendo" style="font-size:26px;font-weight:900;color:#e67e22;">0</div>
             </div>
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #27ae60;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">💰 Custo em Estoque</div>
+                <div id="matCardCusto" style="font-size:18px;font-weight:900;color:#27ae60;">—</div>
+            </div>
         </div>
 
         <!-- FILTROS -->
@@ -3080,12 +3090,13 @@
                             <th style="padding:10px 8px;text-align:center;">MÍNIMO</th>
                             <th style="padding:10px 8px;text-align:center;">UNIDADE</th>
                             <th style="padding:10px 8px;text-align:center;">VALIDADE</th>
+                            <th style="padding:10px 8px;text-align:center;">CUSTO UNIT.</th>
                             <th style="padding:10px 8px;text-align:center;">STATUS</th>
                             <th style="padding:10px 8px;text-align:center;">AÇÕES</th>
                         </tr>
                     </thead>
                     <tbody id="matTbody">
-                        <tr><td colspan="10" style="text-align:center;padding:40px;color:#aaa;">Nenhum material cadastrado.</td></tr>
+                        <tr><td colspan="11" style="text-align:center;padding:40px;color:#aaa;">Nenhum material cadastrado.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -3156,6 +3167,10 @@
                     <div>
                         <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Data de Entrada</label>
                         <input id="matEntrada" type="date" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="font-size:10px;font-weight:700;color:#27ae60;text-transform:uppercase;display:block;margin-bottom:4px;">💰 Custo Unitário (R$)</label>
+                        <input id="matCustoUnit" type="number" min="0" step="0.01" placeholder="0,00" style="width:100%;padding:9px 11px;border:1px solid #27ae60;border-radius:6px;font-size:13px;box-sizing:border-box;background:#f0fff4;font-weight:700;color:#1e8449;">
                     </div>
                     <div style="grid-column:1/-1;">
                         <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Observações</label>
@@ -3500,6 +3515,10 @@
                     <div>
                         <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">DATA DE EMISSÃO DA NOTA *</label>
                         <input type="date" id="reagNFEmissao" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">VALOR TOTAL DA NOTA (R$)</label>
+                        <input type="number" step="0.01" min="0" id="reagNFValorTotal" placeholder="Preenchido automaticamente pelo XML" style="width:100%;border:1px solid #27ae60;border-radius:6px;padding:8px 10px;font-size:12px;background:#f0fff4;font-weight:700;color:#1e8449;">
                     </div>
                 </div>
 
@@ -14590,12 +14609,13 @@ async function reagCarregarDados() {
             .order('data_entrada', { ascending: false });
         if (en) throw en;
         _reagNotas = (dn || []).map(n => ({
-            id:          String(n.id),
-            chave:       n.chave_nf,
-            fornecedor:  n.fornecedor,
-            dataEmissao: n.data_emissao,
-            dataEntrada: n.data_entrada,
-            itens:       n.itens ? JSON.parse(n.itens) : []
+            id:           String(n.id),
+            chave:        n.chave_nf,
+            fornecedor:   n.fornecedor,
+            dataEmissao:  n.data_emissao,
+            dataEntrada:  n.data_entrada,
+            valorTotalNF: n.valor_total_nf != null ? parseFloat(n.valor_total_nf) : null,
+            itens:        n.itens ? JSON.parse(n.itens) : []
         }));
     } catch(e) {
         console.error('Erro ao carregar reag_notas:', e);
@@ -14623,6 +14643,7 @@ function _reagNormalizar(r) {
         portaria:    r.portaria || '',
         dataEntrada: r.entrada || '',
         nfChave:     r.nf_chave || '',
+        custoUnit:   r.custo_unit != null ? parseFloat(r.custo_unit) : null,
         tipo:        r.tipo || '',
         fabricante:  r.fabricante || '',
         local_armazena: r.local_armazena || '',
@@ -14647,6 +14668,7 @@ function _reagParaSupabase(r) {
         portaria:    r.portaria || null,
         entrada:     r.dataEntrada || null,
         nf_chave:    r.nfChave || null,
+        custo_unit:  r.custoUnit != null ? r.custoUnit : null,
         tipo:        r.tipo || null,
         fabricante:  r.fabricante || null,
         local_armazena: r.local_armazena || null,
@@ -14698,11 +14720,12 @@ async function _reagSalvarMovimento(mov) {
 // ── Salvar nota de entrada no Supabase ────────────────────────────
 async function _reagSalvarNota(n) {
     const { error } = await _sbClient.from('reag_notas').insert({
-        chave_nf:     n.chave,
-        fornecedor:   n.fornecedor,
-        data_emissao: n.dataEmissao,
-        data_entrada: n.dataEntrada,
-        itens:        JSON.stringify(n.itens)
+        chave_nf:       n.chave,
+        fornecedor:     n.fornecedor,
+        data_emissao:   n.dataEmissao,
+        data_entrada:   n.dataEntrada,
+        valor_total_nf: n.valorTotalNF ?? null,
+        itens:          JSON.stringify(n.itens)
     });
     if (error) throw error;
 }
@@ -14764,7 +14787,7 @@ function reagRenderTabela() {
     });
 
     if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:#aaa;">Nenhum reagente encontrado.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;color:#aaa;">Nenhum reagente encontrado.</td></tr>';
         return;
     }
 
@@ -14793,6 +14816,11 @@ function reagRenderTabela() {
                     ? `<span onclick="navigator.clipboard&&navigator.clipboard.writeText('${r.nfChave}').then(()=>sgqToast('✅ Chave copiada!','success'))" title="Clique para copiar a chave completa&#10;${r.nfChave}" style="display:inline-block;background:#eaf3fb;border:1px solid #aed6f1;border-radius:4px;padding:2px 7px;cursor:pointer;font-size:11px;color:#1a5276;font-weight:700;white-space:nowrap;">${_reagNumeroNF(r.nfChave)}</span>`
                     : '<span style="display:inline-block;background:#f5f5f5;border:1px solid #ddd;border-radius:4px;padding:2px 7px;font-size:10px;color:#aaa;font-weight:600;">Sem N.F</span>'}
             </td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;font-weight:700;color:#27ae60;">
+                ${r.custoUnit != null && r.custoUnit !== '' && r.custoUnit !== 0
+                    ? 'R$ ' + parseFloat(r.custoUnit).toLocaleString('pt-BR', {minimumFractionDigits:2,maximumFractionDigits:2})
+                    : '<span style="color:#ccc;font-weight:400;">—</span>'}
+            </td>
             <td style="padding:9px 8px;text-align:center;">${_reagStatusBadge(st)}</td>
             <td style="padding:9px 8px;text-align:center;white-space:nowrap;">
                 <button onclick="reagAbrirConsumo('${r.id}')" title="Registrar consumo" style="background:#e67e22;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;margin:1px;">📉</button>
@@ -14812,7 +14840,9 @@ function reagRenderNotas() {
         return;
     }
     const sorted = [..._reagNotas].sort((a,b) => b.dataEntrada.localeCompare(a.dataEntrada));
-    tbody.innerHTML = sorted.map(n => `
+    tbody.innerHTML = sorted.map(n => {
+        const valorTotal = n.valorTotalNF;
+        return `
         <tr style="border-bottom:1px solid #f0f0f0;">
             <td style="padding:8px 12px;text-align:left;">
                 ${n.chave
@@ -14824,11 +14854,17 @@ function reagRenderNotas() {
             <td style="padding:8px;text-align:center;font-size:11px;">${_fmtData(n.dataEntrada)}</td>
             <td style="padding:8px;text-align:center;font-size:11px;">${n.fornecedor}</td>
             <td style="padding:8px;text-align:center;font-size:11px;font-weight:700;color:#1a2a6e;">${n.itens.length} item(s)</td>
+            <td style="padding:8px;text-align:center;font-size:12px;font-weight:800;color:#27ae60;">
+                ${valorTotal != null
+                    ? 'R$ ' + valorTotal.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})
+                    : '<span style="color:#ccc;font-size:11px;font-weight:400;">—</span>'}
+            </td>
             <td style="padding:8px;text-align:center;display:flex;gap:5px;justify-content:center;">
                 <button onclick="reagVerNota('${n.id}')" style="background:#1a2a6e;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;">Ver</button>
                 <button onclick="reagExcluirNota('${n.id}')" style="background:#e74c3c;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;">🗑️</button>
             </td>
-        </tr>`).join('');
+        </tr>`;
+    }).join('');
 }
 
 // ── Cards de resumo ───────────────────────────────────────────────
@@ -14844,6 +14880,15 @@ function reagAtualizarCards() {
     if(el('reagCardVencendo')) el('reagCardVencendo').textContent = vencendo;
     if(el('reagCardVencidos')) el('reagCardVencidos').textContent = vencido;
     if(el('reagCardPF'))       el('reagCardPF').textContent       = pf;
+
+    // Custo total em estoque: soma (custoUnit × qtdAtual)
+    const custoTotalReag = _reagentes.reduce((acc, r) => {
+        return acc + (r.custoUnit > 0 ? r.custoUnit * r.qtdAtual : 0);
+    }, 0);
+    const temCustoReag = _reagentes.some(r => r.custoUnit > 0);
+    if(el('reagCardCusto')) el('reagCardCusto').textContent = temCustoReag
+        ? 'R$ ' + custoTotalReag.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})
+        : '—';
 }
 
 // ── Verificar alertas e exibir botão / popup ──────────────────────
@@ -14961,6 +15006,10 @@ function reagImportarXML(input) {
                 dataEmissao = raw.substring(0, 10); // YYYY-MM-DD
             }
 
+            // ── Valor total da nota (vNF) ─────────────────────────────
+            const vNFEl = doc.querySelector('ICMSTot > vNF, total > ICMSTot > vNF');
+            const valorTotalNF = vNFEl ? parseFloat(vNFEl.textContent.replace(',', '.')) : null;
+
             // ── Itens da nota ────────────────────────────────────────
             const detNodes = doc.querySelectorAll('det');
             const itens = [];
@@ -14972,15 +15021,17 @@ function reagImportarXML(input) {
                 const dVal    = det.querySelector('dFab, dVal');
                 const dFab    = det.querySelector('dFab');
                 const dVenc   = det.querySelector('dVal');
+                const vUnCom  = det.querySelector('vUnCom');
 
                 const nome    = xProd  ? xProd.textContent.trim()                        : '';
                 const qtd     = qCom   ? parseFloat(qCom.textContent.replace(',', '.'))  : 0;
                 const unRaw   = uCom   ? uCom.textContent.trim()                         : 'UN';
                 const unidade = _reagNormalizarUnidade(unRaw);
+                const custo   = vUnCom ? parseFloat(vUnCom.textContent.replace(',', '.')) : null;
                 const lote    = nLote  ? nLote.textContent.trim()                        : '';
                 const validade= dVenc  ? dVenc.textContent.trim().substring(0, 10)       : '';
 
-                if (nome) itens.push({ nome, qtd, unidade, lote, validade });
+                if (nome) itens.push({ nome, qtd, unidade, lote, validade, custo });
             });
 
             if (!fornecedor && itens.length === 0) {
@@ -14997,9 +15048,10 @@ function reagImportarXML(input) {
             }
 
             // ── Preencher modal ──────────────────────────────────────
-            if (chave)       document.getElementById('reagNFChave').value      = chave;
-            if (fornecedor)  document.getElementById('reagNFFornecedor').value = fornecedor;
-            if (dataEmissao) document.getElementById('reagNFEmissao').value    = dataEmissao;
+            if (chave)          document.getElementById('reagNFChave').value       = chave;
+            if (fornecedor)     document.getElementById('reagNFFornecedor').value  = fornecedor;
+            if (dataEmissao)    document.getElementById('reagNFEmissao').value     = dataEmissao;
+            if (valorTotalNF)   document.getElementById('reagNFValorTotal').value  = valorTotalNF.toFixed(2);
 
             // Limpar itens e popular
             _reagItensNota = [];
@@ -15012,7 +15064,7 @@ function reagImportarXML(input) {
                     if (!div) return;
 
                     // Quantidade
-                    const inputQtd = div.querySelector('input[type="number"]');
+                    const inputQtd = div.querySelector('input[type="number"]:not(.reagNFItemCusto)');
                     if (inputQtd) inputQtd.value = item.qtd || 0;
 
                     // Unidade
@@ -15033,6 +15085,10 @@ function reagImportarXML(input) {
                     // Validade
                     const inputData = div.querySelector('input[type="date"]');
                     if (inputData && item.validade) inputData.value = item.validade;
+
+                    // Custo unitário (vUnCom do XML)
+                    const inputCusto = div.querySelector('input.reagNFItemCusto');
+                    if (inputCusto && item.custo != null) inputCusto.value = item.custo.toFixed(2);
                 });
             } else {
                 reagAdicionarItemNota();
@@ -15088,6 +15144,7 @@ function reagAbrirModalNota() {
     document.getElementById('reagNFChave').value      = '';
     document.getElementById('reagNFFornecedor').value = '';
     document.getElementById('reagNFEmissao').value    = '';
+    document.getElementById('reagNFValorTotal').value = '';
     document.getElementById('reagNFItens').innerHTML  = '';
     // Resetar XML
     const xmlFile = document.getElementById('reagXMLFile');
@@ -15169,11 +15226,15 @@ function reagAdicionarItemNota(nomeNF) {
                 <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:2px;">VALIDADE</label>
                 <input type="date" style="width:100%;border:1px solid #ddd;border-radius:5px;padding:6px 8px;font-size:11px;">
             </div>
-            <div style="display:flex;align-items:flex-end;padding-bottom:1px;">
-                <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:10px;font-weight:700;color:#8e44ad;">
-                    <input type="checkbox" class="reagNFItemPF" style="accent-color:#8e44ad;"> 🚔 Controlado PF
-                </label>
+            <div>
+                <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:2px;">CUSTO UNIT. (R$)</label>
+                <input type="number" step="0.01" min="0" placeholder="0,00" class="reagNFItemCusto" style="width:100%;border:1px solid #27ae60;border-radius:5px;padding:6px 8px;font-size:11px;background:#f0fff4;">
             </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:8px;">
+            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:10px;font-weight:700;color:#8e44ad;">
+                <input type="checkbox" class="reagNFItemPF" style="accent-color:#8e44ad;"> 🚔 Controlado PF
+            </label>
         </div>`;
     wrap.appendChild(div);
 
@@ -15190,6 +15251,7 @@ async function reagSalvarNota() {
     const chave      = document.getElementById('reagNFChave').value.trim();
     const fornecedor = document.getElementById('reagNFFornecedor').value.trim();
     const emissao    = document.getElementById('reagNFEmissao').value;
+    const valorTotalNF = parseFloat(document.getElementById('reagNFValorTotal').value) || null;
     if (!fornecedor || !emissao) { sgqToast('⚠️ Preencha fornecedor e data de emissão.', 'warning'); return; }
 
     // ── Bloquear NF duplicada ─────────────────────────────────────
@@ -15201,29 +15263,49 @@ async function reagSalvarNota() {
     }
 
     // ── Coletar itens do modal ────────────────────────────────────
-    // Usa seletores específicos para não confundir com o badge
     const itemDivs = document.querySelectorAll('#reagNFItens > div');
     const itens = [];
+    const itensNaoVinculados = []; // itens da NF sem reagente associado
+
     itemDivs.forEach(div => {
-        const reagSel  = div.querySelector('select.reagNFItemSelect');
-        const unSel    = div.querySelectorAll('select')[1];
-        const inputQtd = div.querySelector('input[type="number"]');
-        const inputLote= div.querySelector('input[placeholder*="LT"]');
-        const inputDt  = div.querySelector('input[type="date"]');
-        const inputPF  = div.querySelector('input.reagNFItemPF');
+        const reagSel    = div.querySelector('select.reagNFItemSelect');
+        const unSel      = div.querySelectorAll('select')[1];
+        const inputQtd   = div.querySelector('input[type="number"]:not(.reagNFItemCusto)');
+        const inputLote  = div.querySelector('input[placeholder*="LT"]');
+        const inputDt    = div.querySelector('input[type="date"]');
+        const inputPF    = div.querySelector('input.reagNFItemPF');
+        const inputCusto = div.querySelector('input.reagNFItemCusto');
+        const badgeNome  = div.querySelector('span[style*="font-weight:900"]');
 
-        const reagId  = reagSel   ? reagSel.value                          : '';
-        const qtd     = inputQtd  ? parseFloat(inputQtd.value) || 0        : 0;
-        const unidade = unSel     ? unSel.value                            : 'un';
-        const lote    = inputLote ? inputLote.value.trim()                  : '';
-        const validade= inputDt   ? inputDt.value                          : '';
-        const pf      = inputPF   ? inputPF.checked                        : false;
+        const reagId  = reagSel   ? reagSel.value                         : '';
+        const qtd     = inputQtd  ? parseFloat(inputQtd.value) || 0       : 0;
+        const unidade = unSel     ? unSel.value                           : 'un';
+        const lote    = inputLote ? inputLote.value.trim()                 : '';
+        const validade= inputDt   ? inputDt.value                         : '';
+        const pf      = inputPF   ? inputPF.checked                       : false;
+        const custo   = inputCusto ? parseFloat(inputCusto.value) || null : null;
+        // nome do produto vindo do badge da NF ou do select
+        const nomeNF  = badgeNome ? badgeNome.textContent.trim()
+                      : (reagSel ? reagSel.options[reagSel.selectedIndex]?.text : '');
 
-        if (!reagId || reagId === '__novo__' || !qtd) return;
-        itens.push({ reagId, qtd, unidade, lote, validade, pf });
+        if (!qtd) return; // sem quantidade, ignora
+
+        if (!reagId || reagId === '__novo__') {
+            // Item sem vínculo com reagente → candidato a material
+            itensNaoVinculados.push({ nomeNF, qtd, unidade, lote, validade, custo });
+        } else {
+            itens.push({ reagId, qtd, unidade, lote, validade, pf, custo });
+        }
     });
 
-    if (!itens.length) { sgqToast('⚠️ Vincule pelo menos um produto a um reagente cadastrado e informe a quantidade.', 'warning'); return; }
+    if (!itens.length && !itensNaoVinculados.length) {
+        sgqToast('⚠️ Informe a quantidade de pelo menos um produto.', 'warning');
+        return;
+    }
+    if (!itens.length) {
+        sgqToast('⚠️ Vincule pelo menos um produto a um reagente cadastrado.', 'warning');
+        return;
+    }
 
     try {
         // ── Atualizar estoque de cada reagente no Supabase ────────
@@ -15238,11 +15320,11 @@ async function reagSalvarNota() {
                 fornecedor:  fornecedor,
                 nf_chave:    chave,
                 entrada:     _reagHoje(),
-                controle_pf: item.pf || r.controlePF  // preserva PF do cadastro se checkbox da NF estiver desmarcado
+                controle_pf: item.pf || r.controlePF,
+                custo_unit:  item.custo != null ? item.custo : (r.custoUnit ?? null)
             };
             const { error } = await _sbClient.from('produtos_quimicos').update(update).eq('id', item.reagId);
             if (error) throw error;
-            // Atualizar estado local imediatamente
             r.qtdAtual   = novaQtd;
             r.lote       = update.lote;
             r.validade   = update.validade;
@@ -15250,10 +15332,11 @@ async function reagSalvarNota() {
             r.nfChave    = chave;
             r.dataEntrada= _reagHoje();
             r.controlePF = update.controle_pf;
+            if (update.custo_unit != null) r.custoUnit = update.custo_unit;
         }
 
         // ── Salvar nota de entrada ────────────────────────────────
-        const nota = { chave, fornecedor, dataEmissao: emissao, dataEntrada: _reagHoje(), itens };
+        const nota = { chave, fornecedor, dataEmissao: emissao, dataEntrada: _reagHoje(), valorTotalNF, itens };
         await _reagSalvarNota(nota);
         _reagNotas.unshift({ ...nota, id: 'NF_' + Date.now() });
 
@@ -15262,24 +15345,138 @@ async function reagSalvarNota() {
         reagRenderNotas();
         reagAtualizarCards();
         reagVerificarAlertas();
-        sgqToast('✅ Entrada registrada! ' + itens.length + ' produto(s) atualizados.', 'success');
+        sgqToast('✅ Entrada registrada! ' + itens.length + ' reagente(s) atualizados.', 'success');
+
+        // ── Popup para itens não vinculados ───────────────────────
+        if (itensNaoVinculados.length > 0) {
+            _reagMostrarPopupNaoVinculados(itensNaoVinculados, fornecedor, chave);
+        }
+
     } catch(e) { sgqToast('❌ Erro ao salvar: ' + e.message, 'error'); }
+}
+
+// ── Popup de itens da NF não vinculados a reagentes ───────────────
+function _reagMostrarPopupNaoVinculados(itens, fornecedor, chave) {
+    const itensHtml = itens.map((it, i) => `
+        <div style="background:#f8f9fa;border:1px solid #e0e0e0;border-radius:7px;padding:10px 12px;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <span style="font-size:15px;">📦</span>
+                <span style="font-weight:800;color:#2c3e50;font-size:12px;">${it.nomeNF || '(sem nome)'}</span>
+                <span style="margin-left:auto;font-size:11px;color:#27ae60;font-weight:700;">${it.qtd} ${it.unidade}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                <div>
+                    <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:2px;">NOME NO SISTEMA</label>
+                    <input id="matNaoVinc_nome_${i}" value="${it.nomeNF || ''}" style="width:100%;border:1px solid #ddd;border-radius:5px;padding:5px 8px;font-size:11px;">
+                </div>
+                <div>
+                    <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:2px;">CATEGORIA</label>
+                    <select id="matNaoVinc_cat_${i}" style="width:100%;border:1px solid #ddd;border-radius:5px;padding:5px 8px;font-size:11px;">
+                        <option>Vidraria</option>
+                        <option>EPI</option>
+                        <option>Descartável</option>
+                        <option>Limpeza</option>
+                        <option selected>Outros</option>
+                    </select>
+                </div>
+            </div>
+        </div>`).join('');
+
+    const popup = document.createElement('div');
+    popup.id = 'reagPopupNaoVinc';
+    popup.style.cssText = 'position:fixed;inset:0;z-index:9600;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;';
+    popup.innerHTML = `
+        <div style="background:#fff;border-radius:12px;width:92%;max-width:500px;max-height:88vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.25);">
+            <div style="background:linear-gradient(135deg,#e67e22,#d35400);color:#fff;padding:14px 18px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div style="font-size:14px;font-weight:900;">📦 Itens não vinculados a reagentes</div>
+                    <div style="font-size:10px;opacity:.8;margin-top:2px;">${itens.length} item(s) da NF sem reagente associado</div>
+                </div>
+                <button onclick="document.getElementById('reagPopupNaoVinc').remove()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">✕</button>
+            </div>
+            <div style="padding:16px;">
+                <div style="background:#fef9e7;border:1px solid #f9e79f;border-radius:7px;padding:10px 12px;margin-bottom:14px;font-size:11px;color:#7d6608;line-height:1.6;">
+                    ⚠️ Os itens abaixo estavam na NF mas <strong>não foram vinculados a nenhum reagente</strong>.<br>
+                    Deseja registrá-los como entrada no <strong>Estoque de Materiais</strong>?
+                </div>
+                ${itensHtml}
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+                    <button onclick="document.getElementById('reagPopupNaoVinc').remove()" style="background:#ecf0f1;color:#555;border:none;border-radius:6px;padding:9px 20px;font-weight:700;cursor:pointer;font-size:12px;">Ignorar</button>
+                    <button onclick="_reagRegistrarComoMateriais(${JSON.stringify(itens).replace(/"/g,'&quot;')}, '${fornecedor}', '${chave}')" style="background:#e67e22;color:#fff;border:none;border-radius:6px;padding:9px 22px;font-weight:700;cursor:pointer;font-size:12px;">📦 Registrar como Materiais</button>
+                </div>
+            </div>
+        </div>`;
+    document.body.appendChild(popup);
+}
+
+async function _reagRegistrarComoMateriais(itens, fornecedor, chave) {
+    const popup = document.getElementById('reagPopupNaoVinc');
+    let salvos = 0;
+    try {
+        for (let i = 0; i < itens.length; i++) {
+            const it = itens[i];
+            const nomeInput = document.getElementById('matNaoVinc_nome_' + i);
+            const catInput  = document.getElementById('matNaoVinc_cat_' + i);
+            const nome = nomeInput ? nomeInput.value.trim() : it.nomeNF;
+            const cat  = catInput  ? catInput.value         : 'Outros';
+            if (!nome) continue;
+
+            const m = {
+                nome,
+                categoria:  cat,
+                unidade:    it.unidade || 'un',
+                qtd_atual:  it.qtd || 0,
+                minimo:     0,
+                lote:       it.lote || null,
+                fornecedor: fornecedor || null,
+                validade:   it.validade || null,
+                entrada:    _matHoje(),
+                custo_unit: it.custo || null,
+                obs:        chave ? 'NF: ' + chave : null
+            };
+            const saved = await dbUpsertOne('materiais', m);
+            _materiais.push(saved);
+            salvos++;
+        }
+        if (popup) popup.remove();
+        if (salvos > 0) {
+            matRenderTabela();
+            sgqToast('✅ ' + salvos + ' material(is) registrado(s) no estoque!', 'success');
+        }
+    } catch(e) {
+        sgqToast('❌ Erro ao registrar materiais: ' + e.message, 'error');
+    }
 }
 
 function reagVerNota(id) {
     const n = _reagNotas.find(x => x.id === id);
     if (!n) return;
+
+    const custoTotal = n.valorTotalNF;
+
     const itensHtml = n.itens.map(i => {
         const r = _reagentes.find(x => String(x.id) === String(i.reagId)) || {};
-        return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid #f0f0f0;font-size:12px;">
+        const subtotal = i.custo != null ? parseFloat(i.custo) * parseFloat(i.qtd || 0) : null;
+        return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #f0f0f0;font-size:12px;">
             <span style="font-size:18px;">${r.controlePF ? '🚔' : '🧪'}</span>
             <div style="flex:1;">
                 <div style="font-weight:700;color:#1a2a6e;">${r.nome || i.reagId}</div>
                 <div style="color:#888;font-size:10px;">Lote: ${i.lote || '—'} | Validade: ${_fmtData(i.validade)}</div>
+                ${i.custo != null ? `<div style="font-size:10px;color:#27ae60;font-weight:700;">R$ ${parseFloat(i.custo).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}/unit.</div>` : ''}
             </div>
-            <div style="text-align:right;font-weight:800;color:#2c3e50;">${i.qtd} ${i.unidade}</div>
+            <div style="text-align:right;">
+                <div style="font-weight:800;color:#2c3e50;">${i.qtd} ${i.unidade}</div>
+                ${subtotal != null ? `<div style="font-size:11px;font-weight:700;color:#27ae60;">R$ ${subtotal.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>` : ''}
+            </div>
         </div>`;
     }).join('');
+
+    const totalHtml = custoTotal != null
+        ? `<div style="background:#f0fff4;border:1px solid #a9dfbf;border-radius:7px;padding:10px 14px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
+               <span style="font-size:12px;font-weight:800;color:#1e8449;">💰 VALOR TOTAL DA NOTA FISCAL</span>
+               <span style="font-size:16px;font-weight:900;color:#27ae60;">R$ ${custoTotal.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+           </div>`
+        : '';
 
     // Modal de visualização
     const modalHtml = `
@@ -15305,6 +15502,7 @@ function reagVerNota(id) {
                     </div>
                     <div style="font-size:11px;font-weight:800;color:#1a2a6e;margin-bottom:8px;">PRODUTOS (${n.itens.length} item(s))</div>
                     <div style="border:1px solid #eee;border-radius:7px;overflow:hidden;">${itensHtml}</div>
+                    ${totalHtml}
                     <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
                         <button onclick="document.getElementById('reagVerNotaModal').remove()" style="background:#ecf0f1;color:#555;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;">Fechar</button>
                         <button onclick="document.getElementById('reagVerNotaModal').remove();reagExcluirNota('${id}')" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;">🗑️ Excluir Entrada</button>
@@ -15944,17 +16142,28 @@ function matRenderTabela() {
     const ok       = _materiais.filter(m => _matStatus(m) === 'ok').length;
     const vencendo = _materiais.filter(m => _matStatus(m) === 'vencendo').length;
 
+    // Custo total em estoque: soma (custo_unit × qtd_atual)
+    const custoTotalMat = _materiais.reduce((acc, m) => {
+        const qtd  = parseFloat(m.qtd_atual !== undefined ? m.qtd_atual : (m.qtdAtual || 0));
+        const custo= parseFloat(m.custo_unit || 0);
+        return acc + (custo > 0 ? custo * qtd : 0);
+    }, 0);
+    const temCustoMat = _materiais.some(m => m.custo_unit > 0);
+
     const el = id => document.getElementById(id);
     if (el('matCardTotal'))    el('matCardTotal').textContent    = total;
     if (el('matCardBaixo'))    el('matCardBaixo').textContent    = baixo;
     if (el('matCardOk'))       el('matCardOk').textContent       = ok;
     if (el('matCardVencendo')) el('matCardVencendo').textContent = vencendo;
+    if (el('matCardCusto'))    el('matCardCusto').textContent    = temCustoMat
+        ? 'R$ ' + custoTotalMat.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})
+        : '—';
 
     const tbody = el('matTbody');
     if (!tbody) return;
 
     if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:#aaa;">Nenhum material encontrado.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;color:#aaa;">Nenhum material encontrado.</td></tr>';
         return;
     }
 
@@ -15973,6 +16182,11 @@ function matRenderTabela() {
             <td style="padding:9px 8px;text-align:center;font-size:11px;color:#888;">${m.minimo || '—'} ${m.unidade||''}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${m.unidade || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${fmtDate(m.validade)}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;font-weight:700;color:#27ae60;">
+                ${m.custo_unit != null && m.custo_unit > 0
+                    ? 'R$ ' + parseFloat(m.custo_unit).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})
+                    : '<span style="color:#ccc;font-weight:400;">—</span>'}
+            </td>
             <td style="padding:9px 8px;text-align:center;">${_matStatusBadge(st)}</td>
             <td style="padding:9px 8px;text-align:center;">
                 <button onclick="matEditar('${m.id}')" style="background:#3498db;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;margin-right:4px;">✏️</button>
@@ -15986,7 +16200,7 @@ function matAbrirModalCadastro() {
     document.getElementById('matEditId').value = '';
     document.getElementById('matModalTitulo').textContent = '📦 Cadastrar Material';
     ['matNome','matLote','matFornecedor','matObs'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
-    ['matQtdAtual','matMinimo'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+    ['matQtdAtual','matMinimo','matCustoUnit'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
     const hoje = _matHoje();
     const ei = document.getElementById('matEntrada'); if(ei) ei.value = hoje;
     const val = document.getElementById('matValidade'); if(val) val.value = '';
@@ -16011,6 +16225,7 @@ function matEditar(id) {
     document.getElementById('matFornecedor').value = m.fornecedor || '';
     document.getElementById('matValidade').value   = m.validade || '';
     document.getElementById('matEntrada').value    = m.entrada || '';
+    document.getElementById('matCustoUnit').value  = m.custo_unit != null ? m.custo_unit : '';
     document.getElementById('matObs').value        = m.obs || '';
     document.getElementById('modalCadastroMaterial').style.display = 'flex';
 }
@@ -16033,6 +16248,7 @@ async function matSalvar() {
         fornecedor: document.getElementById('matFornecedor').value.trim(),
         validade:   document.getElementById('matValidade').value || null,
         entrada:    document.getElementById('matEntrada').value || null,
+        custo_unit: parseFloat(document.getElementById('matCustoUnit').value) || null,
         obs:        document.getElementById('matObs').value.trim(),
     };
     if (!m.id) delete m.id; // deixa Supabase gerar BIGSERIAL
