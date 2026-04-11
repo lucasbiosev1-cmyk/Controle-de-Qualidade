@@ -549,6 +549,23 @@
 
             /* BADGES */
             .badge { font-size: 9px; padding: 2px 5px; }
+
+            /* MATERIAIS e EQUIPAMENTOS — modais responsivos */
+            #modalCadastroMaterial > div,
+            #modalCadastroEquipamento > div { margin: 8px !important; max-height: 95vh !important; }
+            #modalCadastroMaterial div[style*="grid-template-columns: 1fr 1fr"],
+            #modalCadastroEquipamento div[style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+            #modalCadastroEquipamento div[style*="grid-column: 1/-1"] { grid-column: 1 !important; }
+            /* Labels de calibração em coluna */
+            #eqCalibCampos > div { grid-template-columns: 1fr !important; }
+            /* Abas Materiais/Equipamentos: filtros em coluna */
+            #aba-estoqueMateriais div[style*="display:flex"][style*="gap:10px"],
+            #aba-equipamentos div[style*="display:flex"][style*="gap:10px"] { flex-direction: column !important; }
+            #aba-estoqueMateriais input, #aba-estoqueMateriais select,
+            #aba-equipamentos input, #aba-equipamentos select { width: 100% !important; min-width: unset !important; }
+            /* Cards de resumo em 2 colunas */
+            #aba-estoqueMateriais div[style*="grid-template-columns:repeat(auto-fit"],
+            #aba-equipamentos div[style*="grid-template-columns:repeat(auto-fit"] { grid-template-columns: 1fr 1fr !important; }
         }
 
         @media (max-width: 400px) {
@@ -1416,7 +1433,12 @@
             <button class="mob-item" onclick="mobNavNC('aba-dev-inner','Devolução')">↩️ Devolução</button>
         </div>
         <div class="mob-section">
-            <button class="mob-item" onclick="mobNav('estoqueReagentes','Estoque de Reagentes')">🧫 Estoque de Reagentes</button>
+            <div class="mob-section-label">Estoque</div>
+            <button class="mob-item" onclick="mobNav('estoqueReagentes','Produtos Químicos')">🧫 Produtos Químicos</button>
+            <button class="mob-item" onclick="mobNav('estoqueMateriais','Materiais')">📦 Materiais</button>
+        </div>
+        <div class="mob-section">
+            <button class="mob-item" onclick="mobNav('equipamentos','Equipamentos')">🔬 Equipamentos</button>
         </div>
         <div class="mob-section">
             <button class="mob-item" id="mobBtnConfiguracoes" onclick="mobNav('configuracoes','Configurações')">⚙️ Configurações</button>
@@ -1462,8 +1484,18 @@
                 <button class="nav-dropdown-item" id="tabDev" onclick="trocarAba('naoConformidade', this);closeDropdowns();setTimeout(()=>mostrarSecaoNC('aba-dev-inner'),50)">↩️ Devolução</button>
             </div>
         </div>
-        <!-- ESTOQUE REAGENTES -->
-        <button class="nav-tab" id="tabEstoqueReagentes" onclick="trocarAba('estoqueReagentes', this)">🧫 Reagentes</button>
+        <!-- ESTOQUE dropdown -->
+        <div class="nav-dropdown" id="ndEstoque">
+            <button class="nav-tab nav-dropdown-btn" id="tabEstoque" onclick="toggleDropdown('ndEstoque', event)">
+                🧪 Estoque ▾
+            </button>
+            <div class="nav-dropdown-menu">
+                <button class="nav-dropdown-item" id="tabEstoqueReagentes" onclick="trocarAba('estoqueReagentes', this);closeDropdowns()">🧫 Produtos Químicos</button>
+                <button class="nav-dropdown-item" id="tabEstoqueMateriais" onclick="trocarAba('estoqueMateriais', this);closeDropdowns()">📦 Materiais</button>
+            </div>
+        </div>
+        <!-- EQUIPAMENTOS -->
+        <button class="nav-tab" id="tabEquipamentos" onclick="trocarAba('equipamentos', this)">🔬 Equipamentos</button>
         <!-- CONFIGURAÇÕES -->
         <button class="nav-tab" id="tabConfiguracoes" onclick="trocarAba('configuracoes', this)">⚙️ Configurações</button>
     </div>
@@ -2870,8 +2902,8 @@
         <!-- HEADER -->
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
             <div>
-                <div style="font-size:18px;font-weight:900;color:#1a2a6e;letter-spacing:.5px;">🧫 Estoque de Reagentes</div>
-                <div style="font-size:11px;color:#888;margin-top:2px;">Controle de entrada, validade e alertas de reagentes laboratoriais</div>
+                <div style="font-size:18px;font-weight:900;color:#1a2a6e;letter-spacing:.5px;">🧫 Produtos Químicos</div>
+                <div style="font-size:11px;color:#888;margin-top:2px;">Controle de entrada, validade e alertas de produtos químicos laboratoriais</div>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <button onclick="reagVerAlertas()" id="btnReagAlertas" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12px;display:none;">⚠️ Ver Alertas <span id="reagAlertCount" style="background:#fff;color:#e74c3c;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:900;margin-left:4px;"></span></button>
@@ -2973,6 +3005,370 @@
 
     </div>
     </div><!-- fim aba-estoqueReagentes -->
+
+    <!-- ===== ABA ESTOQUE MATERIAIS ===== -->
+    <div id="aba-estoqueMateriais" class="tab-content">
+    <div style="max-width:1300px;margin:0 auto;padding:16px 10px;">
+
+        <!-- HEADER -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+            <div>
+                <div style="font-size:18px;font-weight:900;color:#1a2a6e;letter-spacing:.5px;">📦 Materiais</div>
+                <div style="font-size:11px;color:#888;margin-top:2px;">Controle de materiais de laboratório e consumíveis</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button onclick="matAbrirModalCadastro()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">+ Cadastrar Material</button>
+                <button onclick="matExportar()" style="background:#1a2a6e;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">⬇️ Exportar CSV</button>
+            </div>
+        </div>
+
+        <!-- CARDS RESUMO -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px;">
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #1a2a6e;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Total Materiais</div>
+                <div id="matCardTotal" style="font-size:26px;font-weight:900;color:#1a2a6e;">0</div>
+            </div>
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #e74c3c;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Estoque Baixo</div>
+                <div id="matCardBaixo" style="font-size:26px;font-weight:900;color:#e74c3c;">0</div>
+            </div>
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #27ae60;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Em OK</div>
+                <div id="matCardOk" style="font-size:26px;font-weight:900;color:#27ae60;">0</div>
+            </div>
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #e67e22;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Vencendo (60d)</div>
+                <div id="matCardVencendo" style="font-size:26px;font-weight:900;color:#e67e22;">0</div>
+            </div>
+        </div>
+
+        <!-- FILTROS -->
+        <div style="background:#fff;border-radius:8px;padding:12px 16px;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <input id="matFiltroNome" oninput="matRenderTabela()" placeholder="🔍 Buscar material..." style="border:1px solid #ddd;border-radius:6px;padding:7px 12px;font-size:12px;min-width:180px;">
+            <select id="matFiltroStatus" onchange="matRenderTabela()" style="border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:12px;">
+                <option value="">Todos os status</option>
+                <option value="ok">✅ OK</option>
+                <option value="baixo">🟡 Estoque Baixo</option>
+                <option value="vencendo">🟠 Vencendo</option>
+                <option value="vencido">🔴 Vencido</option>
+            </select>
+            <select id="matFiltroCategoria" onchange="matRenderTabela()" style="border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:12px;">
+                <option value="">Todas as categorias</option>
+                <option value="Vidraria">Vidraria</option>
+                <option value="Plastico">Plástico</option>
+                <option value="Descartavel">Descartável</option>
+                <option value="EPI">EPI</option>
+                <option value="Outros">Outros</option>
+            </select>
+        </div>
+
+        <!-- TABELA -->
+        <div style="background:#fff;border-radius:8px;box-shadow:0 1px 6px rgba(0,0,0,0.07);overflow:hidden;">
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                    <thead>
+                        <tr style="background:#1a2a6e;color:#fff;">
+                            <th style="padding:10px 12px;text-align:left;font-size:11px;letter-spacing:.5px;">MATERIAL</th>
+                            <th style="padding:10px 8px;text-align:center;">CATEGORIA</th>
+                            <th style="padding:10px 8px;text-align:center;">LOTE</th>
+                            <th style="padding:10px 8px;text-align:center;">FORNECEDOR</th>
+                            <th style="padding:10px 8px;text-align:center;">QTD ATUAL</th>
+                            <th style="padding:10px 8px;text-align:center;">MÍNIMO</th>
+                            <th style="padding:10px 8px;text-align:center;">UNIDADE</th>
+                            <th style="padding:10px 8px;text-align:center;">VALIDADE</th>
+                            <th style="padding:10px 8px;text-align:center;">STATUS</th>
+                            <th style="padding:10px 8px;text-align:center;">AÇÕES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="matTbody">
+                        <tr><td colspan="10" style="text-align:center;padding:40px;color:#aaa;">Nenhum material cadastrado.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    </div><!-- fim aba-estoqueMateriais -->
+
+    <!-- MODAL CADASTRO MATERIAL -->
+    <div id="modalCadastroMaterial" style="display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.55);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:12px;width:100%;max-width:600px;box-shadow:0 8px 40px rgba(0,0,0,0.22);margin:20px;max-height:90vh;overflow-y:auto;">
+            <div style="background:linear-gradient(135deg,#1a2a6e,#2c3e9e);color:#fff;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div style="font-size:15px;font-weight:900;" id="matModalTitulo">📦 Cadastrar Material</div>
+                    <div style="font-size:11px;opacity:.75;">Preencha os dados do material</div>
+                </div>
+                <button onclick="matFecharModal()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;opacity:.8;">✕</button>
+            </div>
+            <div style="padding:22px;">
+                <input type="hidden" id="matEditId">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                    <div style="grid-column:1/-1;">
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Nome do Material *</label>
+                        <input id="matNome" placeholder="Ex: Béquer 250ml, Luva nitrílica..." style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Categoria</label>
+                        <select id="matCategoria" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                            <option value="Vidraria">Vidraria</option>
+                            <option value="Plastico">Plástico</option>
+                            <option value="Descartavel">Descartável</option>
+                            <option value="EPI">EPI</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Unidade</label>
+                        <select id="matUnidade" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                            <option value="un">Unidade (un)</option>
+                            <option value="cx">Caixa (cx)</option>
+                            <option value="pct">Pacote (pct)</option>
+                            <option value="par">Par</option>
+                            <option value="m">Metro (m)</option>
+                            <option value="L">Litro (L)</option>
+                            <option value="kg">Kg</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Quantidade Atual *</label>
+                        <input id="matQtdAtual" type="number" min="0" step="0.01" placeholder="0" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Estoque Mínimo</label>
+                        <input id="matMinimo" type="number" min="0" step="0.01" placeholder="0" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Lote</label>
+                        <input id="matLote" placeholder="N° do lote" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Fornecedor</label>
+                        <input id="matFornecedor" placeholder="Nome do fornecedor" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Data de Validade</label>
+                        <input id="matValidade" type="date" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Data de Entrada</label>
+                        <input id="matEntrada" type="date" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Observações</label>
+                        <textarea id="matObs" rows="2" placeholder="Observações..." style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;resize:vertical;box-sizing:border-box;"></textarea>
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px;">
+                    <button onclick="matFecharModal()" style="background:#ecf0f1;color:#555;border:none;border-radius:6px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
+                    <button onclick="matSalvar()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer;">💾 Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ABA EQUIPAMENTOS ===== -->
+    <div id="aba-equipamentos" class="tab-content">
+    <div style="max-width:1300px;margin:0 auto;padding:16px 10px;">
+
+        <!-- POPUP ALERTA CALIBRAÇÃO -->
+        <div id="eqAlertPopup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.55);align-items:center;justify-content:center;">
+            <div style="background:#fff;border-radius:12px;max-width:560px;width:95%;padding:28px 28px 20px;box-shadow:0 8px 40px rgba(0,0,0,0.22);position:relative;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                    <span style="font-size:28px;">🔔</span>
+                    <div>
+                        <div style="font-size:15px;font-weight:900;color:#e67e22;letter-spacing:.5px;">ALERTAS DE CALIBRAÇÃO</div>
+                        <div style="font-size:11px;color:#888;">Equipamentos com calibração vencida ou próxima</div>
+                    </div>
+                    <button onclick="document.getElementById('eqAlertPopup').style.display='none'" style="margin-left:auto;background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;">✕</button>
+                </div>
+                <div id="eqAlertPopupBody" style="max-height:340px;overflow-y:auto;"></div>
+                <div style="margin-top:14px;text-align:right;">
+                    <button onclick="document.getElementById('eqAlertPopup').style.display='none'" style="background:#1a2a6e;color:#fff;border:none;border-radius:6px;padding:8px 22px;font-weight:700;cursor:pointer;font-size:13px;">Fechar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- HEADER -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+            <div>
+                <div style="font-size:18px;font-weight:900;color:#1a2a6e;letter-spacing:.5px;">🔬 Equipamentos</div>
+                <div style="font-size:11px;color:#888;margin-top:2px;">Cadastro e controle de calibração de equipamentos laboratoriais</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button onclick="eqVerAlertas()" id="btnEqAlertas" style="background:#e67e22;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12px;display:none;">🔔 Alertas Calibração <span id="eqAlertCount" style="background:#fff;color:#e67e22;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:900;margin-left:4px;"></span></button>
+                <button onclick="eqAbrirModal()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">+ Cadastrar Equipamento</button>
+                <button onclick="eqExportar()" style="background:#1a2a6e;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">⬇️ Exportar CSV</button>
+            </div>
+        </div>
+
+        <!-- CARDS RESUMO -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px;">
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #1a2a6e;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Total Equipamentos</div>
+                <div id="eqCardTotal" style="font-size:26px;font-weight:900;color:#1a2a6e;">0</div>
+            </div>
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #27ae60;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Calibração em Dia</div>
+                <div id="eqCardOk" style="font-size:26px;font-weight:900;color:#27ae60;">0</div>
+            </div>
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #e67e22;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Vencendo (30d)</div>
+                <div id="eqCardVencendo" style="font-size:26px;font-weight:900;color:#e67e22;">0</div>
+            </div>
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #e74c3c;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Calibração Vencida</div>
+                <div id="eqCardVencida" style="font-size:26px;font-weight:900;color:#e74c3c;">0</div>
+            </div>
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #95a5a6;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Sem Calibração</div>
+                <div id="eqCardSemCalib" style="font-size:26px;font-weight:900;color:#95a5a6;">0</div>
+            </div>
+        </div>
+
+        <!-- FILTROS -->
+        <div style="background:#fff;border-radius:8px;padding:12px 16px;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <input id="eqFiltroNome" oninput="eqRenderTabela()" placeholder="🔍 Buscar equipamento ou TAG..." style="border:1px solid #ddd;border-radius:6px;padding:7px 12px;font-size:12px;min-width:200px;">
+            <select id="eqFiltroCalib" onchange="eqRenderTabela()" style="border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:12px;">
+                <option value="">Todos os status</option>
+                <option value="ok">✅ Calibração OK</option>
+                <option value="vencendo">🟠 Vencendo</option>
+                <option value="vencida">🔴 Vencida</option>
+                <option value="sem">⚪ Sem calibração</option>
+            </select>
+        </div>
+
+        <!-- TABELA EQUIPAMENTOS -->
+        <div style="background:#fff;border-radius:8px;box-shadow:0 1px 6px rgba(0,0,0,0.07);overflow:hidden;">
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                    <thead>
+                        <tr style="background:#1a2a6e;color:#fff;">
+                            <th style="padding:10px 12px;text-align:left;font-size:11px;letter-spacing:.5px;">EQUIPAMENTO</th>
+                            <th style="padding:10px 8px;text-align:center;">TAG N°</th>
+                            <th style="padding:10px 8px;text-align:center;">MARCA</th>
+                            <th style="padding:10px 8px;text-align:center;">MODELO</th>
+                            <th style="padding:10px 8px;text-align:center;">SÉRIE</th>
+                            <th style="padding:10px 8px;text-align:center;">QUANTIDADE</th>
+                            <th style="padding:10px 8px;text-align:center;">CALIBRAÇÃO</th>
+                            <th style="padding:10px 8px;text-align:center;">ÚLT. CALIBRAÇÃO</th>
+                            <th style="padding:10px 8px;text-align:center;">PRÓX. CALIBRAÇÃO</th>
+                            <th style="padding:10px 8px;text-align:center;">STATUS</th>
+                            <th style="padding:10px 8px;text-align:center;">AÇÕES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eqTbody">
+                        <tr><td colspan="11" style="text-align:center;padding:40px;color:#aaa;">Nenhum equipamento cadastrado.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    </div><!-- fim aba-equipamentos -->
+
+    <!-- MODAL CADASTRO EQUIPAMENTO -->
+    <div id="modalCadastroEquipamento" style="display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.55);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:12px;width:100%;max-width:680px;box-shadow:0 8px 40px rgba(0,0,0,0.22);margin:20px;max-height:90vh;overflow-y:auto;">
+            <div style="background:linear-gradient(135deg,#1a2a6e,#2c3e9e);color:#fff;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div style="font-size:15px;font-weight:900;" id="eqModalTitulo">🔬 Cadastrar Equipamento</div>
+                    <div style="font-size:11px;opacity:.75;">Preencha os dados do equipamento</div>
+                </div>
+                <button onclick="eqFecharModal()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;opacity:.8;">✕</button>
+            </div>
+            <div style="padding:22px;">
+                <input type="hidden" id="eqEditId">
+
+                <!-- Seção: Identificação -->
+                <div style="background:#f8f9fa;border:1px solid #e8ecf0;border-radius:8px;padding:16px;margin-bottom:14px;">
+                    <div style="font-size:11px;font-weight:800;color:#fff;background:#1a2a6e;display:inline-block;padding:4px 12px;border-radius:4px;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">🏷️ Identificação</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div style="grid-column:1/-1;">
+                            <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Nome do Equipamento *</label>
+                            <input id="eqNome" placeholder="Ex: Balança analítica, pH-metro, Estufa..." style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Número de TAG *</label>
+                            <input id="eqTag" placeholder="Ex: EQ-001, LAB-012..." style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Marca</label>
+                            <input id="eqMarca" placeholder="Ex: Shimadzu, Mettler..." style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Modelo</label>
+                            <input id="eqModelo" placeholder="Ex: AX204, SevenEasy..." style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">N° de Série</label>
+                            <input id="eqSerie" placeholder="Número de série do fabricante" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Quantidade *</label>
+                            <input id="eqQtd" type="number" min="1" value="1" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Localização</label>
+                            <input id="eqLocal" placeholder="Ex: Laboratório 01, Sala de análise..." style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção: Calibração -->
+                <div style="background:#f8f9fa;border:1px solid #e8ecf0;border-radius:8px;padding:16px;margin-bottom:14px;">
+                    <div style="font-size:11px;font-weight:800;color:#fff;background:#e67e22;display:inline-block;padding:4px 12px;border-radius:4px;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">📐 Calibração</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div style="grid-column:1/-1;">
+                            <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:6px;">Possui Calibração?</label>
+                            <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;margin-right:20px;">
+                                <input type="radio" name="eqPossuiCalib" id="eqCalibSim" value="sim" onchange="eqToggleCalib()" style="width:16px;height:16px;accent-color:#27ae60;">
+                                <span style="font-size:13px;font-weight:600;color:#27ae60;">✅ Sim, possui calibração</span>
+                            </label>
+                            <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
+                                <input type="radio" name="eqPossuiCalib" id="eqCalibNao" value="nao" onchange="eqToggleCalib()" checked style="width:16px;height:16px;accent-color:#95a5a6;">
+                                <span style="font-size:13px;font-weight:600;color:#95a5a6;">⚪ Não requer calibração</span>
+                            </label>
+                        </div>
+                        <div id="eqCalibCampos" style="display:none;grid-column:1/-1;display:none;">
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px;">
+                                <div>
+                                    <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Data da Última Calibração</label>
+                                    <input id="eqDataCalib" type="date" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                                </div>
+                                <div>
+                                    <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Data da Próxima Calibração</label>
+                                    <input id="eqProxCalib" type="date" onchange="eqVerificarAlertaCalib()" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                                </div>
+                                <div>
+                                    <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Responsável pela Calibração</label>
+                                    <input id="eqRespCalib" placeholder="Empresa ou técnico responsável" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                                </div>
+                                <div>
+                                    <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Certificado N°</label>
+                                    <input id="eqCertificado" placeholder="N° do certificado de calibração" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                                </div>
+                            </div>
+                            <!-- Alerta de proximidade de calibração -->
+                            <div id="eqAlertaProxCalib" style="display:none;margin-top:10px;background:#fef5e7;border:1px solid #f39c12;border-radius:6px;padding:10px 14px;font-size:12px;color:#d68910;font-weight:700;">
+                                🔔 Atenção: próxima calibração em menos de 30 dias!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção: Observações -->
+                <div style="margin-bottom:14px;">
+                    <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Observações</label>
+                    <textarea id="eqObs" rows="2" placeholder="Informações adicionais, condições, restrições..." style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;resize:vertical;box-sizing:border-box;"></textarea>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px;">
+                    <button onclick="eqFecharModal()" style="background:#ecf0f1;color:#555;border:none;border-radius:6px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
+                    <button onclick="eqSalvar()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer;">💾 Salvar Equipamento</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL ESTUDO DE CONSUMO -->
     <div id="reagModalEstudo" style="display:none;position:fixed;inset:0;z-index:8500;background:rgba(0,0,0,0.55);align-items:flex-start;justify-content:center;padding:20px 10px;overflow-y:auto;">
@@ -4655,6 +5051,9 @@ const PERMS_DISPONIVEIS = [
     { key: 'entrada_editar', label: 'Editar Entradas',      icon: '🔧',  desc: 'Modificar registros de entrada de matéria prima' },
     { key: 'entrada_aprovar',  label: 'Aprovar/Reprovar Ent.',  icon: '✅',  desc: 'Aprovar ou reprovar entradas de matéria prima' },
     { key: 'nao_conformidade', label: 'Não Conformidade/Dev.',   icon: '⚠️',  desc: 'Acessar aba de Não Conformidade e Devoluções' },
+    { key: 'estoque_quimicos', label: 'Produtos Químicos',        icon: '🧫',  desc: 'Acessar e gerenciar estoque de produtos químicos' },
+    { key: 'estoque_materiais',label: 'Materiais',                icon: '📦',  desc: 'Acessar e gerenciar estoque de materiais' },
+    { key: 'equipamentos',     label: 'Equipamentos',             icon: '🔬',  desc: 'Acessar e gerenciar cadastro de equipamentos e calibrações' },
     // ── Restrições específicas ──────────────────────────────────────────
     { key: 'somente_ver_nc',   label: 'Somente visualizar NC/Dev', icon: '👁️', desc: 'Impede criar/editar/excluir NC e Devoluções', restricao: true },
 ];
@@ -5021,6 +5420,30 @@ function aplicarPermissoes() {
     const ndNC = document.getElementById('ndNaoConformidade');
     if (ndNC) ndNC.style.display = podeNC ? 'inline-flex' : 'none';
 
+    // ── Estoque: Produtos Químicos e Materiais ──
+    const podeQuimicos  = isAdmin || perms.estoque_quimicos;
+    const podeMateriais = isAdmin || perms.estoque_materiais;
+    const tabEQR = document.getElementById('tabEstoqueReagentes');
+    const tabEMT = document.getElementById('tabEstoqueMateriais');
+    if (tabEQR) tabEQR.style.display = podeQuimicos  ? 'block' : 'none';
+    if (tabEMT) tabEMT.style.display = podeMateriais ? 'block' : 'none';
+    // Dropdown pai "Estoque" — só aparece se ao menos um filho visível
+    const ndEstoque = document.getElementById('ndEstoque');
+    if (ndEstoque) ndEstoque.style.display = (podeQuimicos || podeMateriais) ? 'inline-flex' : 'none';
+
+    // ── Equipamentos ──
+    const podeEquipamentos = isAdmin || perms.equipamentos;
+    const tabEqp = document.getElementById('tabEquipamentos');
+    if (tabEqp) tabEqp.style.display = podeEquipamentos ? 'inline-block' : 'none';
+
+    // ── Mobile: mostrar/ocultar itens de menu ──
+    document.querySelectorAll('.mob-item').forEach(btn => {
+        const onclick = btn.getAttribute('onclick') || '';
+        if (onclick.includes("'estoqueReagentes'"))  btn.style.display = podeQuimicos     ? 'block' : 'none';
+        if (onclick.includes("'estoqueMateriais'"))   btn.style.display = podeMateriais   ? 'block' : 'none';
+        if (onclick.includes("'equipamentos'"))       btn.style.display = podeEquipamentos ? 'block' : 'none';
+    });
+
     // Carrega entradas ao logar
     if (podeEntradaMP) {
         carregarEntradasMP().then(() => exibirTabelaEMP());
@@ -5180,6 +5603,8 @@ function trocarAba(aba, btn) {
     if (aba === 'ranking')   inicializarRanking();
     if (aba === 'boletim')   inicializarBoletim();
     if (aba === 'configuracoes') trocarSubCfg('parametros', document.getElementById('cfgBtn-parametros'));
+    if (aba === 'estoqueMateriais') { try { matRenderTabela(); } catch(e){} }
+    if (aba === 'equipamentos') { try { eqRenderTabela(); setTimeout(function(){ var al=(_equipamentos||[]).filter(function(eq){var st=_eqStatusCalib(eq);return st==='vencida'||st==='vencendo';}); if(al.length>0) eqVerAlertas(); },400); } catch(e){} }
 }
 
 function trocarSubCfg(subAba, btn) {
@@ -14751,6 +15176,479 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(_reagInjetarCampoEmail, 500);
         });
     }
+});
+
+// =============================================================
+// MÓDULO MATERIAIS
+// =============================================================
+let _materiais = JSON.parse(localStorage.getItem('sgq_materiais') || '[]');
+
+function _matSalvar() {
+    localStorage.setItem('sgq_materiais', JSON.stringify(_materiais));
+}
+
+function _matHoje() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function _matStatus(m) {
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    if (m.validade) {
+        const v = new Date(m.validade + 'T00:00:00');
+        if (v < hoje) return 'vencido';
+        const diff = (v - hoje) / 86400000;
+        if (diff <= 60) return 'vencendo';
+    }
+    if (m.qtdAtual !== undefined && m.minimo !== undefined && parseFloat(m.qtdAtual) <= parseFloat(m.minimo)) return 'baixo';
+    return 'ok';
+}
+
+function _matStatusBadge(s) {
+    const map = {
+        ok:       '<span style="background:#edfaf1;color:#1e8449;border:1px solid #a9dfbf;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;">✅ OK</span>',
+        baixo:    '<span style="background:#fef9e7;color:#d4ac0d;border:1px solid #f9e79f;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;">🟡 Estoque Baixo</span>',
+        vencendo: '<span style="background:#fef5e7;color:#ca6f1e;border:1px solid #f8c471;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;">🟠 Vencendo</span>',
+        vencido:  '<span style="background:#fdedec;color:#c0392b;border:1px solid #f5b7b1;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;">🔴 Vencido</span>',
+    };
+    return map[s] || map.ok;
+}
+
+function matRenderTabela() {
+    const filtroNome  = (document.getElementById('matFiltroNome')?.value || '').toLowerCase();
+    const filtroSt    = document.getElementById('matFiltroStatus')?.value || '';
+    const filtroCtg   = document.getElementById('matFiltroCategoria')?.value || '';
+
+    let lista = _materiais.filter(m => {
+        const st = _matStatus(m);
+        if (filtroNome && !(m.nome||'').toLowerCase().includes(filtroNome)) return false;
+        if (filtroSt && st !== filtroSt) return false;
+        if (filtroCtg && m.categoria !== filtroCtg) return false;
+        return true;
+    });
+
+    const total    = _materiais.length;
+    const baixo    = _materiais.filter(m => _matStatus(m) === 'baixo').length;
+    const ok       = _materiais.filter(m => _matStatus(m) === 'ok').length;
+    const vencendo = _materiais.filter(m => _matStatus(m) === 'vencendo').length;
+
+    const el = id => document.getElementById(id);
+    if (el('matCardTotal'))    el('matCardTotal').textContent    = total;
+    if (el('matCardBaixo'))    el('matCardBaixo').textContent    = baixo;
+    if (el('matCardOk'))       el('matCardOk').textContent       = ok;
+    if (el('matCardVencendo')) el('matCardVencendo').textContent = vencendo;
+
+    const tbody = el('matTbody');
+    if (!tbody) return;
+
+    if (!lista.length) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:#aaa;">Nenhum material encontrado.</td></tr>';
+        return;
+    }
+
+    const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
+
+    tbody.innerHTML = lista.map((m, i) => {
+        const st  = _matStatus(m);
+        const bg  = i % 2 === 0 ? '#fff' : '#f9f9f9';
+        return `<tr style="background:${bg};border-bottom:1px solid #f0f0f0;">
+            <td style="padding:9px 12px;font-weight:700;color:#2c3e50;">${m.nome || '—'}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;">${m.categoria || '—'}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;font-family:monospace;">${m.lote || '—'}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;">${m.fornecedor || '—'}</td>
+            <td style="padding:9px 8px;text-align:center;font-weight:700;color:${parseFloat(m.qtdAtual) <= parseFloat(m.minimo||0) ? '#e74c3c' : '#27ae60'};">${m.qtdAtual} ${m.unidade||''}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;color:#888;">${m.minimo || '—'} ${m.unidade||''}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;">${m.unidade || '—'}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;">${fmtDate(m.validade)}</td>
+            <td style="padding:9px 8px;text-align:center;">${_matStatusBadge(st)}</td>
+            <td style="padding:9px 8px;text-align:center;">
+                <button onclick="matEditar('${m.id}')" style="background:#3498db;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;margin-right:4px;">✏️</button>
+                <button onclick="matExcluir('${m.id}')" style="background:#e74c3c;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;">🗑️</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function matAbrirModalCadastro() {
+    document.getElementById('matEditId').value = '';
+    document.getElementById('matModalTitulo').textContent = '📦 Cadastrar Material';
+    ['matNome','matLote','matFornecedor','matObs'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+    ['matQtdAtual','matMinimo'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+    const hoje = _matHoje();
+    const ei = document.getElementById('matEntrada'); if(ei) ei.value = hoje;
+    const val = document.getElementById('matValidade'); if(val) val.value = '';
+    document.getElementById('modalCadastroMaterial').style.display = 'flex';
+}
+
+function matFecharModal() {
+    document.getElementById('modalCadastroMaterial').style.display = 'none';
+}
+
+function matEditar(id) {
+    const m = _materiais.find(x => x.id === id);
+    if (!m) return;
+    document.getElementById('matEditId').value = id;
+    document.getElementById('matModalTitulo').textContent = '✏️ Editar Material';
+    document.getElementById('matNome').value       = m.nome || '';
+    document.getElementById('matCategoria').value  = m.categoria || 'Outros';
+    document.getElementById('matUnidade').value    = m.unidade || 'un';
+    document.getElementById('matQtdAtual').value   = m.qtdAtual || '';
+    document.getElementById('matMinimo').value     = m.minimo || '';
+    document.getElementById('matLote').value       = m.lote || '';
+    document.getElementById('matFornecedor').value = m.fornecedor || '';
+    document.getElementById('matValidade').value   = m.validade || '';
+    document.getElementById('matEntrada').value    = m.entrada || '';
+    document.getElementById('matObs').value        = m.obs || '';
+    document.getElementById('modalCadastroMaterial').style.display = 'flex';
+}
+
+function matSalvar() {
+    const nome = (document.getElementById('matNome').value || '').trim();
+    if (!nome) { alert('Informe o nome do material.'); return; }
+    const qtd  = document.getElementById('matQtdAtual').value;
+    if (qtd === '' || isNaN(parseFloat(qtd))) { alert('Informe a quantidade atual.'); return; }
+
+    const editId = document.getElementById('matEditId').value;
+    const m = {
+        id:          editId || 'mat_' + Date.now(),
+        nome,
+        categoria:   document.getElementById('matCategoria').value,
+        unidade:     document.getElementById('matUnidade').value,
+        qtdAtual:    parseFloat(qtd),
+        minimo:      parseFloat(document.getElementById('matMinimo').value) || 0,
+        lote:        document.getElementById('matLote').value.trim(),
+        fornecedor:  document.getElementById('matFornecedor').value.trim(),
+        validade:    document.getElementById('matValidade').value,
+        entrada:     document.getElementById('matEntrada').value,
+        obs:         document.getElementById('matObs').value.trim(),
+    };
+
+    if (editId) {
+        const idx = _materiais.findIndex(x => x.id === editId);
+        if (idx > -1) _materiais[idx] = m;
+    } else {
+        _materiais.push(m);
+    }
+    _matSalvar();
+    matFecharModal();
+    matRenderTabela();
+    sgqToast('✅ Material salvo com sucesso!', 'success');
+}
+
+function matExcluir(id) {
+    if (!confirm('Deseja excluir este material?')) return;
+    _materiais = _materiais.filter(m => m.id !== id);
+    _matSalvar();
+    matRenderTabela();
+    sgqToast('🗑️ Material excluído.', 'success');
+}
+
+function matExportar() {
+    if (!_materiais.length) { sgqToast('Nenhum material para exportar.', 'warning'); return; }
+    const linhas = [['Nome','Categoria','Unidade','Qtd Atual','Mínimo','Lote','Fornecedor','Validade','Entrada','Status']];
+    _materiais.forEach(m => {
+        linhas.push([m.nome, m.categoria, m.unidade, m.qtdAtual, m.minimo, m.lote, m.fornecedor, m.validade, m.entrada, _matStatus(m).toUpperCase()]);
+    });
+    const csv  = linhas.map(l => l.join(';')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a'); a.href = url;
+    a.download = 'materiais_' + _matHoje() + '.csv';
+    a.click(); URL.revokeObjectURL(url);
+    sgqToast('✅ CSV exportado!', 'success');
+}
+
+// Inicializar aba materiais ao clicar
+document.addEventListener('DOMContentLoaded', function() {
+    const btnMat = document.getElementById('tabEstoqueMateriais');
+    if (btnMat) btnMat.addEventListener('click', matRenderTabela);
+    matRenderTabela();
+});
+
+
+// =============================================================
+// MÓDULO EQUIPAMENTOS
+// =============================================================
+let _equipamentos = JSON.parse(localStorage.getItem('sgq_equipamentos') || '[]');
+
+function _eqSalvar() {
+    localStorage.setItem('sgq_equipamentos', JSON.stringify(_equipamentos));
+}
+
+function _eqHoje() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function _eqStatusCalib(eq) {
+    if (!eq.possuiCalib || eq.possuiCalib === 'nao') return 'sem';
+    if (!eq.proxCalib) return 'sem';
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const prox = new Date(eq.proxCalib + 'T00:00:00');
+    if (prox < hoje) return 'vencida';
+    const diff = (prox - hoje) / 86400000;
+    if (diff <= 30) return 'vencendo';
+    return 'ok';
+}
+
+function _eqStatusBadge(s) {
+    const map = {
+        ok:      '<span style="background:#edfaf1;color:#1e8449;border:1px solid #a9dfbf;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;">✅ Calibração OK</span>',
+        vencendo:'<span style="background:#fef5e7;color:#ca6f1e;border:1px solid #f8c471;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;">🟠 Vencendo</span>',
+        vencida: '<span style="background:#fdedec;color:#c0392b;border:1px solid #f5b7b1;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;">🔴 Vencida</span>',
+        sem:     '<span style="background:#f2f3f4;color:#717d7e;border:1px solid #d5dbdb;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;">⚪ Sem calibração</span>',
+    };
+    return map[s] || map.sem;
+}
+
+function eqToggleCalib() {
+    const sim = document.getElementById('eqCalibSim')?.checked;
+    const campos = document.getElementById('eqCalibCampos');
+    if (campos) campos.style.display = sim ? 'block' : 'none';
+}
+
+function eqVerificarAlertaCalib() {
+    const prox = document.getElementById('eqProxCalib')?.value;
+    const alertDiv = document.getElementById('eqAlertaProxCalib');
+    if (!alertDiv) return;
+    if (!prox) { alertDiv.style.display = 'none'; return; }
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const proxDate = new Date(prox + 'T00:00:00');
+    const diff = (proxDate - hoje) / 86400000;
+    alertDiv.style.display = (diff <= 30 && diff >= 0) ? 'block' : 'none';
+}
+
+function eqRenderTabela() {
+    const filtroNome  = (document.getElementById('eqFiltroNome')?.value || '').toLowerCase();
+    const filtroCalib = document.getElementById('eqFiltroCalib')?.value || '';
+
+    let lista = _equipamentos.filter(eq => {
+        const st = _eqStatusCalib(eq);
+        if (filtroNome && !(eq.nome||'').toLowerCase().includes(filtroNome) && !(eq.tag||'').toLowerCase().includes(filtroNome)) return false;
+        if (filtroCalib && st !== filtroCalib) return false;
+        return true;
+    });
+
+    const total     = _equipamentos.length;
+    const ok        = _equipamentos.filter(eq => _eqStatusCalib(eq) === 'ok').length;
+    const vencendo  = _equipamentos.filter(eq => _eqStatusCalib(eq) === 'vencendo').length;
+    const vencida   = _equipamentos.filter(eq => _eqStatusCalib(eq) === 'vencida').length;
+    const semCalib  = _equipamentos.filter(eq => _eqStatusCalib(eq) === 'sem').length;
+
+    const alertas = vencida + vencendo;
+    const btnAlertas = document.getElementById('btnEqAlertas');
+    const alertCount = document.getElementById('eqAlertCount');
+    if (btnAlertas) btnAlertas.style.display = alertas > 0 ? 'inline-block' : 'none';
+    if (alertCount) alertCount.textContent = alertas;
+
+    const el = id => document.getElementById(id);
+    if (el('eqCardTotal'))    el('eqCardTotal').textContent    = total;
+    if (el('eqCardOk'))       el('eqCardOk').textContent       = ok;
+    if (el('eqCardVencendo')) el('eqCardVencendo').textContent = vencendo;
+    if (el('eqCardVencida'))  el('eqCardVencida').textContent  = vencida;
+    if (el('eqCardSemCalib')) el('eqCardSemCalib').textContent = semCalib;
+
+    const tbody = el('eqTbody');
+    if (!tbody) return;
+
+    if (!lista.length) {
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;color:#aaa;">Nenhum equipamento encontrado.</td></tr>';
+        return;
+    }
+
+    const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
+
+    tbody.innerHTML = lista.map((eq, i) => {
+        const st  = _eqStatusCalib(eq);
+        const bg  = i % 2 === 0 ? '#fff' : '#f9f9f9';
+        const possuiCalibLabel = eq.possuiCalib === 'sim' ? '✅ Sim' : '⚪ Não';
+        return `<tr style="background:${bg};border-bottom:1px solid #f0f0f0;">
+            <td style="padding:9px 12px;font-weight:700;color:#2c3e50;">${eq.nome || '—'}</td>
+            <td style="padding:9px 8px;text-align:center;"><span style="background:#1a2a6e;color:#fff;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;font-family:monospace;">${eq.tag || '—'}</span></td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;">${eq.marca || '—'}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;">${eq.modelo || '—'}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;font-family:monospace;">${eq.serie || '—'}</td>
+            <td style="padding:9px 8px;text-align:center;font-weight:700;">${eq.qtd || 1}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;">${possuiCalibLabel}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;">${fmtDate(eq.dataCalib)}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;font-weight:${st==='vencida'?'700':'400'};color:${st==='vencida'?'#e74c3c':st==='vencendo'?'#e67e22':'inherit'};">${fmtDate(eq.proxCalib)}</td>
+            <td style="padding:9px 8px;text-align:center;">${_eqStatusBadge(st)}</td>
+            <td style="padding:9px 8px;text-align:center;">
+                <button onclick="eqEditar('${eq.id}')" style="background:#3498db;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;margin-right:4px;">✏️</button>
+                <button onclick="eqExcluir('${eq.id}')" style="background:#e74c3c;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;">🗑️</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function eqAbrirModal() {
+    document.getElementById('eqEditId').value = '';
+    document.getElementById('eqModalTitulo').textContent = '🔬 Cadastrar Equipamento';
+    ['eqNome','eqTag','eqMarca','eqModelo','eqSerie','eqLocal','eqRespCalib','eqCertificado','eqObs','eqDataCalib','eqProxCalib'].forEach(id => {
+        const el = document.getElementById(id); if(el) el.value = '';
+    });
+    document.getElementById('eqQtd').value = '1';
+    document.getElementById('eqCalibNao').checked = true;
+    eqToggleCalib();
+    document.getElementById('eqAlertaProxCalib').style.display = 'none';
+    document.getElementById('modalCadastroEquipamento').style.display = 'flex';
+}
+
+function eqFecharModal() {
+    document.getElementById('modalCadastroEquipamento').style.display = 'none';
+}
+
+function eqEditar(id) {
+    const eq = _equipamentos.find(x => x.id === id);
+    if (!eq) return;
+    document.getElementById('eqEditId').value     = id;
+    document.getElementById('eqModalTitulo').textContent = '✏️ Editar Equipamento';
+    document.getElementById('eqNome').value       = eq.nome || '';
+    document.getElementById('eqTag').value        = eq.tag || '';
+    document.getElementById('eqMarca').value      = eq.marca || '';
+    document.getElementById('eqModelo').value     = eq.modelo || '';
+    document.getElementById('eqSerie').value      = eq.serie || '';
+    document.getElementById('eqQtd').value        = eq.qtd || 1;
+    document.getElementById('eqLocal').value      = eq.local || '';
+    document.getElementById('eqObs').value        = eq.obs || '';
+    if (eq.possuiCalib === 'sim') {
+        document.getElementById('eqCalibSim').checked = true;
+    } else {
+        document.getElementById('eqCalibNao').checked = true;
+    }
+    eqToggleCalib();
+    document.getElementById('eqDataCalib').value   = eq.dataCalib || '';
+    document.getElementById('eqProxCalib').value   = eq.proxCalib || '';
+    document.getElementById('eqRespCalib').value   = eq.respCalib || '';
+    document.getElementById('eqCertificado').value = eq.certificado || '';
+    eqVerificarAlertaCalib();
+    document.getElementById('modalCadastroEquipamento').style.display = 'flex';
+}
+
+function eqSalvar() {
+    const nome = (document.getElementById('eqNome').value || '').trim();
+    if (!nome) { alert('Informe o nome do equipamento.'); return; }
+    const tag = (document.getElementById('eqTag').value || '').trim();
+    if (!tag) { alert('Informe o número de TAG do equipamento.'); return; }
+
+    const possuiCalib = document.getElementById('eqCalibSim').checked ? 'sim' : 'nao';
+    const editId = document.getElementById('eqEditId').value;
+
+    const eq = {
+        id:          editId || 'eq_' + Date.now(),
+        nome,
+        tag,
+        marca:       document.getElementById('eqMarca').value.trim(),
+        modelo:      document.getElementById('eqModelo').value.trim(),
+        serie:       document.getElementById('eqSerie').value.trim(),
+        qtd:         parseInt(document.getElementById('eqQtd').value) || 1,
+        local:       document.getElementById('eqLocal').value.trim(),
+        possuiCalib,
+        dataCalib:   possuiCalib === 'sim' ? document.getElementById('eqDataCalib').value : '',
+        proxCalib:   possuiCalib === 'sim' ? document.getElementById('eqProxCalib').value : '',
+        respCalib:   possuiCalib === 'sim' ? document.getElementById('eqRespCalib').value.trim() : '',
+        certificado: possuiCalib === 'sim' ? document.getElementById('eqCertificado').value.trim() : '',
+        obs:         document.getElementById('eqObs').value.trim(),
+    };
+
+    // Verifica duplicidade de TAG
+    const tagExistente = _equipamentos.find(x => x.tag === tag && x.id !== editId);
+    if (tagExistente) {
+        if (!confirm(`Já existe um equipamento com TAG "${tag}" (${tagExistente.nome}). Deseja continuar mesmo assim?`)) return;
+    }
+
+    if (editId) {
+        const idx = _equipamentos.findIndex(x => x.id === editId);
+        if (idx > -1) _equipamentos[idx] = eq;
+    } else {
+        _equipamentos.push(eq);
+    }
+    _eqSalvar();
+    eqFecharModal();
+    eqRenderTabela();
+
+    // Popup de alerta automático ao salvar com calibração próxima/vencida
+    const st = _eqStatusCalib(eq);
+    if (st === 'vencendo' || st === 'vencida') {
+        setTimeout(() => eqVerAlertas(), 300);
+    }
+
+    sgqToast('✅ Equipamento salvo com sucesso!', 'success');
+}
+
+function eqExcluir(id) {
+    const eq = _equipamentos.find(x => x.id === id);
+    if (!eq) return;
+    if (!confirm(`Deseja excluir o equipamento "${eq.nome}" (TAG: ${eq.tag})?`)) return;
+    _equipamentos = _equipamentos.filter(x => x.id !== id);
+    _eqSalvar();
+    eqRenderTabela();
+    sgqToast('🗑️ Equipamento excluído.', 'success');
+}
+
+function eqVerAlertas() {
+    const alertas = _equipamentos.filter(eq => {
+        const st = _eqStatusCalib(eq);
+        return st === 'vencida' || st === 'vencendo';
+    });
+
+    const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+
+    const body = document.getElementById('eqAlertPopupBody');
+    if (!alertas.length) {
+        body.innerHTML = '<p style="text-align:center;color:#27ae60;font-weight:700;padding:20px;">✅ Nenhum alerta de calibração!</p>';
+    } else {
+        body.innerHTML = alertas.map(eq => {
+            const st = _eqStatusCalib(eq);
+            const cor = st === 'vencida' ? '#e74c3c' : '#e67e22';
+            const diff = eq.proxCalib ? Math.round((new Date(eq.proxCalib+'T00:00:00') - hoje) / 86400000) : null;
+            const diffStr = diff !== null ? (diff < 0 ? `Vencida há ${Math.abs(diff)} dia(s)` : `Vence em ${diff} dia(s)`) : '';
+            return `<div style="border-left:4px solid ${cor};padding:10px 14px;margin-bottom:8px;background:#fff;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+                <div style="font-weight:800;color:${cor};font-size:13px;">${eq.nome} <span style="font-family:monospace;font-size:10px;background:${cor}20;padding:1px 6px;border-radius:3px;">${eq.tag}</span></div>
+                <div style="font-size:11px;color:#555;margin-top:3px;">Próx. calibração: <strong>${fmtDate(eq.proxCalib)}</strong> — ${diffStr}</div>
+                ${eq.respCalib ? `<div style="font-size:10px;color:#888;">Responsável: ${eq.respCalib}</div>` : ''}
+            </div>`;
+        }).join('');
+    }
+
+    const popup = document.getElementById('eqAlertPopup');
+    popup.style.display = 'flex';
+}
+
+function eqExportar() {
+    if (!_equipamentos.length) { sgqToast('Nenhum equipamento para exportar.', 'warning'); return; }
+    const linhas = [['Nome','TAG','Marca','Modelo','Série','Quantidade','Possui Calibração','Última Calibração','Próxima Calibração','Responsável Calibração','Certificado','Status','Localização']];
+    _equipamentos.forEach(eq => {
+        linhas.push([
+            eq.nome, eq.tag, eq.marca, eq.modelo, eq.serie, eq.qtd,
+            eq.possuiCalib === 'sim' ? 'SIM' : 'NÃO',
+            eq.dataCalib || '', eq.proxCalib || '',
+            eq.respCalib || '', eq.certificado || '',
+            _eqStatusCalib(eq).toUpperCase(),
+            eq.local || ''
+        ]);
+    });
+    const csv  = linhas.map(l => l.join(';')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a'); a.href = url;
+    a.download = 'equipamentos_' + _eqHoje() + '.csv';
+    a.click(); URL.revokeObjectURL(url);
+    sgqToast('✅ CSV exportado!', 'success');
+}
+
+// Verificar alertas de calibração automaticamente ao carregar
+document.addEventListener('DOMContentLoaded', function() {
+    const btnEq = document.getElementById('tabEquipamentos');
+    if (btnEq) btnEq.addEventListener('click', function() {
+        eqRenderTabela();
+        // Auto popup se há alertas
+        const alertas = _equipamentos.filter(eq => {
+            const st = _eqStatusCalib(eq);
+            return st === 'vencida' || st === 'vencendo';
+        });
+        if (alertas.length > 0) setTimeout(eqVerAlertas, 400);
+    });
+    eqRenderTabela();
 });
 </script>
 
