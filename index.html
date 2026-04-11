@@ -1516,21 +1516,7 @@
 
                 <!-- KPIs -->
                 <div class="capa-kpis">
-                    <!-- Card 1: Análises Hoje -->
-                    <div class="capa-kpi">
-                        <div class="capa-kpi-accent" style="background:#1a2a6e;"></div>
-                        <div class="capa-kpi-top">
-                            <div class="capa-kpi-label">Análises Hoje</div>
-                            <div class="capa-kpi-icon" style="background:#eef2ff;">📋</div>
-                        </div>
-                        <div class="capa-kpi-value" id="kpiAnalises" style="color:#1a2a6e;">—</div>
-                        <div class="capa-kpi-row">
-                            <div class="capa-kpi-sub capa-kpi-up">↑ Registros do dia</div>
-                            <span class="capa-kpi-badge" id="kpiAnalisesP" style="background:#eef2ff;color:#1a2a6e;">—</span>
-                        </div>
-                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiAnalisesBar" style="width:0%;background:#1a2a6e;"></div></div>
-                    </div>
-                    <!-- Card 2: Conformidade Produção -->
+                    <!-- Card 1: Conformidade Produção -->
                     <div class="capa-kpi">
                         <div class="capa-kpi-accent" style="background:#27ae60;"></div>
                         <div class="capa-kpi-top">
@@ -1547,21 +1533,7 @@
                         </div>
                         <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiConfProdBar" style="width:0%;background:#27ae60;"></div></div>
                     </div>
-                    <!-- Card 3: NC abertas na aba NC -->
-                    <div class="capa-kpi">
-                        <div class="capa-kpi-accent" style="background:#c0392b;"></div>
-                        <div class="capa-kpi-top">
-                            <div class="capa-kpi-label">NC em Aberto</div>
-                            <div class="capa-kpi-icon" style="background:#fef0ee;">⚠️</div>
-                        </div>
-                        <div class="capa-kpi-value" id="kpiNcAbertas" style="color:#c0392b;">—</div>
-                        <div class="capa-kpi-row">
-                            <div class="capa-kpi-sub capa-kpi-down" id="kpiNcVencidaSub">Aguardando ação</div>
-                            <span class="capa-kpi-badge" id="kpiNcVencidaP" style="background:#fef0ee;color:#c0392b;">—</span>
-                        </div>
-                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiNcBar" style="width:0%;background:#c0392b;"></div></div>
-                    </div>
-                    <!-- Card 4: Conformidade MP -->
+                    <!-- Card 2: Conformidade MP -->
                     <div class="capa-kpi">
                         <div class="capa-kpi-accent" style="background:#8e44ad;"></div>
                         <div class="capa-kpi-top">
@@ -1578,18 +1550,59 @@
                         </div>
                         <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiConfMPBar" style="width:0%;background:#8e44ad;"></div></div>
                     </div>
+                    <!-- Card 3: Classificação de Grãos -->
+                    <div class="capa-kpi">
+                        <div class="capa-kpi-accent" style="background:#e67e22;"></div>
+                        <div class="capa-kpi-top">
+                            <div class="capa-kpi-label">Classificação de Grãos</div>
+                            <div class="capa-kpi-icon" style="background:#fef5ec;">🌽</div>
+                        </div>
+                        <div style="display:flex;align-items:baseline;gap:4px;">
+                            <div class="capa-kpi-value" id="kpiConfClassVal" style="color:#e67e22;">—</div>
+                            <span class="capa-kpi-value" id="kpiConfClassPct" style="color:#e67e22;font-size:16px;font-weight:700;">—</span>
+                        </div>
+                        <div class="capa-kpi-row">
+                            <div class="capa-kpi-sub" style="color:#aaa;">Grãos dentro do limite</div>
+                        </div>
+                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiConfClassBar" style="background:#e67e22;width:0%;"></div></div>
+                        <div style="font-size:9px;color:#bbb;margin-top:4px;font-weight:600;font-family:'Montserrat',Arial,sans-serif;" id="kpiConfClassSub">—</div>
+                    </div>
+                    <!-- Card 4: Conformidade Geral -->
+                    <div class="capa-kpi">
+                        <div class="capa-kpi-accent" style="background:#1a2a6e;"></div>
+                        <div class="capa-kpi-top">
+                            <div class="capa-kpi-label">Conformidade Geral (mês)</div>
+                            <div class="capa-kpi-icon" style="background:#eef2ff;">📊</div>
+                        </div>
+                        <div style="display:flex;align-items:baseline;gap:4px;">
+                            <div class="capa-kpi-value" id="kpiConfGeralVal" style="color:#1a2a6e;">—</div>
+                            <span class="kpi-trend" id="kpiConfGeralTrend" style="color:#888;"></span>
+                        </div>
+                        <div class="capa-kpi-row">
+                            <div class="capa-kpi-sub" style="color:#aaa;">Prod + MP + Class</div>
+                            <span class="capa-kpi-badge" id="kpiConfGeralSub" style="background:#eef2ff;color:#1a2a6e;">—</span>
+                        </div>
+                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiConfGeralBar" style="width:0%;background:#1a2a6e;"></div></div>
+                    </div>
                 </div>
 
-                <!-- Linha de módulos: Classificação + S/ parâmetro -->
+                <!-- Linha de módulos: Análises Hoje + NC em Aberto + S/ Parâmetro -->
                 <div class="capa-kpi-modulos" style="margin-bottom:18px;">
-                    <div class="kpi-mod" style="border-left-color:#e67e22;">
-                        <div class="kpi-mod-label">Classificação de Grãos</div>
+                    <div class="kpi-mod" style="border-left-color:#1a2a6e;">
+                        <div class="kpi-mod-label">Análises Hoje</div>
                         <div class="kpi-mod-row">
-                            <span class="kpi-mod-val" id="kpiConfClassVal" style="color:#e67e22;">—</span>
-                            <span class="kpi-mod-pct" id="kpiConfClassPct" style="color:#e67e22;">—</span>
+                            <span class="kpi-mod-val" id="kpiAnalises" style="color:#1a2a6e;">—</span>
                         </div>
-                        <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiConfClassBar" style="background:#e67e22;width:0%;"></div></div>
-                        <div class="kpi-mod-sub" id="kpiConfClassSub">—</div>
+                        <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiAnalisesBar" style="background:#1a2a6e;width:0%;"></div></div>
+                        <div class="kpi-mod-sub"><span id="kpiAnalisesP">—</span></div>
+                    </div>
+                    <div class="kpi-mod" style="border-left-color:#c0392b;">
+                        <div class="kpi-mod-label">NC em Aberto</div>
+                        <div class="kpi-mod-row">
+                            <span class="kpi-mod-val" id="kpiNcAbertas" style="color:#c0392b;">—</span>
+                        </div>
+                        <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiNcBar" style="background:#c0392b;width:0%;"></div></div>
+                        <div class="kpi-mod-sub"><span id="kpiNcVencidaSub">—</span> — <span id="kpiNcVencidaP">—</span></div>
                     </div>
                     <div class="kpi-mod" style="border-left-color:#bbb;">
                         <div class="kpi-mod-label">Registros S/ Parâmetro</div>
@@ -1598,15 +1611,6 @@
                         </div>
                         <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiSemParamBar" style="background:#bbb;width:0%;"></div></div>
                         <div class="kpi-mod-sub" id="kpiSemParamSub">excluídos do índice de conformidade</div>
-                    </div>
-                    <div class="kpi-mod" style="border-left-color:#1a2a6e;">
-                        <div class="kpi-mod-label">Conformidade Geral (mês)</div>
-                        <div class="kpi-mod-row">
-                            <span class="kpi-mod-val" id="kpiConfGeralVal" style="color:#1a2a6e;">—</span>
-                            <span class="kpi-mod-pct" id="kpiConfGeralTrend" style="color:#888;"></span>
-                        </div>
-                        <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiConfGeralBar" style="background:#1a2a6e;width:0%;"></div></div>
-                        <div class="kpi-mod-sub" id="kpiConfGeralSub">Prod + MP + Class com parâmetro</div>
                     </div>
                 </div>
 
@@ -5787,6 +5791,7 @@ function atualizarKpisCapa() {
         const corGeral = corConf(pctGeral);
         const kpiGV = document.getElementById('kpiConfGeralVal'); if(kpiGV) { kpiGV.textContent = pctGeral + '%'; kpiGV.style.color = corGeral; }
         const barG = document.getElementById('kpiConfGeralBar'); if(barG) { barG.style.width = pctGeral + '%'; barG.style.background = corGeral; }
+        const kpiGSub = document.getElementById('kpiConfGeralSub'); if(kpiGSub) { kpiGSub.textContent = confTotal + ' de ' + totalTudo + ' lotes'; kpiGSub.style.background = corGeral + '22'; kpiGSub.style.color = corGeral; }
 
         // ── Alertas ──
         _renderizarAlertas({ pctProd, pctProdAnt, pctMP, pctMPAnt, pctClass, ncVencidas, ncCriticas, nomeMes });
