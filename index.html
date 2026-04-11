@@ -5713,13 +5713,18 @@ function atualizarKpisCapa() {
             return parseFloat(v) > 0;
         };
         const camposMP   = ['proteina','solubil','umidade','densidade','mineral','acidez','ureatica','rancidez','peroxido','digestibilidade'];
-        const camposProd = ['proteina','fibra','solubil','umidade','densidade','mineral'];
+        const camposProd = ['dgm','dpg','umidade','densidade','proteina','fibra','mineral','calcio','fosforo','fundo'];
+        const camposDefeito = ['queimado','ardido','mofado','esverdeado','fermentando','chocho','picado','gessado','quebrado','germinado','carunchado','impureza'];
         const contarClass = (r) => {
-            const camposDefeito = ['queimado','ardido','mofado','esverdeado','fermentando','chocho','picado','gessado','quebrado','germinado','carunchado','impureza'];
             let n = 0;
-            if (camposDefeito.some(c => r[c] !== null && r[c] !== undefined && parseFloat(r[c]) >= 0)) n++;
-            if (r.umidade   !== null && r.umidade   !== undefined) n++;
-            if (r.densidade !== null && r.densidade !== undefined && parseFloat(r.densidade) > 0) n++;
+            if (camposDefeito.some(c => temValorMP(r, c))) n++;
+            if (temValorMP(r, 'umidade'))   n++;
+            if (temValorMP(r, 'densidade')) n++;
+            return n;
+        };
+        const contarProd = (r) => {
+            let n = camposProd.filter(c => temValorMP(r, c)).length;
+            if (temValorMP(r,'granulo1') || temValorMP(r,'granulo2') || temValorMP(r,'granulo3')) n++;
             return n;
         };
 
@@ -5728,11 +5733,11 @@ function atualizarKpisCapa() {
         const mpHoje    = (materiasPrimas||[]).filter(isHoje);
         const classHoje = (classificacoes||[]).filter(isHoje);
         let analisesHoje = 0;
-        prodsHoje.forEach(r => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesHoje++; }); });
-        mpHoje.forEach(r    => { camposMP.forEach(c   => { if(temValorMP(r,c)) analisesHoje++; }); });
+        prodsHoje.forEach(r => { analisesHoje += contarProd(r); });
+        mpHoje.forEach(r    => { camposMP.forEach(c => { if(temValorMP(r,c)) analisesHoje++; }); });
         classHoje.forEach(r => { analisesHoje += contarClass(r); });
         let analisesMes = 0;
-        (producoes||[]).filter(isMesAtual).forEach(r => { camposProd.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
+        (producoes||[]).filter(isMesAtual).forEach(r => { analisesMes += contarProd(r); });
         (materiasPrimas||[]).filter(isMesAtual).forEach(r => { camposMP.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
         (classificacoes||[]).filter(isMesAtual).forEach(r => { analisesMes += contarClass(r); });
 
