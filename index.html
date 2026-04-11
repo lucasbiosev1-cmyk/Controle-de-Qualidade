@@ -5603,8 +5603,8 @@ function trocarAba(aba, btn) {
     if (aba === 'ranking')   inicializarRanking();
     if (aba === 'boletim')   inicializarBoletim();
     if (aba === 'configuracoes') trocarSubCfg('parametros', document.getElementById('cfgBtn-parametros'));
-    if (aba === 'estoqueMateriais') { try { matRenderTabela(); } catch(e){} }
-    if (aba === 'equipamentos') { try { eqRenderTabela(); setTimeout(function(){ var al=(_equipamentos||[]).filter(function(eq){var st=_eqStatusCalib(eq);return st==='vencida'||st==='vencendo';}); if(al.length>0) eqVerAlertas(); },400); } catch(e){} }
+    if (aba === 'estoqueMateriais') { try { matCarregarDados(); } catch(e){} }
+    if (aba === 'equipamentos') { try { eqCarregarDados(); } catch(e){} }
 }
 
 function trocarSubCfg(subAba, btn) {
@@ -9370,6 +9370,57 @@ function rolarTabela(containerId, direcao) {
 // O JWT do usuário autenticado é gerenciado automaticamente pelo SDK.
 // NUNCA use a SERVICE_ROLE KEY no frontend.
 // ===================================================
+/*
+  =====================================================================
+  SUPABASE — SQL para criar as tabelas materiais e equipamentos
+  Execute no SQL Editor do Supabase:
+  =====================================================================
+
+  -- TABELA: materiais
+  CREATE TABLE IF NOT EXISTS public.materiais (
+    id          BIGSERIAL PRIMARY KEY,
+    nome        TEXT NOT NULL,
+    categoria   TEXT DEFAULT 'Outros',
+    unidade     TEXT DEFAULT 'un',
+    qtd_atual   NUMERIC DEFAULT 0,
+    minimo      NUMERIC DEFAULT 0,
+    lote        TEXT,
+    fornecedor  TEXT,
+    validade    DATE,
+    entrada     DATE,
+    obs         TEXT,
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+  );
+  ALTER TABLE public.materiais ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "Autenticados podem tudo em materiais"
+    ON public.materiais FOR ALL
+    TO authenticated USING (true) WITH CHECK (true);
+
+  -- TABELA: equipamentos
+  CREATE TABLE IF NOT EXISTS public.equipamentos (
+    id           BIGSERIAL PRIMARY KEY,
+    nome         TEXT NOT NULL,
+    tag          TEXT NOT NULL,
+    marca        TEXT,
+    modelo       TEXT,
+    serie        TEXT,
+    qtd          INTEGER DEFAULT 1,
+    local        TEXT,
+    possui_calib TEXT DEFAULT 'nao',
+    data_calib   DATE,
+    prox_calib   DATE,
+    resp_calib   TEXT,
+    certificado  TEXT,
+    obs          TEXT,
+    created_at   TIMESTAMPTZ DEFAULT NOW()
+  );
+  ALTER TABLE public.equipamentos ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "Autenticados podem tudo em equipamentos"
+    ON public.equipamentos FOR ALL
+    TO authenticated USING (true) WITH CHECK (true);
+
+  =====================================================================
+*/
 const SUPABASE_URL = 'https://kponpocjqxtlclxuokkd.supabase.co';
 // ✅ Use sua ANON KEY (Project Settings → API → anon public)
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwb25wb2NqcXh0bGNseHVva2tkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MzAxOTIsImV4cCI6MjA5MDMwNjE5Mn0.vzy0E_1vot1NcKwW0LeyC5dURkHDFgZKhxr92Vzs5hU';
@@ -14457,17 +14508,17 @@ function resetarParametros() {
 // =====================================================================
 // 🧫 MÓDULO ESTOQUE DE REAGENTES — L·Quality
 // =====================================================================
+// ✅ MIGRADO: agora usa tabelas dedicadas no Supabase:
+//    - produtos_quimicos  → cadastro de reagentes
+//    - reag_movimentos    → histórico de consumo/descarte/ajuste
+//    - reag_notas         → histórico de entradas por NF
+// =====================================================================
 
 // ── Estado em memória ─────────────────────────────────────────────
-let _reagentes  = [];   // cadastro de reagentes
-let _reagNotas  = [];   // histórico de entradas por NF
-let _reagEditId = null; // ID em edição
-
-// ── Chaves Supabase ───────────────────────────────────────────────
-const REAG_KEY_REAG  = 'lquality_reagentes_v1';
-const REAG_KEY_NOTAS = 'lquality_reagnotas_v1';
-const REAG_KEY_MOV   = 'lquality_reagmov_v1';
-let _reagMovimentos  = [];   // histórico de movimentos (consumo/descarte)
+let _reagentes   = [];   // cadastro de reagentes
+let _reagNotas   = [];   // histórico de entradas por NF
+let _reagEditId  = null; // ID em edição
+let _reagMovimentos = []; // histórico de movimentos
 
 // ── Email configurado nas configurações ───────────────────────────
 function _reagGetEmail() {
@@ -14477,34 +14528,162 @@ function _reagGetEmail() {
 // ── Carregar dados do Supabase ────────────────────────────────────
 async function reagCarregarDados() {
     try {
-        const { data: dr } = await _sbClient.from('parametros').select('valor').eq('chave', REAG_KEY_REAG).single();
-        _reagentes = dr && dr.valor ? JSON.parse(dr.valor) : [];
-    } catch(e) { _reagentes = []; }
+        const { data, error } = await _sbClient
+            .from('produtos_quimicos')
+            .select('*')
+            .order('nome', { ascending: true });
+        if (error) throw error;
+        // Normalizar campos para manter compatibilidade com o restante do código
+        _reagentes = (data || []).map(_reagNormalizar);
+    } catch(e) {
+        console.error('Erro ao carregar produtos_quimicos:', e);
+        _reagentes = [];
+    }
+
+    // Carregar movimentos
     try {
-        const { data: dn } = await _sbClient.from('parametros').select('valor').eq('chave', REAG_KEY_NOTAS).single();
-        _reagNotas = dn && dn.valor ? JSON.parse(dn.valor) : [];
-    } catch(e) { _reagNotas = []; }
+        const { data: dm, error: em } = await _sbClient
+            .from('reag_movimentos')
+            .select('*')
+            .order('data', { ascending: false });
+        if (em) throw em;
+        _reagMovimentos = (dm || []).map(m => ({
+            id:     String(m.id),
+            reagId: String(m.produto_id),
+            tipo:   m.tipo,
+            qtd:    m.qtd,
+            obs:    m.obs || '',
+            data:   m.data,
+            mes:    m.data ? m.data.substring(0,7) : ''
+        }));
+    } catch(e) {
+        console.error('Erro ao carregar reag_movimentos:', e);
+        _reagMovimentos = [];
+    }
+
+    // Carregar notas de entrada
     try {
-        const { data: dm } = await _sbClient.from('parametros').select('valor').eq('chave', REAG_KEY_MOV).single();
-        _reagMovimentos = dm && dm.valor ? JSON.parse(dm.valor) : [];
-    } catch(e) { _reagMovimentos = []; }
+        const { data: dn, error: en } = await _sbClient
+            .from('reag_notas')
+            .select('*')
+            .order('data_entrada', { ascending: false });
+        if (en) throw en;
+        _reagNotas = (dn || []).map(n => ({
+            id:          String(n.id),
+            chave:       n.chave_nf,
+            fornecedor:  n.fornecedor,
+            dataEmissao: n.data_emissao,
+            dataEntrada: n.data_entrada,
+            itens:       n.itens ? JSON.parse(n.itens) : []
+        }));
+    } catch(e) {
+        console.error('Erro ao carregar reag_notas:', e);
+        _reagNotas = [];
+    }
+
     reagRenderTabela();
     reagRenderNotas();
     reagAtualizarCards();
     reagVerificarAlertas();
 }
 
-async function _reagSalvarReagentes() {
-    await _sbClient.from('parametros').delete().eq('chave', REAG_KEY_REAG);
-    await _sbClient.from('parametros').insert({ chave: REAG_KEY_REAG, valor: JSON.stringify(_reagentes), atualizado_em: new Date().toISOString() });
+// ── Normalizar registro do Supabase para o formato interno ────────
+function _reagNormalizar(r) {
+    return {
+        id:          String(r.id),
+        nome:        r.nome || '',
+        unidade:     r.unidade || 'mL',
+        minimo:      parseFloat(r.minimo) || 0,
+        qtdAtual:    parseFloat(r.qtd_atual) || 0,
+        lote:        r.lote || '',
+        validade:    r.validade || '',
+        fornecedor:  r.fornecedor || '',
+        controlePF:  r.controle_pf === true || r.controle_pf === 'true',
+        portaria:    r.portaria || '',
+        dataEntrada: r.entrada || '',
+        nfChave:     r.nf_chave || '',
+        tipo:        r.tipo || '',
+        fabricante:  r.fabricante || '',
+        local_armazena: r.local_armazena || '',
+        uso_permitido:  r.uso_permitido || '',
+        numero_fispq:   r.numero_fispq || '',
+        data_fispq:     r.data_fispq || '',
+        obs:         r.obs || ''
+    };
 }
-async function _reagSalvarMovimentos() {
-    await _sbClient.from('parametros').delete().eq('chave', REAG_KEY_MOV);
-    await _sbClient.from('parametros').insert({ chave: REAG_KEY_MOV, valor: JSON.stringify(_reagMovimentos), atualizado_em: new Date().toISOString() });
+
+// ── Converter formato interno → linha do Supabase ─────────────────
+function _reagParaSupabase(r) {
+    const row = {
+        nome:        r.nome,
+        unidade:     r.unidade || 'mL',
+        minimo:      r.minimo || 0,
+        qtd_atual:   r.qtdAtual || 0,
+        lote:        r.lote || null,
+        validade:    r.validade || null,
+        fornecedor:  r.fornecedor || null,
+        controle_pf: !!r.controlePF,
+        portaria:    r.portaria || null,
+        entrada:     r.dataEntrada || null,
+        nf_chave:    r.nfChave || null,
+        tipo:        r.tipo || null,
+        fabricante:  r.fabricante || null,
+        local_armazena: r.local_armazena || null,
+        uso_permitido:  r.uso_permitido || null,
+        numero_fispq:   r.numero_fispq || null,
+        data_fispq:     r.data_fispq || null,
+        obs:         r.obs || null
+    };
+    return row;
 }
-async function _reagSalvarNotas() {
-    await _sbClient.from('parametros').delete().eq('chave', REAG_KEY_NOTAS);
-    await _sbClient.from('parametros').insert({ chave: REAG_KEY_NOTAS, valor: JSON.stringify(_reagNotas), atualizado_em: new Date().toISOString() });
+
+// ── Salvar/atualizar um reagente no Supabase ──────────────────────
+async function _reagUpsertReagente(r) {
+    const row = _reagParaSupabase(r);
+    if (r.id && !r.id.startsWith('REAG_')) {
+        // Update
+        const { data, error } = await _sbClient
+            .from('produtos_quimicos')
+            .update(row)
+            .eq('id', r.id)
+            .select()
+            .single();
+        if (error) throw error;
+        return _reagNormalizar(data);
+    } else {
+        // Insert
+        const { data, error } = await _sbClient
+            .from('produtos_quimicos')
+            .insert(row)
+            .select()
+            .single();
+        if (error) throw error;
+        return _reagNormalizar(data);
+    }
+}
+
+// ── Salvar movimento no Supabase ──────────────────────────────────
+async function _reagSalvarMovimento(mov) {
+    const { error } = await _sbClient.from('reag_movimentos').insert({
+        produto_id: parseInt(mov.reagId),
+        tipo:       mov.tipo,
+        qtd:        mov.qtd,
+        obs:        mov.obs || null,
+        data:       mov.data
+    });
+    if (error) throw error;
+}
+
+// ── Salvar nota de entrada no Supabase ────────────────────────────
+async function _reagSalvarNota(n) {
+    const { error } = await _sbClient.from('reag_notas').insert({
+        chave_nf:     n.chave,
+        fornecedor:   n.fornecedor,
+        data_emissao: n.dataEmissao,
+        data_entrada: n.dataEntrada,
+        itens:        JSON.stringify(n.itens)
+    });
+    if (error) throw error;
 }
 
 // ── Utilitários de data ───────────────────────────────────────────
@@ -14776,27 +14955,39 @@ async function reagSalvarNota() {
 
     if (!itens.length) { sgqToast('⚠️ Adicione pelo menos um produto.', 'warning'); return; }
 
-    // Atualizar estoque dos reagentes existentes / criar novos
-    itens.forEach(item => {
-        if (item.reagId === '__novo__') return;
-        const r = _reagentes.find(x => x.id === item.reagId);
-        if (r) {
-            r.qtdAtual   += item.qtd;
-            r.lote        = item.lote || r.lote;
-            r.validade    = item.validade || r.validade;
-            r.fornecedor  = fornecedor;
-            r.nfChave     = chave;
-            r.dataEntrada = _reagHoje();
-            if (item.pf !== undefined) r.controlePF = item.pf;
-        }
-    });
-
-    const nota = { id: 'NF_' + Date.now(), chave, fornecedor, dataEmissao: emissao, dataEntrada: _reagHoje(), itens };
-    _reagNotas.push(nota);
-
     try {
-        await _reagSalvarReagentes();
-        await _reagSalvarNotas();
+        // Atualizar estoque de cada reagente no Supabase
+        for (const item of itens) {
+            if (item.reagId === '__novo__') continue;
+            const r = _reagentes.find(x => x.id === item.reagId);
+            if (!r) continue;
+            const novaQtd = r.qtdAtual + item.qtd;
+            const update = {
+                qtd_atual:   novaQtd,
+                lote:        item.lote || r.lote || null,
+                validade:    item.validade || r.validade || null,
+                fornecedor:  fornecedor,
+                nf_chave:    chave,
+                entrada:     _reagHoje(),
+                controle_pf: item.pf !== undefined ? item.pf : r.controlePF
+            };
+            const { error } = await _sbClient.from('produtos_quimicos').update(update).eq('id', item.reagId);
+            if (error) throw error;
+            // Atualizar estado local
+            r.qtdAtual   = novaQtd;
+            r.lote       = update.lote;
+            r.validade   = update.validade;
+            r.fornecedor = fornecedor;
+            r.nfChave    = chave;
+            r.dataEntrada= _reagHoje();
+            r.controlePF = update.controle_pf;
+        }
+
+        // Salvar nota de entrada
+        const nota = { chave, fornecedor, dataEmissao: emissao, dataEntrada: _reagHoje(), itens };
+        await _reagSalvarNota(nota);
+        _reagNotas.unshift({ ...nota, id: 'NF_' + Date.now() });
+
         reagFecharModalNota();
         reagRenderTabela();
         reagRenderNotas();
@@ -14853,11 +15044,13 @@ async function reagSalvarCadastro() {
     const qtd     = parseFloat(document.getElementById('reagCadQtdInicial').value) || 0;
     if (!nome) { sgqToast('⚠️ Informe o nome do reagente.', 'warning'); return; }
 
+    const existente = _reagEditId ? (_reagentes.find(x => x.id === _reagEditId) || {}) : {};
     const dados = {
+        id:         _reagEditId || null,
         nome,
         unidade:    document.getElementById('reagCadUnidade').value,
         minimo,
-        qtdAtual:   _reagEditId ? (_reagentes.find(x=>x.id===_reagEditId)||{}).qtdAtual || qtd : qtd,
+        qtdAtual:   _reagEditId ? (qtd || existente.qtdAtual || 0) : qtd,
         lote:       document.getElementById('reagCadLote').value.trim(),
         validade:   document.getElementById('reagCadValidade').value,
         fornecedor: document.getElementById('reagCadFornecedor').value.trim(),
@@ -14866,17 +15059,14 @@ async function reagSalvarCadastro() {
         dataEntrada:_reagHoje(),
     };
 
-    if (_reagEditId) {
-        const idx = _reagentes.findIndex(x => x.id === _reagEditId);
-        if (idx >= 0) { dados.id = _reagEditId; dados.qtdAtual = qtd || _reagentes[idx].qtdAtual; _reagentes[idx] = dados; }
-    } else {
-        dados.id       = 'REAG_' + Date.now();
-        dados.qtdAtual = qtd;
-        _reagentes.push(dados);
-    }
-
     try {
-        await _reagSalvarReagentes();
+        const salvo = await _reagUpsertReagente(dados);
+        if (_reagEditId) {
+            const idx = _reagentes.findIndex(x => x.id === _reagEditId);
+            if (idx >= 0) _reagentes[idx] = salvo; else _reagentes.push(salvo);
+        } else {
+            _reagentes.push(salvo);
+        }
         reagFecharModalCadastro();
         reagRenderTabela();
         reagAtualizarCards();
@@ -14886,12 +15076,15 @@ async function reagSalvarCadastro() {
 }
 async function reagExcluir(id) {
     if (!confirm('Excluir este reagente? O histórico de entradas será mantido.')) return;
-    _reagentes = _reagentes.filter(x => x.id !== id);
-    await _reagSalvarReagentes();
-    reagRenderTabela();
-    reagAtualizarCards();
-    reagVerificarAlertas();
-    sgqToast('🗑️ Reagente excluído.', 'success');
+    try {
+        const { error } = await _sbClient.from('produtos_quimicos').delete().eq('id', id);
+        if (error) throw error;
+        _reagentes = _reagentes.filter(x => x.id !== id);
+        reagRenderTabela();
+        reagAtualizarCards();
+        reagVerificarAlertas();
+        sgqToast('🗑️ Reagente excluído.', 'success');
+    } catch(e) { sgqToast('❌ Erro ao excluir: ' + e.message, 'error'); }
 }
 
 // ── Modal Consumo / Ajuste ────────────────────────────────────────
@@ -14913,21 +15106,36 @@ async function reagSalvarConsumo() {
     if (!qtd) { sgqToast('⚠️ Informe a quantidade.', 'warning'); return; }
     const r = _reagentes.find(x => x.id === id);
     if (!r) return;
-    if (tipo === 'consumo' || tipo === 'descarte') r.qtdAtual = Math.max(0, r.qtdAtual - qtd);
-    else r.qtdAtual += qtd;
-    // Registrar movimento para histórico/estudo
-    _reagMovimentos.push({
-        id:      'MOV_' + Date.now(),
-        reagId:  id,
+
+    const novaQtd = (tipo === 'consumo' || tipo === 'descarte')
+        ? Math.max(0, r.qtdAtual - qtd)
+        : r.qtdAtual + qtd;
+
+    const mov = {
+        reagId: id,
         tipo,
         qtd,
         obs,
-        data:    _reagHoje(),
-        mes:     _reagHoje().substring(0,7)
-    });
+        data: _reagHoje(),
+        mes:  _reagHoje().substring(0,7)
+    };
+
     try {
-        await _reagSalvarReagentes();
-        await _reagSalvarMovimentos();
+        // Atualizar qtd_atual no Supabase
+        const { error: eu } = await _sbClient
+            .from('produtos_quimicos')
+            .update({ qtd_atual: novaQtd })
+            .eq('id', id);
+        if (eu) throw eu;
+
+        // Salvar movimento
+        await _reagSalvarMovimento(mov);
+
+        // Atualizar estado local
+        r.qtdAtual = novaQtd;
+        mov.id = 'MOV_' + Date.now();
+        _reagMovimentos.unshift(mov);
+
         document.getElementById('reagModalConsumo').style.display = 'none';
         reagRenderTabela();
         reagAtualizarCards();
@@ -15179,12 +15387,17 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // =============================================================
-// MÓDULO MATERIAIS
+// MÓDULO MATERIAIS  — Supabase: tabela "materiais"
 // =============================================================
-let _materiais = JSON.parse(localStorage.getItem('sgq_materiais') || '[]');
+let _materiais = [];
 
-function _matSalvar() {
-    localStorage.setItem('sgq_materiais', JSON.stringify(_materiais));
+async function matCarregarDados() {
+    try {
+        _materiais = await dbGetAll('materiais');
+        matRenderTabela();
+    } catch(e) {
+        sgqToast('Erro ao carregar materiais: ' + e.message, 'error');
+    }
 }
 
 function _matHoje() {
@@ -15193,13 +15406,15 @@ function _matHoje() {
 
 function _matStatus(m) {
     const hoje = new Date(); hoje.setHours(0,0,0,0);
+    const qtd = m.qtd_atual !== undefined ? m.qtd_atual : m.qtdAtual; // compatibilidade
+    const min = m.minimo;
     if (m.validade) {
         const v = new Date(m.validade + 'T00:00:00');
         if (v < hoje) return 'vencido';
         const diff = (v - hoje) / 86400000;
         if (diff <= 60) return 'vencendo';
     }
-    if (m.qtdAtual !== undefined && m.minimo !== undefined && parseFloat(m.qtdAtual) <= parseFloat(m.minimo)) return 'baixo';
+    if (qtd !== undefined && min !== undefined && parseFloat(qtd) <= parseFloat(min)) return 'baixo';
     return 'ok';
 }
 
@@ -15250,12 +15465,13 @@ function matRenderTabela() {
     tbody.innerHTML = lista.map((m, i) => {
         const st  = _matStatus(m);
         const bg  = i % 2 === 0 ? '#fff' : '#f9f9f9';
+        const qtd = m.qtd_atual !== undefined ? m.qtd_atual : m.qtdAtual;
         return `<tr style="background:${bg};border-bottom:1px solid #f0f0f0;">
             <td style="padding:9px 12px;font-weight:700;color:#2c3e50;">${m.nome || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${m.categoria || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;font-family:monospace;">${m.lote || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${m.fornecedor || '—'}</td>
-            <td style="padding:9px 8px;text-align:center;font-weight:700;color:${parseFloat(m.qtdAtual) <= parseFloat(m.minimo||0) ? '#e74c3c' : '#27ae60'};">${m.qtdAtual} ${m.unidade||''}</td>
+            <td style="padding:9px 8px;text-align:center;font-weight:700;color:${parseFloat(qtd) <= parseFloat(m.minimo||0) ? '#e74c3c' : '#27ae60'};">${qtd} ${m.unidade||''}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;color:#888;">${m.minimo || '—'} ${m.unidade||''}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${m.unidade || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${fmtDate(m.validade)}</td>
@@ -15284,14 +15500,14 @@ function matFecharModal() {
 }
 
 function matEditar(id) {
-    const m = _materiais.find(x => x.id === id);
+    const m = _materiais.find(x => String(x.id) === String(id));
     if (!m) return;
-    document.getElementById('matEditId').value = id;
+    document.getElementById('matEditId').value = m.id;
     document.getElementById('matModalTitulo').textContent = '✏️ Editar Material';
     document.getElementById('matNome').value       = m.nome || '';
     document.getElementById('matCategoria').value  = m.categoria || 'Outros';
     document.getElementById('matUnidade').value    = m.unidade || 'un';
-    document.getElementById('matQtdAtual').value   = m.qtdAtual || '';
+    document.getElementById('matQtdAtual').value   = m.qtd_atual !== undefined ? m.qtd_atual : (m.qtdAtual || '');
     document.getElementById('matMinimo').value     = m.minimo || '';
     document.getElementById('matLote').value       = m.lote || '';
     document.getElementById('matFornecedor').value = m.fornecedor || '';
@@ -15301,7 +15517,7 @@ function matEditar(id) {
     document.getElementById('modalCadastroMaterial').style.display = 'flex';
 }
 
-function matSalvar() {
+async function matSalvar() {
     const nome = (document.getElementById('matNome').value || '').trim();
     if (!nome) { alert('Informe o nome do material.'); return; }
     const qtd  = document.getElementById('matQtdAtual').value;
@@ -15309,44 +15525,54 @@ function matSalvar() {
 
     const editId = document.getElementById('matEditId').value;
     const m = {
-        id:          editId || 'mat_' + Date.now(),
+        id:         editId ? parseInt(editId) : undefined,
         nome,
-        categoria:   document.getElementById('matCategoria').value,
-        unidade:     document.getElementById('matUnidade').value,
-        qtdAtual:    parseFloat(qtd),
-        minimo:      parseFloat(document.getElementById('matMinimo').value) || 0,
-        lote:        document.getElementById('matLote').value.trim(),
-        fornecedor:  document.getElementById('matFornecedor').value.trim(),
-        validade:    document.getElementById('matValidade').value,
-        entrada:     document.getElementById('matEntrada').value,
-        obs:         document.getElementById('matObs').value.trim(),
+        categoria:  document.getElementById('matCategoria').value,
+        unidade:    document.getElementById('matUnidade').value,
+        qtd_atual:  parseFloat(qtd),
+        minimo:     parseFloat(document.getElementById('matMinimo').value) || 0,
+        lote:       document.getElementById('matLote').value.trim(),
+        fornecedor: document.getElementById('matFornecedor').value.trim(),
+        validade:   document.getElementById('matValidade').value || null,
+        entrada:    document.getElementById('matEntrada').value || null,
+        obs:        document.getElementById('matObs').value.trim(),
     };
+    if (!m.id) delete m.id; // deixa Supabase gerar BIGSERIAL
 
-    if (editId) {
-        const idx = _materiais.findIndex(x => x.id === editId);
-        if (idx > -1) _materiais[idx] = m;
-    } else {
-        _materiais.push(m);
+    try {
+        const saved = await dbUpsertOne('materiais', m);
+        if (editId) {
+            const idx = _materiais.findIndex(x => String(x.id) === String(editId));
+            if (idx > -1) _materiais[idx] = saved;
+        } else {
+            _materiais.push(saved);
+        }
+        matFecharModal();
+        matRenderTabela();
+        sgqToast('✅ Material salvo com sucesso!', 'success');
+    } catch(e) {
+        sgqToast('❌ Erro ao salvar material: ' + e.message, 'error');
     }
-    _matSalvar();
-    matFecharModal();
-    matRenderTabela();
-    sgqToast('✅ Material salvo com sucesso!', 'success');
 }
 
-function matExcluir(id) {
+async function matExcluir(id) {
     if (!confirm('Deseja excluir este material?')) return;
-    _materiais = _materiais.filter(m => m.id !== id);
-    _matSalvar();
-    matRenderTabela();
-    sgqToast('🗑️ Material excluído.', 'success');
+    try {
+        await dbDeleteOne('materiais', id);
+        _materiais = _materiais.filter(m => String(m.id) !== String(id));
+        matRenderTabela();
+        sgqToast('🗑️ Material excluído.', 'success');
+    } catch(e) {
+        sgqToast('❌ Erro ao excluir: ' + e.message, 'error');
+    }
 }
 
 function matExportar() {
     if (!_materiais.length) { sgqToast('Nenhum material para exportar.', 'warning'); return; }
     const linhas = [['Nome','Categoria','Unidade','Qtd Atual','Mínimo','Lote','Fornecedor','Validade','Entrada','Status']];
     _materiais.forEach(m => {
-        linhas.push([m.nome, m.categoria, m.unidade, m.qtdAtual, m.minimo, m.lote, m.fornecedor, m.validade, m.entrada, _matStatus(m).toUpperCase()]);
+        const qtd = m.qtd_atual !== undefined ? m.qtd_atual : m.qtdAtual;
+        linhas.push([m.nome, m.categoria, m.unidade, qtd, m.minimo, m.lote, m.fornecedor, m.validade, m.entrada, _matStatus(m).toUpperCase()]);
     });
     const csv  = linhas.map(l => l.join(';')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -15360,18 +15586,27 @@ function matExportar() {
 // Inicializar aba materiais ao clicar
 document.addEventListener('DOMContentLoaded', function() {
     const btnMat = document.getElementById('tabEstoqueMateriais');
-    if (btnMat) btnMat.addEventListener('click', matRenderTabela);
-    matRenderTabela();
+    if (btnMat) btnMat.addEventListener('click', matCarregarDados);
 });
 
-
+// Verificar alertas de calibração automaticamente ao carregar
+document.addEventListener('DOMContentLoaded', function() {
+    const btnEq = document.getElementById('tabEquipamentos');
+    if (btnEq) btnEq.addEventListener('click', eqCarregarDados);
+});
 // =============================================================
-// MÓDULO EQUIPAMENTOS
-// =============================================================
-let _equipamentos = JSON.parse(localStorage.getItem('sgq_equipamentos') || '[]');
+let _equipamentos = [];
 
-function _eqSalvar() {
-    localStorage.setItem('sgq_equipamentos', JSON.stringify(_equipamentos));
+async function eqCarregarDados() {
+    try {
+        _equipamentos = await dbGetAll('equipamentos');
+        eqRenderTabela();
+        // Auto popup se há alertas
+        const alertas = _equipamentos.filter(eq => { const st = _eqStatusCalib(eq); return st === 'vencida' || st === 'vencendo'; });
+        if (alertas.length > 0) setTimeout(eqVerAlertas, 600);
+    } catch(e) {
+        sgqToast('Erro ao carregar equipamentos: ' + e.message, 'error');
+    }
 }
 
 function _eqHoje() {
@@ -15379,10 +15614,12 @@ function _eqHoje() {
 }
 
 function _eqStatusCalib(eq) {
-    if (!eq.possuiCalib || eq.possuiCalib === 'nao') return 'sem';
-    if (!eq.proxCalib) return 'sem';
+    const possuiCalib = eq.possui_calib || eq.possuiCalib; // compatibilidade
+    const proxCalib   = eq.prox_calib   || eq.proxCalib;
+    if (!possuiCalib || possuiCalib === 'nao') return 'sem';
+    if (!proxCalib) return 'sem';
     const hoje = new Date(); hoje.setHours(0,0,0,0);
-    const prox = new Date(eq.proxCalib + 'T00:00:00');
+    const prox = new Date(proxCalib + 'T00:00:00');
     if (prox < hoje) return 'vencida';
     const diff = (prox - hoje) / 86400000;
     if (diff <= 30) return 'vencendo';
@@ -15459,7 +15696,9 @@ function eqRenderTabela() {
     tbody.innerHTML = lista.map((eq, i) => {
         const st  = _eqStatusCalib(eq);
         const bg  = i % 2 === 0 ? '#fff' : '#f9f9f9';
-        const possuiCalibLabel = eq.possuiCalib === 'sim' ? '✅ Sim' : '⚪ Não';
+        const possuiCalibLabel = (eq.possui_calib || eq.possuiCalib) === 'sim' ? '✅ Sim' : '⚪ Não';
+        const proxCalib = eq.prox_calib || eq.proxCalib || '';
+        const dataCalib = eq.data_calib || eq.dataCalib || '';
         return `<tr style="background:${bg};border-bottom:1px solid #f0f0f0;">
             <td style="padding:9px 12px;font-weight:700;color:#2c3e50;">${eq.nome || '—'}</td>
             <td style="padding:9px 8px;text-align:center;"><span style="background:#1a2a6e;color:#fff;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;font-family:monospace;">${eq.tag || '—'}</span></td>
@@ -15468,8 +15707,8 @@ function eqRenderTabela() {
             <td style="padding:9px 8px;text-align:center;font-size:11px;font-family:monospace;">${eq.serie || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-weight:700;">${eq.qtd || 1}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${possuiCalibLabel}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;">${fmtDate(eq.dataCalib)}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;font-weight:${st==='vencida'?'700':'400'};color:${st==='vencida'?'#e74c3c':st==='vencendo'?'#e67e22':'inherit'};">${fmtDate(eq.proxCalib)}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;">${fmtDate(dataCalib)}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;font-weight:${st==='vencida'?'700':'400'};color:${st==='vencida'?'#e74c3c':st==='vencendo'?'#e67e22':'inherit'};">${fmtDate(proxCalib)}</td>
             <td style="padding:9px 8px;text-align:center;">${_eqStatusBadge(st)}</td>
             <td style="padding:9px 8px;text-align:center;">
                 <button onclick="eqEditar('${eq.id}')" style="background:#3498db;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;margin-right:4px;">✏️</button>
@@ -15497,9 +15736,9 @@ function eqFecharModal() {
 }
 
 function eqEditar(id) {
-    const eq = _equipamentos.find(x => x.id === id);
+    const eq = _equipamentos.find(x => String(x.id) === String(id));
     if (!eq) return;
-    document.getElementById('eqEditId').value     = id;
+    document.getElementById('eqEditId').value     = eq.id;
     document.getElementById('eqModalTitulo').textContent = '✏️ Editar Equipamento';
     document.getElementById('eqNome').value       = eq.nome || '';
     document.getElementById('eqTag').value        = eq.tag || '';
@@ -15509,21 +15748,22 @@ function eqEditar(id) {
     document.getElementById('eqQtd').value        = eq.qtd || 1;
     document.getElementById('eqLocal').value      = eq.local || '';
     document.getElementById('eqObs').value        = eq.obs || '';
-    if (eq.possuiCalib === 'sim') {
+    const possuiCalib = eq.possui_calib || eq.possuiCalib || 'nao';
+    if (possuiCalib === 'sim') {
         document.getElementById('eqCalibSim').checked = true;
     } else {
         document.getElementById('eqCalibNao').checked = true;
     }
     eqToggleCalib();
-    document.getElementById('eqDataCalib').value   = eq.dataCalib || '';
-    document.getElementById('eqProxCalib').value   = eq.proxCalib || '';
-    document.getElementById('eqRespCalib').value   = eq.respCalib || '';
+    document.getElementById('eqDataCalib').value   = eq.data_calib || eq.dataCalib || '';
+    document.getElementById('eqProxCalib').value   = eq.prox_calib || eq.proxCalib || '';
+    document.getElementById('eqRespCalib').value   = eq.resp_calib || eq.respCalib || '';
     document.getElementById('eqCertificado').value = eq.certificado || '';
     eqVerificarAlertaCalib();
     document.getElementById('modalCadastroEquipamento').style.display = 'flex';
 }
 
-function eqSalvar() {
+async function eqSalvar() {
     const nome = (document.getElementById('eqNome').value || '').trim();
     if (!nome) { alert('Informe o nome do equipamento.'); return; }
     const tag = (document.getElementById('eqTag').value || '').trim();
@@ -15532,56 +15772,61 @@ function eqSalvar() {
     const possuiCalib = document.getElementById('eqCalibSim').checked ? 'sim' : 'nao';
     const editId = document.getElementById('eqEditId').value;
 
-    const eq = {
-        id:          editId || 'eq_' + Date.now(),
-        nome,
-        tag,
-        marca:       document.getElementById('eqMarca').value.trim(),
-        modelo:      document.getElementById('eqModelo').value.trim(),
-        serie:       document.getElementById('eqSerie').value.trim(),
-        qtd:         parseInt(document.getElementById('eqQtd').value) || 1,
-        local:       document.getElementById('eqLocal').value.trim(),
-        possuiCalib,
-        dataCalib:   possuiCalib === 'sim' ? document.getElementById('eqDataCalib').value : '',
-        proxCalib:   possuiCalib === 'sim' ? document.getElementById('eqProxCalib').value : '',
-        respCalib:   possuiCalib === 'sim' ? document.getElementById('eqRespCalib').value.trim() : '',
-        certificado: possuiCalib === 'sim' ? document.getElementById('eqCertificado').value.trim() : '',
-        obs:         document.getElementById('eqObs').value.trim(),
-    };
-
-    // Verifica duplicidade de TAG
-    const tagExistente = _equipamentos.find(x => x.tag === tag && x.id !== editId);
+    // Verifica duplicidade de TAG (antes de salvar)
+    const tagExistente = _equipamentos.find(x => x.tag === tag && String(x.id) !== String(editId));
     if (tagExistente) {
         if (!confirm(`Já existe um equipamento com TAG "${tag}" (${tagExistente.nome}). Deseja continuar mesmo assim?`)) return;
     }
 
-    if (editId) {
-        const idx = _equipamentos.findIndex(x => x.id === editId);
-        if (idx > -1) _equipamentos[idx] = eq;
-    } else {
-        _equipamentos.push(eq);
-    }
-    _eqSalvar();
-    eqFecharModal();
-    eqRenderTabela();
+    const eq = {
+        id:           editId ? parseInt(editId) : undefined,
+        nome,
+        tag,
+        marca:        document.getElementById('eqMarca').value.trim(),
+        modelo:       document.getElementById('eqModelo').value.trim(),
+        serie:        document.getElementById('eqSerie').value.trim(),
+        qtd:          parseInt(document.getElementById('eqQtd').value) || 1,
+        local:        document.getElementById('eqLocal').value.trim(),
+        possui_calib: possuiCalib,
+        data_calib:   possuiCalib === 'sim' ? (document.getElementById('eqDataCalib').value || null) : null,
+        prox_calib:   possuiCalib === 'sim' ? (document.getElementById('eqProxCalib').value || null) : null,
+        resp_calib:   possuiCalib === 'sim' ? document.getElementById('eqRespCalib').value.trim() : '',
+        certificado:  possuiCalib === 'sim' ? document.getElementById('eqCertificado').value.trim() : '',
+        obs:          document.getElementById('eqObs').value.trim(),
+    };
+    if (!eq.id) delete eq.id;
 
-    // Popup de alerta automático ao salvar com calibração próxima/vencida
-    const st = _eqStatusCalib(eq);
-    if (st === 'vencendo' || st === 'vencida') {
-        setTimeout(() => eqVerAlertas(), 300);
+    try {
+        const saved = await dbUpsertOne('equipamentos', eq);
+        if (editId) {
+            const idx = _equipamentos.findIndex(x => String(x.id) === String(editId));
+            if (idx > -1) _equipamentos[idx] = saved;
+        } else {
+            _equipamentos.push(saved);
+        }
+        eqFecharModal();
+        eqRenderTabela();
+        // Popup de alerta automático
+        const st = _eqStatusCalib(saved);
+        if (st === 'vencendo' || st === 'vencida') setTimeout(() => eqVerAlertas(), 300);
+        sgqToast('✅ Equipamento salvo com sucesso!', 'success');
+    } catch(e) {
+        sgqToast('❌ Erro ao salvar equipamento: ' + e.message, 'error');
     }
-
-    sgqToast('✅ Equipamento salvo com sucesso!', 'success');
 }
 
-function eqExcluir(id) {
-    const eq = _equipamentos.find(x => x.id === id);
+async function eqExcluir(id) {
+    const eq = _equipamentos.find(x => String(x.id) === String(id));
     if (!eq) return;
     if (!confirm(`Deseja excluir o equipamento "${eq.nome}" (TAG: ${eq.tag})?`)) return;
-    _equipamentos = _equipamentos.filter(x => x.id !== id);
-    _eqSalvar();
-    eqRenderTabela();
-    sgqToast('🗑️ Equipamento excluído.', 'success');
+    try {
+        await dbDeleteOne('equipamentos', id);
+        _equipamentos = _equipamentos.filter(x => String(x.id) !== String(id));
+        eqRenderTabela();
+        sgqToast('🗑️ Equipamento excluído.', 'success');
+    } catch(e) {
+        sgqToast('❌ Erro ao excluir: ' + e.message, 'error');
+    }
 }
 
 function eqVerAlertas() {
@@ -15600,29 +15845,33 @@ function eqVerAlertas() {
         body.innerHTML = alertas.map(eq => {
             const st = _eqStatusCalib(eq);
             const cor = st === 'vencida' ? '#e74c3c' : '#e67e22';
-            const diff = eq.proxCalib ? Math.round((new Date(eq.proxCalib+'T00:00:00') - hoje) / 86400000) : null;
+            const proxCalib = eq.prox_calib || eq.proxCalib || '';
+            const respCalib = eq.resp_calib || eq.respCalib || '';
+            const diff = proxCalib ? Math.round((new Date(proxCalib + 'T00:00:00') - hoje) / 86400000) : null;
             const diffStr = diff !== null ? (diff < 0 ? `Vencida há ${Math.abs(diff)} dia(s)` : `Vence em ${diff} dia(s)`) : '';
             return `<div style="border-left:4px solid ${cor};padding:10px 14px;margin-bottom:8px;background:#fff;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
                 <div style="font-weight:800;color:${cor};font-size:13px;">${eq.nome} <span style="font-family:monospace;font-size:10px;background:${cor}20;padding:1px 6px;border-radius:3px;">${eq.tag}</span></div>
-                <div style="font-size:11px;color:#555;margin-top:3px;">Próx. calibração: <strong>${fmtDate(eq.proxCalib)}</strong> — ${diffStr}</div>
-                ${eq.respCalib ? `<div style="font-size:10px;color:#888;">Responsável: ${eq.respCalib}</div>` : ''}
+                <div style="font-size:11px;color:#555;margin-top:3px;">Próx. calibração: <strong>${fmtDate(proxCalib)}</strong> — ${diffStr}</div>
+                ${respCalib ? `<div style="font-size:10px;color:#888;">Responsável: ${respCalib}</div>` : ''}
             </div>`;
         }).join('');
     }
 
-    const popup = document.getElementById('eqAlertPopup');
-    popup.style.display = 'flex';
+    document.getElementById('eqAlertPopup').style.display = 'flex';
 }
 
 function eqExportar() {
     if (!_equipamentos.length) { sgqToast('Nenhum equipamento para exportar.', 'warning'); return; }
     const linhas = [['Nome','TAG','Marca','Modelo','Série','Quantidade','Possui Calibração','Última Calibração','Próxima Calibração','Responsável Calibração','Certificado','Status','Localização']];
     _equipamentos.forEach(eq => {
+        const possuiCalib = eq.possui_calib || eq.possuiCalib || 'nao';
         linhas.push([
             eq.nome, eq.tag, eq.marca, eq.modelo, eq.serie, eq.qtd,
-            eq.possuiCalib === 'sim' ? 'SIM' : 'NÃO',
-            eq.dataCalib || '', eq.proxCalib || '',
-            eq.respCalib || '', eq.certificado || '',
+            possuiCalib === 'sim' ? 'SIM' : 'NÃO',
+            eq.data_calib || eq.dataCalib || '',
+            eq.prox_calib || eq.proxCalib || '',
+            eq.resp_calib || eq.respCalib || '',
+            eq.certificado || '',
             _eqStatusCalib(eq).toUpperCase(),
             eq.local || ''
         ]);
@@ -15631,7 +15880,7 @@ function eqExportar() {
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a'); a.href = url;
-    a.download = 'equipamentos_' + _eqHoje() + '.csv';
+    a.download = 'equipamentos_' + new Date().toISOString().slice(0,10) + '.csv';
     a.click(); URL.revokeObjectURL(url);
     sgqToast('✅ CSV exportado!', 'success');
 }
