@@ -2971,7 +2971,7 @@
                             <th style="padding:10px 8px;text-align:center;">MÍNIMO</th>
                             <th style="padding:10px 8px;text-align:center;">VALIDADE</th>
                             <th style="padding:10px 8px;text-align:center;">ENTRADA</th>
-                            <th style="padding:10px 8px;text-align:center;">NF</th>
+                            <th style="padding:10px 8px;text-align:center;">NOTA FISCAL</th>
                             <th style="padding:10px 8px;text-align:center;">STATUS</th>
                             <th style="padding:10px 8px;text-align:center;">AÇÕES</th>
                         </tr>
@@ -3453,19 +3453,45 @@
 
     <!-- MODAL ENTRADA POR NOTA -->
     <div id="reagModalNota" style="display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
-        <div style="background:#fff;border-radius:12px;width:95%;max-width:700px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.2);">
+        <div style="background:#fff;border-radius:12px;width:95%;max-width:720px;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.2);">
             <div style="background:linear-gradient(135deg,#1a2a6e,#2c3e50);color:#fff;padding:16px 20px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
                 <div>
                     <div style="font-size:15px;font-weight:900;">📄 Entrada por Nota Fiscal</div>
-                    <div style="font-size:10px;opacity:.7;margin-top:2px;">Informe a chave da nota e adicione os produtos</div>
+                    <div style="font-size:10px;opacity:.7;margin-top:2px;">Importe o XML da NF-e ou preencha manualmente</div>
                 </div>
                 <button onclick="reagFecharModalNota()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">✕</button>
             </div>
             <div style="padding:20px;">
+
+                <!-- PASSO 1: IMPORTAR XML -->
+                <div id="reagNFPasso1" style="background:#f0f4ff;border:2px dashed #1a2a6e;border-radius:10px;padding:16px;margin-bottom:16px;">
+                    <div style="font-size:12px;font-weight:900;color:#1a2a6e;margin-bottom:8px;">📂 PASSO 1 — Importar XML da NF-e (recomendado)</div>
+                    <div style="font-size:11px;color:#555;margin-bottom:10px;line-height:1.6;">
+                        Baixe o XML da nota no portal da SEFAZ e importe aqui — todos os dados serão preenchidos automaticamente.<br>
+                        <a href="https://www.nfe.fazenda.gov.br/portal/consultaRecaptcha.aspx?tipoConsulta=resumo&tipoConteudo=7PhJ+gAVw2g=" target="_blank" style="color:#1a2a6e;font-weight:700;">🌐 Abrir Portal SEFAZ para baixar XML</a>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                        <label id="reagXMLLabel" style="background:#1a2a6e;color:#fff;border:none;border-radius:6px;padding:9px 18px;font-weight:700;cursor:pointer;font-size:12px;display:inline-flex;align-items:center;gap:6px;">
+                            📁 Selecionar arquivo XML
+                            <input type="file" id="reagXMLFile" accept=".xml,text/xml,application/xml" style="display:none;" onchange="reagImportarXML(this)">
+                        </label>
+                        <div id="reagXMLNome" style="font-size:11px;color:#888;font-style:italic;">Nenhum arquivo selecionado</div>
+                    </div>
+                    <div id="reagXMLStatus" style="display:none;margin-top:10px;font-size:11px;padding:8px 12px;border-radius:6px;"></div>
+                </div>
+
+                <!-- SEPARADOR -->
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                    <div style="flex:1;height:1px;background:#e0e0e0;"></div>
+                    <span style="font-size:11px;color:#aaa;font-weight:700;">ou preencha manualmente</span>
+                    <div style="flex:1;height:1px;background:#e0e0e0;"></div>
+                </div>
+
+                <!-- CAMPOS PRINCIPAIS -->
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
                     <div style="grid-column:1/-1;">
                         <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">CHAVE DA NOTA FISCAL *</label>
-                        <input id="reagNFChave" placeholder="Ex: 35260412345678901234550010000001231234567890" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;font-family:monospace;">
+                        <input id="reagNFChave" placeholder="44 dígitos — preenchido automaticamente pelo XML" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:11px;font-family:monospace;color:#333;">
                     </div>
                     <div>
                         <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">FORNECEDOR *</label>
@@ -3476,6 +3502,7 @@
                         <input type="date" id="reagNFEmissao" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
                     </div>
                 </div>
+
                 <div style="font-size:12px;font-weight:800;color:#1a2a6e;margin-bottom:10px;border-bottom:2px solid #f0f0f0;padding-bottom:6px;">PRODUTOS DA NOTA</div>
                 <div id="reagNFItens" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;"></div>
                 <button onclick="reagAdicionarItemNota()" style="background:#f0f4ff;color:#1a2a6e;border:2px dashed #1a2a6e;border-radius:6px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12px;width:100%;">+ Adicionar Produto</button>
@@ -3522,6 +3549,7 @@
                     <div>
                         <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">QUANTIDADE INICIAL</label>
                         <input type="number" id="reagCadQtdInicial" placeholder="0" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                        <div id="reagCadQtdAvisoNF" style="display:none;"></div>
                     </div>
                     <div>
                         <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">Nº LOTE</label>
@@ -3534,6 +3562,10 @@
                     <div style="grid-column:1/-1;">
                         <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">FORNECEDOR</label>
                         <input id="reagCadFornecedor" placeholder="Nome do fornecedor" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                    </div>
+                    <div style="grid-column:1/-1;" id="reagCadNFDiv">
+                        <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">NOTA FISCAL (Chave de Acesso)</label>
+                        <input id="reagCadNFChave" placeholder="Deixe em branco se não houver Nota Fiscal" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;font-family:monospace;">
                     </div>
                     <div style="grid-column:1/-1;">
                         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;background:#f8f0ff;border:2px solid #8e44ad;border-radius:8px;padding:10px 14px;">
@@ -5607,6 +5639,7 @@ function trocarAba(aba, btn) {
     if (aba === 'ranking')   inicializarRanking();
     if (aba === 'boletim')   inicializarBoletim();
     if (aba === 'configuracoes') trocarSubCfg('parametros', document.getElementById('cfgBtn-parametros'));
+    if (aba === 'estoqueReagentes') { try { reagCarregarDados(); setTimeout(_reagInjetarCampoEmail, 500); } catch(e){} }
     if (aba === 'estoqueMateriais') { try { matCarregarDados(); } catch(e){} }
     if (aba === 'equipamentos') { try { eqCarregarDados(); } catch(e){} }
 }
@@ -11330,34 +11363,15 @@ function inicializarAbaWhatsApp() {
 }
 
 function abrirModalWhatsApp() {
-    // Preenche checkboxes de Produção
-    const divProd = document.getElementById('wappCamposProd');
-    divProd.innerHTML = CAMPOS_PROD.map(c => `
-        <label class="wapp-campo-item">
-            <input type="checkbox" id="wchk_prod_${c.key}" value="${c.key}" checked>
-            ${c.label}
-        </label>`).join('');
-
-    // Preenche checkboxes de MP
-    const divMP = document.getElementById('wappCamposMP');
-    divMP.innerHTML = CAMPOS_MP.map(c => `
-        <label class="wapp-campo-item">
-            <input type="checkbox" id="wchk_mp_${c.key}" value="${c.key}" checked>
-            ${c.label}
-        </label>`).join('');
-
-    // Data padrão: hoje
-    const hoje = new Date().toISOString().split('T')[0];
-    document.getElementById('wappDataInicio').value = hoje;
-    document.getElementById('wappDataFim').value = hoje;
-
-    document.getElementById('wappPreview').innerHTML = '<span class="wapp-preview-vazio">Clique em "Gerar Mensagem" para visualizar</span>';
-    _wappMensagem = '';
-    document.getElementById('modalWhatsApp').classList.add('show');
+    // ✅ FIX: função legada — redireciona para a aba inline de WhatsApp em Configurações
+    trocarAba('configuracoes', document.getElementById('tabConfiguracoes'));
+    setTimeout(() => {
+        trocarSubCfg('alertaWhatsApp', document.getElementById('cfgBtn-alertaWhatsApp'));
+    }, 100);
 }
 
 function fecharModalWhatsApp() {
-    document.getElementById('modalWhatsApp').classList.remove('show');
+    // ✅ FIX: modal legado removido — função mantida para compatibilidade
 }
 
 function gerarMensagemWhatsApp() {
@@ -14523,6 +14537,8 @@ function resetarParametros() {
 let _reagentes   = [];   // cadastro de reagentes
 let _reagNotas   = [];   // histórico de entradas por NF
 let _reagEditId  = null; // ID em edição
+let _reagCadRetornoSelect = null;
+let _reagCadChaveNF = ''; // select do item de nota que acionou o cadastro
 let _reagMovimentos = []; // histórico de movimentos
 
 // ── Email configurado nas configurações ───────────────────────────
@@ -14603,7 +14619,7 @@ function _reagNormalizar(r) {
         lote:        r.lote || '',
         validade:    r.validade || '',
         fornecedor:  r.fornecedor || '',
-        controlePF:  r.controle_pf === true || r.controle_pf === 'true',
+        controlePF:  !!r.controle_pf && r.controle_pf !== '0' && r.controle_pf !== 0 && r.controle_pf !== 'false' && r.controle_pf !== false,
         portaria:    r.portaria || '',
         dataEntrada: r.entrada || '',
         nfChave:     r.nf_chave || '',
@@ -14712,9 +14728,18 @@ function _reagStatusBadge(st) {
                 vencido:'<span style="background:#e74c3c;color:#fff;border-radius:10px;padding:2px 10px;font-size:10px;font-weight:700;">🔴 VENCIDO</span>' };
     return m[st] || m.ok;
 }
+function _reagNumeroNF(chave) {
+    if (!chave) return '—';
+    const ch = chave.replace(/\D/g, '');
+    if (ch.length >= 44) {
+        const nNF = String(parseInt(ch.substring(25, 34)));
+        return 'Nº ' + nNF;
+    }
+    return chave;
+}
 function _reagPFBadge(pf) {
     if (!pf) return '';
-    return '<span style="background:#8e44ad;color:#fff;border-radius:4px;padding:3px 9px;font-size:9px;font-weight:900;margin-left:6px;letter-spacing:.5px;border:1px solid #6c3483;">🚔 PF CONTROLADO</span>';
+    return '<span style="display:inline-block;margin-top:3px;background:#8e44ad;color:#fff;border-radius:4px;padding:2px 7px;font-size:9px;font-weight:900;letter-spacing:.5px;border:1px solid #6c3483;">🚔 PF</span>';
 }
 function _fmtData(d) {
     if (!d) return '—';
@@ -14749,8 +14774,9 @@ function reagRenderTabela() {
         const rowBg = st === 'vencido' ? '#fff5f5' : st === 'vencendo' ? '#fff9f0' : st === 'baixo' ? '#fffdf0' : '#fff';
         const pfBorder = r.controlePF ? 'border-left:4px solid #8e44ad;' : '';
         return `<tr style="border-bottom:1px solid #f0f0f0;background:${rowBg};${pfBorder}">
-            <td style="padding:9px 12px;">
-                <div style="font-weight:700;color:#2c3e50;">${r.nome} ${_reagPFBadge(r.controlePF)}</div>
+            <td style="padding:9px 12px;text-align:left;">
+                <div style="font-weight:700;color:#2c3e50;">${r.nome}</div>
+                ${r.controlePF ? '<div>'+_reagPFBadge(r.controlePF)+'</div>' : ''}
                 ${r.portaria ? '<div style="font-size:9px;color:#8e44ad;margin-top:1px;">'+r.portaria+'</div>' : ''}
             </td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;color:#666;">${r.lote || '—'}</td>
@@ -14762,7 +14788,11 @@ function reagRenderTabela() {
                 ${dias !== null ? '<div style="font-size:9px;color:'+(dias<0?'#e74c3c':dias<=60?'#e67e22':'#aaa')+';">'+(dias<0?'Vencido há '+Math.abs(dias)+'d':dias===0?'Vence hoje':'Vence em '+dias+'d')+'</div>' : ''}
             </td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;color:#666;">${_fmtData(r.dataEntrada)}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:10px;color:#888;font-family:monospace;">${r.nfChave ? r.nfChave.substring(0,12)+'...' : '—'}</td>
+            <td style="padding:9px 8px;text-align:center;">
+                ${r.nfChave
+                    ? `<span onclick="navigator.clipboard&&navigator.clipboard.writeText('${r.nfChave}').then(()=>sgqToast('✅ Chave copiada!','success'))" title="Clique para copiar a chave completa&#10;${r.nfChave}" style="display:inline-block;background:#eaf3fb;border:1px solid #aed6f1;border-radius:4px;padding:2px 7px;cursor:pointer;font-size:11px;color:#1a5276;font-weight:700;white-space:nowrap;">${_reagNumeroNF(r.nfChave)}</span>`
+                    : '<span style="display:inline-block;background:#f5f5f5;border:1px solid #ddd;border-radius:4px;padding:2px 7px;font-size:10px;color:#aaa;font-weight:600;">Sem N.F</span>'}
+            </td>
             <td style="padding:9px 8px;text-align:center;">${_reagStatusBadge(st)}</td>
             <td style="padding:9px 8px;text-align:center;white-space:nowrap;">
                 <button onclick="reagAbrirConsumo('${r.id}')" title="Registrar consumo" style="background:#e67e22;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;margin:1px;">📉</button>
@@ -14784,13 +14814,19 @@ function reagRenderNotas() {
     const sorted = [..._reagNotas].sort((a,b) => b.dataEntrada.localeCompare(a.dataEntrada));
     tbody.innerHTML = sorted.map(n => `
         <tr style="border-bottom:1px solid #f0f0f0;">
-            <td style="padding:8px 12px;font-family:monospace;font-size:10px;color:#555;">${n.chave}</td>
+            <td style="padding:8px 12px;text-align:left;">
+                ${n.chave
+                    ? `<div style="font-weight:700;font-size:12px;color:#1a5276;">${_reagNumeroNF(n.chave)}</div>
+                       <div style="font-size:9px;color:#aaa;font-family:monospace;margin-top:2px;">${n.chave}</div>`
+                    : '<span style="color:#aaa;font-size:11px;">Sem N.F</span>'}
+            </td>
             <td style="padding:8px;text-align:center;font-size:11px;">${_fmtData(n.dataEmissao)}</td>
             <td style="padding:8px;text-align:center;font-size:11px;">${_fmtData(n.dataEntrada)}</td>
             <td style="padding:8px;text-align:center;font-size:11px;">${n.fornecedor}</td>
             <td style="padding:8px;text-align:center;font-size:11px;font-weight:700;color:#1a2a6e;">${n.itens.length} item(s)</td>
-            <td style="padding:8px;text-align:center;">
+            <td style="padding:8px;text-align:center;display:flex;gap:5px;justify-content:center;">
                 <button onclick="reagVerNota('${n.id}')" style="background:#1a2a6e;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;">Ver</button>
+                <button onclick="reagExcluirNota('${n.id}')" style="background:#e74c3c;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;">🗑️</button>
             </td>
         </tr>`).join('');
 }
@@ -14873,12 +14909,193 @@ function _reagEnviarEmailAlerta(alertas) {
 // ── Modal Entrada por Nota ────────────────────────────────────────
 let _reagItensNota = [];
 
+// ── Importação XML NF-e ───────────────────────────────────────────
+
+function reagImportarXML(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    document.getElementById('reagXMLNome').textContent = file.name;
+    const status = document.getElementById('reagXMLStatus');
+    status.style.display = 'block';
+    status.style.background = '#e8f4fd';
+    status.style.color = '#1a6496';
+    status.style.border = '1px solid #3498db';
+    status.textContent = '🔄 Lendo XML da NF-e...';
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const xmlStr = e.target.result;
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(xmlStr, 'text/xml');
+
+            // Verificar erro de parse
+            const parseErr = doc.querySelector('parsererror');
+            if (parseErr) throw new Error('Arquivo XML inválido ou corrompido.');
+
+            // ── Verificar NF duplicada antes de qualquer coisa ──────
+            // (leitura prévia para alertar o usuário logo na importação)
+
+            // ── Chave de acesso ──────────────────────────────────────
+            let chave = '';
+            const infNFe = doc.querySelector('infNFe');
+            if (infNFe) {
+                const id = infNFe.getAttribute('Id') || '';
+                chave = id.replace(/^NFe/, '');
+            }
+            if (!chave) {
+                const chEl = doc.querySelector('chNFe');
+                if (chEl) chave = chEl.textContent.trim();
+            }
+
+            // ── Emitente (fornecedor) ────────────────────────────────
+            const xNome = doc.querySelector('emit > xNome');
+            const fornecedor = xNome ? xNome.textContent.trim() : '';
+
+            // ── Data de emissão ──────────────────────────────────────
+            const dhEmi = doc.querySelector('dhEmi, dEmi');
+            let dataEmissao = '';
+            if (dhEmi) {
+                const raw = dhEmi.textContent.trim();
+                dataEmissao = raw.substring(0, 10); // YYYY-MM-DD
+            }
+
+            // ── Itens da nota ────────────────────────────────────────
+            const detNodes = doc.querySelectorAll('det');
+            const itens = [];
+            detNodes.forEach(det => {
+                const xProd   = det.querySelector('xProd');
+                const qCom    = det.querySelector('qCom');
+                const uCom    = det.querySelector('uCom');
+                const nLote   = det.querySelector('nLote');
+                const dVal    = det.querySelector('dFab, dVal');
+                const dFab    = det.querySelector('dFab');
+                const dVenc   = det.querySelector('dVal');
+
+                const nome    = xProd  ? xProd.textContent.trim()                        : '';
+                const qtd     = qCom   ? parseFloat(qCom.textContent.replace(',', '.'))  : 0;
+                const unRaw   = uCom   ? uCom.textContent.trim()                         : 'UN';
+                const unidade = _reagNormalizarUnidade(unRaw);
+                const lote    = nLote  ? nLote.textContent.trim()                        : '';
+                const validade= dVenc  ? dVenc.textContent.trim().substring(0, 10)       : '';
+
+                if (nome) itens.push({ nome, qtd, unidade, lote, validade });
+            });
+
+            if (!fornecedor && itens.length === 0) {
+                throw new Error('Nenhum dado encontrado no XML. Verifique se é um arquivo NF-e válido.');
+            }
+
+            // ── Bloquear NF duplicada já na importação ────────────
+            if (chave) {
+                const chaveNum = chave.replace(/\D/g, '');
+                const notaExist = _reagNotas.find(n => (n.chave || '').replace(/\D/g, '') === chaveNum);
+                if (notaExist) {
+                    throw new Error('Esta NF-e já foi registrada em ' + _fmtData(notaExist.dataEntrada) + '. Entrada duplicada bloqueada.');
+                }
+            }
+
+            // ── Preencher modal ──────────────────────────────────────
+            if (chave)       document.getElementById('reagNFChave').value      = chave;
+            if (fornecedor)  document.getElementById('reagNFFornecedor').value = fornecedor;
+            if (dataEmissao) document.getElementById('reagNFEmissao').value    = dataEmissao;
+
+            // Limpar itens e popular
+            _reagItensNota = [];
+            document.getElementById('reagNFItens').innerHTML = '';
+
+            if (itens.length > 0) {
+                itens.forEach(item => {
+                    // Passa o nome do XML — será exibido como badge e cruzado com o cadastro
+                    const div = reagAdicionarItemNota(item.nome);
+                    if (!div) return;
+
+                    // Quantidade
+                    const inputQtd = div.querySelector('input[type="number"]');
+                    if (inputQtd) inputQtd.value = item.qtd || 0;
+
+                    // Unidade
+                    const selects = div.querySelectorAll('select');
+                    if (selects[1]) {
+                        const opts = selects[1].options;
+                        for (let i = 0; i < opts.length; i++) {
+                            if (opts[i].value === item.unidade || opts[i].text === item.unidade) {
+                                selects[1].selectedIndex = i; break;
+                            }
+                        }
+                    }
+
+                    // Lote
+                    const inputLote = div.querySelector('input[placeholder*="LT"]');
+                    if (inputLote && item.lote) inputLote.value = item.lote;
+
+                    // Validade
+                    const inputData = div.querySelector('input[type="date"]');
+                    if (inputData && item.validade) inputData.value = item.validade;
+                });
+            } else {
+                reagAdicionarItemNota();
+            }
+
+            // Feedback de sucesso
+            status.style.background = '#d4edda';
+            status.style.color = '#155724';
+            status.style.border = '1px solid #27ae60';
+            status.innerHTML = `✅ <strong>XML importado com sucesso!</strong> ${itens.length} produto(s) carregado(s). Confira os campos e clique em "Registrar Entrada".`;
+
+            // Destacar área de itens
+            const itensWrap = document.getElementById('reagNFItens');
+            itensWrap.style.border = '2px solid #27ae60';
+            itensWrap.style.borderRadius = '8px';
+            itensWrap.style.padding = '8px';
+            setTimeout(() => {
+                itensWrap.style.border = '';
+                itensWrap.style.padding = '';
+            }, 3000);
+
+        } catch(err) {
+            status.style.background = '#fdecea';
+            status.style.color = '#c0392b';
+            status.style.border = '1px solid #e74c3c';
+            status.textContent = '❌ Erro ao ler XML: ' + err.message;
+        }
+    };
+    reader.onerror = () => {
+        const status = document.getElementById('reagXMLStatus');
+        status.style.display = 'block';
+        status.style.background = '#fdecea';
+        status.style.color = '#c0392b';
+        status.style.border = '1px solid #e74c3c';
+        status.textContent = '❌ Não foi possível ler o arquivo.';
+    };
+    reader.readAsText(file, 'UTF-8');
+}
+
+function _reagNormalizarUnidade(un) {
+    const mapa = {
+        'ML':'mL','L':'L','LT':'L','KG':'kg','G':'g','GR':'g',
+        'UN':'un','PC':'un','CX':'cx','AMP':'un','FR':'un','VD':'un',
+        'CT':'un','BIS':'un','ENV':'un','CAP':'un','COM':'un'
+    };
+    return mapa[(un || '').toUpperCase()] || 'un';
+}
+
 function reagAbrirModalNota() {
+    // ✅ FIX: garante que os dados estejam carregados antes de abrir o modal
+    if (!_reagentes || _reagentes.length === 0) { try { reagCarregarDados(); } catch(e){} }
     _reagItensNota = [];
     document.getElementById('reagNFChave').value      = '';
     document.getElementById('reagNFFornecedor').value = '';
     document.getElementById('reagNFEmissao').value    = '';
     document.getElementById('reagNFItens').innerHTML  = '';
+    // Resetar XML
+    const xmlFile = document.getElementById('reagXMLFile');
+    if (xmlFile) xmlFile.value = '';
+    const xmlNome = document.getElementById('reagXMLNome');
+    if (xmlNome) xmlNome.textContent = 'Nenhum arquivo selecionado';
+    const xmlStatus = document.getElementById('reagXMLStatus');
+    if (xmlStatus) xmlStatus.style.display = 'none';
     reagAdicionarItemNota();
     document.getElementById('reagModalNota').style.display = 'flex';
 }
@@ -14886,7 +15103,8 @@ function reagFecharModalNota() {
     document.getElementById('reagModalNota').style.display = 'none';
 }
 
-function reagAdicionarItemNota() {
+function reagAdicionarItemNota(nomeNF) {
+    // nomeNF = nome do produto vindo do XML (opcional)
     const idx  = _reagItensNota.length;
     _reagItensNota.push({});
     const wrap = document.getElementById('reagNFItens');
@@ -14897,15 +15115,38 @@ function reagAdicionarItemNota() {
     // Opções de reagentes cadastrados
     const opts = _reagentes.map(r => `<option value="${r.id}">${r.nome}</option>`).join('');
 
+    // Tentar cruzar nome do XML com reagente cadastrado
+    let matchId = '';
+    if (nomeNF) {
+        const nLC = nomeNF.toLowerCase();
+        const m = _reagentes.find(r => {
+            const n = (r.nome || '').toLowerCase();
+            return n === nLC || n.includes(nLC) || nLC.includes(n);
+        });
+        if (m) matchId = String(m.id);
+    }
+
+    // Badge azul mostrando o nome do produto da NF
+    const badgeNF = nomeNF
+        ? `<div style="font-size:10px;color:#1a6496;background:#e8f4fd;border:1px solid #bee5fd;border-radius:4px;padding:3px 8px;margin-bottom:6px;font-weight:700;display:flex;align-items:center;gap:6px;">
+               <span>📄 Da NF-e:</span>
+               <span style="font-weight:900;flex:1;">${nomeNF}</span>
+               ${matchId
+                 ? '<span style="color:#27ae60;font-size:10px;">✅ vinculado</span>'
+                 : '<span style="color:#e67e22;font-size:10px;">⚠️ selecione abaixo</span>'}
+           </div>`
+        : '';
+
     div.innerHTML = `
         <button onclick="this.parentElement.remove()" style="position:absolute;top:6px;right:8px;background:none;border:none;color:#aaa;font-size:16px;cursor:pointer;">✕</button>
+        ${badgeNF}
         <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px;">
             <div>
                 <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:2px;">REAGENTE *</label>
-                <select style="width:100%;border:1px solid #ddd;border-radius:5px;padding:6px 8px;font-size:11px;">
+                <select class="reagNFItemSelect" onchange="reagNovoDoSelect(this)" style="width:100%;border:1px solid ${matchId ? '#27ae60' : '#ddd'};border-radius:5px;padding:6px 8px;font-size:11px;" data-nome-nf="${(nomeNF||''). replace(/"/g, '&quot;')}">
                     <option value="">-- Selecione ou novo --</option>
                     ${opts}
-                    <option value="__novo__">+ Novo reagente</option>
+                    <option value="__novo__">➕ Cadastrar novo reagente</option>
                 </select>
             </div>
             <div>
@@ -14930,55 +15171,78 @@ function reagAdicionarItemNota() {
             </div>
             <div style="display:flex;align-items:flex-end;padding-bottom:1px;">
                 <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:10px;font-weight:700;color:#8e44ad;">
-                    <input type="checkbox" style="accent-color:#8e44ad;"> 🚔 Controlado PF
+                    <input type="checkbox" class="reagNFItemPF" style="accent-color:#8e44ad;"> 🚔 Controlado PF
                 </label>
             </div>
         </div>`;
     wrap.appendChild(div);
+
+    // Selecionar reagente automaticamente se encontrou match
+    if (matchId) {
+        const sel = div.querySelector('.reagNFItemSelect');
+        if (sel) sel.value = matchId;
+    }
+
+    return div;
 }
 
 async function reagSalvarNota() {
     const chave      = document.getElementById('reagNFChave').value.trim();
     const fornecedor = document.getElementById('reagNFFornecedor').value.trim();
     const emissao    = document.getElementById('reagNFEmissao').value;
-    if (!chave || !fornecedor || !emissao) { sgqToast('⚠️ Preencha chave NF, fornecedor e data de emissão.', 'warning'); return; }
+    if (!fornecedor || !emissao) { sgqToast('⚠️ Preencha fornecedor e data de emissão.', 'warning'); return; }
 
+    // ── Bloquear NF duplicada ─────────────────────────────────────
+    const chaveNum = chave.replace(/\D/g, '');
+    const notaExist = _reagNotas.find(n => (n.chave || '').replace(/\D/g, '') === chaveNum);
+    if (notaExist) {
+        sgqToast('❌ Esta NF-e já foi registrada em ' + _fmtData(notaExist.dataEntrada) + '. Entrada duplicada bloqueada.', 'error');
+        return;
+    }
+
+    // ── Coletar itens do modal ────────────────────────────────────
+    // Usa seletores específicos para não confundir com o badge
     const itemDivs = document.querySelectorAll('#reagNFItens > div');
     const itens = [];
     itemDivs.forEach(div => {
-        const selects = div.querySelectorAll('select');
-        const inputs  = div.querySelectorAll('input');
-        const reagId  = selects[0] ? selects[0].value : '';
-        const qtd     = parseFloat(inputs[0] ? inputs[0].value : 0) || 0;
-        const unidade = selects[1] ? selects[1].value : 'un';
-        const lote    = inputs[1] ? inputs[1].value.trim() : '';
-        const validade= inputs[2] ? inputs[2].value : '';
-        const pf      = inputs[3] ? inputs[3].checked : false;
-        if (!reagId || !qtd) return;
+        const reagSel  = div.querySelector('select.reagNFItemSelect');
+        const unSel    = div.querySelectorAll('select')[1];
+        const inputQtd = div.querySelector('input[type="number"]');
+        const inputLote= div.querySelector('input[placeholder*="LT"]');
+        const inputDt  = div.querySelector('input[type="date"]');
+        const inputPF  = div.querySelector('input.reagNFItemPF');
+
+        const reagId  = reagSel   ? reagSel.value                          : '';
+        const qtd     = inputQtd  ? parseFloat(inputQtd.value) || 0        : 0;
+        const unidade = unSel     ? unSel.value                            : 'un';
+        const lote    = inputLote ? inputLote.value.trim()                  : '';
+        const validade= inputDt   ? inputDt.value                          : '';
+        const pf      = inputPF   ? inputPF.checked                        : false;
+
+        if (!reagId || reagId === '__novo__' || !qtd) return;
         itens.push({ reagId, qtd, unidade, lote, validade, pf });
     });
 
-    if (!itens.length) { sgqToast('⚠️ Adicione pelo menos um produto.', 'warning'); return; }
+    if (!itens.length) { sgqToast('⚠️ Vincule pelo menos um produto a um reagente cadastrado e informe a quantidade.', 'warning'); return; }
 
     try {
-        // Atualizar estoque de cada reagente no Supabase
+        // ── Atualizar estoque de cada reagente no Supabase ────────
         for (const item of itens) {
-            if (item.reagId === '__novo__') continue;
-            const r = _reagentes.find(x => x.id === item.reagId);
+            const r = _reagentes.find(x => String(x.id) === String(item.reagId));
             if (!r) continue;
             const novaQtd = r.qtdAtual + item.qtd;
             const update = {
                 qtd_atual:   novaQtd,
-                lote:        item.lote || r.lote || null,
-                validade:    item.validade || r.validade || null,
+                lote:        item.lote    || r.lote    || null,
+                validade:    item.validade|| r.validade|| null,
                 fornecedor:  fornecedor,
                 nf_chave:    chave,
                 entrada:     _reagHoje(),
-                controle_pf: item.pf !== undefined ? item.pf : r.controlePF
+                controle_pf: item.pf || r.controlePF  // preserva PF do cadastro se checkbox da NF estiver desmarcado
             };
             const { error } = await _sbClient.from('produtos_quimicos').update(update).eq('id', item.reagId);
             if (error) throw error;
-            // Atualizar estado local
+            // Atualizar estado local imediatamente
             r.qtdAtual   = novaQtd;
             r.lote       = update.lote;
             r.validade   = update.validade;
@@ -14988,7 +15252,7 @@ async function reagSalvarNota() {
             r.controlePF = update.controle_pf;
         }
 
-        // Salvar nota de entrada
+        // ── Salvar nota de entrada ────────────────────────────────
         const nota = { chave, fornecedor, dataEmissao: emissao, dataEntrada: _reagHoje(), itens };
         await _reagSalvarNota(nota);
         _reagNotas.unshift({ ...nota, id: 'NF_' + Date.now() });
@@ -14998,7 +15262,7 @@ async function reagSalvarNota() {
         reagRenderNotas();
         reagAtualizarCards();
         reagVerificarAlertas();
-        sgqToast('✅ Entrada registrada com sucesso!', 'success');
+        sgqToast('✅ Entrada registrada! ' + itens.length + ' produto(s) atualizados.', 'success');
     } catch(e) { sgqToast('❌ Erro ao salvar: ' + e.message, 'error'); }
 }
 
@@ -15006,14 +15270,121 @@ function reagVerNota(id) {
     const n = _reagNotas.find(x => x.id === id);
     if (!n) return;
     const itensHtml = n.itens.map(i => {
-        const r = _reagentes.find(x => x.id === i.reagId) || {};
-        return `<li style="margin-bottom:4px;"><strong>${r.nome || i.reagId}</strong> — ${i.qtd} ${i.unidade} | Lote: ${i.lote || '—'} | Validade: ${_fmtData(i.validade)} ${i.pf ? '🚔' : ''}</li>`;
+        const r = _reagentes.find(x => String(x.id) === String(i.reagId)) || {};
+        return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid #f0f0f0;font-size:12px;">
+            <span style="font-size:18px;">${r.controlePF ? '🚔' : '🧪'}</span>
+            <div style="flex:1;">
+                <div style="font-weight:700;color:#1a2a6e;">${r.nome || i.reagId}</div>
+                <div style="color:#888;font-size:10px;">Lote: ${i.lote || '—'} | Validade: ${_fmtData(i.validade)}</div>
+            </div>
+            <div style="text-align:right;font-weight:800;color:#2c3e50;">${i.qtd} ${i.unidade}</div>
+        </div>`;
     }).join('');
-    sgqToast(`📄 NF: ${n.chave} | ${n.itens.length} item(s) | Entrada: ${_fmtData(n.dataEntrada)}`, 'info');
+
+    // Modal de visualização
+    const modalHtml = `
+        <div id="reagVerNotaModal" style="position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;">
+            <div style="background:#fff;border-radius:12px;width:90%;max-width:520px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.25);">
+                <div style="background:linear-gradient(135deg,#1a2a6e,#2c3e50);color:#fff;padding:14px 18px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div style="font-size:14px;font-weight:900;">📄 Detalhes da NF-e</div>
+                        <div style="font-size:10px;opacity:.7;font-family:monospace;">${n.chave}</div>
+                    </div>
+                    <button onclick="document.getElementById('reagVerNotaModal').remove()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">✕</button>
+                </div>
+                <div style="padding:16px;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+                        <div style="background:#f8f9fa;border-radius:7px;padding:10px;">
+                            <div style="font-size:10px;color:#888;font-weight:700;">FORNECEDOR</div>
+                            <div style="font-size:12px;font-weight:800;color:#1a2a6e;margin-top:2px;">${n.fornecedor}</div>
+                        </div>
+                        <div style="background:#f8f9fa;border-radius:7px;padding:10px;">
+                            <div style="font-size:10px;color:#888;font-weight:700;">EMISSÃO / ENTRADA</div>
+                            <div style="font-size:12px;font-weight:800;color:#1a2a6e;margin-top:2px;">${_fmtData(n.dataEmissao)} / ${_fmtData(n.dataEntrada)}</div>
+                        </div>
+                    </div>
+                    <div style="font-size:11px;font-weight:800;color:#1a2a6e;margin-bottom:8px;">PRODUTOS (${n.itens.length} item(s))</div>
+                    <div style="border:1px solid #eee;border-radius:7px;overflow:hidden;">${itensHtml}</div>
+                    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+                        <button onclick="document.getElementById('reagVerNotaModal').remove()" style="background:#ecf0f1;color:#555;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;">Fechar</button>
+                        <button onclick="document.getElementById('reagVerNotaModal').remove();reagExcluirNota('${id}')" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;">🗑️ Excluir Entrada</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+async function reagExcluirNota(id) {
+    const n = _reagNotas.find(x => x.id === id);
+    if (!n) return;
+
+    // Montar lista de produtos para o confirm
+    const listaProds = n.itens.map(i => {
+        const r = _reagentes.find(x => String(x.id) === String(i.reagId));
+        const nome = r ? r.nome : (i.reagId || 'Desconhecido');
+        return `• ${nome}: −${i.qtd} ${i.unidade}`;
+    }).join('\n');
+
+    const confirmar = confirm(
+        `⚠️ EXCLUIR ENTRADA DE NOTA FISCAL
+
+` +
+        `NF: ${n.chave.substring(0,20)}...
+` +
+        `Fornecedor: ${n.fornecedor}
+` +
+        `Data entrada: ${_fmtData(n.dataEntrada)}
+
+` +
+        `Os seguintes estoques serão ESTORNADOS:
+${listaProds}
+
+` +
+        `Deseja continuar?`
+    );
+    if (!confirmar) return;
+
+    try {
+        // 1) Estornar estoque de cada reagente
+        for (const item of n.itens) {
+            const r = _reagentes.find(x => String(x.id) === String(item.reagId));
+            if (!r) continue;
+            const novaQtd = Math.max(0, r.qtdAtual - item.qtd);
+            const { error } = await _sbClient.from('produtos_quimicos')
+                .update({ qtd_atual: novaQtd })
+                .eq('id', item.reagId);
+            if (error) throw error;
+            r.qtdAtual = novaQtd;
+        }
+
+        // 2) Excluir nota do Supabase (tenta por chave_nf)
+        const chaveNum = n.chave.replace(/\D/g, '');
+        const { error: errDel } = await _sbClient.from('reag_notas')
+            .delete()
+            .eq('chave_nf', n.chave);
+        // Se falhar (id numérico), tenta pelo id
+        if (errDel) {
+            await _sbClient.from('reag_notas').delete().eq('id', n.id);
+        }
+
+        // 3) Remover do estado local
+        _reagNotas = _reagNotas.filter(x => x.id !== id);
+
+        reagRenderTabela();
+        reagRenderNotas();
+        reagAtualizarCards();
+        reagVerificarAlertas();
+        sgqToast('🗑️ Entrada excluída e estoque estornado com sucesso.', 'success');
+    } catch(e) {
+        sgqToast('❌ Erro ao excluir: ' + e.message, 'error');
+    }
 }
 
 // ── Modal Cadastro Reagente ───────────────────────────────────────
 function reagAbrirModalCadastro() {
+    // ✅ FIX: garante que os dados estejam carregados antes de abrir o modal
+    if (!_reagentes || _reagentes.length === 0) { try { reagCarregarDados(); } catch(e){} }
     _reagEditId = null;
     document.getElementById('reagCadTitulo').textContent = '🧪 Cadastrar Reagente';
     ['reagCadId','reagCadNome','reagCadLote','reagCadFornecedor','reagCadPortaria'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
@@ -15022,6 +15393,9 @@ function reagAbrirModalCadastro() {
     document.getElementById('reagCadValidade').value    = '';
     document.getElementById('reagCadUnidade').value     = 'mL';
     document.getElementById('reagCadControlePF').checked = false;
+    const avisoNF = document.getElementById('reagCadQtdAvisoNF');
+    if (avisoNF) avisoNF.style.display = 'none';
+    const elNFChave = document.getElementById('reagCadNFChave'); if (elNFChave) elNFChave.value = '';
     document.getElementById('reagModalCadastro').style.display = 'flex';
 }
 function reagEditarCadastro(id) {
@@ -15038,10 +15412,95 @@ function reagEditarCadastro(id) {
     document.getElementById('reagCadFornecedor').value        = r.fornecedor || '';
     document.getElementById('reagCadControlePF').checked      = !!r.controlePF;
     document.getElementById('reagCadPortaria').value          = r.portaria || '';
+    const elNF = document.getElementById('reagCadNFChave');
+    if (elNF) {
+        // Se o reagente já tem chave no banco, usa ela.
+        // Senão, tenta pegar do modal de NF que pode estar aberto.
+        const chaveExistente = r.nfChave || '';
+        const chaveDaNotaAberta = (document.getElementById('reagNFChave') || {}).value || '';
+        elNF.value = chaveExistente || chaveDaNotaAberta;
+        if (!chaveExistente && chaveDaNotaAberta) {
+            elNF.style.borderColor = '#e67e22';
+            elNF.title = 'Chave detectada da Nota Fiscal aberta — confirme e salve';
+        } else {
+            elNF.style.borderColor = '';
+            elNF.title = '';
+        }
+    }
     document.getElementById('reagModalCadastro').style.display = 'flex';
 }
 function reagFecharModalCadastro() {
     document.getElementById('reagModalCadastro').style.display = 'none';
+    _reagCadRetornoSelect = null;
+    _reagCadChaveNF = '';
+    // Restaura campo quantidade para estado normal (editável)
+    const inputQtdCad = document.getElementById('reagCadQtdInicial');
+    if (inputQtdCad) {
+        inputQtdCad.readOnly        = false;
+        inputQtdCad.style.background  = '';
+        inputQtdCad.style.color       = '';
+        inputQtdCad.style.borderColor = '';
+        inputQtdCad.style.fontWeight  = '';
+        inputQtdCad.title             = '';
+    }
+    const avisoNF = document.getElementById('reagCadQtdAvisoNF');
+    if (avisoNF) avisoNF.style.display = 'none';
+}
+
+// ✅ FIX: abre cadastro ao selecionar "➕ Cadastrar novo reagente" no select da nota
+function reagNovoDoSelect(selectEl) {
+    if (selectEl.value !== '__novo__') return;
+
+    // Lê dados já preenchidos no item da nota (lote, validade, qtd, unidade, PF)
+    const itemDiv   = selectEl.closest('div[id^="reagNFItem_"]') || selectEl.closest('div[style*="border"]');
+    const inputQtd  = itemDiv ? itemDiv.querySelector('input[type="number"]')         : null;
+    const unSel     = itemDiv ? itemDiv.querySelectorAll('select')[1]                 : null;
+    const inputLote = itemDiv ? itemDiv.querySelector('input[placeholder*="LT"]')     : null;
+    const inputDt   = itemDiv ? itemDiv.querySelector('input[type="date"]')           : null;
+    const inputPF   = itemDiv ? itemDiv.querySelector('input.reagNFItemPF')            : null;
+
+    const nomeNF    = selectEl.getAttribute('data-nome-nf') || '';
+    const qtdVal    = inputQtd  ? (inputQtd.value  || '')  : '';
+    const unidadeVal= unSel     ? (unSel.value     || 'mL'): 'mL';
+    const loteVal   = inputLote ? (inputLote.value || '')  : '';
+    const validVal  = inputDt   ? (inputDt.value   || '')  : '';
+    const pfVal     = inputPF   ? inputPF.checked          : false;
+
+    // Guarda referência ao select e chave da NF para usar no salvamento
+    _reagCadRetornoSelect = selectEl;
+    _reagCadChaveNF = (document.getElementById('reagNFChave') || {}).value || '';
+    selectEl.value = ''; // volta ao placeholder enquanto cadastra
+
+    // Abre modal com dados da NF pré-preenchidos para conferência.
+    // O campo Quantidade fica visível (readonly) apenas como referência —
+    // o estoque real entra pelo "Registrar Entrada", evitando duplicação.
+    _reagEditId = null;
+    document.getElementById('reagCadTitulo').textContent     = '🧪 Cadastrar Reagente';
+    document.getElementById('reagCadNome').value             = nomeNF;
+    document.getElementById('reagCadUnidade').value          = unidadeVal;
+    document.getElementById('reagCadMinimo').value           = '';
+    const inputQtdCad = document.getElementById('reagCadQtdInicial');
+    if (inputQtdCad) {
+        inputQtdCad.value           = qtdVal;
+        inputQtdCad.readOnly        = true;
+        inputQtdCad.style.background  = '#eaf3fb';
+        inputQtdCad.style.color       = '#1a5276';
+        inputQtdCad.style.borderColor = '#3498db';
+        inputQtdCad.style.fontWeight  = '700';
+        inputQtdCad.title = 'Quantidade da Nota Fiscal — será registrada no estoque ao confirmar a entrada';
+    }
+    // Exibe aviso explicativo
+    const avisoNF = document.getElementById('reagCadQtdAvisoNF');
+    if (avisoNF) avisoNF.style.display = 'block';
+    document.getElementById('reagCadLote').value             = loteVal;
+    document.getElementById('reagCadValidade').value         = validVal;
+    document.getElementById('reagCadFornecedor').value       = (document.getElementById('reagNFFornecedor') || {}).value || '';
+    document.getElementById('reagCadPortaria').value         = '';
+    document.getElementById('reagCadControlePF').checked     = pfVal;
+    const elNFc = document.getElementById('reagCadNFChave'); if (elNFc) elNFc.value = _reagCadChaveNF || '';
+    document.getElementById('reagModalCadastro').style.display = 'flex';
+    // Foca no estoque mínimo — único campo pendente de preenchimento
+    setTimeout(() => { const el = document.getElementById('reagCadMinimo'); if (el) el.focus(); }, 100);
 }
 async function reagSalvarCadastro() {
     const nome    = document.getElementById('reagCadNome').value.trim();
@@ -15049,34 +15508,66 @@ async function reagSalvarCadastro() {
     const qtd     = parseFloat(document.getElementById('reagCadQtdInicial').value) || 0;
     if (!nome) { sgqToast('⚠️ Informe o nome do reagente.', 'warning'); return; }
 
+    // Se o cadastro veio de uma NF, qtdAtual deve ser 0:
+    // a quantidade real entra pelo "Registrar Entrada", evitando duplicação.
+    const qtdParaSalvar = _reagCadRetornoSelect ? 0 : qtd;
+
     const existente = _reagEditId ? (_reagentes.find(x => x.id === _reagEditId) || {}) : {};
     const dados = {
         id:         _reagEditId || null,
         nome,
         unidade:    document.getElementById('reagCadUnidade').value,
         minimo,
-        qtdAtual:   _reagEditId ? (qtd || existente.qtdAtual || 0) : qtd,
+        qtdAtual:   _reagEditId ? (qtdParaSalvar || existente.qtdAtual || 0) : qtdParaSalvar,
         lote:       document.getElementById('reagCadLote').value.trim(),
         validade:   document.getElementById('reagCadValidade').value,
         fornecedor: document.getElementById('reagCadFornecedor').value.trim(),
         controlePF: document.getElementById('reagCadControlePF').checked,
         portaria:   document.getElementById('reagCadPortaria').value.trim(),
         dataEntrada:_reagHoje(),
+        nfChave:    (document.getElementById('reagCadNFChave') || {}).value?.trim() || (_reagCadRetornoSelect ? (_reagCadChaveNF || '') : ''),
     };
 
     try {
         const salvo = await _reagUpsertReagente(dados);
+        // Garantir que campos booleanos do formulário sejam preservados
+        // independente do que o banco retornar (pode haver delay ou RLS)
+        salvo.controlePF = dados.controlePF;
         if (_reagEditId) {
             const idx = _reagentes.findIndex(x => x.id === _reagEditId);
             if (idx >= 0) _reagentes[idx] = salvo; else _reagentes.push(salvo);
         } else {
             _reagentes.push(salvo);
         }
-        reagFecharModalCadastro();
-        reagRenderTabela();
-        reagAtualizarCards();
-        reagVerificarAlertas();
-        sgqToast('✅ Reagente salvo com sucesso!', 'success');
+
+        // ✅ FIX: se o cadastro veio de um select da nota, atualiza e seleciona automaticamente
+        if (_reagCadRetornoSelect) {
+            const sel = _reagCadRetornoSelect;
+            // Remove opção antiga se existir, adiciona a nova antes de "__novo__"
+            const existing = sel.querySelector(`option[value="${salvo.id}"]`);
+            if (!existing) {
+                const novaOpt = document.createElement('option');
+                novaOpt.value = salvo.id;
+                novaOpt.textContent = salvo.nome;
+                const novoOpt = sel.querySelector('option[value="__novo__"]');
+                if (novoOpt) sel.insertBefore(novaOpt, novoOpt);
+                else sel.appendChild(novaOpt);
+            }
+            sel.value = String(salvo.id);
+            sel.style.borderColor = '#27ae60';
+            _reagCadRetornoSelect = null;
+            reagFecharModalCadastro();
+            reagRenderTabela();
+            reagAtualizarCards();
+            reagVerificarAlertas();
+            sgqToast('✅ Reagente cadastrado e vinculado à nota!', 'success');
+        } else {
+            reagFecharModalCadastro();
+            reagRenderTabela();
+            reagAtualizarCards();
+            reagVerificarAlertas();
+            sgqToast('✅ Reagente salvo com sucesso!', 'success');
+        }
     } catch(e) { sgqToast('❌ Erro ao salvar: ' + e.message, 'error'); }
 }
 async function reagExcluir(id) {
@@ -15184,6 +15675,8 @@ async function _reagSalvarEmail() {
 let _estudoGrafInst = null;
 
 function reagAbrirEstudo() {
+    // ✅ FIX: garante que os dados estejam carregados antes de abrir o estudo
+    if (!_reagentes || _reagentes.length === 0) { try { reagCarregarDados(); } catch(e){} }
     document.getElementById('reagModalEstudo').style.display = 'flex';
     reagRenderEstudo();
 }
