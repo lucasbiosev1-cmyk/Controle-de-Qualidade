@@ -5715,7 +5715,9 @@ function atualizarKpisCapa() {
         const camposMP   = ['proteina','solubil','umidade','densidade','mineral','acidez','ureatica','rancidez','peroxido','digestibilidade'];
         const camposProd = ['proteina','fibra','solubil','umidade','densidade','mineral'];
         const contarClass = (r) => {
-            let n = 1;
+            const camposDefeito = ['queimado','ardido','mofado','esverdeado','fermentando','chocho','picado','gessado','quebrado','germinado','carunchado','impureza'];
+            let n = 0;
+            if (camposDefeito.some(c => r[c] !== null && r[c] !== undefined && parseFloat(r[c]) >= 0)) n++;
             if (r.umidade   !== null && r.umidade   !== undefined) n++;
             if (r.densidade !== null && r.densidade !== undefined && parseFloat(r.densidade) > 0) n++;
             return n;
@@ -6440,7 +6442,7 @@ function abrirModalEdicaoMP(id) {
     document.getElementById('cadAcidezMP').value                  = r.acidez ?? '';
     document.getElementById('cadUreatidaMP').value                = r.ureatica ?? '';
     document.getElementById('cadRancidezMP').value                = r.rancidez ?? '';
-    document.getElementById('cadPeroxidoMP').value                = r.peroxido ?? '';
+    document.getElementById('cadPeroxidoMP').value                = r.peroxido !== null && r.peroxido !== undefined ? r.peroxido : '';
     document.getElementById('cadDigestibilidadeMP').value         = r.digestibilidade ?? '';
     document.getElementById('cadGranulo1MP').value                = r.granulo1 ?? '';
     document.getElementById('cadGranulo2MP').value                = r.granulo2 ?? '';
@@ -6485,6 +6487,7 @@ function salvarMateriaPrima(event) {
         mostrarErroMP('❌ PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS!'); return;
     }
     const _pfM = id => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; };
+    const _pfMPerox = id => { const v = document.getElementById(id).value; if (v === '' || v === undefined) return null; const n = parseFloat(v); return isNaN(n) ? null : n; };
     const r = {
         id: idEdicaoMP || Date.now(), data,
         hora:           document.getElementById('cadHoraMP').value,
@@ -6499,7 +6502,7 @@ function salvarMateriaPrima(event) {
         acidez:         _pfM('cadAcidezMP'),
         ureatica:       _pfM('cadUreatidaMP'),
         rancidez:       _pfM('cadRancidezMP'),
-        peroxido:       _pfM('cadPeroxidoMP'),
+        peroxido:       _pfMPerox('cadPeroxidoMP'),
         digestibilidade:_pfM('cadDigestibilidadeMP'),
         granulo1:       _pfM('cadGranulo1MP'),
         granulo2:       _pfM('cadGranulo2MP'),
@@ -10853,7 +10856,7 @@ function gerarSecaoProd(dados, agrupar, resumo, destNC, periodo) {
     let html = `<div class="bol-secao-header">🌾 1. PRODUÇÃO — ANÁLISE GRANULOMÉTRICA E FÍSICO-QUÍMICA</div>
     <div class="bol-secao-sub">
         <span>Total: ${dados.length} registros &nbsp;|&nbsp; Período: ${periodo} &nbsp;|&nbsp; Modo: ${modoPorFase?'Por Fase':'Por Tipo de Ração'}</span>
-        <span>DGM (µm) &bull; DPG &bull; Umidade% &bull; Densidade &bull; Proteína% &bull; Mineral% &bull; Peneiras (G1/G2/G3/Fundo%)</span>
+
     </div>`;
 
     if (!agrupar) {
@@ -10893,9 +10896,6 @@ function gerarSecaoProd(dados, agrupar, resumo, destNC, periodo) {
                 ${info.icone} ${info.fase}
                 <span style="font-size:10px;font-weight:normal;opacity:0.85;margin-left:auto;">
                     ${n} registro${n!==1?'s':''}
-                    &nbsp;|&nbsp; DGM médio: ${dgms.length ? aMedia(dgms).toFixed(0)+' µm' : '-'}
-                    &nbsp;|&nbsp; Umid. média: ${ums.length ? aMedia(ums).toFixed(1)+'%' : '-'}
-                    &nbsp;|&nbsp; Dens. média: ${dens.length ? aMedia(dens).toFixed(0) : '-'}
                 </span>
             </div>`;
 
@@ -10938,15 +10938,8 @@ function gerarGrupoProd(racao, rows, resumo, destNC) {
     const dens = rows.map(r=>r.densidade).filter(v=>v>0);
 
     const aMedia = (arr) => arr.length ? (arr.reduce((s,v)=>s+v,0)/arr.length) : 0;
-    const statsHtml = `<span class="bol-grupo-stats">
-        n=${rows.length} &nbsp;|&nbsp;
-        DGM médio: ${dgms.length?aMedia(dgms).toFixed(0)+' µm':'-'} &nbsp;|&nbsp;
-        Umid. média: ${ums.length?aMedia(ums).toFixed(1)+'%':'-'} &nbsp;|&nbsp;
-        Dens. média: ${dens.length?aMedia(dens).toFixed(0):'-'}
-    </span>`;
-
     let html = `<div style="margin:0 16px 14px;">
-        <div class="bol-grupo-header">🌾 ${racao} ${statsHtml}</div>
+        <div class="bol-grupo-header">🌾 ${racao}</div>
         <div class="bol-tabela-wrap">` + gerarTabelaProd(rows, true, destNC) + `</div>`;
 
     if (resumo && rows.length > 1) {
@@ -11006,7 +10999,7 @@ function gerarSecaoClass(dados, agrupar, resumo, destNC, periodo) {
     let html = `<div class="bol-secao-header">🌽 ${secNum}. CLASSIFICAÇÃO — MATÉRIAS-PRIMAS RECEBIDAS</div>
     <div class="bol-secao-sub">
         <span>Total: ${dados.length} registros &nbsp;|&nbsp; Período: ${periodo}</span>
-        <span>Avariados% &bull; Defeitos individuais &bull; Umidade% &bull; Densidade &bull; Micotoxinas (PPB)</span>
+
     </div>`;
 
     if (agrupar) {
@@ -11031,15 +11024,10 @@ function gerarGrupoClass(prod, rows, resumo, destNC) {
     const aMedia = (arr) => arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : 0;
     const temAfla = rows.some(r=>(r.aflatoxinas||0)>0);
 
-    const statsHtml = `<span class="bol-grupo-stats">
-        n=${rows.length} &nbsp;|&nbsp;
-        Avariados médio: ${aMedia(avars).toFixed(2)}% &nbsp;|&nbsp;
-        Umid. média: ${ums.length?aMedia(ums).toFixed(1)+'%':'-'}
-        ${temAfla?'&nbsp;|&nbsp; ⚠️ Aflatoxinas detectadas':''}
-    </span>`;
+    const statsHtml = ``;
 
     let html = `<div style="margin:0 16px 14px;">
-        <div class="bol-grupo-header">🌽 ${prod} ${statsHtml}</div>
+        <div class="bol-grupo-header">🌽 ${prod}</div>
         <div class="bol-tabela-wrap">` + gerarTabelaClass(rows, true, destNC) + `</div>`;
 
     if (resumo && rows.length > 1) {
@@ -11104,7 +11092,7 @@ function gerarSecaoMP(dados, agrupar, resumo, destNC, periodo, mostrarAnalises, 
     let html = `<div class="bol-secao-header">🧪 ${secNum}. MATÉRIA PRIMA — QUALIDADE DE INSUMOS</div>
     <div class="bol-secao-sub">
         <span>Total: ${dados.length} registros &nbsp;|&nbsp; Período: ${periodo}</span>
-        <span>Umidade% &bull; Densidade &bull; Extrato Etério% &bull; Proteína% &bull; Fibra% &bull; Solubilidade Proteica% &bull; Mineral% &bull; Acidez &bull; Atividade Ureática &bull; Peróxido &bull; Digestibilidade%</span>
+
     </div>`;
 
     if (agrupar) {
@@ -11137,16 +11125,10 @@ function gerarGrupoMP(prod, rows, resumo, destNC, mostrarAnalises, temValBol, ca
         qtdAnalisesHtml = `&nbsp;|&nbsp; 🔬 <strong>${qtd}</strong> análises`;
     }
 
-    const statsHtml = `<span class="bol-grupo-stats">
-        n=${rows.length} &nbsp;|&nbsp;
-        Umid. média: ${ums.length?aMedia(ums).toFixed(1)+'%':'-'} &nbsp;|&nbsp;
-        Dens. média: ${dens.length?aMedia(dens).toFixed(0):'-'}
-        ${temAltoPer?'&nbsp;|&nbsp; ⚠️ Peróxido elevado':''}
-        ${qtdAnalisesHtml}
-    </span>`;
+    const statsHtml = ``;
 
     let html = `<div style="margin:0 16px 14px;">
-        <div class="bol-grupo-header">🧪 ${prod} ${statsHtml}</div>
+        <div class="bol-grupo-header">🧪 ${prod}</div>
         <div class="bol-tabela-wrap">` + gerarTabelaMP(rows, true, destNC) + `</div>`;
 
     if (resumo && rows.length > 1) {
@@ -11191,7 +11173,7 @@ function gerarTabelaMP(rows, compacto, destNC) {
             <td${cl(r.acidez,'acidez')}>${fmtN(r.acidez,2)}</td>
             <td${cl(r.ureatica,'ureatica')}>${fmtN(r.ureatica,3)}</td>
             <td>${fmtN(r.rancidez,2)}</td>
-            <td${perCl}>${(r.peroxido||0)>0?fmtN(r.peroxido,1):'-'}</td>
+            <td${perCl}>${(r.peroxido === null || r.peroxido === undefined || r.peroxido === '') ? '-' : fmtN(r.peroxido,1)}</td>
             <td>${fmtN(r.digestibilidade,2)}</td>
             <td>${status}</td>
         </tr>`;
@@ -12431,7 +12413,7 @@ function aplicarFiltrosRelMP() {
             <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.acidez)}</td>
             <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.ureatica)}</td>
             <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.rancidez)}</td>
-            <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.peroxido)}</td>
+            <td style="padding:5px 4px;text-align:center;">${(r.peroxido === null || r.peroxido === undefined || r.peroxido === '') ? '-' : _rmpFmt(r.peroxido)}</td>
             <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.digestibilidade)}</td>
         </tr>`;
     }).join('');
