@@ -1416,6 +1416,9 @@
             <button class="mob-item" onclick="mobNavNC('aba-dev-inner','Devolução')">↩️ Devolução</button>
         </div>
         <div class="mob-section">
+            <button class="mob-item" onclick="mobNav('estoqueReagentes','Estoque de Reagentes')">🧫 Estoque de Reagentes</button>
+        </div>
+        <div class="mob-section">
             <button class="mob-item" id="mobBtnConfiguracoes" onclick="mobNav('configuracoes','Configurações')">⚙️ Configurações</button>
         </div>
     </div>
@@ -1459,6 +1462,8 @@
                 <button class="nav-dropdown-item" id="tabDev" onclick="trocarAba('naoConformidade', this);closeDropdowns();setTimeout(()=>mostrarSecaoNC('aba-dev-inner'),50)">↩️ Devolução</button>
             </div>
         </div>
+        <!-- ESTOQUE REAGENTES -->
+        <button class="nav-tab" id="tabEstoqueReagentes" onclick="trocarAba('estoqueReagentes', this)">🧫 Reagentes</button>
         <!-- CONFIGURAÇÕES -->
         <button class="nav-tab" id="tabConfiguracoes" onclick="trocarAba('configuracoes', this)">⚙️ Configurações</button>
     </div>
@@ -2839,6 +2844,352 @@
 
         </div><!-- fim aba-naoConformidade inner -->
     </div><!-- fim aba-naoConformidade -->
+
+    <!-- ===== ABA ESTOQUE DE REAGENTES ===== -->
+    <div id="aba-estoqueReagentes" class="tab-content">
+    <div style="max-width:1300px;margin:0 auto;padding:16px 10px;">
+
+        <!-- POPUP ALERTA REAGENTES -->
+        <div id="reagAlertPopup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.55);align-items:center;justify-content:center;">
+            <div style="background:#fff;border-radius:12px;max-width:540px;width:95%;padding:28px 28px 20px;box-shadow:0 8px 40px rgba(0,0,0,0.22);position:relative;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                    <span style="font-size:28px;">⚠️</span>
+                    <div>
+                        <div style="font-size:15px;font-weight:900;color:#c0392b;letter-spacing:.5px;">ALERTAS DE ESTOQUE</div>
+                        <div style="font-size:11px;color:#888;">Reagentes que necessitam atenção</div>
+                    </div>
+                    <button onclick="document.getElementById('reagAlertPopup').style.display='none'" style="margin-left:auto;background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;">✕</button>
+                </div>
+                <div id="reagAlertPopupBody" style="max-height:320px;overflow-y:auto;"></div>
+                <div style="margin-top:14px;text-align:right;">
+                    <button onclick="document.getElementById('reagAlertPopup').style.display='none'" style="background:#1a2a6e;color:#fff;border:none;border-radius:6px;padding:8px 22px;font-weight:700;cursor:pointer;font-size:13px;">Fechar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- HEADER -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+            <div>
+                <div style="font-size:18px;font-weight:900;color:#1a2a6e;letter-spacing:.5px;">🧫 Estoque de Reagentes</div>
+                <div style="font-size:11px;color:#888;margin-top:2px;">Controle de entrada, validade e alertas de reagentes laboratoriais</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button onclick="reagVerAlertas()" id="btnReagAlertas" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12px;display:none;">⚠️ Ver Alertas <span id="reagAlertCount" style="background:#fff;color:#e74c3c;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:900;margin-left:4px;"></span></button>
+                <button onclick="reagAbrirEstudo()" style="background:#8e44ad;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">📊 Estudo de Consumo</button>
+                <button onclick="reagAbrirModalNota()" style="background:#1a2a6e;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">+ Entrada por Nota</button>
+                <button onclick="reagAbrirModalCadastro()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">+ Cadastrar Reagente</button>
+            </div>
+        </div>
+
+        <!-- CARDS RESUMO -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px;">
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #1a2a6e;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Total Reagentes</div>
+                <div id="reagCardTotal" style="font-size:26px;font-weight:900;color:#1a2a6e;">0</div>
+            </div>
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #e74c3c;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Estoque Baixo</div>
+                <div id="reagCardBaixo" style="font-size:26px;font-weight:900;color:#e74c3c;">0</div>
+            </div>
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #e67e22;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Vencendo (60d)</div>
+                <div id="reagCardVencendo" style="font-size:26px;font-weight:900;color:#e67e22;">0</div>
+            </div>
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #c0392b;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Vencidos</div>
+                <div id="reagCardVencidos" style="font-size:26px;font-weight:900;color:#c0392b;">0</div>
+            </div>
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #8e44ad;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">🚔 Controlados PF</div>
+                <div id="reagCardPF" style="font-size:26px;font-weight:900;color:#8e44ad;">0</div>
+            </div>
+        </div>
+
+        <!-- FILTROS -->
+        <div style="background:#fff;border-radius:8px;padding:12px 16px;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <input id="reagFiltroNome" oninput="reagRenderTabela()" placeholder="🔍 Buscar reagente..." style="border:1px solid #ddd;border-radius:6px;padding:7px 12px;font-size:12px;min-width:180px;">
+            <select id="reagFiltroStatus" onchange="reagRenderTabela()" style="border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:12px;">
+                <option value="">Todos os status</option>
+                <option value="ok">✅ OK</option>
+                <option value="baixo">🟡 Estoque Baixo</option>
+                <option value="vencendo">🟠 Vencendo</option>
+                <option value="vencido">🔴 Vencido</option>
+            </select>
+            <select id="reagFiltroPF" onchange="reagRenderTabela()" style="border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:12px;">
+                <option value="">Todos os tipos</option>
+                <option value="sim">🚔 Controlados PF</option>
+                <option value="nao">Não controlados</option>
+            </select>
+        </div>
+
+        <!-- TABELA -->
+        <div style="background:#fff;border-radius:8px;box-shadow:0 1px 6px rgba(0,0,0,0.07);overflow:hidden;">
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                    <thead>
+                        <tr style="background:#1a2a6e;color:#fff;">
+                            <th style="padding:10px 12px;text-align:left;font-size:11px;letter-spacing:.5px;">REAGENTE</th>
+                            <th style="padding:10px 8px;text-align:center;">LOTE</th>
+                            <th style="padding:10px 8px;text-align:center;">FORNECEDOR</th>
+                            <th style="padding:10px 8px;text-align:center;">QTD ATUAL</th>
+                            <th style="padding:10px 8px;text-align:center;">MÍNIMO</th>
+                            <th style="padding:10px 8px;text-align:center;">VALIDADE</th>
+                            <th style="padding:10px 8px;text-align:center;">ENTRADA</th>
+                            <th style="padding:10px 8px;text-align:center;">NF</th>
+                            <th style="padding:10px 8px;text-align:center;">STATUS</th>
+                            <th style="padding:10px 8px;text-align:center;">AÇÕES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reagTbody">
+                        <tr><td colspan="10" style="text-align:center;padding:40px;color:#aaa;">Nenhum reagente cadastrado.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- HISTORICO DE ENTRADAS -->
+        <div style="margin-top:18px;">
+            <div style="font-size:13px;font-weight:800;color:#1a2a6e;margin-bottom:8px;letter-spacing:.5px;">📋 HISTÓRICO DE ENTRADAS POR NOTA</div>
+            <div style="background:#fff;border-radius:8px;box-shadow:0 1px 6px rgba(0,0,0,0.07);overflow:hidden;">
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                        <thead>
+                            <tr style="background:#34495e;color:#fff;">
+                                <th style="padding:9px 12px;text-align:left;">CHAVE NF</th>
+                                <th style="padding:9px 8px;text-align:center;">DATA EMISSÃO</th>
+                                <th style="padding:9px 8px;text-align:center;">DATA ENTRADA</th>
+                                <th style="padding:9px 8px;text-align:center;">FORNECEDOR</th>
+                                <th style="padding:9px 8px;text-align:center;">ITENS</th>
+                                <th style="padding:9px 8px;text-align:center;">AÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reagNotasTbody">
+                            <tr><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">Nenhuma entrada registrada.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    </div><!-- fim aba-estoqueReagentes -->
+
+    <!-- MODAL ESTUDO DE CONSUMO -->
+    <div id="reagModalEstudo" style="display:none;position:fixed;inset:0;z-index:8500;background:rgba(0,0,0,0.55);align-items:flex-start;justify-content:center;padding:20px 10px;overflow-y:auto;">
+        <div style="background:#fff;border-radius:12px;width:100%;max-width:980px;box-shadow:0 8px 40px rgba(0,0,0,0.22);margin:auto;">
+            <div style="background:linear-gradient(135deg,#8e44ad,#6c3483);color:#fff;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1;">
+                <div>
+                    <div style="font-size:16px;font-weight:900;">📊 Estudo de Consumo — Sugestão de Compra</div>
+                    <div style="font-size:10px;opacity:.75;margin-top:2px;">Baseado nos últimos 3 meses · Prazo de entrega: 2 meses</div>
+                </div>
+                <button onclick="document.getElementById('reagModalEstudo').style.display='none'" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;">✕</button>
+            </div>
+            <div style="padding:20px;">
+
+                <!-- LEGENDA -->
+                <div style="background:#f8f0ff;border:1px solid #d7bde2;border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:11px;color:#6c3483;line-height:1.7;">
+                    <strong>📌 Como é calculado:</strong><br>
+                    <b>Consumo médio mensal</b> = total consumido nos últimos 3 meses ÷ 3<br>
+                    <b>Necessidade 2 meses</b> = consumo médio × 2 (prazo de entrega)<br>
+                    <b>Sugestão de compra</b> = Necessidade 2 meses + estoque mínimo − estoque atual<br>
+                    <span style="color:#e74c3c;font-weight:700;">🔴 Compra urgente</span> quando estoque atual não cobre nem 1 mês de consumo &nbsp;|&nbsp;
+                    <span style="color:#e67e22;font-weight:700;">🟠 Atenção</span> não cobre 2 meses &nbsp;|&nbsp;
+                    <span style="color:#27ae60;font-weight:700;">🟢 OK</span> estoque suficiente
+                </div>
+
+                <!-- FILTRO -->
+                <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+                    <select id="estudoFiltroPF" onchange="reagRenderEstudo()" style="border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:12px;">
+                        <option value="">Todos os reagentes</option>
+                        <option value="pf">🚔 Apenas Controlados PF</option>
+                        <option value="normal">Apenas não controlados</option>
+                    </select>
+                    <select id="estudoFiltroStatus" onchange="reagRenderEstudo()" style="border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:12px;">
+                        <option value="">Todos os status</option>
+                        <option value="urgente">🔴 Urgente</option>
+                        <option value="atencao">🟠 Atenção</option>
+                        <option value="ok">🟢 OK</option>
+                    </select>
+                    <button onclick="reagExportarEstudo()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-weight:700;cursor:pointer;font-size:12px;margin-left:auto;">⬇️ Exportar CSV</button>
+                </div>
+
+                <!-- RANKING TOP 5 -->
+                <div style="margin-bottom:18px;">
+                    <div style="font-size:12px;font-weight:800;color:#6c3483;margin-bottom:10px;letter-spacing:.5px;">🏆 TOP 5 MAIS UTILIZADOS (últimos 3 meses)</div>
+                    <div id="estudoRanking" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+                </div>
+
+                <!-- GRÁFICO CONSUMO MENSAL -->
+                <div style="background:#f9f9fb;border-radius:8px;padding:14px;margin-bottom:18px;">
+                    <div style="font-size:12px;font-weight:800;color:#6c3483;margin-bottom:10px;">📈 CONSUMO MENSAL POR REAGENTE (últimos 3 meses)</div>
+                    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;" id="estudoGrafChks"></div>
+                    <canvas id="estudoGrafico" height="90"></canvas>
+                </div>
+
+                <!-- TABELA DE SUGESTÃO -->
+                <div style="font-size:12px;font-weight:800;color:#6c3483;margin-bottom:10px;letter-spacing:.5px;">🛒 SUGESTÃO DE COMPRA</div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                        <thead>
+                            <tr style="background:#6c3483;color:#fff;">
+                                <th style="padding:10px 12px;text-align:left;">REAGENTE</th>
+                                <th style="padding:10px 8px;text-align:center;">MÊS -3</th>
+                                <th style="padding:10px 8px;text-align:center;">MÊS -2</th>
+                                <th style="padding:10px 8px;text-align:center;">MÊS -1</th>
+                                <th style="padding:10px 8px;text-align:center;">MÉDIA/MÊS</th>
+                                <th style="padding:10px 8px;text-align:center;">ESTOQUE ATUAL</th>
+                                <th style="padding:10px 8px;text-align:center;">COBRE ATÉ</th>
+                                <th style="padding:10px 8px;text-align:center;background:#4a235a;">SUGESTÃO COMPRA</th>
+                                <th style="padding:10px 8px;text-align:center;">PRIORIDADE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="estudoTbody"></tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ENTRADA POR NOTA -->
+    <div id="reagModalNota" style="display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:12px;width:95%;max-width:700px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.2);">
+            <div style="background:linear-gradient(135deg,#1a2a6e,#2c3e50);color:#fff;padding:16px 20px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div style="font-size:15px;font-weight:900;">📄 Entrada por Nota Fiscal</div>
+                    <div style="font-size:10px;opacity:.7;margin-top:2px;">Informe a chave da nota e adicione os produtos</div>
+                </div>
+                <button onclick="reagFecharModalNota()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">✕</button>
+            </div>
+            <div style="padding:20px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                    <div style="grid-column:1/-1;">
+                        <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">CHAVE DA NOTA FISCAL *</label>
+                        <input id="reagNFChave" placeholder="Ex: 35260412345678901234550010000001231234567890" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;font-family:monospace;">
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">FORNECEDOR *</label>
+                        <input id="reagNFFornecedor" placeholder="Nome do fornecedor" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">DATA DE EMISSÃO DA NOTA *</label>
+                        <input type="date" id="reagNFEmissao" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                    </div>
+                </div>
+                <div style="font-size:12px;font-weight:800;color:#1a2a6e;margin-bottom:10px;border-bottom:2px solid #f0f0f0;padding-bottom:6px;">PRODUTOS DA NOTA</div>
+                <div id="reagNFItens" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;"></div>
+                <button onclick="reagAdicionarItemNota()" style="background:#f0f4ff;color:#1a2a6e;border:2px dashed #1a2a6e;border-radius:6px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12px;width:100%;">+ Adicionar Produto</button>
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
+                    <button onclick="reagFecharModalNota()" style="background:#ecf0f1;color:#555;border:none;border-radius:6px;padding:9px 20px;font-weight:700;cursor:pointer;">Cancelar</button>
+                    <button onclick="reagSalvarNota()" style="background:#1a2a6e;color:#fff;border:none;border-radius:6px;padding:9px 24px;font-weight:700;cursor:pointer;">💾 Registrar Entrada</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CADASTRO REAGENTE -->
+    <div id="reagModalCadastro" style="display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:12px;width:95%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.2);">
+            <div style="background:linear-gradient(135deg,#27ae60,#1e8449);color:#fff;padding:16px 20px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div style="font-size:15px;font-weight:900;" id="reagCadTitulo">🧪 Cadastrar Reagente</div>
+                    <div style="font-size:10px;opacity:.7;margin-top:2px;">Preencha os dados do reagente</div>
+                </div>
+                <button onclick="reagFecharModalCadastro()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">✕</button>
+            </div>
+            <div style="padding:20px;">
+                <input type="hidden" id="reagCadId">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div style="grid-column:1/-1;">
+                        <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">NOME DO REAGENTE *</label>
+                        <input id="reagCadNome" placeholder="Ex: Ácido Sulfúrico P.A." style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">UNIDADE *</label>
+                        <select id="reagCadUnidade" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                            <option value="mL">mL</option>
+                            <option value="L">L</option>
+                            <option value="g">g</option>
+                            <option value="kg">kg</option>
+                            <option value="un">un</option>
+                            <option value="cx">cx</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">ESTOQUE MÍNIMO *</label>
+                        <input type="number" id="reagCadMinimo" placeholder="Ex: 500" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">QUANTIDADE INICIAL</label>
+                        <input type="number" id="reagCadQtdInicial" placeholder="0" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">Nº LOTE</label>
+                        <input id="reagCadLote" placeholder="Ex: LT2026001" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">DATA DE VALIDADE</label>
+                        <input type="date" id="reagCadValidade" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">FORNECEDOR</label>
+                        <input id="reagCadFornecedor" placeholder="Nome do fornecedor" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;background:#f8f0ff;border:2px solid #8e44ad;border-radius:8px;padding:10px 14px;">
+                            <input type="checkbox" id="reagCadControlePF" style="width:16px;height:16px;accent-color:#8e44ad;">
+                            <div>
+                                <div style="font-size:12px;font-weight:800;color:#8e44ad;">🚔 Produto Controlado — Polícia Federal</div>
+                                <div style="font-size:10px;color:#888;margin-top:2px;">Sujeito à fiscalização e registro obrigatório</div>
+                            </div>
+                        </label>
+                    </div>
+                    <div style="grid-column:1/-1;" id="reagCadNumPortaria" style="display:none;">
+                        <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">Nº PORTARIA / REGISTRO PF</label>
+                        <input id="reagCadPortaria" placeholder="Ex: Portaria SVS/MS nº 344/98" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
+                    <button onclick="reagFecharModalCadastro()" style="background:#ecf0f1;color:#555;border:none;border-radius:6px;padding:9px 20px;font-weight:700;cursor:pointer;">Cancelar</button>
+                    <button onclick="reagSalvarCadastro()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:9px 24px;font-weight:700;cursor:pointer;">💾 Salvar Reagente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONSUMO / AJUSTE -->
+    <div id="reagModalConsumo" style="display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:12px;width:95%;max-width:420px;box-shadow:0 8px 40px rgba(0,0,0,0.2);">
+            <div style="background:linear-gradient(135deg,#e67e22,#d35400);color:#fff;padding:16px 20px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:15px;font-weight:900;">📉 Registrar Consumo / Ajuste</div>
+                <button onclick="document.getElementById('reagModalConsumo').style.display='none'" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">✕</button>
+            </div>
+            <div style="padding:20px;">
+                <input type="hidden" id="reagConsumoId">
+                <div style="font-size:13px;font-weight:800;color:#333;margin-bottom:14px;" id="reagConsumoNome"></div>
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">TIPO DE OPERAÇÃO</label>
+                    <select id="reagConsumoTipo" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                        <option value="consumo">📉 Consumo (saída)</option>
+                        <option value="ajuste_positivo">📈 Ajuste positivo (entrada manual)</option>
+                        <option value="descarte">🗑️ Descarte / Perda</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">QUANTIDADE</label>
+                    <input type="number" id="reagConsumoQtd" placeholder="0" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                </div>
+                <div style="margin-bottom:4px;">
+                    <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">OBSERVAÇÃO</label>
+                    <input id="reagConsumoObs" placeholder="Opcional..." style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
+                    <button onclick="document.getElementById('reagModalConsumo').style.display='none'" style="background:#ecf0f1;color:#555;border:none;border-radius:6px;padding:9px 20px;font-weight:700;cursor:pointer;">Cancelar</button>
+                    <button onclick="reagSalvarConsumo()" style="background:#e67e22;color:#fff;border:none;border-radius:6px;padding:9px 24px;font-weight:700;cursor:pointer;">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- ===== ABA PARÂMETROS ===== -->
     <!-- ===== ABA CONFIGURAÇÕES (agrupa: Parâmetros, Backup, Memória, Usuários, Alerta WhatsApp) ===== -->
@@ -13676,5 +14027,732 @@ function resetarParametros() {
     showMsg('msgSucessoParam','✓ Parâmetros restaurados para os valores padrão.',3000);
 }
 </script>
+
+<script>
+// =====================================================================
+// 🧫 MÓDULO ESTOQUE DE REAGENTES — L·Quality
+// =====================================================================
+
+// ── Estado em memória ─────────────────────────────────────────────
+let _reagentes  = [];   // cadastro de reagentes
+let _reagNotas  = [];   // histórico de entradas por NF
+let _reagEditId = null; // ID em edição
+
+// ── Chaves Supabase ───────────────────────────────────────────────
+const REAG_KEY_REAG  = 'lquality_reagentes_v1';
+const REAG_KEY_NOTAS = 'lquality_reagnotas_v1';
+const REAG_KEY_MOV   = 'lquality_reagmov_v1';
+let _reagMovimentos  = [];   // histórico de movimentos (consumo/descarte)
+
+// ── Email configurado nas configurações ───────────────────────────
+function _reagGetEmail() {
+    try { return (PARAMETROS && PARAMETROS._emailAlertas) ? PARAMETROS._emailAlertas : ''; } catch(e) { return ''; }
+}
+
+// ── Carregar dados do Supabase ────────────────────────────────────
+async function reagCarregarDados() {
+    try {
+        const { data: dr } = await _sbClient.from('parametros').select('valor').eq('chave', REAG_KEY_REAG).single();
+        _reagentes = dr && dr.valor ? JSON.parse(dr.valor) : [];
+    } catch(e) { _reagentes = []; }
+    try {
+        const { data: dn } = await _sbClient.from('parametros').select('valor').eq('chave', REAG_KEY_NOTAS).single();
+        _reagNotas = dn && dn.valor ? JSON.parse(dn.valor) : [];
+    } catch(e) { _reagNotas = []; }
+    try {
+        const { data: dm } = await _sbClient.from('parametros').select('valor').eq('chave', REAG_KEY_MOV).single();
+        _reagMovimentos = dm && dm.valor ? JSON.parse(dm.valor) : [];
+    } catch(e) { _reagMovimentos = []; }
+    reagRenderTabela();
+    reagRenderNotas();
+    reagAtualizarCards();
+    reagVerificarAlertas();
+}
+
+async function _reagSalvarReagentes() {
+    await _sbClient.from('parametros').delete().eq('chave', REAG_KEY_REAG);
+    await _sbClient.from('parametros').insert({ chave: REAG_KEY_REAG, valor: JSON.stringify(_reagentes), atualizado_em: new Date().toISOString() });
+}
+async function _reagSalvarMovimentos() {
+    await _sbClient.from('parametros').delete().eq('chave', REAG_KEY_MOV);
+    await _sbClient.from('parametros').insert({ chave: REAG_KEY_MOV, valor: JSON.stringify(_reagMovimentos), atualizado_em: new Date().toISOString() });
+}
+async function _reagSalvarNotas() {
+    await _sbClient.from('parametros').delete().eq('chave', REAG_KEY_NOTAS);
+    await _sbClient.from('parametros').insert({ chave: REAG_KEY_NOTAS, valor: JSON.stringify(_reagNotas), atualizado_em: new Date().toISOString() });
+}
+
+// ── Utilitários de data ───────────────────────────────────────────
+function _reagHoje() { return new Date().toISOString().split('T')[0]; }
+function _reagDiasParaVencer(val) {
+    if (!val) return null;
+    const diff = (new Date(val+'T00:00:00') - new Date(_reagHoje()+'T00:00:00')) / 86400000;
+    return Math.ceil(diff);
+}
+function _reagStatus(r) {
+    const dias = _reagDiasParaVencer(r.validade);
+    if (dias !== null && dias < 0)  return 'vencido';
+    if (dias !== null && dias <= 60) return 'vencendo';
+    if (r.qtdAtual <= r.minimo)      return 'baixo';
+    return 'ok';
+}
+function _reagStatusBadge(st) {
+    const m = { ok:'<span style="background:#27ae60;color:#fff;border-radius:10px;padding:2px 10px;font-size:10px;font-weight:700;">✅ OK</span>',
+                baixo:'<span style="background:#f39c12;color:#fff;border-radius:10px;padding:2px 10px;font-size:10px;font-weight:700;">🟡 BAIXO</span>',
+                vencendo:'<span style="background:#e67e22;color:#fff;border-radius:10px;padding:2px 10px;font-size:10px;font-weight:700;">🟠 VENCENDO</span>',
+                vencido:'<span style="background:#e74c3c;color:#fff;border-radius:10px;padding:2px 10px;font-size:10px;font-weight:700;">🔴 VENCIDO</span>' };
+    return m[st] || m.ok;
+}
+function _reagPFBadge(pf) {
+    if (!pf) return '';
+    return '<span style="background:#8e44ad;color:#fff;border-radius:4px;padding:3px 9px;font-size:9px;font-weight:900;margin-left:6px;letter-spacing:.5px;border:1px solid #6c3483;">🚔 PF CONTROLADO</span>';
+}
+function _fmtData(d) {
+    if (!d) return '—';
+    const p = d.split('-');
+    return p[2]+'/'+p[1]+'/'+p[0];
+}
+
+// ── Renderizar tabela principal ───────────────────────────────────
+function reagRenderTabela() {
+    const tbody = document.getElementById('reagTbody');
+    if (!tbody) return;
+    const filtNome   = (document.getElementById('reagFiltroNome')   || {}).value || '';
+    const filtStatus = (document.getElementById('reagFiltroStatus') || {}).value || '';
+    const filtPF     = (document.getElementById('reagFiltroPF')     || {}).value || '';
+
+    let lista = _reagentes.filter(r => {
+        if (filtNome   && !r.nome.toLowerCase().includes(filtNome.toLowerCase())) return false;
+        if (filtStatus && _reagStatus(r) !== filtStatus) return false;
+        if (filtPF === 'sim' && !r.controlePF) return false;
+        if (filtPF === 'nao' && r.controlePF)  return false;
+        return true;
+    });
+
+    if (!lista.length) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:#aaa;">Nenhum reagente encontrado.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = lista.map(r => {
+        const st   = _reagStatus(r);
+        const dias = _reagDiasParaVencer(r.validade);
+        const rowBg = st === 'vencido' ? '#fff5f5' : st === 'vencendo' ? '#fff9f0' : st === 'baixo' ? '#fffdf0' : '#fff';
+        const pfBorder = r.controlePF ? 'border-left:4px solid #8e44ad;' : '';
+        return `<tr style="border-bottom:1px solid #f0f0f0;background:${rowBg};${pfBorder}">
+            <td style="padding:9px 12px;">
+                <div style="font-weight:700;color:#2c3e50;">${r.nome} ${_reagPFBadge(r.controlePF)}</div>
+                ${r.portaria ? '<div style="font-size:9px;color:#8e44ad;margin-top:1px;">'+r.portaria+'</div>' : ''}
+            </td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;color:#666;">${r.lote || '—'}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;color:#666;">${r.fornecedor || '—'}</td>
+            <td style="padding:9px 8px;text-align:center;font-weight:800;color:${st==='baixo'?'#e67e22':'#2c3e50'};">${r.qtdAtual} ${r.unidade}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;color:#888;">${r.minimo} ${r.unidade}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;color:${st==='vencido'?'#e74c3c':st==='vencendo'?'#e67e22':'#555'};">
+                ${_fmtData(r.validade)}
+                ${dias !== null ? '<div style="font-size:9px;color:'+(dias<0?'#e74c3c':dias<=60?'#e67e22':'#aaa')+';">'+(dias<0?'Vencido há '+Math.abs(dias)+'d':dias===0?'Vence hoje':'Vence em '+dias+'d')+'</div>' : ''}
+            </td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;color:#666;">${_fmtData(r.dataEntrada)}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:10px;color:#888;font-family:monospace;">${r.nfChave ? r.nfChave.substring(0,12)+'...' : '—'}</td>
+            <td style="padding:9px 8px;text-align:center;">${_reagStatusBadge(st)}</td>
+            <td style="padding:9px 8px;text-align:center;white-space:nowrap;">
+                <button onclick="reagAbrirConsumo('${r.id}')" title="Registrar consumo" style="background:#e67e22;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;margin:1px;">📉</button>
+                <button onclick="reagEditarCadastro('${r.id}')" title="Editar" style="background:#3498db;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;margin:1px;">✏️</button>
+                <button onclick="reagExcluir('${r.id}')" title="Excluir" style="background:#e74c3c;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;margin:1px;">🗑️</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ── Renderizar tabela de notas ────────────────────────────────────
+function reagRenderNotas() {
+    const tbody = document.getElementById('reagNotasTbody');
+    if (!tbody) return;
+    if (!_reagNotas.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:#aaa;">Nenhuma entrada registrada.</td></tr>';
+        return;
+    }
+    const sorted = [..._reagNotas].sort((a,b) => b.dataEntrada.localeCompare(a.dataEntrada));
+    tbody.innerHTML = sorted.map(n => `
+        <tr style="border-bottom:1px solid #f0f0f0;">
+            <td style="padding:8px 12px;font-family:monospace;font-size:10px;color:#555;">${n.chave}</td>
+            <td style="padding:8px;text-align:center;font-size:11px;">${_fmtData(n.dataEmissao)}</td>
+            <td style="padding:8px;text-align:center;font-size:11px;">${_fmtData(n.dataEntrada)}</td>
+            <td style="padding:8px;text-align:center;font-size:11px;">${n.fornecedor}</td>
+            <td style="padding:8px;text-align:center;font-size:11px;font-weight:700;color:#1a2a6e;">${n.itens.length} item(s)</td>
+            <td style="padding:8px;text-align:center;">
+                <button onclick="reagVerNota('${n.id}')" style="background:#1a2a6e;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;">Ver</button>
+            </td>
+        </tr>`).join('');
+}
+
+// ── Cards de resumo ───────────────────────────────────────────────
+function reagAtualizarCards() {
+    const total     = _reagentes.length;
+    const baixo     = _reagentes.filter(r => _reagStatus(r) === 'baixo').length;
+    const vencendo  = _reagentes.filter(r => _reagStatus(r) === 'vencendo').length;
+    const vencido   = _reagentes.filter(r => _reagStatus(r) === 'vencido').length;
+    const pf        = _reagentes.filter(r => r.controlePF).length;
+    const el = id => document.getElementById(id);
+    if(el('reagCardTotal'))    el('reagCardTotal').textContent    = total;
+    if(el('reagCardBaixo'))    el('reagCardBaixo').textContent    = baixo;
+    if(el('reagCardVencendo')) el('reagCardVencendo').textContent = vencendo;
+    if(el('reagCardVencidos')) el('reagCardVencidos').textContent = vencido;
+    if(el('reagCardPF'))       el('reagCardPF').textContent       = pf;
+}
+
+// ── Verificar alertas e exibir botão / popup ──────────────────────
+function reagVerificarAlertas() {
+    const alertas = _reagentes.filter(r => _reagStatus(r) !== 'ok');
+    const btnAl = document.getElementById('btnReagAlertas');
+    const cntAl = document.getElementById('reagAlertCount');
+    if (!btnAl) return;
+    if (alertas.length > 0) {
+        btnAl.style.display = 'inline-flex';
+        if (cntAl) cntAl.textContent = alertas.length;
+    } else {
+        btnAl.style.display = 'none';
+    }
+}
+
+function reagVerAlertas() {
+    const alertas = _reagentes.filter(r => _reagStatus(r) !== 'ok');
+    const body    = document.getElementById('reagAlertPopupBody');
+    if (!body) return;
+    if (!alertas.length) { body.innerHTML = '<p style="color:#27ae60;text-align:center;padding:20px;">✅ Nenhum alerta no momento.</p>'; }
+    else {
+        body.innerHTML = alertas.map(r => {
+            const st   = _reagStatus(r);
+            const dias = _reagDiasParaVencer(r.validade);
+            const icons = { vencido:'🔴', vencendo:'🟠', baixo:'🟡' };
+            let msg = '';
+            if (st === 'vencido')   msg = 'Validade vencida há ' + Math.abs(dias) + ' dias!';
+            if (st === 'vencendo')  msg = dias === 0 ? 'Vence hoje!' : 'Vence em ' + dias + ' dias';
+            if (st === 'baixo')     msg = 'Estoque baixo: ' + r.qtdAtual + ' ' + r.unidade + ' (mín: ' + r.minimo + ')';
+            return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:6px;margin-bottom:8px;background:${st==='vencido'?'#fff5f5':st==='vencendo'?'#fff9f0':'#fffdf0'};border-left:3px solid ${st==='vencido'?'#e74c3c':st==='vencendo'?'#e67e22':'#f39c12'};">
+                <span style="font-size:18px;">${icons[st]}</span>
+                <div>
+                    <div style="font-weight:700;font-size:12px;color:#2c3e50;">${r.nome} ${_reagPFBadge(r.controlePF)}</div>
+                    <div style="font-size:11px;color:#666;">${msg}</div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+    document.getElementById('reagAlertPopup').style.display = 'flex';
+    // Disparar alerta por e-mail se configurado
+    _reagEnviarEmailAlerta(alertas);
+}
+
+// ── E-mail de alerta (via mailto — compatível sem backend) ─────────
+function _reagEnviarEmailAlerta(alertas) {
+    const email = _reagGetEmail();
+    if (!email || !alertas.length) return;
+    const linhas = alertas.map(r => {
+        const st = _reagStatus(r);
+        const dias = _reagDiasParaVencer(r.validade);
+        let msg = '';
+        if (st === 'vencido')  msg = 'VENCIDO há ' + Math.abs(dias) + ' dias';
+        if (st === 'vencendo') msg = 'VENCENDO em ' + dias + ' dias';
+        if (st === 'baixo')    msg = 'ESTOQUE BAIXO (' + r.qtdAtual + '/' + r.minimo + ' ' + r.unidade + ')';
+        return '• ' + r.nome + (r.controlePF ? ' [PF]' : '') + ' — ' + msg;
+    }).join('%0A');
+    const assunto = encodeURIComponent('⚠️ Alerta de Reagentes — L·Quality');
+    const corpo   = encodeURIComponent('Prezado(a),%0A%0AOs seguintes reagentes necessitam atenção:%0A%0A') + linhas + encodeURIComponent('%0A%0AAcesse o sistema para mais detalhes.%0A%0AL·Quality — Sistema de Gestão da Qualidade');
+    window.open('mailto:' + email + '?subject=' + assunto + '&body=' + corpo, '_blank');
+}
+
+// ── Modal Entrada por Nota ────────────────────────────────────────
+let _reagItensNota = [];
+
+function reagAbrirModalNota() {
+    _reagItensNota = [];
+    document.getElementById('reagNFChave').value      = '';
+    document.getElementById('reagNFFornecedor').value = '';
+    document.getElementById('reagNFEmissao').value    = '';
+    document.getElementById('reagNFItens').innerHTML  = '';
+    reagAdicionarItemNota();
+    document.getElementById('reagModalNota').style.display = 'flex';
+}
+function reagFecharModalNota() {
+    document.getElementById('reagModalNota').style.display = 'none';
+}
+
+function reagAdicionarItemNota() {
+    const idx  = _reagItensNota.length;
+    _reagItensNota.push({});
+    const wrap = document.getElementById('reagNFItens');
+    const div  = document.createElement('div');
+    div.id = 'reagNFItem_' + idx;
+    div.style.cssText = 'background:#f8f9fa;border:1px solid #e8ecf0;border-radius:8px;padding:12px;position:relative;';
+
+    // Opções de reagentes cadastrados
+    const opts = _reagentes.map(r => `<option value="${r.id}">${r.nome}</option>`).join('');
+
+    div.innerHTML = `
+        <button onclick="this.parentElement.remove()" style="position:absolute;top:6px;right:8px;background:none;border:none;color:#aaa;font-size:16px;cursor:pointer;">✕</button>
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div>
+                <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:2px;">REAGENTE *</label>
+                <select style="width:100%;border:1px solid #ddd;border-radius:5px;padding:6px 8px;font-size:11px;">
+                    <option value="">-- Selecione ou novo --</option>
+                    ${opts}
+                    <option value="__novo__">+ Novo reagente</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:2px;">QUANTIDADE *</label>
+                <input type="number" placeholder="0" style="width:100%;border:1px solid #ddd;border-radius:5px;padding:6px 8px;font-size:11px;">
+            </div>
+            <div>
+                <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:2px;">UNIDADE</label>
+                <select style="width:100%;border:1px solid #ddd;border-radius:5px;padding:6px 8px;font-size:11px;">
+                    <option>mL</option><option>L</option><option>g</option><option>kg</option><option>un</option><option>cx</option>
+                </select>
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div>
+                <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:2px;">Nº LOTE</label>
+                <input placeholder="Ex: LT2026001" style="width:100%;border:1px solid #ddd;border-radius:5px;padding:6px 8px;font-size:11px;">
+            </div>
+            <div>
+                <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:2px;">VALIDADE</label>
+                <input type="date" style="width:100%;border:1px solid #ddd;border-radius:5px;padding:6px 8px;font-size:11px;">
+            </div>
+            <div style="display:flex;align-items:flex-end;padding-bottom:1px;">
+                <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:10px;font-weight:700;color:#8e44ad;">
+                    <input type="checkbox" style="accent-color:#8e44ad;"> 🚔 Controlado PF
+                </label>
+            </div>
+        </div>`;
+    wrap.appendChild(div);
+}
+
+async function reagSalvarNota() {
+    const chave      = document.getElementById('reagNFChave').value.trim();
+    const fornecedor = document.getElementById('reagNFFornecedor').value.trim();
+    const emissao    = document.getElementById('reagNFEmissao').value;
+    if (!chave || !fornecedor || !emissao) { sgqToast('⚠️ Preencha chave NF, fornecedor e data de emissão.', 'warning'); return; }
+
+    const itemDivs = document.querySelectorAll('#reagNFItens > div');
+    const itens = [];
+    itemDivs.forEach(div => {
+        const selects = div.querySelectorAll('select');
+        const inputs  = div.querySelectorAll('input');
+        const reagId  = selects[0] ? selects[0].value : '';
+        const qtd     = parseFloat(inputs[0] ? inputs[0].value : 0) || 0;
+        const unidade = selects[1] ? selects[1].value : 'un';
+        const lote    = inputs[1] ? inputs[1].value.trim() : '';
+        const validade= inputs[2] ? inputs[2].value : '';
+        const pf      = inputs[3] ? inputs[3].checked : false;
+        if (!reagId || !qtd) return;
+        itens.push({ reagId, qtd, unidade, lote, validade, pf });
+    });
+
+    if (!itens.length) { sgqToast('⚠️ Adicione pelo menos um produto.', 'warning'); return; }
+
+    // Atualizar estoque dos reagentes existentes / criar novos
+    itens.forEach(item => {
+        if (item.reagId === '__novo__') return;
+        const r = _reagentes.find(x => x.id === item.reagId);
+        if (r) {
+            r.qtdAtual   += item.qtd;
+            r.lote        = item.lote || r.lote;
+            r.validade    = item.validade || r.validade;
+            r.fornecedor  = fornecedor;
+            r.nfChave     = chave;
+            r.dataEntrada = _reagHoje();
+            if (item.pf !== undefined) r.controlePF = item.pf;
+        }
+    });
+
+    const nota = { id: 'NF_' + Date.now(), chave, fornecedor, dataEmissao: emissao, dataEntrada: _reagHoje(), itens };
+    _reagNotas.push(nota);
+
+    try {
+        await _reagSalvarReagentes();
+        await _reagSalvarNotas();
+        reagFecharModalNota();
+        reagRenderTabela();
+        reagRenderNotas();
+        reagAtualizarCards();
+        reagVerificarAlertas();
+        sgqToast('✅ Entrada registrada com sucesso!', 'success');
+    } catch(e) { sgqToast('❌ Erro ao salvar: ' + e.message, 'error'); }
+}
+
+function reagVerNota(id) {
+    const n = _reagNotas.find(x => x.id === id);
+    if (!n) return;
+    const itensHtml = n.itens.map(i => {
+        const r = _reagentes.find(x => x.id === i.reagId) || {};
+        return `<li style="margin-bottom:4px;"><strong>${r.nome || i.reagId}</strong> — ${i.qtd} ${i.unidade} | Lote: ${i.lote || '—'} | Validade: ${_fmtData(i.validade)} ${i.pf ? '🚔' : ''}</li>`;
+    }).join('');
+    sgqToast(`📄 NF: ${n.chave} | ${n.itens.length} item(s) | Entrada: ${_fmtData(n.dataEntrada)}`, 'info');
+}
+
+// ── Modal Cadastro Reagente ───────────────────────────────────────
+function reagAbrirModalCadastro() {
+    _reagEditId = null;
+    document.getElementById('reagCadTitulo').textContent = '🧪 Cadastrar Reagente';
+    ['reagCadId','reagCadNome','reagCadLote','reagCadFornecedor','reagCadPortaria'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('reagCadMinimo').value      = '';
+    document.getElementById('reagCadQtdInicial').value  = '';
+    document.getElementById('reagCadValidade').value    = '';
+    document.getElementById('reagCadUnidade').value     = 'mL';
+    document.getElementById('reagCadControlePF').checked = false;
+    document.getElementById('reagModalCadastro').style.display = 'flex';
+}
+function reagEditarCadastro(id) {
+    const r = _reagentes.find(x => x.id === id);
+    if (!r) return;
+    _reagEditId = id;
+    document.getElementById('reagCadTitulo').textContent      = '✏️ Editar Reagente';
+    document.getElementById('reagCadNome').value              = r.nome || '';
+    document.getElementById('reagCadUnidade').value           = r.unidade || 'mL';
+    document.getElementById('reagCadMinimo').value            = r.minimo || '';
+    document.getElementById('reagCadQtdInicial').value        = r.qtdAtual || '';
+    document.getElementById('reagCadLote').value              = r.lote || '';
+    document.getElementById('reagCadValidade').value          = r.validade || '';
+    document.getElementById('reagCadFornecedor').value        = r.fornecedor || '';
+    document.getElementById('reagCadControlePF').checked      = !!r.controlePF;
+    document.getElementById('reagCadPortaria').value          = r.portaria || '';
+    document.getElementById('reagModalCadastro').style.display = 'flex';
+}
+function reagFecharModalCadastro() {
+    document.getElementById('reagModalCadastro').style.display = 'none';
+}
+async function reagSalvarCadastro() {
+    const nome    = document.getElementById('reagCadNome').value.trim();
+    const minimo  = parseFloat(document.getElementById('reagCadMinimo').value) || 0;
+    const qtd     = parseFloat(document.getElementById('reagCadQtdInicial').value) || 0;
+    if (!nome) { sgqToast('⚠️ Informe o nome do reagente.', 'warning'); return; }
+
+    const dados = {
+        nome,
+        unidade:    document.getElementById('reagCadUnidade').value,
+        minimo,
+        qtdAtual:   _reagEditId ? (_reagentes.find(x=>x.id===_reagEditId)||{}).qtdAtual || qtd : qtd,
+        lote:       document.getElementById('reagCadLote').value.trim(),
+        validade:   document.getElementById('reagCadValidade').value,
+        fornecedor: document.getElementById('reagCadFornecedor').value.trim(),
+        controlePF: document.getElementById('reagCadControlePF').checked,
+        portaria:   document.getElementById('reagCadPortaria').value.trim(),
+        dataEntrada:_reagHoje(),
+    };
+
+    if (_reagEditId) {
+        const idx = _reagentes.findIndex(x => x.id === _reagEditId);
+        if (idx >= 0) { dados.id = _reagEditId; dados.qtdAtual = qtd || _reagentes[idx].qtdAtual; _reagentes[idx] = dados; }
+    } else {
+        dados.id       = 'REAG_' + Date.now();
+        dados.qtdAtual = qtd;
+        _reagentes.push(dados);
+    }
+
+    try {
+        await _reagSalvarReagentes();
+        reagFecharModalCadastro();
+        reagRenderTabela();
+        reagAtualizarCards();
+        reagVerificarAlertas();
+        sgqToast('✅ Reagente salvo com sucesso!', 'success');
+    } catch(e) { sgqToast('❌ Erro ao salvar: ' + e.message, 'error'); }
+}
+async function reagExcluir(id) {
+    if (!confirm('Excluir este reagente? O histórico de entradas será mantido.')) return;
+    _reagentes = _reagentes.filter(x => x.id !== id);
+    await _reagSalvarReagentes();
+    reagRenderTabela();
+    reagAtualizarCards();
+    reagVerificarAlertas();
+    sgqToast('🗑️ Reagente excluído.', 'success');
+}
+
+// ── Modal Consumo / Ajuste ────────────────────────────────────────
+function reagAbrirConsumo(id) {
+    const r = _reagentes.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('reagConsumoId').value      = id;
+    document.getElementById('reagConsumoNome').textContent = r.nome + ' — Estoque atual: ' + r.qtdAtual + ' ' + r.unidade;
+    document.getElementById('reagConsumoQtd').value     = '';
+    document.getElementById('reagConsumoObs').value     = '';
+    document.getElementById('reagConsumoTipo').value    = 'consumo';
+    document.getElementById('reagModalConsumo').style.display = 'flex';
+}
+async function reagSalvarConsumo() {
+    const id   = document.getElementById('reagConsumoId').value;
+    const tipo = document.getElementById('reagConsumoTipo').value;
+    const qtd  = parseFloat(document.getElementById('reagConsumoQtd').value) || 0;
+    const obs  = document.getElementById('reagConsumoObs').value.trim();
+    if (!qtd) { sgqToast('⚠️ Informe a quantidade.', 'warning'); return; }
+    const r = _reagentes.find(x => x.id === id);
+    if (!r) return;
+    if (tipo === 'consumo' || tipo === 'descarte') r.qtdAtual = Math.max(0, r.qtdAtual - qtd);
+    else r.qtdAtual += qtd;
+    // Registrar movimento para histórico/estudo
+    _reagMovimentos.push({
+        id:      'MOV_' + Date.now(),
+        reagId:  id,
+        tipo,
+        qtd,
+        obs,
+        data:    _reagHoje(),
+        mes:     _reagHoje().substring(0,7)
+    });
+    try {
+        await _reagSalvarReagentes();
+        await _reagSalvarMovimentos();
+        document.getElementById('reagModalConsumo').style.display = 'none';
+        reagRenderTabela();
+        reagAtualizarCards();
+        reagVerificarAlertas();
+        sgqToast('✅ Estoque atualizado!', 'success');
+    } catch(e) { sgqToast('❌ Erro: ' + e.message, 'error'); }
+}
+
+// ── Campo e-mail nas configurações — injetar se não existir ───────
+function _reagInjetarCampoEmail() {
+    if (document.getElementById('reagEmailInput')) return;
+    const alWrap = document.getElementById('cfg-panel-alertaWhatsApp');
+    if (!alWrap) return;
+    const div = document.createElement('div');
+    div.style.cssText = 'background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-top:14px;';
+    div.innerHTML = `
+        <div style="font-size:12px;font-weight:800;color:#1a2a6e;margin-bottom:10px;">📧 E-MAIL PARA ALERTAS DE REAGENTES</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <input id="reagEmailInput" type="email" placeholder="Ex: laboratorio@empresa.com.br"
+                style="flex:1;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;"
+                value="${_reagGetEmail()}">
+            <button onclick="_reagSalvarEmail()" style="background:#1a2a6e;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12px;">Salvar</button>
+        </div>
+        <div style="font-size:10px;color:#aaa;margin-top:6px;">Este e-mail receberá alertas automáticos quando você abrir o painel de alertas de reagentes.</div>`;
+    alWrap.appendChild(div);
+}
+async function _reagSalvarEmail() {
+    const v = (document.getElementById('reagEmailInput') || {}).value || '';
+    if (!PARAMETROS) PARAMETROS = {};
+    PARAMETROS._emailAlertas = v;
+    await _sbClient.from('parametros').delete().eq('chave', 'sistema_parametros_v3');
+    await _sbClient.from('parametros').insert({ chave: 'sistema_parametros_v3', valor: JSON.stringify(PARAMETROS), atualizado_em: new Date().toISOString() });
+    sgqToast('✅ E-mail de alertas salvo!', 'success');
+}
+
+
+// =====================================================================
+// 📊 ESTUDO DE CONSUMO — SUGESTÃO DE COMPRA
+// =====================================================================
+
+let _estudoGrafInst = null;
+
+function reagAbrirEstudo() {
+    document.getElementById('reagModalEstudo').style.display = 'flex';
+    reagRenderEstudo();
+}
+
+function _reagUltimosMeses(n) {
+    // Retorna array com os últimos n meses no formato 'YYYY-MM'
+    const meses = [];
+    const hoje = new Date();
+    for (let i = n; i >= 1; i--) {
+        const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+        meses.push(d.toISOString().substring(0, 7));
+    }
+    return meses;
+}
+
+function _reagConsumoMes(reagId, mes) {
+    return _reagMovimentos
+        .filter(m => m.reagId === reagId && m.mes === mes && (m.tipo === 'consumo' || m.tipo === 'descarte'))
+        .reduce((s, m) => s + m.qtd, 0);
+}
+
+function reagRenderEstudo() {
+    const meses  = _reagUltimosMeses(3);
+    const filPF  = (document.getElementById('estudoFiltroPF')     || {}).value || '';
+    const filSt  = (document.getElementById('estudoFiltroStatus') || {}).value || '';
+
+    let lista = [..._reagentes];
+    if (filPF === 'pf')     lista = lista.filter(r => r.controlePF);
+    if (filPF === 'normal') lista = lista.filter(r => !r.controlePF);
+
+    // Calcular consumo por reagente
+    const dados = lista.map(r => {
+        const consumoMeses = meses.map(m => _reagConsumoMes(r.id, m));
+        const totalConsumido = consumoMeses.reduce((s, v) => s + v, 0);
+        const media = totalConsumido / 3;
+        const necessidade2m = media * 2; // prazo de entrega 2 meses
+        const sugestao = Math.max(0, Math.ceil(necessidade2m + r.minimo - r.qtdAtual));
+        const cobreMeses = media > 0 ? r.qtdAtual / media : 99;
+
+        let prioridade = 'ok';
+        if (media > 0) {
+            if (cobreMeses < 1) prioridade = 'urgente';
+            else if (cobreMeses < 2) prioridade = 'atencao';
+        }
+
+        return { r, consumoMeses, media, necessidade2m, sugestao, cobreMeses, prioridade, totalConsumido };
+    });
+
+    // Filtro de status
+    const dadosFiltrados = filSt ? dados.filter(d => d.prioridade === filSt) : dados;
+
+    // Ordenar: urgente > atencao > ok, depois por total consumido desc
+    dadosFiltrados.sort((a, b) => {
+        const ord = { urgente: 0, atencao: 1, ok: 2 };
+        if (ord[a.prioridade] !== ord[b.prioridade]) return ord[a.prioridade] - ord[b.prioridade];
+        return b.totalConsumido - a.totalConsumido;
+    });
+
+    // ── Ranking Top 5 ──────────────────────────────────────────────
+    const top5 = [...dados].sort((a, b) => b.totalConsumido - a.totalConsumido).slice(0, 5);
+    const rankDiv = document.getElementById('estudoRanking');
+    if (rankDiv) {
+        const maxVal = top5[0]?.totalConsumido || 1;
+        rankDiv.innerHTML = top5.map((d, i) => {
+            const pct = Math.round((d.totalConsumido / maxVal) * 100);
+            const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+            return `<div style="flex:1;min-width:150px;background:#fff;border-radius:8px;padding:12px;box-shadow:0 1px 6px rgba(0,0,0,0.08);border-top:3px solid #8e44ad;">
+                <div style="font-size:16px;margin-bottom:4px;">${medals[i]}</div>
+                <div style="font-size:11px;font-weight:800;color:#2c3e50;margin-bottom:2px;">${d.r.nome}${d.r.controlePF ? ' <span style="font-size:9px;background:#8e44ad;color:#fff;border-radius:3px;padding:1px 5px;">PF</span>' : ''}</div>
+                <div style="font-size:10px;color:#888;">${d.totalConsumido.toFixed(1)} ${d.r.unidade} / 3 meses</div>
+                <div style="background:#e8d5f5;border-radius:4px;height:6px;margin-top:6px;overflow:hidden;">
+                    <div style="background:#8e44ad;height:6px;width:${pct}%;border-radius:4px;"></div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ── Gráfico consumo mensal ─────────────────────────────────────
+    const MESES_LABEL = meses.map(m => {
+        const [ano, mes] = m.split('-');
+        const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+        return nomes[parseInt(mes)-1] + '/' + ano.substring(2);
+    });
+    const PALETA = ['#8e44ad','#e74c3c','#3498db','#27ae60','#e67e22','#1abc9c','#f39c12','#2c3e50'];
+    const top8   = [...dados].sort((a, b) => b.totalConsumido - a.totalConsumido).slice(0, 8);
+
+    // Checkboxes do gráfico
+    const chkDiv = document.getElementById('estudoGrafChks');
+    if (chkDiv && chkDiv.innerHTML === '') {
+        chkDiv.innerHTML = top8.map((d, i) => {
+            const cor = PALETA[i % PALETA.length];
+            return `<label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;background:white;border:2px solid ${cor};color:${cor};padding:3px 10px;border-radius:16px;font-size:10px;font-weight:700;">
+                <input type="checkbox" checked data-idx="${i}" onchange="reagAtualizarGrafEstudo()" style="display:none;">
+                <span style="width:8px;height:8px;border-radius:50%;background:${cor};display:inline-block;"></span>${d.r.nome.substring(0,18)}
+            </label>`;
+        }).join('');
+    }
+
+    const ctx = document.getElementById('estudoGrafico');
+    if (!ctx) return;
+    if (_estudoGrafInst) _estudoGrafInst.destroy();
+    _estudoGrafInst = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: MESES_LABEL,
+            datasets: top8.map((d, i) => ({
+                label: d.r.nome,
+                data: d.consumoMeses,
+                backgroundColor: PALETA[i % PALETA.length] + 'bb',
+                borderColor:     PALETA[i % PALETA.length],
+                borderWidth: 1,
+                borderRadius: 4
+            }))
+        },
+        options: {
+            responsive: true, maintainAspectRatio: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { stacked: false, ticks: { font: { size: 10 } } },
+                y: { beginAtZero: true, ticks: { font: { size: 10 } },
+                     title: { display: true, text: 'Qtd consumida', font: { size: 10 } } }
+            }
+        }
+    });
+
+    // ── Tabela sugestão ────────────────────────────────────────────
+    const tbody = document.getElementById('estudoTbody');
+    if (!tbody) return;
+
+    if (!dadosFiltrados.length) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:#aaa;">Nenhum dado encontrado.</td></tr>';
+        return;
+    }
+
+    const priorBadge = {
+        urgente: '<span style="background:#e74c3c;color:#fff;border-radius:10px;padding:2px 10px;font-size:10px;font-weight:800;">🔴 URGENTE</span>',
+        atencao: '<span style="background:#e67e22;color:#fff;border-radius:10px;padding:2px 10px;font-size:10px;font-weight:800;">🟠 ATENÇÃO</span>',
+        ok:      '<span style="background:#27ae60;color:#fff;border-radius:10px;padding:2px 10px;font-size:10px;font-weight:800;">🟢 OK</span>'
+    };
+
+    tbody.innerHTML = dadosFiltrados.map(d => {
+        const rowBg = d.prioridade === 'urgente' ? '#fff5f5' : d.prioridade === 'atencao' ? '#fff9f0' : '#fff';
+        const cobreStr = d.cobreMeses >= 99 ? '∞' : d.cobreMeses.toFixed(1) + ' meses';
+        const sugestaoStr = d.sugestao > 0
+            ? `<strong style="color:${d.prioridade==='urgente'?'#e74c3c':d.prioridade==='atencao'?'#e67e22':'#27ae60'};font-size:13px;">${d.sugestao.toFixed(0)} ${d.r.unidade}</strong>`
+            : '<span style="color:#27ae60;font-weight:700;">— suficiente</span>';
+        return `<tr style="border-bottom:1px solid #f0f0f0;background:${rowBg};">
+            <td style="padding:9px 12px;">
+                <div style="font-weight:700;color:#2c3e50;">${d.r.nome}</div>
+                ${d.r.controlePF ? '<span style="background:#8e44ad;color:#fff;border-radius:3px;padding:1px 6px;font-size:9px;font-weight:800;">🚔 PF CONTROLADO</span>' : ''}
+            </td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;">${d.consumoMeses[0].toFixed(1)} ${d.r.unidade}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;">${d.consumoMeses[1].toFixed(1)} ${d.r.unidade}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;">${d.consumoMeses[2].toFixed(1)} ${d.r.unidade}</td>
+            <td style="padding:9px 8px;text-align:center;font-weight:700;color:#8e44ad;">${d.media.toFixed(1)} ${d.r.unidade}</td>
+            <td style="padding:9px 8px;text-align:center;">${d.r.qtdAtual} ${d.r.unidade}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;color:${d.cobreMeses<1?'#e74c3c':d.cobreMeses<2?'#e67e22':'#555'};">${cobreStr}</td>
+            <td style="padding:9px 8px;text-align:center;background:#fdf8ff;">${sugestaoStr}</td>
+            <td style="padding:9px 8px;text-align:center;">${priorBadge[d.prioridade]}</td>
+        </tr>`;
+    }).join('');
+}
+
+function reagAtualizarGrafEstudo() {
+    // Atualiza visibilidade das séries do gráfico conforme checkboxes
+    if (!_estudoGrafInst) return;
+    const chks = document.querySelectorAll('#estudoGrafChks input[type=checkbox]');
+    chks.forEach((chk, i) => {
+        const meta = _estudoGrafInst.getDatasetMeta(i);
+        if (meta) { meta.hidden = !chk.checked; }
+    });
+    _estudoGrafInst.update();
+}
+
+function reagExportarEstudo() {
+    const meses = _reagUltimosMeses(3);
+    const linhas = [['Reagente','Controlado PF','Unidade','Mes-3','Mes-2','Mes-1','Media/Mes','Estoque Atual','Estoque Minimo','Sugestao Compra','Prioridade']];
+    _reagentes.forEach(r => {
+        const consumoMeses = meses.map(m => _reagConsumoMes(r.id, m));
+        const media = consumoMeses.reduce((s,v)=>s+v,0) / 3;
+        const sugestao = Math.max(0, Math.ceil(media * 2 + r.minimo - r.qtdAtual));
+        const cobreMeses = media > 0 ? r.qtdAtual / media : 99;
+        const prio = media > 0 ? (cobreMeses < 1 ? 'URGENTE' : cobreMeses < 2 ? 'ATENCAO' : 'OK') : 'SEM CONSUMO';
+        linhas.push([r.nome, r.controlePF?'SIM':'NAO', r.unidade,
+            consumoMeses[0].toFixed(1), consumoMeses[1].toFixed(1), consumoMeses[2].toFixed(1),
+            media.toFixed(1), r.qtdAtual, r.minimo, sugestao, prio]);
+    });
+    const csv = linhas.map(l => l.join(';')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a'); a.href = url;
+    a.download = 'estudo_consumo_reagentes_' + _reagHoje() + '.csv';
+    a.click(); URL.revokeObjectURL(url);
+    sgqToast('✅ CSV exportado com sucesso!', 'success');
+}
+
+// ── Inicializar ao abrir a aba ────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    const btn = document.getElementById('tabEstoqueReagentes');
+    if (btn) {
+        btn.addEventListener('click', function() {
+            reagCarregarDados();
+            setTimeout(_reagInjetarCampoEmail, 500);
+        });
+    }
+});
+</script>
+
 </body>
 </html>
