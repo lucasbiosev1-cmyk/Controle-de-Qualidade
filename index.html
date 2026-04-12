@@ -17736,173 +17736,107 @@ async function gerarRelatorioMensalIA() {
         const devMes    = _usaDev   ? (listaDev        || []).filter(r => r.data && r.data.startsWith(prefixo)) : [];
 
         // ---- UTILITÁRIOS ----
-        const med = (arr, campo) => { const v = arr.map(r=>parseFloat(r[campo])||0).filter(v=>v>0); return v.length ? (v.reduce((s,x)=>s+x,0)/v.length) : null; };
-        const fmtMed = (v, dec=2) => v !== null ? v.toFixed(dec) : 'N/D';
-        const maxVal = (arr, campo) => { const v = arr.map(r=>parseFloat(r[campo])||0).filter(v=>v>0); return v.length ? Math.max(...v) : null; };
-        const minVal = (arr, campo) => { const v = arr.map(r=>parseFloat(r[campo])||0).filter(v=>v>0); return v.length ? Math.min(...v) : null; };
-        const countAbove = (arr, campo, limite) => arr.filter(r=>(parseFloat(r[campo])||0)>limite).length;
-        const countBelow = (arr, campo, limite) => arr.filter(r=>{ const v=parseFloat(r[campo]); return v!==null&&!isNaN(v)&&v<limite; }).length;
+        const _med = (arr, campo) => { const v = arr.map(r=>parseFloat(r[campo])).filter(v=>!isNaN(v)&&v>0); return v.length ? v.reduce((s,x)=>s+x,0)/v.length : null; };
+        const _max = (arr, campo) => { const v = arr.map(r=>parseFloat(r[campo])).filter(v=>!isNaN(v)&&v>0); return v.length ? Math.max(...v) : null; };
+        const _fmt = (v, dec=2)   => v !== null && v !== undefined ? Number(v).toFixed(dec) : 'N/D';
 
-        // ---- MÉTRICAS PRODUÇÃO ----
-        const totalProd = prodMes.length;
-        const racoes = [...new Set(prodMes.map(r => r.racao).filter(Boolean))];
-        const medDGM     = med(prodMes, 'dgm');
-        const medDPG     = med(prodMes, 'dpg');
-        const medUmProd  = med(prodMes, 'umidade');
-        const medProtProd= med(prodMes, 'proteina');
-        const medFibraProd = med(prodMes, 'fibra');
-        const medExtrato = med(prodMes, 'extrato');
-        const medDensProd= med(prodMes, 'densidade');
-        const medSolubilProd = med(prodMes, 'solubil');
-        const medCalcio  = med(prodMes, 'calcio');
-        const medFosforo = med(prodMes, 'fosforo');
-        const medMineralProd = med(prodMes, 'mineral');
-        const medGranulo1= med(prodMes, 'granulo1');
-        const medGranulo2= med(prodMes, 'granulo2');
-        const medGranulo3= med(prodMes, 'granulo3');
-        const medFundo   = med(prodMes, 'fundo');
-
-        // DGM por ração
-        const dgmPorRacao = racoes.map(r => {
-            const regs = prodMes.filter(p=>p.racao===r);
-            const v = med(regs, 'dgm');
-            return v !== null ? `${r}: ${v.toFixed(0)} µm` : null;
-        }).filter(Boolean);
-
-        // ---- MÉTRICAS MATÉRIA PRIMA ----
+        // ---- TOTAIS SIMPLES (para KPIs visuais) ----
+        const totalProd  = prodMes.length;
         const totalMP    = mpMes.length;
-        const prodsMP    = [...new Set(mpMes.map(r => r.produto).filter(Boolean))];
-        const altaUmMP   = countAbove(mpMes, 'umidade', 14);
-        const altoPerMP  = countAbove(mpMes, 'peroxido', 20);
+        const totalClass = classMes.length;
+        const medDGM     = _med(prodMes, 'dgm');
+        const aflaMax    = _max(classMes, 'aflatoxinas');
+        const aflaMaxNum = aflaMax !== null ? aflaMax : 0;
 
-        // Limites por campo de MP para detecção de desvio
-        const _limMP = {
-            umidade:         { min: null, max: 14,   unid: '%',        nome: 'Umidade' },
-            ureatica:        { min: 0.05, max: 0.20,  unid: 'mg N-NH3/g/min', nome: 'Ativ.Ureática' },
-            peroxido:        { min: null, max: 20,    unid: 'meq/kg',  nome: 'Peróxido' },
-            solubil:         { min: 75,   max: null,  unid: '%',        nome: 'Solubilidade' },
-            proteina:        { min: null, max: null,  unid: '%',        nome: 'Proteína' },
-            acidez:          { min: null, max: null,  unid: '',         nome: 'Acidez' },
-            rancidez:        { min: null, max: null,  unid: '',         nome: 'Rancidez' },
-            digestibilidade: { min: null, max: null,  unid: '%',        nome: 'Digestibilidade' },
-            densidade:       { min: null, max: null,  unid: 'g/L',      nome: 'Densidade' },
-            mineral:         { min: null, max: null,  unid: '%',        nome: 'Mineral' },
-            fibra:           { min: null, max: null,  unid: '%',        nome: 'Fibra' },
-            extrato:         { min: null, max: null,  unid: '%',        nome: 'Extrato Etéreo' },
-            granulo1:        { min: null, max: null,  unid: '%',        nome: 'Grânulo 4mm' },
-            granulo2:        { min: null, max: null,  unid: '%',        nome: 'Grânulo 2mm' },
-            granulo3:        { min: null, max: null,  unid: '%',        nome: 'Grânulo 0,6mm' },
-            granulo4:        { min: null, max: null,  unid: '%',        nome: 'Fundo' },
-        };
+        // KPIs de MP (mantém para cards visuais usando parâmetro padrão de umidade)
+        const altaUmMP  = mpMes.filter(r=>{ const v=parseFloat(r.umidade); return !isNaN(v)&&v>14; }).length;
+        const altoPerMP = mpMes.filter(r=>{ const v=parseFloat(r.peroxido); return !isNaN(v)&&v>20; }).length;
 
-        // Limites por campo de Produção
-        const _limProd = {
-            dgm:      { min: 700,  max: 1000, unid: 'µm',  nome: 'DGM' },
-            umidade:  { min: null, max: 13,   unid: '%',   nome: 'Umidade' },
-            proteina: { min: null, max: null, unid: '%',   nome: 'Proteína' },
-            fibra:    { min: null, max: null, unid: '%',   nome: 'Fibra' },
-            calcio:   { min: null, max: null, unid: '%',   nome: 'Cálcio' },
-            fosforo:  { min: null, max: null, unid: '%',   nome: 'Fósforo' },
-            solubil:  { min: null, max: null, unid: '%',   nome: 'Solubilidade' },
-        };
+        // ============================================================
+        // COLETA DE DESVIOS USANDO getParam() — PARÂMETROS REAIS DO SISTEMA
+        // Mesmo critério das células vermelhas do sistema.
+        // Ignora valores sem informação (NaN, null, 0 para campos quantitativos).
+        // ============================================================
 
-        // Função: gera lista de registros em desvio para um campo
-        function _desvios(regs, campo, lim, origem) {
-            if (!lim.max && !lim.min) return [];
-            return regs
-                .filter(r => {
-                    const v = parseFloat(r[campo]);
-                    if (isNaN(v) || v === 0) return false;
-                    if (lim.max !== null && v > lim.max) return true;
-                    if (lim.min !== null && v < lim.min) return true;
-                    return false;
-                })
-                .map(r => {
-                    const v = parseFloat(r[campo]);
-                    let diff = '';
-                    if (lim.max !== null && v > lim.max) diff = `+${(v - lim.max).toFixed(2)} acima do limite (máx ${lim.max}${lim.unid})`;
-                    else diff = `-${(lim.min - v).toFixed(2)} abaixo do mínimo (mín ${lim.min}${lim.unid})`;
-                    const id = r.data || r.lote || r.fornecedor || '';
-                    return `      → ${id} | ${lim.nome}: ${v.toFixed(2)}${lim.unid} [DESVIO: ${diff}]`;
-                });
+        // Campos onde 0 é valor válido (defeitos de grãos)
+        const _zerosValidos = new Set(['queimado','ardido','mofado','esverdeado','fermentando',
+            'chocho','picado','gessado','quebrado','germinado','carunchado','impureza','avariados']);
+
+        function _avaliarRegistro(modId, chave, campos, registro, nomeExibicao) {
+            const linhas = [];
+            campos.forEach(c => {
+                const cfg = getParam(modId, chave, c.key, registro.data);
+                if (!cfg || !cfg.ativo) return; // campo sem parâmetro ativo → ignora
+                const valorBruto = c.calculado ? getAvariados(registro) : registro[c.key];
+                const v = parseFloat(valorBruto);
+                if (isNaN(v) || valorBruto === '' || valorBruto === null || valorBruto === undefined) return;
+                if (v === 0 && !_zerosValidos.has(c.key)) return; // sem informação
+                const foraMin = cfg.min > 0    && v < cfg.min;
+                const foraMax = cfg.max < 9999 && v > cfg.max;
+                if (!foraMin && !foraMax) return;
+                const limMin = cfg.min > 0    ? cfg.min : '—';
+                const limMax = cfg.max < 9999 ? cfg.max : '—';
+                const delta  = foraMax ? `+${(v - cfg.max).toFixed(3)} acima do máx (${limMax})` : `-${(cfg.min - v).toFixed(3)} abaixo do mín (${limMin})`;
+                linhas.push(`      → ${registro.data||'—'} | ${c.label}: ${v} | Limite: ${limMin}–${limMax} | [DESVIO: ${delta}]`);
+            });
+            return linhas;
         }
 
-        // Análise por produto de MP com desvios individuais
-        const mpPorProduto = prodsMP.map(prod => {
-            const regs = mpMes.filter(r => r.produto === prod);
-            const linhas = [];
-            Object.entries(_limMP).forEach(([campo, lim]) => {
-                const vals = regs.map(r => parseFloat(r[campo])).filter(v => !isNaN(v) && v > 0);
-                if (!vals.length) return;
-                const media = vals.reduce((s,v)=>s+v,0) / vals.length;
-                const mx = Math.max(...vals);
-                const mn = Math.min(...vals);
-                let resumo = `    ${lim.nome}: média ${media.toFixed(2)}${lim.unid}`;
-                if (vals.length > 1) resumo += ` (min ${mn.toFixed(2)} / máx ${mx.toFixed(2)})`;
-                // Verifica se há desvios
-                const fora = _desvios(regs, campo, lim, prod);
-                if (fora.length) {
-                    resumo += ` ⚠️ DESVIO EM ${fora.length} REGISTRO(S):`;
-                    linhas.push(resumo);
-                    fora.forEach(d => linhas.push(d));
-                } else {
-                    linhas.push(resumo);
-                }
-            });
-            return linhas.length ? `  [${prod}] (${regs.length} reg):\n` + linhas.join('\n') : null;
-        }).filter(Boolean);
-
-        // ---- MÉTRICAS CLASSIFICAÇÃO ----
-        const totalClass = classMes.length;
-        const prodsClass = [...new Set(classMes.map(r => r.produto).filter(Boolean))];
-        const aflaMax    = maxVal(classMes, 'aflatoxinas');
-        const fumoMax    = maxVal(classMes, 'fumonisinas');
-
-        // Limites classificação
-        const _limClass = {
-            umidade:     { min: null, max: 14,   unid: '%',   nome: 'Umidade' },
-            aflatoxinas: { min: null, max: 20,   unid: 'ppb', nome: 'Aflatoxinas' },
-            fumonisinas: { min: null, max: 5000, unid: 'ppb', nome: 'Fumonisinas' },
-            proteina:    { min: null, max: null, unid: '%',   nome: 'Proteína' },
-            densidade:   { min: null, max: null, unid: '',    nome: 'Densidade' },
-            impureza:    { min: null, max: null, unid: '%',   nome: 'Impurezas' },
-        };
-
-        // Análise por produto classificado com desvios individuais
-        const classPorProduto = prodsClass.map(prod => {
-            const regs = classMes.filter(r => r.produto === prod);
-            const linhas = [];
-            Object.entries(_limClass).forEach(([campo, lim]) => {
-                const vals = regs.map(r => parseFloat(r[campo])).filter(v => !isNaN(v) && v > 0);
-                if (!vals.length) return;
-                const media = vals.reduce((s,v)=>s+v,0) / vals.length;
-                const mx = Math.max(...vals);
-                const mn = Math.min(...vals);
-                let resumo = `    ${lim.nome}: média ${media.toFixed(2)}${lim.unid}`;
-                if (vals.length > 1) resumo += ` (min ${mn.toFixed(2)} / máx ${mx.toFixed(2)})`;
-                const fora = _desvios(regs, campo, lim, prod);
-                if (fora.length) {
-                    resumo += ` ⚠️ DESVIO EM ${fora.length} REGISTRO(S):`;
-                    linhas.push(resumo);
-                    fora.forEach(d => linhas.push(d));
-                } else {
-                    linhas.push(resumo);
-                }
-            });
-            return linhas.length ? `  [${prod}] (${regs.length} reg):\n` + linhas.join('\n') : null;
-        }).filter(Boolean);
-
-        // ---- DESVIOS DE PRODUÇÃO (DGM e outros por ração/lote) ----
-        const prodDesvios = [];
+        // ---- PRODUÇÃO: desvios por ração, registro a registro ----
+        const racoes = [...new Set(prodMes.map(r => r.racao).filter(Boolean))];
+        const prodBlocos = [];
         racoes.forEach(racao => {
             const regs = prodMes.filter(r => r.racao === racao);
-            Object.entries(_limProd).forEach(([campo, lim]) => {
-                const fora = _desvios(regs, campo, lim, racao);
-                if (fora.length) {
-                    prodDesvios.push(`  [${racao}] ${lim.nome} — ${fora.length} registro(s) em desvio:`);
-                    fora.forEach(d => prodDesvios.push(d));
-                }
+            const chave = racao.replace(/ /g, '_');
+            const desviosRacao = [];
+            regs.forEach(r => {
+                const linhas = _avaliarRegistro('prod', chave, CAMPOS_PROD, r, racao);
+                if (linhas.length) desviosRacao.push(...linhas);
             });
+            // Resumo da ração (valores informados)
+            const dgmVals = regs.map(r=>parseFloat(r.dgm)).filter(v=>!isNaN(v)&&v>0);
+            const dgmInfo = dgmVals.length ? `DGM: média ${(dgmVals.reduce((s,v)=>s+v,0)/dgmVals.length).toFixed(0)} µm (min ${Math.min(...dgmVals).toFixed(0)} / máx ${Math.max(...dgmVals).toFixed(0)})` : 'DGM: sem dados';
+            const cfgDGM  = regs.length ? getParam('prod', chave, 'dgm', regs[0].data) : null;
+            const limDGM  = cfgDGM && cfgDGM.ativo ? `Parâmetro DGM: ${cfgDGM.min>0?cfgDGM.min:'—'}–${cfgDGM.max<9999?cfgDGM.max:'—'} µm` : 'DGM: sem parâmetro';
+            prodBlocos.push(`  [${racao}] (${regs.length} registro(s)) — ${dgmInfo} | ${limDGM}`
+                + (desviosRacao.length ? `\n  ⚠️ DESVIOS REGISTRADOS:\n${desviosRacao.join('\n')}` : '\n  ✅ Todos os registros dentro dos parâmetros'));
+        });
+
+        // ---- MATÉRIA PRIMA: desvios por produto, registro a registro ----
+        const prodsMP = [...new Set(mpMes.map(r => r.produto).filter(Boolean))];
+        const mpBlocos = [];
+        prodsMP.forEach(prod => {
+            const regs = mpMes.filter(r => r.produto === prod);
+            const chave = prod.replace(/ /g, '_');
+            const desviosProd = [];
+            regs.forEach(r => {
+                const linhas = _avaliarRegistro('mp', chave, CAMPOS_MP, r, prod);
+                if (linhas.length) desviosProd.push(...linhas);
+            });
+            // Umidade média para contexto
+            const umVals = regs.map(r=>parseFloat(r.umidade)).filter(v=>!isNaN(v)&&v>0);
+            const umInfo = umVals.length ? `Umidade: média ${(umVals.reduce((s,v)=>s+v,0)/umVals.length).toFixed(2)}%` : '';
+            const cfgUm  = regs.length ? getParam('mp', chave, 'umidade', regs[0].data) : null;
+            const limUm  = cfgUm && cfgUm.ativo ? ` (parâmetro: máx ${cfgUm.max<9999?cfgUm.max:'—'}%)` : '';
+            mpBlocos.push(`  [${prod}] (${regs.length} registro(s))${umInfo ? ' — ' + umInfo + limUm : ''}`
+                + (desviosProd.length ? `\n  ⚠️ DESVIOS REGISTRADOS:\n${desviosProd.join('\n')}` : '\n  ✅ Todos os registros dentro dos parâmetros'));
+        });
+
+        // ---- CLASSIFICAÇÃO: desvios por produto, registro a registro ----
+        const prodsClass = [...new Set(classMes.map(r => r.produto).filter(Boolean))];
+        const classBlocos = [];
+        prodsClass.forEach(prod => {
+            const regs = classMes.filter(r => r.produto === prod);
+            const chave = prod.replace(/ /g, '_');
+            const desviosProd = [];
+            regs.forEach(r => {
+                const linhas = _avaliarRegistro('class', chave, CAMPOS_CLASS, r, prod);
+                if (linhas.length) desviosProd.push(...linhas);
+            });
+            const aflaVals = regs.map(r=>parseFloat(r.aflatoxinas)).filter(v=>!isNaN(v)&&v>0);
+            const aflaInfo = aflaVals.length ? `Aflatoxinas: máx ${Math.max(...aflaVals).toFixed(2)} ppb` : '';
+            classBlocos.push(`  [${prod}] (${regs.length} registro(s))${aflaInfo ? ' — ' + aflaInfo : ''}`
+                + (desviosProd.length ? `\n  ⚠️ DESVIOS REGISTRADOS:\n${desviosProd.join('\n')}` : '\n  ✅ Todos os registros dentro dos parâmetros'));
         });
 
         // ---- MÉTRICAS NC ----
@@ -17913,52 +17847,24 @@ async function gerarRelatorioMensalIA() {
         ncMes.forEach(n => { const f = n.fornecedor||'Interno'; ncFornece[f] = (ncFornece[f]||0)+1; });
         const topFornNC = Object.entries(ncFornece).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([f,n])=>`${f} (${n})`).join(', ');
 
-        // ---- TENDÊNCIAS MP — últimos 4 dias ----
-        const diasMes = [...new Set(mpMes.map(r=>r.data))].sort().slice(-4);
-        const tendUmidade = diasMes.map(d => {
-            const regs = mpMes.filter(r=>r.data===d);
-            return regs.length ? (regs.reduce((s,r)=>s+(parseFloat(r.umidade)||0),0)/regs.length).toFixed(1) : null;
-        }).filter(Boolean);
-
         // ---- MONTAR PROMPT DINÂMICO (somente módulos selecionados) ----
         const _blocosProd = !_usaProd ? '' : `
-== PRODUTO ACABADO / PRODUÇÃO (${totalProd} registros) ==
-Rações produzidas: ${racoes.join(', ') || 'nenhuma'}
-DGM médio geral: ${fmtMed(medDGM,0)} µm ${medDGM&&(medDGM<700||medDGM>1000)?'[⚠️ FORA DO PADRÃO 700-1000 µm]':'[dentro do padrão]'}
-DGM por ração: ${dgmPorRacao.join(' | ') || 'N/D'}
-DPG médio: ${fmtMed(medDPG,0)} µm
-Granulometria peneira 4mm: ${fmtMed(medGranulo1)}%
-Granulometria peneira 2mm: ${fmtMed(medGranulo2)}%
-Granulometria peneira 0,6mm: ${fmtMed(medGranulo3)}%
-Fundo (partículas finas): ${fmtMed(medFundo)}%
-Umidade média: ${fmtMed(medUmProd)}%
-Proteína média: ${fmtMed(medProtProd)}%
-Fibra média: ${fmtMed(medFibraProd)}%
-Extrato Etéreo médio: ${fmtMed(medExtrato)}%
-Mineral médio: ${fmtMed(medMineralProd)}%
-Cálcio médio: ${fmtMed(medCalcio)}%
-Fósforo médio: ${fmtMed(medFosforo)}%
-Solubilidade protéica média: ${fmtMed(medSolubilProd)}%
-Densidade média: ${fmtMed(medDensProd,0)} g/L
-` + (prodDesvios.length ? `REGISTROS COM DESVIO — PRODUTO ACABADO:
-${prodDesvios.join('\n')}` : 'Sem desvios detectados no produto acabado.');
+== PRODUTO ACABADO / PRODUÇÃO (${totalProd} registros no período) ==
+PARÂMETROS: lidos do sistema via getParam() por ração e por data de vigência.
+ANÁLISE REGISTRO A REGISTRO POR RAÇÃO (valores sem informação ignorados):
+${prodBlocos.length ? prodBlocos.join('\n\n') : 'Nenhum registro de produção no período.'}`;
 
         const _blocosMP = !_usaMP ? '' : `
-== MATÉRIA PRIMA (${totalMP} registros) ==
-Produtos analisados: ${prodsMP.join(', ') || 'nenhum'}
-Registros com umidade > 14% (limite Embrapa): ${altaUmMP} de ${totalMP}
-Registros com peróxido > 20 meq/kg (alerta oxidação): ${altoPerMP} de ${totalMP}
-Tendência de umidade (últimos dias): ${tendUmidade.length ? tendUmidade.join('% → ')+'%' : 'N/D'}
-ANÁLISE DETALHADA POR MATÉRIA PRIMA (média + registros individuais em desvio):
-${mpPorProduto.join('\n') || 'Nenhum dado disponível'}`;
+== MATÉRIA PRIMA (${totalMP} registros no período) ==
+PARÂMETROS: lidos do sistema via getParam() por produto e por data de vigência.
+ANÁLISE REGISTRO A REGISTRO POR PRODUTO (valores sem informação ignorados):
+${mpBlocos.length ? mpBlocos.join('\n\n') : 'Nenhum registro de matéria-prima no período.'}`;
 
         const _blocosClass = !_usaClass ? '' : `
-== CLASSIFICAÇÃO DE GRÃOS (${totalClass} registros) ==
-Produtos: ${prodsClass.join(', ') || 'nenhum'}
-Aflatoxina máxima: ${aflaMax!==null?aflaMax.toFixed(2):'N/D'} ppb ${aflaMax!==null&&aflaMax>20?'[⚠️ ACIMA DO LIMITE MAPA 20 ppb]':'[dentro do limite]'}
-Fumonisina máxima: ${fumoMax!==null?fumoMax.toFixed(0):'N/D'} ppb ${fumoMax!==null&&fumoMax>5000?'[⚠️ ACIMA DO LIMITE MAPA 5000 ppb]':'[dentro do limite]'}
-ANÁLISE DETALHADA POR PRODUTO CLASSIFICADO (média + registros individuais em desvio):
-${classPorProduto.join('\n') || 'Nenhum dado disponível'}`;
+== CLASSIFICAÇÃO DE GRÃOS (${totalClass} registros no período) ==
+PARÂMETROS: lidos do sistema via getParam() por produto e por data de vigência.
+ANÁLISE REGISTRO A REGISTRO POR PRODUTO (valores sem informação ignorados):
+${classBlocos.length ? classBlocos.join('\n\n') : 'Nenhum registro de classificação no período.'}`;
 
         const _blocosNC = !_usaNC ? '' : `
 == NÃO CONFORMIDADES (${ncMes.length} registros) ==
@@ -18012,9 +17918,7 @@ Use linguagem executiva clara e técnica.`;
         _relMensalIA_ultimoTexto = respTexto;
 
         // ---- RENDERIZAR RESULTADO ----
-        // KPIs visuais
-        const dgmCor = medDGM === null ? '#888' : (medDGM < 700 || medDGM > 1000) ? '#e74c3c' : '#27ae60';
-        const aflaMaxNum = aflaMax !== null ? aflaMax : 0;
+        const dgmCor     = medDGM === null ? '#888' : (medDGM < 700 || medDGM > 1000) ? '#e74c3c' : '#27ae60';
         const _kpiItems = [];
         if (_usaProd)  _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:#0a1e7f;">${totalProd}</div><div class="rml-kpi-lbl">Lotes Produção</div></div>`);
         if (_usaMP)    _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:#8e44ad;">${totalMP}</div><div class="rml-kpi-lbl">Análises MP</div></div>`);
