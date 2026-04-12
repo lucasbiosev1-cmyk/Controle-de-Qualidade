@@ -17966,19 +17966,75 @@ Use linguagem executiva clara e técnica.`;
         _relMensalIA_ultimoTexto = respTexto;
 
         // ---- RENDERIZAR RESULTADO ----
-        const dgmCor     = medDGM === null ? '#888' : (medDGM < 700 || medDGM > 1000) ? '#e74c3c' : '#27ae60';
+        // ---- DGM POR FASE ----
+        const _dgmFase = (racoes) => {
+            const vals = prodMes.filter(r => racoes.includes(r.racao)).map(r => parseFloat(r.dgm)).filter(v => !isNaN(v) && v > 0);
+            return vals.length ? vals.reduce((s,x)=>s+x,0)/vals.length : null;
+        };
+        const _dgmCor = (v) => v === null ? '#888' : (v < 700 || v > 1000) ? '#e74c3c' : '#27ae60';
+        const _dgmFmt = (v) => v !== null ? v.toFixed(0) : 'N/D';
+
+        const dgmCortePreIni = _dgmFase(['CORTE R1 WISIUM','CORTE R1 MCASSAB']);
+        const dgmCorteIni    = _dgmFase(['CORTE R2 WISIUM','CORTE R2 MCASSAB']);
+        const dgmCorteFin    = _dgmFase(['CORTE R3 WISIUM','CORTE R3 MCASSAB','CORTE R4 WISIUM','CORTE R4 MCASSAB','CORTE R5 WISIUM','CORTE R5 MCASSAB']);
+        const dgmPosPreIni   = _dgmFase(['POSTURA MCASSAB R1']);
+        const dgmPosIni      = _dgmFase(['POSTURA MCASSAB R2']);
+        const dgmPosFin      = _dgmFase(['POSTURA MCASSAB R3','POSTURA MCASSAB R5','POSTURA MCASSAB R6','POSTURA MCASSAB R7','POSTURA MCASSAB R9','POSTURA MCASSAB R 10','POSTURA TECTRON R7','POSTURA TECTRON R8','POSTURA TECTRON R9','POSTURA TECTRON R 10']);
+
         const _kpiItems = [];
         if (_usaProd)  _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:#0a1e7f;">${totalProd}</div><div class="rml-kpi-lbl">Lotes Produção</div></div>`);
         if (_usaMP)    _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:#8e44ad;">${totalMP}</div><div class="rml-kpi-lbl">Análises MP</div></div>`);
         if (_usaClass) _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:#e67e22;">${totalClass}</div><div class="rml-kpi-lbl">Classificações</div></div>`);
         if (_usaNC)    _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${ncMes.length>5?'#e74c3c':ncMes.length>0?'#e67e22':'#27ae60'};">${ncMes.length}</div><div class="rml-kpi-lbl">NCs no Mês</div></div>`);
         if (_usaNC)    _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${ncCrit>0?'#e74c3c':'#27ae60'};">${ncCrit}</div><div class="rml-kpi-lbl">NCs Críticas</div></div>`);
-        if (_usaProd)  _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${dgmCor};">${medDGM!==null?medDGM.toFixed(0):'N/D'}</div><div class="rml-kpi-lbl">DGM Médio (µm)</div></div>`);
         if (_usaMP)    _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${altaUmMP>0?'#e74c3c':'#27ae60'};">${altaUmMP}</div><div class="rml-kpi-lbl">MP Umid > 14%</div></div>`);
         if (_usaMP)    _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${altoPerMP>0?'#e74c3c':'#27ae60'};">${altoPerMP}</div><div class="rml-kpi-lbl">MP Peróx. > 20</div></div>`);
         if (_usaClass) _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${aflaMaxNum>20?'#e74c3c':aflaMaxNum>10?'#e67e22':'#27ae60'};">${aflaMax!==null?aflaMax.toFixed(2):'N/D'}</div><div class="rml-kpi-lbl">Aflatox. Máx (ppb)</div></div>`);
         if (_usaDev)   _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${devMes.length>0?'#e67e22':'#27ae60'};">${devMes.length}</div><div class="rml-kpi-lbl">Devoluções</div></div>`);
-        const kpiHtml = `<div class="rml-grid" style="margin-bottom:20px;">${_kpiItems.join('')}</div>`;
+
+        // ---- BLOCO DGM POR FASE ----
+        const kpiDgmFaseHtml = _usaProd ? `
+        <div style="margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:900;color:#0a1e7f;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #dce4f5;">
+                📏 DGM Médio por Fase (µm)
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+                <!-- CORTE -->
+                <div style="background:#eaf3fb;border:1px solid #aed6f1;border-radius:8px;padding:10px 12px;">
+                    <div style="font-size:9px;font-weight:900;color:#1a5276;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;border-bottom:1px solid #aed6f1;padding-bottom:4px;">🐣 Corte — Pré-Inicial</div>
+                    <div style="font-size:20px;font-weight:900;color:${_dgmCor(dgmCortePreIni)};">${_dgmFmt(dgmCortePreIni)}</div>
+                    <div style="font-size:9px;color:#888;margin-top:2px;">R1 Wisium / Mcassab</div>
+                </div>
+                <div style="background:#eaf3fb;border:1px solid #aed6f1;border-radius:8px;padding:10px 12px;">
+                    <div style="font-size:9px;font-weight:900;color:#1f618d;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;border-bottom:1px solid #aed6f1;padding-bottom:4px;">🐥 Corte — Inicial</div>
+                    <div style="font-size:20px;font-weight:900;color:${_dgmCor(dgmCorteIni)};">${_dgmFmt(dgmCorteIni)}</div>
+                    <div style="font-size:9px;color:#888;margin-top:2px;">R2 Wisium / Mcassab</div>
+                </div>
+                <div style="background:#eaf3fb;border:1px solid #aed6f1;border-radius:8px;padding:10px 12px;">
+                    <div style="font-size:9px;font-weight:900;color:#2471a3;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;border-bottom:1px solid #aed6f1;padding-bottom:4px;">🐔 Corte — Final</div>
+                    <div style="font-size:20px;font-weight:900;color:${_dgmCor(dgmCorteFin)};">${_dgmFmt(dgmCorteFin)}</div>
+                    <div style="font-size:9px;color:#888;margin-top:2px;">R3-R5 Wisium / Mcassab</div>
+                </div>
+                <!-- POSTURA -->
+                <div style="background:#fef9ec;border:1px solid #f9e4b7;border-radius:8px;padding:10px 12px;">
+                    <div style="font-size:9px;font-weight:900;color:#7d6608;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;border-bottom:1px solid #f9e4b7;padding-bottom:4px;">🥚 Postura — Pré-Inicial</div>
+                    <div style="font-size:20px;font-weight:900;color:${_dgmCor(dgmPosPreIni)};">${_dgmFmt(dgmPosPreIni)}</div>
+                    <div style="font-size:9px;color:#888;margin-top:2px;">R1 Mcassab</div>
+                </div>
+                <div style="background:#fef9ec;border:1px solid #f9e4b7;border-radius:8px;padding:10px 12px;">
+                    <div style="font-size:9px;font-weight:900;color:#9a7d0a;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;border-bottom:1px solid #f9e4b7;padding-bottom:4px;">🐓 Postura — Inicial</div>
+                    <div style="font-size:20px;font-weight:900;color:${_dgmCor(dgmPosIni)};">${_dgmFmt(dgmPosIni)}</div>
+                    <div style="font-size:9px;color:#888;margin-top:2px;">R2 Mcassab</div>
+                </div>
+                <div style="background:#fef9ec;border:1px solid #f9e4b7;border-radius:8px;padding:10px 12px;">
+                    <div style="font-size:9px;font-weight:900;color:#b7950b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;border-bottom:1px solid #f9e4b7;padding-bottom:4px;">🐦 Postura — Final</div>
+                    <div style="font-size:20px;font-weight:900;color:${_dgmCor(dgmPosFin)};">${_dgmFmt(dgmPosFin)}</div>
+                    <div style="font-size:9px;color:#888;margin-top:2px;">R3-R10 Mcassab / Tectron</div>
+                </div>
+            </div>
+        </div>` : '';
+
+        const kpiHtml = `<div class="rml-grid" style="margin-bottom:12px;">${_kpiItems.join('')}</div>${kpiDgmFaseHtml}`;
 
         // Texto do relatório formatado
         const textoHtml = `<div style="font-size:12px;line-height:1.8;color:#2c3e50;white-space:pre-wrap;">${_formatIATextoRelatorio(respTexto)}</div>`;
