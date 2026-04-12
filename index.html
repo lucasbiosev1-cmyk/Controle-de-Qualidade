@@ -2013,6 +2013,10 @@
                 <div style="display:flex;gap:5px;align-items:flex-end;">
                     <button class="btn-filtrar" onclick="aplicarFiltrosRel()">FILTRAR</button>
                     <button class="btn-limpar"  onclick="limparFiltrosRel()">LIMPAR</button>
+                    <button onclick="abrirChatIA_Desvio('prod')" title="Analisar desvios com IA consultando os parâmetros do sistema"
+                        style="background:linear-gradient(135deg,#0a1e7f,#2563eb);color:#fff;border:none;border-radius:4px;padding:6px 14px;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;">
+                        🔬 Analisar Desvios com IA
+                    </button>
                 </div>
             </div>
 
@@ -2192,6 +2196,10 @@
                 <div style="display:flex;gap:5px;align-items:flex-end;">
                     <button class="btn-filtrar" onclick="aplicarFiltrosRelMP()">FILTRAR</button>
                     <button class="btn-limpar"  onclick="limparFiltrosRelMP()">LIMPAR</button>
+                    <button onclick="abrirChatIA_Desvio('mp')" title="Analisar desvios com IA consultando os parâmetros do sistema"
+                        style="background:linear-gradient(135deg,#0a1e7f,#2563eb);color:#fff;border:none;border-radius:4px;padding:6px 14px;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;">
+                        🔬 Analisar Desvios com IA
+                    </button>
                 </div>
             </div>
 
@@ -2308,6 +2316,10 @@
                 <div style="display:flex;gap:5px;align-items:flex-end;">
                     <button class="btn-filtrar" onclick="aplicarFiltrosRelClass()">FILTRAR</button>
                     <button class="btn-limpar"  onclick="limparFiltrosRelClass()">LIMPAR</button>
+                    <button onclick="abrirChatIA_Desvio('class')" title="Analisar desvios com IA consultando os parâmetros do sistema"
+                        style="background:linear-gradient(135deg,#0a1e7f,#2563eb);color:#fff;border:none;border-radius:4px;padding:6px 14px;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;">
+                        🔬 Analisar Desvios com IA
+                    </button>
                 </div>
             </div>
 
@@ -16588,6 +16600,47 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- ============================================================ -->
 
 <!-- MODAL: CHAT IA para Não Conformidade -->
+<!-- ============================================================
+     MODAL: CHAT IA — ANÁLISE DE DESVIOS (Produção / MP / Classificação)
+     ============================================================ -->
+<div id="modalChatIA_Desvio" style="display:none;position:fixed;inset:0;z-index:9600;background:rgba(0,0,0,0.65);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:760px;max-height:93vh;display:flex;flex-direction:column;box-shadow:0 12px 48px rgba(0,0,0,0.4);overflow:hidden;">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#0a1e7f,#1a3a9f,#2563eb);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+      <div>
+        <div style="font-size:15px;font-weight:900;letter-spacing:.3px;">🔬 Análise de Desvios — IA Consultora</div>
+        <div id="chatDesvio_subtitulo" style="font-size:10px;opacity:.75;margin-top:2px;">Diagnóstico baseado nos parâmetros do sistema e normas Embrapa / MAPA</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button onclick="_iaConfigurarChave()" title="Configurar chave API" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;">⚙️ Config. IA</button>
+        <button onclick="fecharChatIA_Desvio()" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;opacity:.8;line-height:1;">×</button>
+      </div>
+    </div>
+    <!-- Barra de contexto -->
+    <div id="chatDesvio_contexto" style="background:#eef2ff;border-bottom:1px solid #c5d5f0;padding:10px 16px;font-size:11px;color:#0a1e7f;flex-shrink:0;line-height:1.6;"></div>
+    <!-- Etapas de diálogo -->
+    <div id="chatDesvio_etapaBar" style="background:#f8faff;border-bottom:1px solid #e0e8f8;padding:8px 16px;display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap;">
+      <span style="font-size:10px;font-weight:800;color:#0a1e7f;text-transform:uppercase;letter-spacing:.5px;">Análise rápida:</span>
+      <button onclick="chatDesvio_acao('severidade')"  style="background:#fff;border:1px solid #1a3a9f;color:#0a1e7f;border-radius:20px;padding:4px 12px;font-size:10px;font-weight:700;cursor:pointer;">📊 Severidade do Desvio</button>
+      <button onclick="chatDesvio_acao('impacto')"    style="background:#fff;border:1px solid #e67e22;color:#c0392b;border-radius:20px;padding:4px 12px;font-size:10px;font-weight:700;cursor:pointer;">⚠️ Impacto na Produção</button>
+      <button onclick="chatDesvio_acao('causa')"      style="background:#fff;border:1px solid #8e44ad;color:#6c3483;border-radius:20px;padding:4px 12px;font-size:10px;font-weight:700;cursor:pointer;">🔍 Possíveis Causas</button>
+      <button onclick="chatDesvio_acao('corretiva')"  style="background:#fff;border:1px solid #27ae60;color:#1e8449;border-radius:20px;padding:4px 12px;font-size:10px;font-weight:700;cursor:pointer;">✅ Ação Corretiva</button>
+      <button onclick="chatDesvio_acao('norma')"      style="background:#fff;border:1px solid #7f8c8d;color:#34495e;border-radius:20px;padding:4px 12px;font-size:10px;font-weight:700;cursor:pointer;">📋 Norma Aplicável</button>
+    </div>
+    <!-- Mensagens -->
+    <div id="chatDesvio_msgs" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;min-height:220px;"></div>
+    <!-- Input -->
+    <div style="padding:12px 16px;border-top:1px solid #eee;background:#fafafa;flex-shrink:0;">
+      <div style="display:flex;gap:8px;align-items:flex-end;">
+        <textarea id="chatDesvio_input" placeholder="Faça uma pergunta técnica sobre este desvio..." rows="2"
+          style="flex:1;padding:9px 12px;border:1px solid #b0c4f0;border-radius:8px;font-size:12px;resize:none;font-family:Arial,sans-serif;outline:none;"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarMsgDesvio();}"></textarea>
+        <button onclick="enviarMsgDesvio()" style="background:linear-gradient(135deg,#0a1e7f,#2563eb);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-weight:800;cursor:pointer;font-size:13px;white-space:nowrap;flex-shrink:0;">Enviar ↵</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="modalChatIA_NC" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;padding:16px;">
   <div style="background:#fff;border-radius:12px;width:100%;max-width:720px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 12px 48px rgba(0,0,0,0.35);overflow:hidden;">
     <!-- Header -->
@@ -16718,8 +16771,350 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 // ============================================================
-// MÓDULO IA — CONFIGURAÇÃO (OpenAI)
+// MÓDULO IA — CHAT DE ANÁLISE DE DESVIOS (Produção / MP / Classificação)
 // ============================================================
+
+let _chatDesvio_history  = [];
+let _chatDesvio_contexto = null;   // { modulo, titulo, desvios[], params{} }
+
+const _IA_SYSTEM_DESVIO = `Você é um consultor técnico especialista em controle de qualidade de fábricas de ração animal no Brasil.
+
+CONTEXTO DO SISTEMA:
+- Você analisa DESVIOS REAIS detectados pelo sistema, comparando os valores registrados com os PARÂMETROS OFICIAIS cadastrados na aba de Parâmetros do sistema.
+- Os parâmetros fornecidos são os limites mínimo e máximo aceitos pela empresa para cada campo (umidade, proteína, DGM, DPG, aflatoxina, etc.).
+- Valores sem informação (em branco, zero sem sentido técnico ou "—") NÃO devem ser analisados — foque apenas nos desvios que possuem valor medido e parâmetro definido.
+- Cada desvio inclui: produto/ração, campo, valor medido, limite mínimo, limite máximo e a magnitude do desvio.
+
+SUA MISSÃO em cada resposta:
+1. Classificar a SEVERIDADE de cada desvio: CRÍTICO (risco imediato ao processo/animal), ALTO (impacto significativo), MÉDIO (atenção necessária), BAIXO (monitorar).
+2. Explicar o impacto técnico do desvio no produto final e nos animais.
+3. Indicar possíveis causas técnicas baseadas no tipo de parâmetro e produto.
+4. Referenciar a norma aplicável (Embrapa, Compêndio Brasileiro de Nutrição Animal, MAPA IN 07/2011, etc.).
+5. Propor ação corretiva objetiva e praticável.
+
+REGRAS:
+- Nunca analise campos sem valor medido ou sem parâmetro definido.
+- Seja direto e técnico. Use listas numeradas ou com marcadores.
+- Responda sempre em português do Brasil.
+- Inicie o diálogo fazendo UMA pergunta técnica ao usuário para entender melhor o contexto (ex: há quanto tempo está ocorrendo, lote específico, condições de armazenagem). Use o diálogo para aprofundar o diagnóstico progressivamente.`;
+
+/**
+ * Coleta desvios de um módulo consultando PARAMETROS do sistema.
+ * Ignora entradas sem valor medido e sem parâmetro configurado.
+ */
+function _coletarDesviosComParametros(modulo) {
+    const desvios  = [];
+    const paramInfo = {};
+
+    if (modulo === 'prod') {
+        (producoes || []).forEach(r => {
+            const racaKey = (r.racao || '').replace(/ /g, '_');
+            const CAMPOS = [
+                { key: 'dgm',      label: 'DGM (µm)' },
+                { key: 'dpg',      label: 'DPG' },
+                { key: 'pen1',     label: 'Peneira 1 (%)' },
+                { key: 'pen2',     label: 'Peneira 2 (%)' },
+                { key: 'pen3',     label: 'Peneira 3 (%)' },
+                { key: 'pen4',     label: 'Peneira 4 (%)' },
+                { key: 'pen5',     label: 'Peneira 5 (%)' },
+                { key: 'umidade',  label: 'Umidade (%)' },
+                { key: 'proteina', label: 'Proteína (%)' },
+                { key: 'fibra',    label: 'Fibra (%)' },
+                { key: 'calcio',   label: 'Cálcio (%)' },
+                { key: 'fosforo',  label: 'Fósforo (%)' },
+                { key: 'extrato',  label: 'Extrato Etéreo (%)' },
+            ];
+            CAMPOS.forEach(c => {
+                const cfg = (typeof getParam === 'function') ? getParam('prod', racaKey, c.key, r.data) : null;
+                if (!cfg || !cfg.ativo) return;
+                const v = parseFloat(r[c.key]);
+                if (isNaN(v) || v === 0) return; // sem informação
+                const foraMin = cfg.min > 0       && v < cfg.min;
+                const foraMax = cfg.max < 9999    && v > cfg.max;
+                if (!foraMin && !foraMax) return;
+                const limMin = cfg.min > 0    ? cfg.min : '—';
+                const limMax = cfg.max < 9999 ? cfg.max : '—';
+                const delta  = foraMax ? +(v - cfg.max).toFixed(4) : +(cfg.min - v).toFixed(4);
+                desvios.push({ modulo:'prod', produto: r.racao||'—', data: r.data||'—', campo: c.label, valor: v, limMin, limMax, delta: (foraMax ? '+' : '-') + delta, sentido: foraMax ? 'acima' : 'abaixo' });
+                paramInfo[c.label] = { min: limMin, max: limMax };
+            });
+        });
+        return { modulo:'prod', titulo:'Produção', desvios, paramInfo };
+    }
+
+    if (modulo === 'mp') {
+        (materiasPrimas || []).forEach(r => {
+            const prodKey = (r.produto || '').replace(/ /g, '_');
+            const CAMPOS = [
+                { key: 'umidade',    label: 'Umidade (%)' },
+                { key: 'proteina',   label: 'Proteína (%)' },
+                { key: 'fibra',      label: 'Fibra (%)' },
+                { key: 'calcio',     label: 'Cálcio (%)' },
+                { key: 'fosforo',    label: 'Fósforo (%)' },
+                { key: 'extrato',    label: 'Extrato Etéreo (%)' },
+                { key: 'peroxido',   label: 'Peróxido (meq/kg)' },
+                { key: 'atividade_uretica', label: 'Atividade Urética' },
+                { key: 'solubilidade',      label: 'Solubilidade (%)' },
+            ];
+            CAMPOS.forEach(c => {
+                const cfg = (typeof getParam === 'function') ? getParam('mp', prodKey, c.key, r.data) : null;
+                if (!cfg || !cfg.ativo) return;
+                const v = parseFloat(r[c.key]);
+                if (isNaN(v) || v === 0) return;
+                const foraMin = cfg.min > 0       && v < cfg.min;
+                const foraMax = cfg.max < 9999    && v > cfg.max;
+                if (!foraMin && !foraMax) return;
+                const limMin = cfg.min > 0    ? cfg.min : '—';
+                const limMax = cfg.max < 9999 ? cfg.max : '—';
+                const delta  = foraMax ? +(v - cfg.max).toFixed(4) : +(cfg.min - v).toFixed(4);
+                desvios.push({ modulo:'mp', produto: r.produto||'—', data: r.data||'—', campo: c.label, valor: v, limMin, limMax, delta: (foraMax ? '+' : '-') + delta, sentido: foraMax ? 'acima' : 'abaixo' });
+                paramInfo[c.label] = { min: limMin, max: limMax };
+            });
+        });
+        return { modulo:'mp', titulo:'Matéria-Prima', desvios, paramInfo };
+    }
+
+    if (modulo === 'class') {
+        (classificacoes || []).forEach(r => {
+            const prodKey = (r.produto || '').replace(/ /g, '_');
+            const CAMPOS = [
+                { key: 'umidade',    label: 'Umidade (%)' },
+                { key: 'aflatoxina', label: 'Aflatoxina (ppb)' },
+                { key: 'fumonisina', label: 'Fumonisina (ppb)' },
+                { key: 'zearalenona',label: 'Zearalenona (ppb)' },
+                { key: 'avariados',  label: 'Avariados (%)' },
+                { key: 'ardidos',    label: 'Ardidos (%)' },
+                { key: 'carunchados',label: 'Carunchados (%)' },
+                { key: 'quebrados',  label: 'Quebrados (%)' },
+                { key: 'impurezas',  label: 'Impurezas (%)' },
+            ];
+            CAMPOS.forEach(c => {
+                const cfg = (typeof getParam === 'function') ? getParam('class', prodKey, c.key, r.data) : null;
+                if (!cfg || !cfg.ativo) return;
+                const v = parseFloat(r[c.key]);
+                if (isNaN(v) || v === 0) return;
+                const foraMin = cfg.min > 0       && v < cfg.min;
+                const foraMax = cfg.max < 9999    && v > cfg.max;
+                if (!foraMin && !foraMax) return;
+                const limMin = cfg.min > 0    ? cfg.min : '—';
+                const limMax = cfg.max < 9999 ? cfg.max : '—';
+                const delta  = foraMax ? +(v - cfg.max).toFixed(4) : +(cfg.min - v).toFixed(4);
+                desvios.push({ modulo:'class', produto: r.produto||'—', data: r.data||'—', campo: c.label, valor: v, limMin, limMax, delta: (foraMax ? '+' : '-') + delta, sentido: foraMax ? 'acima' : 'abaixo' });
+                paramInfo[c.label] = { min: limMin, max: limMax };
+            });
+        });
+        return { modulo:'class', titulo:'Classificação de Grãos', desvios, paramInfo };
+    }
+
+    // Todos os módulos juntos (análise geral)
+    const r1 = _coletarDesviosComParametros('prod');
+    const r2 = _coletarDesviosComParametros('mp');
+    const r3 = _coletarDesviosComParametros('class');
+    return {
+        modulo: 'geral',
+        titulo: 'Geral (Produção + MP + Classificação)',
+        desvios: [...r1.desvios, ...r2.desvios, ...r3.desvios],
+        paramInfo: { ...r1.paramInfo, ...r2.paramInfo, ...r3.paramInfo }
+    };
+}
+
+function _formatarDesviosParaPrompt(ctx) {
+    if (!ctx || ctx.desvios.length === 0) return 'Nenhum desvio com valor medido e parâmetro configurado encontrado no período atual.';
+    const linhas = ctx.desvios.map(d =>
+        `• [${d.modulo.toUpperCase()}] Produto: ${d.produto} | Data: ${d.data} | ${d.campo}: ${d.valor} (limite: ${d.limMin}–${d.limMax}) → ${d.sentido} do limite em ${d.delta}`
+    );
+    return linhas.join('\n');
+}
+
+function _formatarParamsParaPrompt(ctx) {
+    if (!ctx || Object.keys(ctx.paramInfo).length === 0) return 'Nenhum parâmetro configurado encontrado.';
+    return Object.entries(ctx.paramInfo)
+        .map(([campo, p]) => `• ${campo}: mín=${p.min}, máx=${p.max}`)
+        .join('\n');
+}
+
+/**
+ * Abre o chat de análise de desvios para um módulo específico.
+ * @param {string} modulo — 'prod' | 'mp' | 'class' | 'geral'
+ */
+function abrirChatIA_Desvio(modulo) {
+    modulo = modulo || 'geral';
+    const ctx = _coletarDesviosComParametros(modulo);
+    _chatDesvio_contexto = ctx;
+    _chatDesvio_history  = [];
+
+    // Atualizar subtítulo e contexto
+    const sub = document.getElementById('chatDesvio_subtitulo');
+    if (sub) sub.textContent = `Módulo: ${ctx.titulo} — ${ctx.desvios.length} desvio(s) com parâmetro configurado`;
+
+    const ctxEl = document.getElementById('chatDesvio_contexto');
+    if (ctxEl) {
+        if (ctx.desvios.length === 0) {
+            ctxEl.innerHTML = `<span style="color:#27ae60;">✅ Nenhum desvio encontrado com parâmetros configurados para o módulo <strong>${ctx.titulo}</strong>. Valores sem informação foram ignorados.</span>`;
+        } else {
+            const tops = ctx.desvios.slice(0, 4).map(d =>
+                `<span style="background:#e74c3c;color:#fff;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700;">${d.produto} / ${d.campo}: ${d.valor} (${d.sentido})</span>`
+            ).join(' ');
+            ctxEl.innerHTML = `<strong>⚠️ ${ctx.desvios.length} desvio(s) detectado(s) em ${ctx.titulo}:</strong><br><div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap;">${tops}${ctx.desvios.length > 4 ? `<span style="font-size:10px;color:#888;">+${ctx.desvios.length-4} mais...</span>` : ''}</div>`;
+        }
+    }
+
+    const msgsEl = document.getElementById('chatDesvio_msgs');
+    if (msgsEl) msgsEl.innerHTML = '';
+
+    const modal = document.getElementById('modalChatIA_Desvio');
+    modal.style.display = 'flex';
+
+    setTimeout(() => _chatDesvio_iniciarDialogo(), 250);
+}
+
+function fecharChatIA_Desvio() {
+    document.getElementById('modalChatIA_Desvio').style.display = 'none';
+}
+
+async function _chatDesvio_iniciarDialogo() {
+    const ctx = _chatDesvio_contexto;
+    if (!ctx) return;
+
+    let prompt;
+    if (ctx.desvios.length === 0) {
+        prompt = `Todos os valores registrados no módulo "${ctx.titulo}" estão dentro dos parâmetros configurados no sistema, ou os valores estão sem informação (foram ignorados conforme regra). Informe ao usuário que não há desvios a analisar e pergunte se ele deseja fazer alguma consulta técnica adicional sobre os parâmetros de qualidade deste módulo.`;
+    } else {
+        prompt = `ANÁLISE DE DESVIOS — MÓDULO: ${ctx.titulo.toUpperCase()}
+
+PARÂMETROS CONFIGURADOS NO SISTEMA (aba Parâmetros):
+${_formatarParamsParaPrompt(ctx)}
+
+DESVIOS DETECTADOS (valores medidos fora dos parâmetros — valores sem informação foram IGNORADOS):
+${_formatarDesviosParaPrompt(ctx)}
+
+Com base nos desvios acima e nos parâmetros do sistema:
+1. Classifique a SEVERIDADE geral destes desvios (Crítico / Alto / Médio / Baixo) e explique brevemente o critério.
+2. Aponte qual desvio representa o MAIOR RISCO imediato para a qualidade e por quê.
+3. Faça UMA pergunta técnica ao usuário para entender melhor o contexto e poder aprofundar o diagnóstico (ex: frequência de ocorrência, condições de processo, fornecedor, período).
+Referencie as normas técnicas aplicáveis (Embrapa, Compêndio Bras. Nutrição Animal, MAPA).`;
+    }
+
+    _adicionarMsgDesvio('⏳ Consultando parâmetros e analisando desvios...', 'ia', true);
+
+    try {
+        const resp = await _iaCallComFallback(_IA_SYSTEM_DESVIO, [{ role:'user', content: prompt }], 1500);
+        _substituirUltimaMsgDesvio(resp);
+        _chatDesvio_history.push({ role:'user',      content: prompt });
+        _chatDesvio_history.push({ role:'assistant', content: resp   });
+    } catch(e) {
+        _substituirUltimaMsgDesvio('❌ Erro ao consultar IA: ' + e.message);
+    }
+}
+
+async function enviarMsgDesvio() {
+    const input = document.getElementById('chatDesvio_input');
+    const msg   = (input.value || '').trim();
+    if (!msg) return;
+    input.value = '';
+
+    _adicionarMsgDesvio(msg, 'usr');
+    _chatDesvio_history.push({ role:'user', content: msg });
+    _adicionarMsgDesvio('⏳ Processando...', 'ia', true);
+
+    try {
+        const resp = await _iaCallComFallback(_IA_SYSTEM_DESVIO, _chatDesvio_history, 1500);
+        _substituirUltimaMsgDesvio(resp);
+        _chatDesvio_history.push({ role:'assistant', content: resp });
+    } catch(e) {
+        _substituirUltimaMsgDesvio('❌ Erro: ' + e.message);
+    }
+}
+
+async function chatDesvio_acao(tipo) {
+    const ctx = _chatDesvio_contexto;
+    if (!ctx) return;
+
+    const desvioTexto = _formatarDesviosParaPrompt(ctx);
+    const paramTexto  = _formatarParamsParaPrompt(ctx);
+
+    const prompts = {
+        severidade: `Com base nos desvios abaixo e nos parâmetros do sistema, classifique CADA DESVIO em: 🔴 CRÍTICO / 🟠 ALTO / 🟡 MÉDIO / 🟢 BAIXO. Para cada classificação, justifique tecnicamente e cite a norma.
+
+PARÂMETROS DO SISTEMA:\n${paramTexto}\n
+DESVIOS:\n${desvioTexto}`,
+
+        impacto: `Analise o IMPACTO na produção e na nutrição animal de cada desvio abaixo. Para cada um: (a) como afeta o produto final, (b) risco para os animais, (c) se há risco de descarte ou reprocessamento. Cite norma aplicável.
+
+PARÂMETROS DO SISTEMA:\n${paramTexto}\n
+DESVIOS:\n${desvioTexto}`,
+
+        causa: `Para cada desvio abaixo, liste as CAUSAS TÉCNICAS MAIS PROVÁVEIS (mínimo 3 por desvio). Agrupe por categoria: processo, matéria-prima, equipamento, operacional. Use o parâmetro do sistema como referência.
+
+PARÂMETROS DO SISTEMA:\n${paramTexto}\n
+DESVIOS:\n${desvioTexto}`,
+
+        corretiva: `Para cada desvio abaixo, redija uma AÇÃO CORRETIVA objetiva com: (1) o que fazer, (2) prazo sugerido, (3) responsável implícito (por função), (4) indicador de eficácia, (5) norma de referência.
+
+PARÂMETROS DO SISTEMA:\n${paramTexto}\n
+DESVIOS:\n${desvioTexto}`,
+
+        norma: `Para cada desvio abaixo, cite a NORMA TÉCNICA ESPECÍFICA que define o parâmetro e o que ela prescreve. Inclua: nome da norma, artigo/tabela, valor-limite normativo e como se compara ao parâmetro configurado no sistema.
+
+PARÂMETROS DO SISTEMA:\n${paramTexto}\n
+DESVIOS:\n${desvioTexto}`
+    };
+
+    const labels = { severidade:'📊 Classificando severidade de cada desvio...', impacto:'⚠️ Analisando impacto na produção...', causa:'🔍 Levantando causas técnicas...', corretiva:'✅ Elaborando ações corretivas...', norma:'📋 Consultando normas aplicáveis...' };
+
+    _adicionarMsgDesvio(labels[tipo] || '⏳ Processando...', 'ia', true);
+    _chatDesvio_history.push({ role:'user', content: prompts[tipo] });
+
+    try {
+        const resp = await _iaCallComFallback(_IA_SYSTEM_DESVIO, _chatDesvio_history, 1800);
+        _substituirUltimaMsgDesvio(resp);
+        _chatDesvio_history.push({ role:'assistant', content: resp });
+    } catch(e) {
+        _substituirUltimaMsgDesvio('❌ Erro: ' + e.message);
+    }
+}
+
+// --- Helpers de renderização de mensagens do chat Desvio ---
+function _adicionarMsgDesvio(texto, lado, isLoading) {
+    const container = document.getElementById('chatDesvio_msgs');
+    if (!container) return;
+    const div = document.createElement('div');
+    div.className = 'cia-msg' + (lado === 'usr' ? ' user' : '');
+    div.innerHTML = `
+        <div class="cia-avatar ${lado === 'usr' ? 'usr' : 'ia'}">${lado === 'usr' ? '👤' : '🤖'}</div>
+        <div class="cia-bubble ${lado === 'usr' ? 'usr' : 'ia'}${isLoading ? ' loading' : ''}">${_escapeHtml ? _escapeHtml(texto) : texto}</div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+function _substituirUltimaMsgDesvio(novoTexto) {
+    const container = document.getElementById('chatDesvio_msgs');
+    if (!container) return;
+    const msgs   = container.querySelectorAll('.cia-msg');
+    const ultima = msgs[msgs.length - 1];
+    if (ultima) {
+        const bubble = ultima.querySelector('.cia-bubble');
+        if (bubble) {
+            bubble.classList.remove('loading');
+            // Formata markdown básico
+            const html = (_escapeHtml ? _escapeHtml(novoTexto) : novoTexto)
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g,     '<em>$1</em>')
+                .replace(/^#{1,3}\s(.+)$/gm, '<div style="font-weight:900;color:#0a1e7f;margin:10px 0 4px;">$1</div>')
+                .replace(/^[-•]\s(.+)$/gm,   '<div style="margin-left:10px;margin-bottom:2px;">• $1</div>')
+                .replace(/🔴/g, '<span style="color:#e74c3c;">🔴</span>')
+                .replace(/🟠/g, '<span style="color:#e67e22;">🟠</span>')
+                .replace(/🟡/g, '<span style="color:#f1c40f;">🟡</span>')
+                .replace(/🟢/g, '<span style="color:#27ae60;">🟢</span>')
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g,   '<br>');
+            bubble.innerHTML = html;
+        }
+    }
+    container.scrollTop = container.scrollHeight;
+}
+
+
 const _IA_MODEL    = 'gpt-4o-mini';
 // PROXY: para evitar CORS, a chamada pode passar por um Edge Function do Supabase
 // ou por um proxy reverso. Se você tiver a chave OpenAI salva no Supabase
@@ -16846,18 +17241,26 @@ async function _iaCallComFallback(systemPrompt, messages, maxTokens) {
 // ============================================================
 // SISTEMA PROMPT BASE
 // ============================================================
-const _IA_SYSTEM_NC = `Você é um consultor especialista em controle de qualidade para fábricas de ração animal e nutrição animal no Brasil. 
+const _IA_SYSTEM_NC = `Você é um consultor especialista em controle de qualidade de uma FÁBRICA DE RAÇÃO ANIMAL no Brasil.
+
+CONTEXTO FUNDAMENTAL — LEIA COM ATENÇÃO:
+- A empresa que usa este sistema é a EMPRESA RECEPTORA (fábrica de ração). Ela RECEBE matérias-primas, insumos e materiais de fornecedores e transportadoras.
+- A Não Conformidade (NC) é SEMPRE aberta pela empresa receptora contra o que foi entregue com defeito, fora do padrão ou em desconformidade.
+- O fornecedor e/ou a transportadora são os RESPONSÁVEIS pelo problema detectado na recepção.
+- Nunca defenda o fornecedor ou a transportadora. Adote sempre a perspectiva de quem RECEBEU o produto e identificou o problema.
+- Sua análise deve proteger os interesses da empresa receptora, garantir a rastreabilidade e embasar ações corretivas e cobranças ao fornecedor/transportadora.
+
 Suas respostas são técnicas, objetivas e fundamentadas nas normas:
 - **Embrapa**: Instruções Técnicas sobre qualidade de grãos, controle de micotoxinas, armazenamento e processamento de alimentos para animais.
 - **Compêndio Brasileiro de Nutrição Animal (MAPA)**: parâmetros nutricionais, limites de umidade, proteína, micotoxinas e parâmetros físico-químicos por tipo de ingrediente.
 - Portaria MAPA nº 269/2019 e legislação vigente sobre controle de qualidade na nutrição animal.
 
 Ao analisar uma Não Conformidade:
-1. Identifique as possíveis causas técnicas com base nos dados fornecidos.
-2. Avalie o RISCO DO PRODUTO para a produção e para os animais (segurança alimentar).
-3. Indique quais ETAPAS DO PROCESSO ou INSUMOS podem estar comprometidos.
-4. Sugira AÇÃO TOMADA imediata clara e objetiva.
-5. Sugira AÇÃO CORRETIVA com prazo e responsabilidade implícita.
+1. Identifique as possíveis causas técnicas com base nos dados fornecidos, apontando a responsabilidade do FORNECEDOR/TRANSPORTADORA.
+2. Avalie o RISCO DO PRODUTO para a produção e para os animais (segurança alimentar) sob a ótica da empresa receptora.
+3. Indique quais ETAPAS DO PROCESSO ou INSUMOS podem estar comprometidos na fábrica receptora.
+4. Sugira AÇÃO TOMADA imediata clara e objetiva (bloqueio, devolução, segregação, comunicação ao fornecedor).
+5. Sugira AÇÃO CORRETIVA com prazo, responsabilidade implícita e mecanismo de cobrança ao fornecedor.
 6. SEMPRE referencie a norma aplicável (ex: "conforme Embrapa – Circular Técnica 89", "Compêndio Bras. Nutrição Animal, tabela X").
 7. Use linguagem técnica e profissional. Responda em português do Brasil.
 8. Seja conciso: priorize clareza técnica. Use listas quando útil.`;
