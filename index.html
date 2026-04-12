@@ -16597,7 +16597,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div style="font-size:10px;opacity:.75;margin-top:2px;">Baseado nas normas Embrapa e Compêndio Brasileiro de Nutrição Animal</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <button onclick="_iaConfigurarChave()" title="Configurar chave API Anthropic" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;">⚙️ Config. IA</button>
+        <button onclick="_iaConfigurarChave()" title="Configurar chave API OpenAI" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;">⚙️ Config. IA</button>
         <button onclick="fecharChatIA_NC()" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;opacity:.8;line-height:1;">×</button>
       </div>
     </div>
@@ -16605,7 +16605,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div id="chatIA_NC_contexto" style="background:#f5eeff;border-bottom:1px solid #d7b8f3;padding:10px 16px;font-size:11px;color:#4a1070;flex-shrink:0;"></div>
     <!-- Banner status chave -->
     <div id="chatIA_NC_keyBanner" style="display:none;background:#fff8e1;border-bottom:1px solid #ffe082;padding:8px 16px;font-size:11px;color:#856404;flex-shrink:0;display:flex;align-items:center;gap:8px;">
-      <span>⚠️ <strong>Chave API não configurada.</strong> Clique em <strong>⚙️ Config. IA</strong> no cabeçalho para adicionar sua chave Anthropic (sk-ant-...).</span>
+      <span>⚠️ <strong>Chave API não configurada.</strong> Clique em <strong>⚙️ Config. IA</strong> no cabeçalho para adicionar sua chave OpenAI (sk-...).</span>
     </div>
     <!-- Mensagens -->
     <div id="chatIA_NC_msgs" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;min-height:200px;"></div>
@@ -16636,7 +16636,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div style="font-size:11px;opacity:.75;margin-top:3px;">Análise consolidada com referências Embrapa e Compêndio Brasileiro de Nutrição Animal</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <button onclick="_iaConfigurarChave()" title="Configurar chave API Anthropic" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;">⚙️ Config. IA</button>
+        <button onclick="_iaConfigurarChave()" title="Configurar chave API OpenAI" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;">⚙️ Config. IA</button>
         <button onclick="fecharRelatorioMensalIA()" style="background:none;border:none;color:#fff;font-size:26px;cursor:pointer;opacity:.8;line-height:1;">×</button>
       </div>
     </div>
@@ -16689,15 +16689,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 // ============================================================
-// MÓDULO IA — CONFIGURAÇÃO
+// MÓDULO IA — CONFIGURAÇÃO (OpenAI)
 // ============================================================
-const _IA_MODEL    = 'claude-sonnet-4-20250514';
-// PROXY: para evitar CORS, a chamada passa por um Edge Function do Supabase
-// ou por um proxy reverso. Se você tiver a chave Anthropic salva no Supabase
-// como secret, crie uma Edge Function "anthropic-proxy" conforme o README abaixo.
+const _IA_MODEL    = 'gpt-4o-mini';
+// PROXY: para evitar CORS, a chamada pode passar por um Edge Function do Supabase
+// ou por um proxy reverso. Se você tiver a chave OpenAI salva no Supabase
+// como secret, crie uma Edge Function "openai-proxy" conforme o README abaixo.
 // Alternativa: informe a chave diretamente abaixo (apenas em ambiente seguro/local).
-const _IA_PROXY_URL = '/functions/v1/anthropic-proxy'; // Edge Function Supabase
-const _IA_DIRECT_URL = 'https://api.anthropic.com/v1/messages';
+const _IA_PROXY_URL = '/functions/v1/openai-proxy'; // Edge Function Supabase
+const _IA_DIRECT_URL = 'https://api.openai.com/v1/chat/completions';
 
 // Histórico de conversa do chat NC
 let _chatIA_NC_history = [];
@@ -16705,7 +16705,7 @@ let _chatIA_NC_contextoNC = null;
 let _relMensalIA_ultimoTexto = '';
 
 // ============================================================
-// UTILITÁRIO: chamada à API Anthropic via proxy ou chave direta
+// UTILITÁRIO: chamada à API OpenAI via proxy ou chave direta
 // ============================================================
 async function _iaCall(systemPrompt, messages, maxTokens = 1500) {
     // Tenta ler chave da sessão (configurada pelo usuário na tela)
@@ -16717,9 +16717,7 @@ async function _iaCall(systemPrompt, messages, maxTokens = 1500) {
         url = _IA_DIRECT_URL;
         headers = {
             'Content-Type': 'application/json',
-            'x-api-key': chaveLocal,
-            'anthropic-version': '2023-06-01',
-            'anthropic-dangerous-direct-browser-access': 'true'
+            'Authorization': 'Bearer ' + chaveLocal
         };
     } else {
         // Modo proxy (Edge Function Supabase)
@@ -16732,14 +16730,19 @@ async function _iaCall(systemPrompt, messages, maxTokens = 1500) {
         } catch(e) {}
     }
 
+    // Monta o array de mensagens no formato OpenAI (system como primeira mensagem)
+    const openaiMessages = [
+        { role: 'system', content: systemPrompt },
+        ...messages
+    ];
+
     const resp = await fetch(url, {
         method: 'POST',
         headers,
         body: JSON.stringify({
             model: _IA_MODEL,
             max_tokens: maxTokens,
-            system: systemPrompt,
-            messages
+            messages: openaiMessages
         })
     });
 
@@ -16752,7 +16755,8 @@ async function _iaCall(systemPrompt, messages, maxTokens = 1500) {
         throw new Error('Erro na API IA (' + resp.status + '): ' + err.slice(0, 300));
     }
     const data = await resp.json();
-    return data.content.map(b => b.text || '').join('');
+    // OpenAI retorna choices[0].message.content
+    return data.choices?.[0]?.message?.content || '';
 }
 
 // ============================================================
@@ -16765,8 +16769,8 @@ function _iaGetChave() {
 function _iaConfigurarChave() {
     const atual = _iaGetChave();
     const nova = prompt(
-        '🔑 Configurar Chave API Anthropic\n\n' +
-        'Cole sua chave API (começa com "sk-ant-").\n' +
+        '🔑 Configurar Chave API OpenAI\n\n' +
+        'Cole sua chave API (começa com "sk-").\n' +
         'A chave fica salva apenas neste navegador (localStorage).\n\n' +
         'Para produção, configure a Edge Function do Supabase (recomendado).\n\n' +
         'Chave atual: ' + (atual ? atual.slice(0,12) + '...' : 'não configurada'),
@@ -16794,10 +16798,10 @@ async function _iaCallComFallback(systemPrompt, messages, maxTokens) {
             const confirmar = confirm(
                 '⚙️ Configuração necessária para o Módulo IA\n\n' +
                 'Para usar a IA, você precisa de uma das opções:\n\n' +
-                '1️⃣  CHAVE API (mais simples): Informe sua chave Anthropic (sk-ant-...).\n' +
+                '1️⃣  CHAVE API (mais simples): Informe sua chave OpenAI (sk-...).\n' +
                 '    A chave fica salva apenas neste navegador.\n\n' +
                 '2️⃣  PROXY SUPABASE (produção): Configure a Edge Function\n' +
-                '    "anthropic-proxy" no seu projeto Supabase.\n\n' +
+                '    "openai-proxy" no seu projeto Supabase.\n\n' +
                 'Clique OK para configurar a chave API agora.'
             );
             if (confirmar) {
