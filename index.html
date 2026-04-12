@@ -9914,6 +9914,47 @@ const DEFAULTS_PROD = {
     granulo2:{ min:0, max:9999, ativo:false }, granulo3:{ min:0, max:9999, ativo:false },
     fundo:{ min:0, max:9999, ativo:false },
 };
+
+// ------------------------------------------------
+// Defaults de DGM específicos por ração
+// Usados quando não há parâmetro salvo manualmente no módulo de parâmetros.
+// Refletem os limites técnicos reais de cada formulação.
+// ------------------------------------------------
+const DEFAULTS_DGM_POR_RACAO = {
+    // SOJA MOÍDA
+    'SOJA_MOÍDA':            { min: 700,  max: 850,  ativo: true },
+    // CORTE R1
+    'CORTE_R1_WISIUM':       { min: 800,  max: 950,  ativo: true },
+    'CORTE_R1_MCASSAB':      { min: 800,  max: 950,  ativo: true },
+    // CORTE R2
+    'CORTE_R2_WISIUM':       { min: 950,  max: 1050, ativo: true },
+    'CORTE_R2_MCASSAB':      { min: 950,  max: 1050, ativo: true },
+    // CORTE R3
+    'CORTE_R3_WISIUM':       { min: 950,  max: 1050, ativo: true },
+    'CORTE_R3_MCASSAB':      { min: 950,  max: 1050, ativo: true },
+    // CORTE R4
+    'CORTE_R4_WISIUM':       { min: 950,  max: 1050, ativo: true },
+    'CORTE_R4_MCASSAB':      { min: 950,  max: 1050, ativo: true },
+    // CORTE R5
+    'CORTE_R5_WISIUM':       { min: 950,  max: 1050, ativo: true },
+    'CORTE_R5_MCASSAB':      { min: 950,  max: 1050, ativo: true },
+    // POSTURA
+    'POSTURA_MCASSAB_R1':    { min: 700,  max: 900,  ativo: true },
+    'POSTURA_MCASSAB_R2':    { min: 700,  max: 900,  ativo: true },
+    'POSTURA_MCASSAB_R3':    { min: 700,  max: 900,  ativo: true },
+    'POSTURA_MCASSAB_R5':    { min: 700,  max: 900,  ativo: true },
+    'POSTURA_MCASSAB_R6':    { min: 700,  max: 900,  ativo: true },
+    'POSTURA_MCASSAB_R7':    { min: 700,  max: 900,  ativo: true },
+    'POSTURA_TECTRON_R7':    { min: 700,  max: 900,  ativo: true },
+    'POSTURA_TECTRON_R8':    { min: 700,  max: 900,  ativo: true },
+    'POSTURA_MCASSAB_R9':    { min: 700,  max: 900,  ativo: true },
+    'POSTURA_TECTRON_R9':    { min: 700,  max: 900,  ativo: true },
+    'POSTURA_MCASSAB_R_10':  { min: 700,  max: 900,  ativo: true },
+    'POSTURA_TECTRON_R_10':  { min: 700,  max: 900,  ativo: true },
+};
+// Nota: os valores acima são os defaults técnicos usados SOMENTE quando o usuário
+// não salvou parâmetros específicos no módulo de Parâmetros do sistema.
+// Para alterar limites permanentemente, use o módulo de Parâmetros (com data de vigência).
 const DEFAULTS_CLASS = {
     queimado:{ min:0, max:0.5, ativo:true }, ardido:{ min:0, max:0.5, ativo:true },
     mofado:{ min:0, max:0.5, ativo:true }, esverdeado:{ min:0, max:1, ativo:true },
@@ -9964,7 +10005,12 @@ async function carregarParametros() {
     } catch(e) { PARAMETROS = {}; }
 }
 
-function getParamDefault(modulo, campo) {
+function getParamDefault(modulo, campo, racaKey) {
+    // Para produção e campo DGM: usa o default específico por ração, se existir
+    if (modulo === 'prod' && campo === 'dgm' && racaKey) {
+        const dgmEsp = DEFAULTS_DGM_POR_RACAO[racaKey];
+        if (dgmEsp) return dgmEsp;
+    }
     const m = { prod:DEFAULTS_PROD, class:DEFAULTS_CLASS, mp:DEFAULTS_MP }[modulo];
     return m ? (m[campo] || {min:0,max:9999,ativo:false}) : {min:0,max:9999,ativo:false};
 }
@@ -10100,7 +10146,7 @@ function diagnosticarClass() {
 // Para exibição na tela de parâmetros (usa snapshot selecionado ou mais recente)
 function getParam(modulo, racaKey, campo, dataRegistro) {
     const snap = getSnapshotVigente(modulo, racaKey, dataRegistro);
-    const cfg = (snap && snap.campos && snap.campos[campo]) || getParamDefault(modulo, campo);
+    const cfg = (snap && snap.campos && snap.campos[campo]) || getParamDefault(modulo, campo, racaKey);
     // Proteção: se não há snapshot salvo pelo usuário E max=0 E min=0, trata como 9999 (padrão vazio)
     // Se o usuário salvou explicitamente um snapshot, respeita o valor mesmo que seja 0
     if (cfg && cfg.ativo && cfg.max === 0 && cfg.min === 0 && !snap) {
@@ -17793,12 +17839,16 @@ async function gerarRelatorioMensalIA() {
                 const linhas = _avaliarRegistro('prod', chave, CAMPOS_PROD, r, racao);
                 if (linhas.length) desviosRacao.push(...linhas);
             });
-            // Resumo da ração (valores informados)
+            // Resumo DGM
             const dgmVals = regs.map(r=>parseFloat(r.dgm)).filter(v=>!isNaN(v)&&v>0);
             const dgmInfo = dgmVals.length ? `DGM: média ${(dgmVals.reduce((s,v)=>s+v,0)/dgmVals.length).toFixed(0)} µm (min ${Math.min(...dgmVals).toFixed(0)} / máx ${Math.max(...dgmVals).toFixed(0)})` : 'DGM: sem dados';
-            const cfgDGM  = regs.length ? getParam('prod', chave, 'dgm', regs[0].data) : null;
-            const limDGM  = cfgDGM && cfgDGM.ativo ? `Parâmetro DGM: ${cfgDGM.min>0?cfgDGM.min:'—'}–${cfgDGM.max<9999?cfgDGM.max:'—'} µm` : 'DGM: sem parâmetro';
-            prodBlocos.push(`  [${racao}] (${regs.length} registro(s)) — ${dgmInfo} | ${limDGM}`
+            // Lista completa de parâmetros ATIVOS para esta ração (todos os campos com ativo=true)
+            const dataRef = regs[0]?.data || null;
+            const paramsAtivos = CAMPOS_PROD
+                .map(c => { const cfg = getParam('prod', chave, c.key, dataRef); return cfg && cfg.ativo ? `${c.label}: ${cfg.min>0?cfg.min:'—'}–${cfg.max<9999?cfg.max:'—'}` : null; })
+                .filter(Boolean);
+            const limInfo = paramsAtivos.length ? `PARÂMETROS ATIVOS: ${paramsAtivos.join(' | ')}` : 'PARÂMETROS ATIVOS: nenhum configurado';
+            prodBlocos.push(`  [${racao}] (${regs.length} registro(s)) — ${dgmInfo}\n  ${limInfo}`
                 + (desviosRacao.length ? `\n  ⚠️ DESVIOS REGISTRADOS:\n${desviosRacao.join('\n')}` : '\n  ✅ Todos os registros dentro dos parâmetros'));
         });
 
@@ -17816,9 +17866,13 @@ async function gerarRelatorioMensalIA() {
             // Umidade média para contexto
             const umVals = regs.map(r=>parseFloat(r.umidade)).filter(v=>!isNaN(v)&&v>0);
             const umInfo = umVals.length ? `Umidade: média ${(umVals.reduce((s,v)=>s+v,0)/umVals.length).toFixed(2)}%` : '';
-            const cfgUm  = regs.length ? getParam('mp', chave, 'umidade', regs[0].data) : null;
-            const limUm  = cfgUm && cfgUm.ativo ? ` (parâmetro: máx ${cfgUm.max<9999?cfgUm.max:'—'}%)` : '';
-            mpBlocos.push(`  [${prod}] (${regs.length} registro(s))${umInfo ? ' — ' + umInfo + limUm : ''}`
+            // Lista completa de parâmetros ATIVOS para este produto MP
+            const dataRef = regs[0]?.data || null;
+            const paramsAtivosMP = CAMPOS_MP
+                .map(c => { const cfg = getParam('mp', chave, c.key, dataRef); return cfg && cfg.ativo ? `${c.label}: ${cfg.min>0?cfg.min:'—'}–${cfg.max<9999?cfg.max:'—'}` : null; })
+                .filter(Boolean);
+            const limInfoMP = paramsAtivosMP.length ? `PARÂMETROS ATIVOS: ${paramsAtivosMP.join(' | ')}` : 'PARÂMETROS ATIVOS: nenhum configurado';
+            mpBlocos.push(`  [${prod}] (${regs.length} registro(s))${umInfo ? ' — ' + umInfo : ''}\n  ${limInfoMP}`
                 + (desviosProd.length ? `\n  ⚠️ DESVIOS REGISTRADOS:\n${desviosProd.join('\n')}` : '\n  ✅ Todos os registros dentro dos parâmetros'));
         });
 
@@ -17835,7 +17889,13 @@ async function gerarRelatorioMensalIA() {
             });
             const aflaVals = regs.map(r=>parseFloat(r.aflatoxinas)).filter(v=>!isNaN(v)&&v>0);
             const aflaInfo = aflaVals.length ? `Aflatoxinas: máx ${Math.max(...aflaVals).toFixed(2)} ppb` : '';
-            classBlocos.push(`  [${prod}] (${regs.length} registro(s))${aflaInfo ? ' — ' + aflaInfo : ''}`
+            // Lista completa de parâmetros ATIVOS para este produto de classificação
+            const dataRef = regs[0]?.data || null;
+            const paramsAtivosClass = CAMPOS_CLASS
+                .map(c => { const cfg = getParam('class', chave, c.key, dataRef); return cfg && cfg.ativo ? `${c.label}: ${cfg.min>0?cfg.min:'—'}–${cfg.max<9999?cfg.max:'—'}` : null; })
+                .filter(Boolean);
+            const limInfoClass = paramsAtivosClass.length ? `PARÂMETROS ATIVOS: ${paramsAtivosClass.join(' | ')}` : 'PARÂMETROS ATIVOS: nenhum configurado';
+            classBlocos.push(`  [${prod}] (${regs.length} registro(s))${aflaInfo ? ' — ' + aflaInfo : ''}\n  ${limInfoClass}`
                 + (desviosProd.length ? `\n  ⚠️ DESVIOS REGISTRADOS:\n${desviosProd.join('\n')}` : '\n  ✅ Todos os registros dentro dos parâmetros'));
         });
 
