@@ -16910,78 +16910,219 @@ function _formatarParamsParaPrompt(ctx) {
 }
 
 /**
- * Abre o chat de análise de desvios para um módulo específico.
- * @param {string} modulo — 'prod' | 'mp' | 'class' | 'geral'
+ * Abre o chat e executa o fluxo automático em 4 etapas visíveis:
+ * 1. Verificar registros não conformes
+ * 2. Consultar parâmetros do sistema
+ * 3. Cruzar dados
+ * 4. Retornar análise técnica com severidade + pergunta de aprofundamento
  */
 function abrirChatIA_Desvio(modulo) {
     modulo = modulo || 'geral';
-    const ctx = _coletarDesviosComParametros(modulo);
-    _chatDesvio_contexto = ctx;
+
+    // Limpa estado
     _chatDesvio_history  = [];
-
-    // Atualizar subtítulo e contexto
-    const sub = document.getElementById('chatDesvio_subtitulo');
-    if (sub) sub.textContent = `Módulo: ${ctx.titulo} — ${ctx.desvios.length} desvio(s) com parâmetro configurado`;
-
-    const ctxEl = document.getElementById('chatDesvio_contexto');
-    if (ctxEl) {
-        if (ctx.desvios.length === 0) {
-            ctxEl.innerHTML = `<span style="color:#27ae60;">✅ Nenhum desvio encontrado com parâmetros configurados para o módulo <strong>${ctx.titulo}</strong>. Valores sem informação foram ignorados.</span>`;
-        } else {
-            const tops = ctx.desvios.slice(0, 4).map(d =>
-                `<span style="background:#e74c3c;color:#fff;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700;">${d.produto} / ${d.campo}: ${d.valor} (${d.sentido})</span>`
-            ).join(' ');
-            ctxEl.innerHTML = `<strong>⚠️ ${ctx.desvios.length} desvio(s) detectado(s) em ${ctx.titulo}:</strong><br><div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap;">${tops}${ctx.desvios.length > 4 ? `<span style="font-size:10px;color:#888;">+${ctx.desvios.length-4} mais...</span>` : ''}</div>`;
-        }
-    }
+    _chatDesvio_contexto = null;
 
     const msgsEl = document.getElementById('chatDesvio_msgs');
     if (msgsEl) msgsEl.innerHTML = '';
 
+    const sub = document.getElementById('chatDesvio_subtitulo');
+    if (sub) sub.textContent = `Módulo: ${{ prod:'Produção', mp:'Matéria-Prima', class:'Classificação de Grãos', geral:'Geral' }[modulo] || modulo}`;
+
+    const ctxEl = document.getElementById('chatDesvio_contexto');
+    if (ctxEl) ctxEl.innerHTML = '<span style="color:#888;">⏳ Processando dados do módulo...</span>';
+
     const modal = document.getElementById('modalChatIA_Desvio');
     modal.style.display = 'flex';
 
-    setTimeout(() => _chatDesvio_iniciarDialogo(), 250);
+    // Inicia o fluxo por etapas
+    setTimeout(() => _chatDesvio_fluxo(modulo), 200);
 }
 
 function fecharChatIA_Desvio() {
     document.getElementById('modalChatIA_Desvio').style.display = 'none';
 }
 
-async function _chatDesvio_iniciarDialogo() {
-    const ctx = _chatDesvio_contexto;
-    if (!ctx) return;
+// ── Helpers de etapa visual ──────────────────────────────────────────────────
+function _desvio_addEtapa(icone, titulo, conteudo, cor) {
+    const container = document.getElementById('chatDesvio_msgs');
+    if (!container) return;
+    cor = cor || '#0a1e7f';
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;gap:10px;align-items:flex-start;';
+    div.innerHTML = `
+        <div style="width:32px;height:32px;border-radius:50%;background:${cor};display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">${icone}</div>
+        <div style="flex:1;background:#f8faff;border:1px solid #dce4f5;border-radius:2px 10px 10px 10px;padding:11px 14px;font-size:12px;line-height:1.7;color:#1a2a4a;">
+            <div style="font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:${cor};margin-bottom:6px;">${titulo}</div>
+            <div>${conteudo}</div>
+        </div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
+}
 
-    let prompt;
+function _desvio_addLoading(texto) {
+    const container = document.getElementById('chatDesvio_msgs');
+    if (!container) return null;
+    const div = document.createElement('div');
+    div.className = 'cia-msg _desvio-loading';
+    div.innerHTML = `
+        <div class="cia-avatar ia">🤖</div>
+        <div class="cia-bubble ia loading" style="font-size:12px;">${texto}</div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
+}
+
+function _desvio_replaceLoading(html) {
+    const container = document.getElementById('chatDesvio_msgs');
+    if (!container) return;
+    const loading = container.querySelector('._desvio-loading');
+    if (loading) {
+        const bubble = loading.querySelector('.cia-bubble');
+        if (bubble) { bubble.classList.remove('loading'); bubble.innerHTML = html; }
+        loading.classList.remove('_desvio-loading');
+    }
+    container.scrollTop = container.scrollHeight;
+}
+
+// ── Fluxo principal em 4 etapas ─────────────────────────────────────────────
+async function _chatDesvio_fluxo(modulo) {
+    const titulosMod = { prod:'Produção', mp:'Matéria-Prima', class:'Classificação de Grãos', geral:'Geral' };
+    const tituloMod  = titulosMod[modulo] || modulo;
+
+    // ── ETAPA 1: Verificar registros não conformes ───────────────────────────
+    await _delay(120);
+    _desvio_addEtapa('🔍', 'Etapa 1 — Verificando registros não conformes',
+        `<span style="color:#555;">Lendo todos os registros do módulo <strong>${tituloMod}</strong> e identificando os que estão marcados como NÃO CONFORME pelo sistema...</span>`,
+        '#0a1e7f');
+    await _delay(700);
+
+    // Coleta real dos desvios usando os dados do sistema
+    const ctx = _coletarDesviosComParametros(modulo);
+    _chatDesvio_contexto = ctx;
+
+    let etapa1Html;
     if (ctx.desvios.length === 0) {
-        prompt = `Todos os valores registrados no módulo "${ctx.titulo}" estão dentro dos parâmetros configurados no sistema, ou os valores estão sem informação (foram ignorados conforme regra). Informe ao usuário que não há desvios a analisar e pergunte se ele deseja fazer alguma consulta técnica adicional sobre os parâmetros de qualidade deste módulo.`;
-    } else {
-        prompt = `ANÁLISE DE DESVIOS — MÓDULO: ${ctx.titulo.toUpperCase()}
+        etapa1Html = `<span style="color:#27ae60;">✅ Nenhum registro fora dos parâmetros encontrado no módulo <strong>${tituloMod}</strong>. Todos os valores informados estão dentro dos limites. Valores sem informação foram ignorados.</span>`;
+        _desvio_addEtapa('✅', 'Resultado', etapa1Html, '#27ae60');
+        // Atualiza barra de contexto
+        const ctxEl = document.getElementById('chatDesvio_contexto');
+        if (ctxEl) ctxEl.innerHTML = `<span style="color:#27ae60;">✅ Todos os registros de <strong>${tituloMod}</strong> estão conformes ou sem informação.</span>`;
+        return;
+    }
 
-PARÂMETROS CONFIGURADOS NO SISTEMA (aba Parâmetros):
+    // Lista os não conformes encontrados
+    const linhasNC = ctx.desvios.map(d =>
+        `<div style="padding:3px 0;border-bottom:1px solid #eef2ff;">
+            <span style="font-weight:700;color:#e74c3c;">${d.produto}</span> &nbsp;|&nbsp;
+            <span style="color:#333;">${d.campo}</span> &nbsp;|&nbsp;
+            Data: <strong>${d.data}</strong> &nbsp;|&nbsp;
+            Valor: <strong style="color:#c0392b;">${d.valor}</strong>
+        </div>`
+    ).join('');
+    etapa1Html = `<strong style="color:#e74c3c;">⚠️ ${ctx.desvios.length} registro(s) não conforme(s) encontrado(s):</strong><div style="margin-top:8px;max-height:120px;overflow-y:auto;">${linhasNC}</div>`;
+    _desvio_addEtapa('⚠️', 'Etapa 1 — Registros Não Conformes Identificados', etapa1Html, '#e74c3c');
+
+    // Atualiza barra de contexto
+    const ctxEl = document.getElementById('chatDesvio_contexto');
+    if (ctxEl) {
+        const tops = ctx.desvios.slice(0,3).map(d =>
+            `<span style="background:#e74c3c;color:#fff;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:700;">${d.produto} / ${d.campo}: ${d.valor}</span>`
+        ).join(' ');
+        ctxEl.innerHTML = `<strong>⚠️ ${ctx.desvios.length} não conforme(s) — ${tituloMod}</strong>&nbsp;&nbsp;${tops}${ctx.desvios.length > 3 ? `<span style="font-size:10px;color:#888;"> +${ctx.desvios.length-3} mais</span>` : ''}`;
+    }
+
+    await _delay(600);
+
+    // ── ETAPA 2: Consultar parâmetros do sistema ─────────────────────────────
+    _desvio_addEtapa('⚙️', 'Etapa 2 — Consultando parâmetros do sistema',
+        `<span style="color:#555;">Lendo os limites mínimos e máximos cadastrados na aba de Parâmetros para cada produto e campo com desvio...</span>`,
+        '#8e44ad');
+    await _delay(600);
+
+    // Monta tabela de parâmetros consultados (apenas os com desvio)
+    const paramVisto = new Set();
+    const linhasParam = ctx.desvios.map(d => {
+        const chave = `${d.produto}|${d.campo}`;
+        if (paramVisto.has(chave)) return '';
+        paramVisto.add(chave);
+        return `<div style="padding:3px 0;border-bottom:1px solid #f0eaff;">
+            <span style="font-weight:700;color:#6c3483;">${d.produto}</span> &nbsp;|&nbsp;
+            <span style="color:#333;">${d.campo}</span> &nbsp;→&nbsp;
+            Mín: <strong>${d.limMin}</strong> &nbsp;/&nbsp; Máx: <strong>${d.limMax}</strong>
+        </div>`;
+    }).filter(Boolean).join('');
+
+    _desvio_addEtapa('⚙️', 'Etapa 2 — Parâmetros Consultados',
+        `<strong style="color:#6c3483;">Parâmetros vigentes encontrados para os campos com desvio:</strong><div style="margin-top:8px;max-height:110px;overflow-y:auto;">${linhasParam}</div>`,
+        '#8e44ad');
+
+    await _delay(500);
+
+    // ── ETAPA 3: Cruzar dados ────────────────────────────────────────────────
+    _desvio_addEtapa('📊', 'Etapa 3 — Cruzando dados com os parâmetros',
+        `<span style="color:#555;">Calculando a magnitude de cada desvio (quanto ultrapassou o limite) e preparando os dados para análise...</span>`,
+        '#e67e22');
+    await _delay(500);
+
+    const linhasCruz = ctx.desvios.map(d =>
+        `<div style="padding:3px 0;border-bottom:1px solid #fff3e0;">
+            <span style="font-weight:700;color:#c0392b;">${d.produto} / ${d.campo}</span> &nbsp;|&nbsp;
+            Valor: <strong>${d.valor}</strong> &nbsp;|&nbsp;
+            Limite: ${d.limMin}–${d.limMax} &nbsp;|&nbsp;
+            <span style="color:#e74c3c;font-weight:700;">${d.sentido} em ${d.delta}</span>
+        </div>`
+    ).join('');
+
+    _desvio_addEtapa('📊', 'Etapa 3 — Desvios Calculados',
+        `<div style="max-height:110px;overflow-y:auto;">${linhasCruz}</div>`,
+        '#e67e22');
+
+    await _delay(400);
+
+    // ── ETAPA 4: IA analisa e retorna ────────────────────────────────────────
+    const loadingDiv = _desvio_addLoading('🤖 Analisando severidade e elaborando diagnóstico técnico...');
+
+    const promptFinal = `MÓDULO: ${tituloMod.toUpperCase()}
+
+PARÂMETROS DO SISTEMA CONSULTADOS:
 ${_formatarParamsParaPrompt(ctx)}
 
-DESVIOS DETECTADOS (valores medidos fora dos parâmetros — valores sem informação foram IGNORADOS):
+REGISTROS NÃO CONFORMES (valor medido × limite cadastrado no sistema):
 ${_formatarDesviosParaPrompt(ctx)}
 
-Com base nos desvios acima e nos parâmetros do sistema:
-1. Classifique a SEVERIDADE geral destes desvios (Crítico / Alto / Médio / Baixo) e explique brevemente o critério.
-2. Aponte qual desvio representa o MAIOR RISCO imediato para a qualidade e por quê.
-3. Faça UMA pergunta técnica ao usuário para entender melhor o contexto e poder aprofundar o diagnóstico (ex: frequência de ocorrência, condições de processo, fornecedor, período).
-Referencie as normas técnicas aplicáveis (Embrapa, Compêndio Bras. Nutrição Animal, MAPA).`;
-    }
+Com base EXCLUSIVAMENTE nos dados acima (parâmetros reais do sistema × valores reais registrados):
 
-    _adicionarMsgDesvio('⏳ Consultando parâmetros e analisando desvios...', 'ia', true);
+1. Para cada desvio, classifique a SEVERIDADE: 🔴 CRÍTICO / 🟠 ALTO / 🟡 MÉDIO / 🟢 BAIXO, com justificativa técnica e o delta exato do desvio.
+2. Indique o IMPACTO TÉCNICO no processo produtivo e na nutrição animal.
+3. Cite a NORMA aplicável (Embrapa, Compêndio Bras. Nutrição Animal, MAPA IN 07/2011).
+4. Ao final, faça UMA pergunta objetiva ao responsável para aprofundar o diagnóstico (ex: frequência, lote, condições de processo, fornecedor envolvido).`;
 
     try {
-        const resp = await _iaCallComFallback(_IA_SYSTEM_DESVIO, [{ role:'user', content: prompt }], 1500);
-        _substituirUltimaMsgDesvio(resp);
-        _chatDesvio_history.push({ role:'user',      content: prompt });
-        _chatDesvio_history.push({ role:'assistant', content: resp   });
+        const resp = await _iaCallComFallback(_IA_SYSTEM_DESVIO, [{ role:'user', content: promptFinal }], 1800);
+        // Formata a resposta da IA
+        const htmlResp = (_escapeHtml ? _escapeHtml(resp) : resp)
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g,     '<em>$1</em>')
+            .replace(/^#{1,3}\s(.+)$/gm, '<div style="font-weight:900;color:#0a1e7f;margin:10px 0 4px;font-size:12px;">$1</div>')
+            .replace(/^[-•]\s(.+)$/gm,   '<div style="margin-left:10px;margin-bottom:3px;">• $1</div>')
+            .replace(/🔴/g, '<span style="color:#e74c3c;font-weight:900;">🔴</span>')
+            .replace(/🟠/g, '<span style="color:#e67e22;font-weight:900;">🟠</span>')
+            .replace(/🟡/g, '<span style="color:#f39c12;font-weight:900;">🟡</span>')
+            .replace(/🟢/g, '<span style="color:#27ae60;font-weight:900;">🟢</span>')
+            .replace(/\n\n/g, '<br><br>')
+            .replace(/\n/g,   '<br>');
+        _desvio_replaceLoading(htmlResp);
+        // Salva no histórico para o diálogo continuar
+        _chatDesvio_history.push({ role:'user',      content: promptFinal });
+        _chatDesvio_history.push({ role:'assistant', content: resp        });
     } catch(e) {
-        _substituirUltimaMsgDesvio('❌ Erro ao consultar IA: ' + e.message);
+        _desvio_replaceLoading('❌ Erro ao consultar a IA: ' + e.message);
     }
 }
+
+function _delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 async function enviarMsgDesvio() {
     const input = document.getElementById('chatDesvio_input');
