@@ -5561,7 +5561,7 @@ async function fazerLogout() {
         usuarioAtual = null;
         USUARIOS     = {};
         document.getElementById('mainSystem').style.display  = 'none';
-        document.getElementById('loginScreen').classList.add('show');
+        document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('loginUser').value  = '';
         document.getElementById('loginPass').value  = '';
         document.getElementById('loginError').classList.remove('show');
@@ -14102,7 +14102,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         sgqOcultarLoading();
         // Se o mainSystem não foi exibido, mostra o login
         if (document.getElementById('mainSystem').style.display !== 'block') {
-            document.getElementById('loginScreen').classList.add('show');
+            document.getElementById('loginScreen').style.display = 'flex';
         }
     }
 });
@@ -17839,16 +17839,13 @@ async function gerarRelatorioMensalIA() {
                 const linhas = _avaliarRegistro('prod', chave, CAMPOS_PROD, r, racao);
                 if (linhas.length) desviosRacao.push(...linhas);
             });
-            // Resumo DGM
-            const dgmVals = regs.map(r=>parseFloat(r.dgm)).filter(v=>!isNaN(v)&&v>0);
-            const dgmInfo = dgmVals.length ? `DGM: média ${(dgmVals.reduce((s,v)=>s+v,0)/dgmVals.length).toFixed(0)} µm (min ${Math.min(...dgmVals).toFixed(0)} / máx ${Math.max(...dgmVals).toFixed(0)})` : 'DGM: sem dados';
             // Lista completa de parâmetros ATIVOS para esta ração (todos os campos com ativo=true)
             const dataRef = regs[0]?.data || null;
             const paramsAtivos = CAMPOS_PROD
                 .map(c => { const cfg = getParam('prod', chave, c.key, dataRef); return cfg && cfg.ativo ? `${c.label}: ${cfg.min>0?cfg.min:'—'}–${cfg.max<9999?cfg.max:'—'}` : null; })
                 .filter(Boolean);
             const limInfo = paramsAtivos.length ? `PARÂMETROS ATIVOS: ${paramsAtivos.join(' | ')}` : 'PARÂMETROS ATIVOS: nenhum configurado';
-            prodBlocos.push(`  [${racao}] (${regs.length} registro(s)) — ${dgmInfo}\n  ${limInfo}`
+            prodBlocos.push(`  [${racao}] (${regs.length} registro(s))\n  ${limInfo}`
                 + (desviosRacao.length ? `\n  ⚠️ DESVIOS REGISTRADOS:\n${desviosRacao.join('\n')}` : '\n  ✅ Todos os registros dentro dos parâmetros'));
         });
 
@@ -17863,16 +17860,13 @@ async function gerarRelatorioMensalIA() {
                 const linhas = _avaliarRegistro('mp', chave, CAMPOS_MP, r, prod);
                 if (linhas.length) desviosProd.push(...linhas);
             });
-            // Umidade média para contexto
-            const umVals = regs.map(r=>parseFloat(r.umidade)).filter(v=>!isNaN(v)&&v>0);
-            const umInfo = umVals.length ? `Umidade: média ${(umVals.reduce((s,v)=>s+v,0)/umVals.length).toFixed(2)}%` : '';
             // Lista completa de parâmetros ATIVOS para este produto MP
             const dataRef = regs[0]?.data || null;
             const paramsAtivosMP = CAMPOS_MP
                 .map(c => { const cfg = getParam('mp', chave, c.key, dataRef); return cfg && cfg.ativo ? `${c.label}: ${cfg.min>0?cfg.min:'—'}–${cfg.max<9999?cfg.max:'—'}` : null; })
                 .filter(Boolean);
             const limInfoMP = paramsAtivosMP.length ? `PARÂMETROS ATIVOS: ${paramsAtivosMP.join(' | ')}` : 'PARÂMETROS ATIVOS: nenhum configurado';
-            mpBlocos.push(`  [${prod}] (${regs.length} registro(s))${umInfo ? ' — ' + umInfo : ''}\n  ${limInfoMP}`
+            mpBlocos.push(`  [${prod}] (${regs.length} registro(s))\n  ${limInfoMP}`
                 + (desviosProd.length ? `\n  ⚠️ DESVIOS REGISTRADOS:\n${desviosProd.join('\n')}` : '\n  ✅ Todos os registros dentro dos parâmetros'));
         });
 
@@ -17887,15 +17881,13 @@ async function gerarRelatorioMensalIA() {
                 const linhas = _avaliarRegistro('class', chave, CAMPOS_CLASS, r, prod);
                 if (linhas.length) desviosProd.push(...linhas);
             });
-            const aflaVals = regs.map(r=>parseFloat(r.aflatoxinas)).filter(v=>!isNaN(v)&&v>0);
-            const aflaInfo = aflaVals.length ? `Aflatoxinas: máx ${Math.max(...aflaVals).toFixed(2)} ppb` : '';
             // Lista completa de parâmetros ATIVOS para este produto de classificação
             const dataRef = regs[0]?.data || null;
             const paramsAtivosClass = CAMPOS_CLASS
                 .map(c => { const cfg = getParam('class', chave, c.key, dataRef); return cfg && cfg.ativo ? `${c.label}: ${cfg.min>0?cfg.min:'—'}–${cfg.max<9999?cfg.max:'—'}` : null; })
                 .filter(Boolean);
             const limInfoClass = paramsAtivosClass.length ? `PARÂMETROS ATIVOS: ${paramsAtivosClass.join(' | ')}` : 'PARÂMETROS ATIVOS: nenhum configurado';
-            classBlocos.push(`  [${prod}] (${regs.length} registro(s))${aflaInfo ? ' — ' + aflaInfo : ''}\n  ${limInfoClass}`
+            classBlocos.push(`  [${prod}] (${regs.length} registro(s))\n  ${limInfoClass}`
                 + (desviosProd.length ? `\n  ⚠️ DESVIOS REGISTRADOS:\n${desviosProd.join('\n')}` : '\n  ✅ Todos os registros dentro dos parâmetros'));
         });
 
