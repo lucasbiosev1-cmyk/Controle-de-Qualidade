@@ -16640,20 +16640,49 @@ document.addEventListener('DOMContentLoaded', function() {
         <button onclick="fecharRelatorioMensalIA()" style="background:none;border:none;color:#fff;font-size:26px;cursor:pointer;opacity:.8;line-height:1;">×</button>
       </div>
     </div>
-    <!-- Seletor de mês -->
-    <div style="background:#eef2ff;border-bottom:1px solid #c5d5f0;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-shrink:0;flex-wrap:wrap;">
-      <div style="font-size:12px;font-weight:700;color:#0a1e7f;white-space:nowrap;">📅 Período de análise:</div>
-      <input type="month" id="relMensalIA_mes" style="padding:7px 10px;border:1px solid #bcd;border-radius:6px;font-size:13px;font-weight:700;" onchange="">
-      <button onclick="gerarRelatorioMensalIA()" id="btnGerarRelMensalIA" style="background:linear-gradient(135deg,#0a1e7f,#1a3a9f);color:#fff;border:none;border-radius:6px;padding:9px 22px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:7px;">🤖 Gerar Relatório</button>
-      <button onclick="imprimirRelMensalIA()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;">🖨️ Imprimir</button>
-      <button onclick="copiarRelMensalIA()" style="background:#34495e;color:#fff;border:none;border-radius:6px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;">📋 Copiar</button>
+    <!-- Seletor de mês + configurações -->
+    <div style="background:#eef2ff;border-bottom:1px solid #c5d5f0;padding:12px 20px;flex-shrink:0;">
+      <!-- Linha 1: período + botões -->
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+        <div style="font-size:12px;font-weight:700;color:#0a1e7f;white-space:nowrap;">📅 Período:</div>
+        <input type="month" id="relMensalIA_mes" style="padding:7px 10px;border:1px solid #bcd;border-radius:6px;font-size:13px;font-weight:700;" onchange="">
+        <button onclick="gerarRelatorioMensalIA()" id="btnGerarRelMensalIA" style="background:linear-gradient(135deg,#0a1e7f,#1a3a9f);color:#fff;border:none;border-radius:6px;padding:9px 22px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:7px;">🤖 Gerar Relatório</button>
+        <button onclick="imprimirRelMensalIA()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;">🖨️ Imprimir</button>
+        <button onclick="copiarRelMensalIA()" style="background:#34495e;color:#fff;border:none;border-radius:6px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;">📋 Copiar</button>
+      </div>
+      <!-- Linha 2: seleção de módulos -->
+      <div style="background:#fff;border:1px solid #c5d5f0;border-radius:8px;padding:10px 14px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+          <span style="font-size:11px;font-weight:800;color:#0a1e7f;text-transform:uppercase;letter-spacing:.5px;">📋 Módulos a analisar:</span>
+          <button onclick="_rmlSelecionarTodos(true)" style="font-size:10px;font-weight:700;color:#0a1e7f;background:#eef2ff;border:1px solid #c5d5f0;border-radius:4px;padding:2px 8px;cursor:pointer;">✅ Todos</button>
+          <button onclick="_rmlSelecionarTodos(false)" style="font-size:10px;font-weight:700;color:#7f8fa6;background:#f5f5f5;border:1px solid #ddd;border-radius:4px;padding:2px 8px;cursor:pointer;">☐ Nenhum</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <label id="lbl_rml_prod" onclick="_rmlToggle('prod')" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:6px;border:2px solid #0a1e7f;background:#eef2ff;font-size:12px;font-weight:700;color:#0a1e7f;user-select:none;transition:all .2s;">
+            <span id="chk_rml_prod" style="font-size:15px;">✅</span> 🏭 Produção
+          </label>
+          <label id="lbl_rml_mp" onclick="_rmlToggle('mp')" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:6px;border:2px solid #8e44ad;background:#f5eeff;font-size:12px;font-weight:700;color:#8e44ad;user-select:none;transition:all .2s;">
+            <span id="chk_rml_mp" style="font-size:15px;">✅</span> 🌾 Matéria Prima
+          </label>
+          <label id="lbl_rml_class" onclick="_rmlToggle('class')" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:6px;border:2px solid #e67e22;background:#fef9f0;font-size:12px;font-weight:700;color:#e67e22;user-select:none;transition:all .2s;">
+            <span id="chk_rml_class" style="font-size:15px;">✅</span> 🌽 Classificação
+          </label>
+          <label id="lbl_rml_nc" onclick="_rmlToggle('nc')" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:6px;border:2px solid #e74c3c;background:#fef5f5;font-size:12px;font-weight:700;color:#e74c3c;user-select:none;transition:all .2s;">
+            <span id="chk_rml_nc" style="font-size:15px;">✅</span> ⚠️ Não Conformidades
+          </label>
+          <label id="lbl_rml_dev" onclick="_rmlToggle('dev')" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:6px;border:2px solid #27ae60;background:#f0faf4;font-size:12px;font-weight:700;color:#27ae60;user-select:none;transition:all .2s;">
+            <span id="chk_rml_dev" style="font-size:15px;">✅</span> 🔄 Devoluções
+          </label>
+        </div>
+        <div id="rml_aviso_modulos" style="display:none;margin-top:7px;font-size:10px;color:#e74c3c;font-weight:700;">⚠️ Selecione ao menos um módulo.</div>
+      </div>
     </div>
     <!-- Conteúdo do relatório -->
     <div id="relMensalIA_conteudo" style="flex:1;overflow-y:auto;padding:20px 24px;">
       <div style="text-align:center;padding:60px 20px;color:#bdc3c7;">
         <div style="font-size:60px;margin-bottom:16px;">📊</div>
-        <div style="font-size:14px;font-weight:700;color:#95a5a6;">Selecione o mês e clique em "Gerar Relatório"</div>
-        <div style="font-size:11px;color:#bdc3c7;margin-top:6px;">A IA analisará todos os dados do período — produção, matéria-prima, classificação e não conformidades</div>
+        <div style="font-size:14px;font-weight:700;color:#95a5a6;">Selecione o mês, escolha os módulos e clique em "Gerar Relatório"</div>
+        <div style="font-size:11px;color:#bdc3c7;margin-top:6px;">Selecione apenas os módulos que deseja analisar para economizar tokens</div>
       </div>
     </div>
   </div>
@@ -17106,7 +17135,57 @@ function fecharRelatorioMensalIA() {
     document.getElementById('modalRelatorioMensalIA').style.display = 'none';
 }
 
+// ============================================================
+// CONTROLE DE MÓDULOS DO RELATÓRIO IA
+// ============================================================
+const _rmlEstado = { prod: true, mp: true, class: true, nc: true, dev: true };
+const _rmlCores  = { prod:'#0a1e7f', mp:'#8e44ad', class:'#e67e22', nc:'#e74c3c', dev:'#27ae60' };
+const _rmlBgs    = { prod:'#eef2ff', mp:'#f5eeff', class:'#fef9f0', nc:'#fef5f5', dev:'#f0faf4' };
+
+function _rmlToggle(mod) {
+    _rmlEstado[mod] = !_rmlEstado[mod];
+    _rmlRenderizar(mod);
+}
+
+function _rmlSelecionarTodos(ativo) {
+    Object.keys(_rmlEstado).forEach(mod => {
+        _rmlEstado[mod] = ativo;
+        _rmlRenderizar(mod);
+    });
+}
+
+function _rmlRenderizar(mod) {
+    const chk = document.getElementById('chk_rml_' + mod);
+    const lbl = document.getElementById('lbl_rml_' + mod);
+    const cor  = _rmlCores[mod];
+    const bg   = _rmlBgs[mod];
+    if (!chk || !lbl) return;
+    if (_rmlEstado[mod]) {
+        chk.textContent = '✅';
+        lbl.style.border = '2px solid ' + cor;
+        lbl.style.background = bg;
+        lbl.style.opacity = '1';
+    } else {
+        chk.textContent = '☐';
+        lbl.style.border = '2px solid #ccc';
+        lbl.style.background = '#f9f9f9';
+        lbl.style.opacity = '0.5';
+    }
+    // aviso se nenhum selecionado
+    const nenhum = Object.values(_rmlEstado).every(v => !v);
+    const aviso = document.getElementById('rml_aviso_modulos');
+    if (aviso) aviso.style.display = nenhum ? 'block' : 'none';
+}
+
 async function gerarRelatorioMensalIA() {
+    // Validar módulos selecionados
+    const _modAtivos = Object.entries(_rmlEstado).filter(([,v])=>v).map(([k])=>k);
+    if (_modAtivos.length === 0) {
+        sgqToast('⚠️ Selecione ao menos um módulo para analisar.', 'warning');
+        document.getElementById('rml_aviso_modulos').style.display = 'block';
+        return;
+    }
+
     const mesVal = document.getElementById('relMensalIA_mes').value;
     if (!mesVal) { alert('Selecione o mês para análise.'); return; }
 
@@ -17119,38 +17198,127 @@ async function gerarRelatorioMensalIA() {
     btn.disabled = true;
     btn.textContent = '⏳ Analisando...';
 
-    conteudoEl.innerHTML = `<div class="rml-loading"><div class="spinner"></div>Analisando dados de ${nomeMes}...<br><small style="color:#aaa;">Consultando normas Embrapa e Compêndio Brasileiro de Nutrição Animal</small></div>`;
+    const _nomesAtivos = [_rmlEstado.prod?'🏭 Produção':null,_rmlEstado.mp?'🌾 Mat. Prima':null,_rmlEstado.class?'🌽 Classificação':null,_rmlEstado.nc?'⚠️ NCs':null,_rmlEstado.dev?'🔄 Devoluções':null].filter(Boolean).join(', ');
+    conteudoEl.innerHTML = `<div class="rml-loading"><div class="spinner"></div>Analisando: <strong>${_nomesAtivos}</strong><br><small style="color:#aaa;">Período: ${nomeMes} — consultando normas Embrapa e Compêndio Brasileiro de Nutrição Animal</small></div>`;
 
     try {
-        // ---- COLETAR DADOS DO MÊS ----
-        const prodMes   = (producoes      || []).filter(r => r.data && r.data.startsWith(prefixo));
-        const mpMes     = (materiasPrimas  || []).filter(r => r.data && r.data.startsWith(prefixo));
-        const classMes  = (classificacoes  || []).filter(r => r.data && r.data.startsWith(prefixo));
-        const ncMes     = (listaNC         || []).filter(r => r.data && r.data.startsWith(prefixo));
-        const devMes    = (listaDev        || []).filter(r => r.data && r.data.startsWith(prefixo));
+        // ---- COLETAR DADOS DO MÊS (somente módulos ativos) ----
+        const _usaProd  = _rmlEstado.prod;
+        const _usaMP    = _rmlEstado.mp;
+        const _usaClass = _rmlEstado.class;
+        const _usaNC    = _rmlEstado.nc;
+        const _usaDev   = _rmlEstado.dev;
 
-        // Métricas Produção
+        const prodMes   = _usaProd  ? (producoes      || []).filter(r => r.data && r.data.startsWith(prefixo)) : [];
+        const mpMes     = _usaMP    ? (materiasPrimas  || []).filter(r => r.data && r.data.startsWith(prefixo)) : [];
+        const classMes  = _usaClass ? (classificacoes  || []).filter(r => r.data && r.data.startsWith(prefixo)) : [];
+        const ncMes     = _usaNC    ? (listaNC         || []).filter(r => r.data && r.data.startsWith(prefixo)) : [];
+        const devMes    = _usaDev   ? (listaDev        || []).filter(r => r.data && r.data.startsWith(prefixo)) : [];
+
+        // ---- UTILITÁRIOS ----
+        const med = (arr, campo) => { const v = arr.map(r=>parseFloat(r[campo])||0).filter(v=>v>0); return v.length ? (v.reduce((s,x)=>s+x,0)/v.length) : null; };
+        const fmtMed = (v, dec=2) => v !== null ? v.toFixed(dec) : 'N/D';
+        const maxVal = (arr, campo) => { const v = arr.map(r=>parseFloat(r[campo])||0).filter(v=>v>0); return v.length ? Math.max(...v) : null; };
+        const minVal = (arr, campo) => { const v = arr.map(r=>parseFloat(r[campo])||0).filter(v=>v>0); return v.length ? Math.min(...v) : null; };
+        const countAbove = (arr, campo, limite) => arr.filter(r=>(parseFloat(r[campo])||0)>limite).length;
+        const countBelow = (arr, campo, limite) => arr.filter(r=>{ const v=parseFloat(r[campo]); return v!==null&&!isNaN(v)&&v<limite; }).length;
+
+        // ---- MÉTRICAS PRODUÇÃO ----
         const totalProd = prodMes.length;
         const racoes = [...new Set(prodMes.map(r => r.racao).filter(Boolean))];
-        const medUmProd = totalProd ? (prodMes.reduce((s,r)=>(s+(parseFloat(r.umidade)||0)),0)/totalProd).toFixed(2) : 0;
-        const medProtProd = totalProd ? (prodMes.reduce((s,r)=>(s+(parseFloat(r.proteina)||0)),0)/totalProd).toFixed(2) : 0;
+        const medDGM     = med(prodMes, 'dgm');
+        const medDPG     = med(prodMes, 'dpg');
+        const medUmProd  = med(prodMes, 'umidade');
+        const medProtProd= med(prodMes, 'proteina');
+        const medFibraProd = med(prodMes, 'fibra');
+        const medExtrato = med(prodMes, 'extrato');
+        const medDensProd= med(prodMes, 'densidade');
+        const medSolubilProd = med(prodMes, 'solubil');
+        const medCalcio  = med(prodMes, 'calcio');
+        const medFosforo = med(prodMes, 'fosforo');
+        const medMineralProd = med(prodMes, 'mineral');
+        const medGranulo1= med(prodMes, 'granulo1');
+        const medGranulo2= med(prodMes, 'granulo2');
+        const medGranulo3= med(prodMes, 'granulo3');
+        const medFundo   = med(prodMes, 'fundo');
 
-        // Métricas MP
-        const totalMP   = mpMes.length;
-        const prodsMP   = [...new Set(mpMes.map(r => r.produto).filter(Boolean))];
-        const medUmMP   = totalMP ? (mpMes.reduce((s,r)=>(s+(parseFloat(r.umidade)||0)),0)/totalMP).toFixed(2) : 0;
-        const medProtMP = totalMP ? (mpMes.reduce((s,r)=>(s+(parseFloat(r.proteina)||0)),0)/totalMP).toFixed(2) : 0;
-        const altaUmMP  = mpMes.filter(r=>(parseFloat(r.umidade)||0)>14).length;
-        const altoPerMP = mpMes.filter(r=>(parseFloat(r.peroxido)||0)>20).length;
+        // DGM por ração
+        const dgmPorRacao = racoes.map(r => {
+            const regs = prodMes.filter(p=>p.racao===r);
+            const v = med(regs, 'dgm');
+            return v !== null ? `${r}: ${v.toFixed(0)} µm` : null;
+        }).filter(Boolean);
 
-        // Métricas Classificação
+        // ---- MÉTRICAS MATÉRIA PRIMA ----
+        const totalMP    = mpMes.length;
+        const prodsMP    = [...new Set(mpMes.map(r => r.produto).filter(Boolean))];
+        const altaUmMP   = countAbove(mpMes, 'umidade', 14);
+        const altoPerMP  = countAbove(mpMes, 'peroxido', 20);
+
+        // Análise por produto de MP
+        const mpPorProduto = prodsMP.map(prod => {
+            const regs = mpMes.filter(r=>r.produto===prod);
+            const linhas = [];
+            const campos = [
+                {k:'umidade',    l:'Umidade(%)',      lim:'>14% ⚠️'},
+                {k:'proteina',   l:'Proteína(%)'},
+                {k:'solubil',    l:'Solubilidade(%)'},
+                {k:'ureatica',   l:'Ativ.Ureática',   lim:'>0.2 ⚠️'},
+                {k:'peroxido',   l:'Peróxido(meq/kg)',lim:'>20 ⚠️'},
+                {k:'acidez',     l:'Acidez'},
+                {k:'rancidez',   l:'Rancidez'},
+                {k:'digestibilidade', l:'Digestibilidade(%)'},
+                {k:'densidade',  l:'Densidade'},
+                {k:'mineral',    l:'Mineral(%)'},
+                {k:'fibra',      l:'Fibra(%)'},
+                {k:'extrato',    l:'Extrato Etéreo(%)'},
+                {k:'granulo1',   l:'Grânulo 4mm(%)'},
+                {k:'granulo2',   l:'Grânulo 2mm(%)'},
+                {k:'granulo3',   l:'Grânulo 0,6mm(%)'},
+                {k:'granulo4',   l:'Fundo(%)'},
+            ];
+            campos.forEach(({k,l,lim}) => {
+                const v = med(regs, k);
+                if (v !== null) {
+                    const alerta = (lim && k==='umidade' && v>14) ? ' ⚠️' : (lim && k==='ureatica' && v>0.2) ? ' ⚠️' : (lim && k==='peroxido' && v>20) ? ' ⚠️' : '';
+                    linhas.push(`    ${l}: ${v.toFixed(2)}${alerta}`);
+                }
+            });
+            return linhas.length ? `  [${prod}] (${regs.length} reg):\n` + linhas.join('\n') : null;
+        }).filter(Boolean);
+
+        // ---- MÉTRICAS CLASSIFICAÇÃO ----
         const totalClass = classMes.length;
         const prodsClass = [...new Set(classMes.map(r => r.produto).filter(Boolean))];
-        const medUmClass = totalClass ? (classMes.reduce((s,r)=>(s+(parseFloat(r.umidade)||0)),0)/totalClass).toFixed(2) : 0;
-        const aflaMax    = classMes.length ? Math.max(...classMes.map(r=>parseFloat(r.aflatoxinas)||0)).toFixed(2) : 0;
-        const fumoMax    = classMes.length ? Math.max(...classMes.map(r=>parseFloat(r.fumonisinas)||0)).toFixed(0) : 0;
+        const aflaMax    = maxVal(classMes, 'aflatoxinas');
+        const fumoMax    = maxVal(classMes, 'fumonisinas');
 
-        // Métricas NC
+        // Análise por produto de classificação
+        const classPorProduto = prodsClass.map(prod => {
+            const regs = classMes.filter(r=>r.produto===prod);
+            const linhas = [];
+            const campos = [
+                {k:'umidade',    l:'Umidade(%)'},
+                {k:'aflatoxinas',l:'Aflatoxinas(ppb)', lim20: true},
+                {k:'fumonisinas',l:'Fumonisinas(ppb)', lim5000: true},
+                {k:'proteina',   l:'Proteína(%)'},
+                {k:'densidade',  l:'Densidade'},
+                {k:'impureza',   l:'Impurezas(%)'},
+            ];
+            campos.forEach(({k,l,lim20,lim5000}) => {
+                const v = med(regs, k); const mx = maxVal(regs, k);
+                if (v !== null) {
+                    let alerta = '';
+                    if (lim20 && mx !== null && mx > 20) alerta = ` [MÁX: ${mx.toFixed(2)} ⚠️ ACIMA DO LIMITE MAPA]`;
+                    else if (lim5000 && mx !== null && mx > 5000) alerta = ` [MÁX: ${mx.toFixed(0)} ⚠️ ACIMA DO LIMITE MAPA]`;
+                    else if (mx !== null && mx !== v) alerta = ` (máx: ${mx.toFixed(2)})`;
+                    linhas.push(`    ${l}: média ${v.toFixed(2)}${alerta}`);
+                }
+            });
+            return linhas.length ? `  [${prod}] (${regs.length} reg):\n` + linhas.join('\n') : null;
+        }).filter(Boolean);
+
+        // ---- MÉTRICAS NC ----
         const ncCrit    = ncMes.filter(n => n.gravidade === 'Crítica').length;
         const ncMaior   = ncMes.filter(n => n.gravidade === 'Maior').length;
         const ncAberta  = ncMes.filter(n => n.status === 'Pendente' || n.status === 'Em Análise').length;
@@ -17158,72 +17326,109 @@ async function gerarRelatorioMensalIA() {
         ncMes.forEach(n => { const f = n.fornecedor||'Interno'; ncFornece[f] = (ncFornece[f]||0)+1; });
         const topFornNC = Object.entries(ncFornece).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([f,n])=>`${f} (${n})`).join(', ');
 
-        // Tendências MP — pegar últimos 4 dias do mês
+        // ---- TENDÊNCIAS MP — últimos 4 dias ----
         const diasMes = [...new Set(mpMes.map(r=>r.data))].sort().slice(-4);
         const tendUmidade = diasMes.map(d => {
             const regs = mpMes.filter(r=>r.data===d);
             return regs.length ? (regs.reduce((s,r)=>s+(parseFloat(r.umidade)||0),0)/regs.length).toFixed(1) : null;
         }).filter(Boolean);
 
-        // ---- MONTAR PROMPT ----
-        const prompt = `RELATÓRIO MENSAL DE QUALIDADE — ${nomeMes.toUpperCase()}
-
-== DADOS DE PRODUÇÃO (${totalProd} registros) ==
+        // ---- MONTAR PROMPT DINÂMICO (somente módulos selecionados) ----
+        const _blocosProd = !_usaProd ? '' : `
+== PRODUTO ACABADO / PRODUÇÃO (${totalProd} registros) ==
 Rações produzidas: ${racoes.join(', ') || 'nenhuma'}
-Umidade média produto acabado: ${medUmProd}%
-Proteína média produto acabado: ${medProtProd}%
+DGM médio geral: ${fmtMed(medDGM,0)} µm ${medDGM&&(medDGM<700||medDGM>1000)?'[⚠️ FORA DO PADRÃO 700-1000 µm]':'[dentro do padrão]'}
+DGM por ração: ${dgmPorRacao.join(' | ') || 'N/D'}
+DPG médio: ${fmtMed(medDPG,0)} µm
+Granulometria peneira 4mm: ${fmtMed(medGranulo1)}%
+Granulometria peneira 2mm: ${fmtMed(medGranulo2)}%
+Granulometria peneira 0,6mm: ${fmtMed(medGranulo3)}%
+Fundo (partículas finas): ${fmtMed(medFundo)}%
+Umidade média: ${fmtMed(medUmProd)}%
+Proteína média: ${fmtMed(medProtProd)}%
+Fibra média: ${fmtMed(medFibraProd)}%
+Extrato Etéreo médio: ${fmtMed(medExtrato)}%
+Mineral médio: ${fmtMed(medMineralProd)}%
+Cálcio médio: ${fmtMed(medCalcio)}%
+Fósforo médio: ${fmtMed(medFosforo)}%
+Solubilidade protéica média: ${fmtMed(medSolubilProd)}%
+Densidade média: ${fmtMed(medDensProd,0)} g/L`;
 
+        const _blocosMP = !_usaMP ? '' : `
 == MATÉRIA PRIMA (${totalMP} registros) ==
 Produtos analisados: ${prodsMP.join(', ') || 'nenhum'}
-Umidade média MP: ${medUmMP}%
-Proteína média MP: ${medProtMP}%
 Registros com umidade > 14% (limite Embrapa): ${altaUmMP} de ${totalMP}
 Registros com peróxido > 20 meq/kg (alerta oxidação): ${altoPerMP} de ${totalMP}
-Tendência de umidade nos últimos dias: ${tendUmidade.join('% → ')}%
+Tendência de umidade (últimos dias): ${tendUmidade.length ? tendUmidade.join('% → ')+'%' : 'N/D'}
+ANÁLISE DETALHADA POR MATÉRIA PRIMA:
+${mpPorProduto.join('\n') || 'Nenhum dado disponível'}`;
 
+        const _blocosClass = !_usaClass ? '' : `
 == CLASSIFICAÇÃO DE GRÃOS (${totalClass} registros) ==
 Produtos: ${prodsClass.join(', ') || 'nenhum'}
-Umidade média grãos: ${medUmClass}%
-Aflatoxina máxima detectada: ${aflaMax} ppb ${parseFloat(aflaMax)>20?'[⚠️ ACIMA DO LIMITE MAPA 20 ppb]':'[dentro do limite]'}
-Fumonisina máxima detectada: ${fumoMax} ppb ${parseInt(fumoMax)>5000?'[⚠️ ACIMA DO LIMITE MAPA 5000 ppb]':'[dentro do limite]'}
+Aflatoxina máxima: ${aflaMax!==null?aflaMax.toFixed(2):'N/D'} ppb ${aflaMax!==null&&aflaMax>20?'[⚠️ ACIMA DO LIMITE MAPA 20 ppb]':'[dentro do limite]'}
+Fumonisina máxima: ${fumoMax!==null?fumoMax.toFixed(0):'N/D'} ppb ${fumoMax!==null&&fumoMax>5000?'[⚠️ ACIMA DO LIMITE MAPA 5000 ppb]':'[dentro do limite]'}
+ANÁLISE DETALHADA POR PRODUTO CLASSIFICADO:
+${classPorProduto.join('\n') || 'Nenhum dado disponível'}`;
 
+        const _blocosNC = !_usaNC ? '' : `
 == NÃO CONFORMIDADES (${ncMes.length} registros) ==
 Críticas: ${ncCrit} | Maiores: ${ncMaior} | Ainda abertas: ${ncAberta}
 Fornecedores com mais NCs: ${topFornNC || 'nenhum'}
 Tipos: ${[...new Set(ncMes.map(n=>n.tipo))].join(', ') || '—'}
-Produtos mais afetados: ${[...new Set(ncMes.map(n=>n.produto))].slice(0,5).join(', ') || '—'}
+Produtos mais afetados: ${[...new Set(ncMes.map(n=>n.produto))].slice(0,5).join(', ') || '—'}`;
 
+        const _blocosDev = !_usaDev ? '' : `
 == DEVOLUÇÕES (${devMes.length} registros) ==
-Motivos: ${[...new Set(devMes.map(d=>d.motivo))].join(', ') || 'nenhuma'}
+Motivos: ${[...new Set(devMes.map(d=>d.motivo))].join(', ') || 'nenhuma'}`;
 
-Gere um RELATÓRIO MENSAL CONSOLIDADO DE QUALIDADE completo com:
-1. RESUMO EXECUTIVO (3–4 linhas)
-2. INDICADORES DO MÊS (interpretar cada métrica contra a norma)
-3. DESVIOS E NÃO CONFORMIDADES (analisar padrões, causas sistêmicas)
-4. ANÁLISE DE MICOTOXINAS (se houver dados, avaliar risco conforme MAPA)
-5. TENDÊNCIAS IDENTIFICADAS (ex: umidade crescente, fornecedor problemático)
-6. DIAGNÓSTICO TÉCNICO
-7. SUGESTÕES DE MELHORIA (3–5 ações com base normativa)
-8. CONCLUSÃO
+        // Seções do relatório conforme módulos ativos
+        const _secsRel = ['1. RESUMO EXECUTIVO (4–5 linhas com os principais achados do período)'];
+        let _si = 2;
+        if (_usaProd) {
+            _secsRel.push(`${_si++}. PRODUTO ACABADO — GRANULOMETRIA E QUALIDADE FÍSICA (DGM, DPG, peneiras por ração)`);
+            _secsRel.push(`${_si++}. PRODUTO ACABADO — COMPOSIÇÃO NUTRICIONAL (proteína, fibra, extrato, cálcio, fósforo, umidade)`);
+        }
+        if (_usaMP)    _secsRel.push(`${_si++}. MATÉRIAS PRIMAS — ANÁLISE INDIVIDUAL POR PRODUTO (cada MP com todos os parâmetros; soja extrusada: ureática 0,05-0,20, solubilidade mín. 75%)`);
+        if (_usaClass) _secsRel.push(`${_si++}. CLASSIFICAÇÃO DE GRÃOS — ANÁLISE INDIVIDUAL (micotoxinas IN MAPA 07/2011, umidade, qualidade por produto)`);
+        if (_usaNC||_usaDev) _secsRel.push(`${_si++}. NÃO CONFORMIDADES${_usaDev?' E DEVOLUÇÕES':''} (padrões, causas sistêmicas, fornecedores críticos)`);
+        _secsRel.push(`${_si++}. TENDÊNCIAS E ALERTAS`);
+        _secsRel.push(`${_si++}. DIAGNÓSTICO TÉCNICO GERAL`);
+        _secsRel.push(`${_si++}. SUGESTÕES DE MELHORIA (5–7 ações específicas e praticáveis)`);
+        _secsRel.push(`${_si++}. CONCLUSÃO`);
 
-Referencie as normas Embrapa e Compêndio Brasileiro de Nutrição Animal. Use linguagem executiva clara.`;
+        const _modulosNomes = [_usaProd?'Produção':null,_usaMP?'Matéria Prima':null,_usaClass?'Classificação':null,_usaNC?'Não Conformidades':null,_usaDev?'Devoluções':null].filter(Boolean).join(', ');
 
-        const respTexto = await _iaCallComFallback(_IA_SYSTEM_RELATORIO, [{ role:'user', content: prompt }], 2500);
+        const prompt = `RELATÓRIO MENSAL DE QUALIDADE — ${nomeMes.toUpperCase()}
+MÓDULOS ANALISADOS: ${_modulosNomes}
+${_blocosProd}${_blocosMP}${_blocosClass}${_blocosNC}${_blocosDev}
+---
+Analise EXCLUSIVAMENTE os módulos fornecidos (${_modulosNomes}). NÃO mencione módulos não incluídos.
+Estruture o relatório em:
+${_secsRel.join('\n')}
+
+Referencie normas Embrapa, MAPA e Compêndio Brasileiro de Nutrição Animal onde aplicável.
+Use linguagem executiva clara e técnica.`;
+
+        const respTexto = await _iaCallComFallback(_IA_SYSTEM_RELATORIO, [{ role:'user', content: prompt }], 4000);
         _relMensalIA_ultimoTexto = respTexto;
 
         // ---- RENDERIZAR RESULTADO ----
         // KPIs visuais
-        const kpiHtml = `
-        <div class="rml-grid" style="margin-bottom:20px;">
-            <div class="rml-kpi"><div class="rml-kpi-val" style="color:#0a1e7f;">${totalProd}</div><div class="rml-kpi-lbl">Lotes Produção</div></div>
-            <div class="rml-kpi"><div class="rml-kpi-val" style="color:#8e44ad;">${totalMP}</div><div class="rml-kpi-lbl">Análises MP</div></div>
-            <div class="rml-kpi"><div class="rml-kpi-val" style="color:#e67e22;">${totalClass}</div><div class="rml-kpi-lbl">Classificações</div></div>
-            <div class="rml-kpi"><div class="rml-kpi-val" style="color:${ncMes.length>5?'#e74c3c':ncMes.length>0?'#e67e22':'#27ae60'};">${ncMes.length}</div><div class="rml-kpi-lbl">NCs no Mês</div></div>
-            <div class="rml-kpi"><div class="rml-kpi-val" style="color:${altaUmMP>0?'#e74c3c':'#27ae60'};">${altaUmMP}</div><div class="rml-kpi-lbl">MP Umid > 14%</div></div>
-            <div class="rml-kpi"><div class="rml-kpi-val" style="color:${parseFloat(aflaMax)>20?'#e74c3c':parseFloat(aflaMax)>10?'#e67e22':'#27ae60'};">${aflaMax}</div><div class="rml-kpi-lbl">Aflatox. Máx (ppb)</div></div>
-            <div class="rml-kpi"><div class="rml-kpi-val" style="color:${ncCrit>0?'#e74c3c':'#27ae60'};">${ncCrit}</div><div class="rml-kpi-lbl">NCs Críticas</div></div>
-            <div class="rml-kpi"><div class="rml-kpi-val" style="color:${devMes.length>0?'#e67e22':'#27ae60'};">${devMes.length}</div><div class="rml-kpi-lbl">Devoluções</div></div>
-        </div>`;
+        const dgmCor = medDGM === null ? '#888' : (medDGM < 700 || medDGM > 1000) ? '#e74c3c' : '#27ae60';
+        const aflaMaxNum = aflaMax !== null ? aflaMax : 0;
+        const _kpiItems = [];
+        if (_usaProd)  _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:#0a1e7f;">${totalProd}</div><div class="rml-kpi-lbl">Lotes Produção</div></div>`);
+        if (_usaMP)    _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:#8e44ad;">${totalMP}</div><div class="rml-kpi-lbl">Análises MP</div></div>`);
+        if (_usaClass) _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:#e67e22;">${totalClass}</div><div class="rml-kpi-lbl">Classificações</div></div>`);
+        if (_usaNC)    _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${ncMes.length>5?'#e74c3c':ncMes.length>0?'#e67e22':'#27ae60'};">${ncMes.length}</div><div class="rml-kpi-lbl">NCs no Mês</div></div>`);
+        if (_usaNC)    _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${ncCrit>0?'#e74c3c':'#27ae60'};">${ncCrit}</div><div class="rml-kpi-lbl">NCs Críticas</div></div>`);
+        if (_usaProd)  _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${dgmCor};">${medDGM!==null?medDGM.toFixed(0):'N/D'}</div><div class="rml-kpi-lbl">DGM Médio (µm)</div></div>`);
+        if (_usaMP)    _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${altaUmMP>0?'#e74c3c':'#27ae60'};">${altaUmMP}</div><div class="rml-kpi-lbl">MP Umid > 14%</div></div>`);
+        if (_usaMP)    _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${altoPerMP>0?'#e74c3c':'#27ae60'};">${altoPerMP}</div><div class="rml-kpi-lbl">MP Peróx. > 20</div></div>`);
+        if (_usaClass) _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${aflaMaxNum>20?'#e74c3c':aflaMaxNum>10?'#e67e22':'#27ae60'};">${aflaMax!==null?aflaMax.toFixed(2):'N/D'}</div><div class="rml-kpi-lbl">Aflatox. Máx (ppb)</div></div>`);
+        if (_usaDev)   _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${devMes.length>0?'#e67e22':'#27ae60'};">${devMes.length}</div><div class="rml-kpi-lbl">Devoluções</div></div>`);
+        const kpiHtml = `<div class="rml-grid" style="margin-bottom:20px;">${_kpiItems.join('')}</div>`;
 
         // Texto do relatório formatado
         const textoHtml = `<div style="font-size:12px;line-height:1.8;color:#2c3e50;white-space:pre-wrap;">${_formatIATextoRelatorio(respTexto)}</div>`;
