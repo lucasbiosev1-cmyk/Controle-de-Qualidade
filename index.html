@@ -1470,6 +1470,7 @@
                 <button class="nav-dropdown-item" id="tabRelMP" onclick="trocarAba('relMP', this);closeDropdowns()">🧪 Rel. Matéria Prima</button>
                 <button class="nav-dropdown-item" id="tabRanking" onclick="trocarAba('ranking', this);closeDropdowns()">🏆 Ranking </button>
                 <button class="nav-dropdown-item" id="tabBoletim" onclick="trocarAba('boletim', this);closeDropdowns()">📋 Boletim Industrial</button>
+                <button class="nav-dropdown-item" id="tabRelMensalIA" onclick="abrirRelatorioMensalIA_seguro();closeDropdowns()" style="display:none;border-top:1px solid rgba(255,255,255,0.15);background:linear-gradient(135deg,rgba(26,58,159,0.4),rgba(41,128,185,0.3));color:#a8d4f5;">🤖 Rel. Mensal IA <span style="font-size:9px;background:#c0392b;color:#fff;border-radius:3px;padding:1px 5px;margin-left:4px;vertical-align:middle;">ADMIN</span></button>
             </div>
         </div>
         <!-- ENTRADAS (cadastro MP) -->
@@ -5395,6 +5396,7 @@ async function fazerLogin() {
             if (perfilAtual === 'admin') verificarEspacoAoIniciar();
             if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
             atualizarKpisCapa();
+            if (typeof _iaAtualizarMenuAdmin === 'function') _iaAtualizarMenuAdmin();
         }).catch(() => sgqOcultarLoading());
 
     } catch(e) {
@@ -12921,6 +12923,7 @@ async function executarCorrecaoDefeitos() {
         <div class="nc-modal-footer">
             <button class="nc-btn nc-btn-secondary" onclick="fecharModalNC()">Cancelar</button>
             <button class="nc-btn nc-btn-info" onclick="imprimirRelatorioNC('nc')" title="Gerar relatório para impressão">🖨️ Imprimir</button>
+            <button class="nc-btn" style="background:linear-gradient(135deg,#6c3483,#8e44ad);color:white;display:flex;align-items:center;gap:6px;" onclick="abrirChatIA_NC()" title="Consultar IA para análise técnica baseada em Embrapa e Compêndio Brasileiro de Nutrição Animal">🤖 Consultar IA</button>
             <button class="nc-btn nc-btn-primary" onclick="salvarNC()">💾 Salvar NC</button>
         </div>
     </div>
@@ -14030,6 +14033,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     atualizarKpisCapa();
                     if (perfilAtual === 'admin') verificarEspacoAoIniciar();
                     if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
+                    if (typeof _iaAtualizarMenuAdmin === 'function') _iaAtualizarMenuAdmin();
                 }).catch(() => sgqOcultarLoading());
                 return;
             }
@@ -16576,6 +16580,714 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     eqRenderTabela();
 });
+</script>
+
+<!-- ============================================================ -->
+<!-- MÓDULO IA — CHAT NC + RELATÓRIO MENSAL                      -->
+<!-- Integrado às normas Embrapa e Compêndio Bras. Nutrição Animal-->
+<!-- ============================================================ -->
+
+<!-- MODAL: CHAT IA para Não Conformidade -->
+<div id="modalChatIA_NC" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:720px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 12px 48px rgba(0,0,0,0.35);overflow:hidden;">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#4a1070,#6c3483,#8e44ad);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+      <div>
+        <div style="font-size:15px;font-weight:900;letter-spacing:.3px;">🤖 Consultor de Qualidade — IA</div>
+        <div style="font-size:10px;opacity:.75;margin-top:2px;">Baseado nas normas Embrapa e Compêndio Brasileiro de Nutrição Animal</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button onclick="_iaConfigurarChave()" title="Configurar chave API Anthropic" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;">⚙️ Config. IA</button>
+        <button onclick="fecharChatIA_NC()" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;opacity:.8;line-height:1;">×</button>
+      </div>
+    </div>
+    <!-- Contexto NC -->
+    <div id="chatIA_NC_contexto" style="background:#f5eeff;border-bottom:1px solid #d7b8f3;padding:10px 16px;font-size:11px;color:#4a1070;flex-shrink:0;"></div>
+    <!-- Banner status chave -->
+    <div id="chatIA_NC_keyBanner" style="display:none;background:#fff8e1;border-bottom:1px solid #ffe082;padding:8px 16px;font-size:11px;color:#856404;flex-shrink:0;display:flex;align-items:center;gap:8px;">
+      <span>⚠️ <strong>Chave API não configurada.</strong> Clique em <strong>⚙️ Config. IA</strong> no cabeçalho para adicionar sua chave Anthropic (sk-ant-...).</span>
+    </div>
+    <!-- Mensagens -->
+    <div id="chatIA_NC_msgs" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;min-height:200px;"></div>
+    <!-- Input -->
+    <div style="padding:12px 16px;border-top:1px solid #eee;background:#fafafa;flex-shrink:0;">
+      <div style="display:flex;gap:8px;align-items:flex-end;">
+        <textarea id="chatIA_NC_input" placeholder="Descreva detalhes adicionais sobre o problema ou faça uma pergunta técnica..." rows="2" style="flex:1;padding:9px 12px;border:1px solid #c9b3e8;border-radius:8px;font-size:12px;resize:none;font-family:Arial,sans-serif;outline:none;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarMsgIA_NC();}"></textarea>
+        <button onclick="enviarMsgIA_NC()" id="chatIA_NC_btnEnviar" style="background:linear-gradient(135deg,#6c3483,#8e44ad);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-weight:800;cursor:pointer;font-size:13px;white-space:nowrap;flex-shrink:0;">Enviar ↵</button>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+        <button onclick="chatIA_NC_acao('acao_tomada')" style="background:#fff;border:1px solid #8e44ad;color:#6c3483;border-radius:20px;padding:4px 12px;font-size:10px;font-weight:700;cursor:pointer;">💊 Sugerir Ação Tomada</button>
+        <button onclick="chatIA_NC_acao('causa_raiz')" style="background:#fff;border:1px solid #8e44ad;color:#6c3483;border-radius:20px;padding:4px 12px;font-size:10px;font-weight:700;cursor:pointer;">🔍 Analisar Causa Raiz</button>
+        <button onclick="chatIA_NC_acao('risco_produto')" style="background:#fff;border:1px solid #c0392b;color:#c0392b;border-radius:20px;padding:4px 12px;font-size:10px;font-weight:700;cursor:pointer;">⚠️ Risco do Produto</button>
+        <button onclick="chatIA_NC_acao('acao_corretiva')" style="background:#fff;border:1px solid #27ae60;color:#1e8449;border-radius:20px;padding:4px 12px;font-size:10px;font-weight:700;cursor:pointer;">✅ Ação Corretiva</button>
+        <button onclick="chatIA_NC_acao('inserir_campos')" style="background:linear-gradient(135deg,#27ae60,#1e8449);color:#fff;border:none;border-radius:20px;padding:4px 14px;font-size:10px;font-weight:700;cursor:pointer;">📋 Inserir nos Campos</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: RELATÓRIO MENSAL IA -->
+<div id="modalRelatorioMensalIA" style="display:none;position:fixed;inset:0;z-index:9400;background:rgba(0,0,0,0.65);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:900px;max-height:94vh;display:flex;flex-direction:column;box-shadow:0 12px 48px rgba(0,0,0,0.4);overflow:hidden;">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#0a1e7f,#1a3a9f,#2980b9);color:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+      <div>
+        <div style="font-size:16px;font-weight:900;letter-spacing:.3px;">📊 Relatório Mensal de Qualidade — IA</div>
+        <div style="font-size:11px;opacity:.75;margin-top:3px;">Análise consolidada com referências Embrapa e Compêndio Brasileiro de Nutrição Animal</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button onclick="_iaConfigurarChave()" title="Configurar chave API Anthropic" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;">⚙️ Config. IA</button>
+        <button onclick="fecharRelatorioMensalIA()" style="background:none;border:none;color:#fff;font-size:26px;cursor:pointer;opacity:.8;line-height:1;">×</button>
+      </div>
+    </div>
+    <!-- Seletor de mês -->
+    <div style="background:#eef2ff;border-bottom:1px solid #c5d5f0;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-shrink:0;flex-wrap:wrap;">
+      <div style="font-size:12px;font-weight:700;color:#0a1e7f;white-space:nowrap;">📅 Período de análise:</div>
+      <input type="month" id="relMensalIA_mes" style="padding:7px 10px;border:1px solid #bcd;border-radius:6px;font-size:13px;font-weight:700;" onchange="">
+      <button onclick="gerarRelatorioMensalIA()" id="btnGerarRelMensalIA" style="background:linear-gradient(135deg,#0a1e7f,#1a3a9f);color:#fff;border:none;border-radius:6px;padding:9px 22px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:7px;">🤖 Gerar Relatório</button>
+      <button onclick="imprimirRelMensalIA()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;">🖨️ Imprimir</button>
+      <button onclick="copiarRelMensalIA()" style="background:#34495e;color:#fff;border:none;border-radius:6px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;">📋 Copiar</button>
+    </div>
+    <!-- Conteúdo do relatório -->
+    <div id="relMensalIA_conteudo" style="flex:1;overflow-y:auto;padding:20px 24px;">
+      <div style="text-align:center;padding:60px 20px;color:#bdc3c7;">
+        <div style="font-size:60px;margin-bottom:16px;">📊</div>
+        <div style="font-size:14px;font-weight:700;color:#95a5a6;">Selecione o mês e clique em "Gerar Relatório"</div>
+        <div style="font-size:11px;color:#bdc3c7;margin-top:6px;">A IA analisará todos os dados do período — produção, matéria-prima, classificação e não conformidades</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Chat IA NC — mensagens */
+.cia-msg { display:flex; gap:10px; align-items:flex-start; }
+.cia-msg.user { flex-direction:row-reverse; }
+.cia-avatar { width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0; }
+.cia-avatar.ia  { background:linear-gradient(135deg,#6c3483,#8e44ad); }
+.cia-avatar.usr { background:#0a1e7f; }
+.cia-bubble { max-width:82%;padding:11px 14px;border-radius:10px;font-size:12px;line-height:1.7;white-space:pre-wrap; }
+.cia-bubble.ia  { background:#f5eeff;border:1px solid #d7b8f3;color:#2c0f3a;border-radius:2px 10px 10px 10px; }
+.cia-bubble.usr { background:#0a1e7f;color:#fff;border-radius:10px 2px 10px 10px;text-align:right; }
+.cia-bubble.loading { background:#f0f4ff;color:#7f8fa6;font-style:italic; animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:.7} 50%{opacity:1} }
+.cia-insert-btn { margin-top:8px;background:linear-gradient(135deg,#27ae60,#1e8449);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:10px;font-weight:700;cursor:pointer; }
+/* Relatório Mensal IA */
+.rml-section { border-left:4px solid #0a1e7f;background:#f8faff;border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:18px; }
+.rml-section h3 { font-size:13px;font-weight:900;color:#0a1e7f;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px; }
+.rml-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px; }
+.rml-kpi { background:#fff;border:1px solid #dce4f5;border-radius:8px;padding:12px;text-align:center; }
+.rml-kpi-val { font-size:22px;font-weight:900;color:#0a1e7f; }
+.rml-kpi-lbl { font-size:10px;color:#888;text-transform:uppercase;font-weight:700;margin-top:3px; }
+.rml-alerta { background:#fff8f0;border-left:4px solid #e67e22;padding:10px 14px;border-radius:0 6px 6px 0;font-size:12px;margin-bottom:8px; }
+.rml-critico { background:#fff5f5;border-left:4px solid #e74c3c; }
+.rml-ok { background:#f0fff4;border-left:4px solid #27ae60; }
+.rml-norma { font-size:10px;color:#7f8c8d;margin-top:4px;font-style:italic; }
+.rml-loading { text-align:center;padding:40px;color:#888;font-style:italic; }
+.rml-loading .spinner { width:40px;height:40px;border:4px solid #ddd;border-top-color:#0a1e7f;border-radius:50%;animation:sgq-spin 0.8s linear infinite;margin:0 auto 14px; }
+</style>
+
+<script>
+// ============================================================
+// MÓDULO IA — CONFIGURAÇÃO
+// ============================================================
+const _IA_MODEL    = 'claude-sonnet-4-20250514';
+// PROXY: para evitar CORS, a chamada passa por um Edge Function do Supabase
+// ou por um proxy reverso. Se você tiver a chave Anthropic salva no Supabase
+// como secret, crie uma Edge Function "anthropic-proxy" conforme o README abaixo.
+// Alternativa: informe a chave diretamente abaixo (apenas em ambiente seguro/local).
+const _IA_PROXY_URL = '/functions/v1/anthropic-proxy'; // Edge Function Supabase
+const _IA_DIRECT_URL = 'https://api.anthropic.com/v1/messages';
+
+// Histórico de conversa do chat NC
+let _chatIA_NC_history = [];
+let _chatIA_NC_contextoNC = null;
+let _relMensalIA_ultimoTexto = '';
+
+// ============================================================
+// UTILITÁRIO: chamada à API Anthropic via proxy ou chave direta
+// ============================================================
+async function _iaCall(systemPrompt, messages, maxTokens = 1500) {
+    // Tenta ler chave da sessão (configurada pelo usuário na tela)
+    const chaveLocal = typeof _iaGetChave === 'function' ? _iaGetChave() : (localStorage.getItem('_ia_api_key') || '');
+
+    let url, headers;
+    if (chaveLocal) {
+        // Modo direto com chave do usuário
+        url = _IA_DIRECT_URL;
+        headers = {
+            'Content-Type': 'application/json',
+            'x-api-key': chaveLocal,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+        };
+    } else {
+        // Modo proxy (Edge Function Supabase)
+        url = _IA_PROXY_URL;
+        headers = { 'Content-Type': 'application/json' };
+        // Adiciona token de sessão Supabase para autenticar no proxy
+        try {
+            const { data: { session } } = await _sbClient.auth.getSession();
+            if (session?.access_token) headers['Authorization'] = 'Bearer ' + session.access_token;
+        } catch(e) {}
+    }
+
+    const resp = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+            model: _IA_MODEL,
+            max_tokens: maxTokens,
+            system: systemPrompt,
+            messages
+        })
+    });
+
+    if (!resp.ok) {
+        const err = await resp.text();
+        // Se proxy não encontrado, solicita configuração da chave
+        if (resp.status === 404 || resp.status === 405) {
+            throw new Error('PROXY_NAO_CONFIGURADO');
+        }
+        throw new Error('Erro na API IA (' + resp.status + '): ' + err.slice(0, 300));
+    }
+    const data = await resp.json();
+    return data.content.map(b => b.text || '').join('');
+}
+
+// ============================================================
+// CONFIGURAÇÃO DE CHAVE API (salva em localStorage — apenas local/dev)
+// ============================================================
+function _iaGetChave() {
+    return localStorage.getItem('_ia_api_key') || '';
+}
+
+function _iaConfigurarChave() {
+    const atual = _iaGetChave();
+    const nova = prompt(
+        '🔑 Configurar Chave API Anthropic\n\n' +
+        'Cole sua chave API (começa com "sk-ant-").\n' +
+        'A chave fica salva apenas neste navegador (localStorage).\n\n' +
+        'Para produção, configure a Edge Function do Supabase (recomendado).\n\n' +
+        'Chave atual: ' + (atual ? atual.slice(0,12) + '...' : 'não configurada'),
+        atual || ''
+    );
+    if (nova === null) return; // cancelou
+    if (nova.trim()) {
+        localStorage.setItem('_ia_api_key', nova.trim());
+        sgqToast('✅ Chave API salva no navegador!', 'success');
+    } else {
+        localStorage.removeItem('_ia_api_key');
+        sgqToast('🗑️ Chave API removida.', 'info');
+    }
+    // Atualizar banner
+    const banner = document.getElementById('chatIA_NC_keyBanner');
+    if (banner) banner.style.display = _iaGetChave() ? 'none' : 'flex';
+}
+
+async function _iaCallComFallback(systemPrompt, messages, maxTokens) {
+    try {
+        return await _iaCall(systemPrompt, messages, maxTokens);
+    } catch(e) {
+        if (e.message === 'PROXY_NAO_CONFIGURADO' || e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+            // Mostra modal de configuração
+            const confirmar = confirm(
+                '⚙️ Configuração necessária para o Módulo IA\n\n' +
+                'Para usar a IA, você precisa de uma das opções:\n\n' +
+                '1️⃣  CHAVE API (mais simples): Informe sua chave Anthropic (sk-ant-...).\n' +
+                '    A chave fica salva apenas neste navegador.\n\n' +
+                '2️⃣  PROXY SUPABASE (produção): Configure a Edge Function\n' +
+                '    "anthropic-proxy" no seu projeto Supabase.\n\n' +
+                'Clique OK para configurar a chave API agora.'
+            );
+            if (confirmar) {
+                _iaConfigurarChave();
+                throw new Error('Configure a chave e tente novamente.');
+            }
+            throw new Error('Chave API não configurada. Clique em "⚙️ Config. IA" para configurar.');
+        }
+        throw e;
+    }
+}
+
+// ============================================================
+// SISTEMA PROMPT BASE
+// ============================================================
+const _IA_SYSTEM_NC = `Você é um consultor especialista em controle de qualidade para fábricas de ração animal e nutrição animal no Brasil. 
+Suas respostas são técnicas, objetivas e fundamentadas nas normas:
+- **Embrapa**: Instruções Técnicas sobre qualidade de grãos, controle de micotoxinas, armazenamento e processamento de alimentos para animais.
+- **Compêndio Brasileiro de Nutrição Animal (MAPA)**: parâmetros nutricionais, limites de umidade, proteína, micotoxinas e parâmetros físico-químicos por tipo de ingrediente.
+- Portaria MAPA nº 269/2019 e legislação vigente sobre controle de qualidade na nutrição animal.
+
+Ao analisar uma Não Conformidade:
+1. Identifique as possíveis causas técnicas com base nos dados fornecidos.
+2. Avalie o RISCO DO PRODUTO para a produção e para os animais (segurança alimentar).
+3. Indique quais ETAPAS DO PROCESSO ou INSUMOS podem estar comprometidos.
+4. Sugira AÇÃO TOMADA imediata clara e objetiva.
+5. Sugira AÇÃO CORRETIVA com prazo e responsabilidade implícita.
+6. SEMPRE referencie a norma aplicável (ex: "conforme Embrapa – Circular Técnica 89", "Compêndio Bras. Nutrição Animal, tabela X").
+7. Use linguagem técnica e profissional. Responda em português do Brasil.
+8. Seja conciso: priorize clareza técnica. Use listas quando útil.`;
+
+const _IA_SYSTEM_RELATORIO = `Você é um consultor de qualidade especialista em fábricas de ração animal. 
+Você analisa dados mensais de controle de qualidade e gera um relatório executivo consolidado baseado em:
+- **Embrapa**: normas técnicas de qualidade de grãos, micotoxinas e processamento.
+- **Compêndio Brasileiro de Nutrição Animal (MAPA)**: limites nutricionais e físico-químicos.
+- ISO 9001 aplicada à nutrição animal.
+
+Ao gerar o relatório:
+1. Calcule e interprete os INDICADORES DE QUALIDADE do período.
+2. Identifique PADRÕES e TENDÊNCIAS (ex: umidade crescente, fornecedor problemático).
+3. Aponte DESVIOS referenciando a norma violada.
+4. Escreva DIAGNÓSTICO TÉCNICO baseado nos dados.
+5. Proponha SUGESTÕES DE MELHORIA com base normativa.
+6. Use linguagem executiva mas com embasamento técnico. Formate com seções claras.
+7. Responda em português do Brasil. Seja objetivo, evite encher de texto genérico.`;
+
+// ============================================================
+// CHAT IA — NÃO CONFORMIDADE
+// ============================================================
+function _coletarContextoNC() {
+    const get = id => { const e = document.getElementById(id); return e ? e.value : ''; };
+    const causasMarcadas = Array.from(document.querySelectorAll('#causasGrid input:checked')).map(cb => cb.value);
+
+    const nc = {
+        numero:       get('nc-numero'),
+        data:         get('nc-data'),
+        tipo:         get('nc-tipo'),
+        gravidade:    get('nc-gravidade'),
+        produto:      get('nc-produto'),
+        lote:         get('nc-lote'),
+        fornecedor:   get('nc-fornecedor'),
+        local:        get('nc-local'),
+        descricao:    get('nc-descricao'),
+        causas:       causasMarcadas,
+        disposicao:   get('nc-disposicao'),
+        acaoImediata: get('nc-acao-imediata'),
+        causaRaiz:    get('nc-causa-raiz'),
+        acaoCorretiva:get('nc-acao-corretiva'),
+        status:       get('nc-status'),
+    };
+
+    // Dados históricos: NCs anteriores do mesmo produto
+    const historicoNCs = (listaNC || [])
+        .filter(n => n.produto && nc.produto && n.produto.toLowerCase().includes(nc.produto.toLowerCase().slice(0,6)))
+        .slice(-5)
+        .map(n => `[${n.numero}] ${n.data} — ${n.tipo} — ${n.gravidade} — ${n.descricao ? n.descricao.slice(0,80) : ''}`);
+
+    // Métricas do mês atual para contexto
+    const agora = new Date();
+    const prefMes = agora.getFullYear() + '-' + String(agora.getMonth() + 1).padStart(2, '0');
+    const mpMes = (materiasPrimas || []).filter(r => r.data && r.data.startsWith(prefMes) && r.produto && nc.produto && r.produto.toLowerCase().includes(nc.produto.toLowerCase().slice(0,5)));
+    let dadosMPContexto = '';
+    if (mpMes.length > 0) {
+        const medUm  = (mpMes.reduce((s,r) => s + (parseFloat(r.umidade)||0), 0) / mpMes.length).toFixed(2);
+        const medProt= (mpMes.reduce((s,r) => s + (parseFloat(r.proteina)||0), 0) / mpMes.length).toFixed(2);
+        dadosMPContexto = `\nDados MP do produto este mês (${mpMes.length} registros): umidade média=${medUm}%, proteína média=${medProt}%`;
+    }
+
+    return { nc, historicoNCs, dadosMPContexto };
+}
+
+function abrirChatIA_NC() {
+    const ctx = _coletarContextoNC();
+    _chatIA_NC_contextoNC = ctx;
+    _chatIA_NC_history = [];
+
+    const el = document.getElementById('chatIA_NC_contexto');
+    el.innerHTML = `<strong>📌 NC Atual:</strong> ${ctx.nc.numero || 'Nova'} | 
+        <strong>Tipo:</strong> ${ctx.nc.tipo || '—'} | 
+        <strong>Gravidade:</strong> <span style="color:${ctx.nc.gravidade==='Crítica'?'#e74c3c':ctx.nc.gravidade==='Maior'?'#e67e22':'#27ae60'};font-weight:800;">${ctx.nc.gravidade || '—'}</span> | 
+        <strong>Produto:</strong> ${ctx.nc.produto || '—'} | 
+        <strong>Fornecedor:</strong> ${ctx.nc.fornecedor || '—'}`;
+
+    const msgsEl = document.getElementById('chatIA_NC_msgs');
+    msgsEl.innerHTML = '';
+
+    // Mostrar banner se chave não configurada
+    const banner = document.getElementById('chatIA_NC_keyBanner');
+    if (banner) banner.style.display = _iaGetChave() ? 'none' : 'flex';
+
+    // Mensagem inicial automática da IA
+    const modal = document.getElementById('modalChatIA_NC');
+    modal.style.display = 'flex';
+
+    // Iniciar análise automática
+    setTimeout(() => _iaAnalisarNC_inicial(), 200);
+}
+
+function fecharChatIA_NC() {
+    document.getElementById('modalChatIA_NC').style.display = 'none';
+}
+
+async function _iaAnalisarNC_inicial() {
+    const ctx = _chatIA_NC_contextoNC;
+    if (!ctx) return;
+
+    const nc = ctx.nc;
+    let prompt = `DADOS DA NÃO CONFORMIDADE:
+- Número: ${nc.numero || 'Nova'}
+- Data: ${nc.data || '—'}
+- Tipo: ${nc.tipo || '—'}
+- Gravidade: ${nc.gravidade || '—'}
+- Produto/Item: ${nc.produto || '—'}
+- Lote/NF: ${nc.lote || '—'}
+- Fornecedor: ${nc.fornecedor || '—'}
+- Local de detecção: ${nc.local || '—'}
+- Descrição do problema: ${nc.descricao || '—'}
+- Causas já identificadas: ${nc.causas && nc.causas.length ? nc.causas.join(', ') : 'Nenhuma marcada'}
+- Disposição: ${nc.disposicao || '—'}`;
+
+    if (ctx.historicoNCs && ctx.historicoNCs.length) {
+        prompt += `\n\nHISTÓRICO DE NCs ANTERIORES (mesmo produto):\n${ctx.historicoNCs.join('\n')}`;
+    }
+    if (ctx.dadosMPContexto) {
+        prompt += `\n${ctx.dadosMPContexto}`;
+    }
+
+    prompt += `\n\nCom base nesses dados, faça uma ANÁLISE TÉCNICA INICIAL:
+1. Quais são as causas mais prováveis desta NC?
+2. Qual é o risco para o produto e para a cadeia produtiva?
+3. Quais etapas ou insumos podem estar comprometidos?
+Referencie as normas aplicáveis (Embrapa / Compêndio Bras. Nutrição Animal).`;
+
+    _adicionarMsgIA('🤖', 'ia', '⏳ Analisando os dados da NC...');
+
+    try {
+        const resp = await _iaCallComFallback(_IA_SYSTEM_NC, [{ role: 'user', content: prompt }], 1200);
+        _substituirUltimaMsgIA(resp, true);
+        _chatIA_NC_history.push({ role: 'user', content: prompt });
+        _chatIA_NC_history.push({ role: 'assistant', content: resp });
+    } catch(e) {
+        _substituirUltimaMsgIA('❌ Erro ao consultar a IA: ' + e.message, false);
+    }
+}
+
+async function enviarMsgIA_NC() {
+    const input = document.getElementById('chatIA_NC_input');
+    const msg = (input.value || '').trim();
+    if (!msg) return;
+    input.value = '';
+
+    _adicionarMsgIA(msg, 'usr');
+    _chatIA_NC_history.push({ role: 'user', content: msg });
+
+    _adicionarMsgIA('⏳ Processando...', 'ia', true);
+
+    try {
+        const resp = await _iaCallComFallback(_IA_SYSTEM_NC, _chatIA_NC_history, 1200);
+        _substituirUltimaMsgIA(resp, true);
+        _chatIA_NC_history.push({ role: 'assistant', content: resp });
+    } catch(e) {
+        _substituirUltimaMsgIA('❌ Erro: ' + e.message, false);
+    }
+}
+
+async function chatIA_NC_acao(tipo) {
+    const ctx = _chatIA_NC_contextoNC;
+    if (!ctx) return;
+
+    const prompts = {
+        acao_tomada: `Com base na NC descrita, escreva um TEXTO PADRÃO DE AÇÃO TOMADA IMEDIATA (3–5 linhas). Deve ser objetivo, técnico, indicar o que foi feito imediatamente com o produto/processo e referenciar a norma. Formate para ser copiado diretamente para o campo "Ação Imediata" do formulário.`,
+        causa_raiz:  `Com base nos dados da NC e no histórico, realize uma análise de CAUSA RAIZ usando a metodologia dos 5 Porquês ou Diagrama de Ishikawa. Identifique a causa raiz mais provável e referencie a norma técnica aplicável.`,
+        risco_produto: `Avalie detalhadamente o RISCO DO PRODUTO envolvido nesta NC. Classifique o risco (Crítico / Alto / Médio / Baixo), descreva o impacto na qualidade e na segurança alimentar animal, e indique o que o Compêndio Brasileiro de Nutrição Animal e as normas Embrapa estabelecem para este parâmetro.`,
+        acao_corretiva: `Redija um texto de AÇÃO CORRETIVA técnica e completa para esta NC. Inclua: o que deve ser feito, quem é o responsável implícito (por função), prazo sugerido, indicador de eficácia da ação, e referência normativa. Formate para ser copiado para o campo "Ação Corretiva".`,
+        inserir_campos: `Gere um JSON com as seguintes chaves exatas para preencher os campos do formulário de NC:
+{ "acao_imediata": "...", "causa_raiz": "...", "acao_corretiva": "...", "obs": "..." }
+Cada valor deve ser um texto técnico completo e pronto para uso. Responda APENAS com o JSON, sem markdown, sem explicações fora do JSON.`
+    };
+
+    const msg = prompts[tipo];
+    _adicionarMsgIA(msg.slice(0, 60) + '...', 'usr');
+    _chatIA_NC_history.push({ role: 'user', content: msg });
+    _adicionarMsgIA('⏳ Gerando...', 'ia', true);
+
+    try {
+        const resp = await _iaCallComFallback(_IA_SYSTEM_NC, _chatIA_NC_history, 1200);
+        _chatIA_NC_history.push({ role: 'assistant', content: resp });
+
+        if (tipo === 'inserir_campos') {
+            // Tentar parsear JSON e inserir nos campos
+            try {
+                const jsonStr = resp.replace(/```json|```/g, '').trim();
+                const dados = JSON.parse(jsonStr);
+                if (dados.acao_imediata) { const e = document.getElementById('nc-acao-imediata'); if(e) e.value = dados.acao_imediata; }
+                if (dados.causa_raiz)   { const e = document.getElementById('nc-causa-raiz');    if(e) e.value = dados.causa_raiz; }
+                if (dados.acao_corretiva) { const e = document.getElementById('nc-acao-corretiva'); if(e) e.value = dados.acao_corretiva; }
+                if (dados.obs)          { const e = document.getElementById('nc-obs');           if(e) e.value = dados.obs; }
+                _substituirUltimaMsgIA('✅ Campos preenchidos automaticamente no formulário NC!\n\n📋 Ação Imediata, Causa Raiz, Ação Corretiva e Observações foram inseridos. Revise antes de salvar.', false);
+            } catch(ep) {
+                _substituirUltimaMsgIA(resp, true);
+            }
+        } else {
+            _substituirUltimaMsgIA(resp, true);
+        }
+    } catch(e) {
+        _substituirUltimaMsgIA('❌ Erro: ' + e.message, false);
+    }
+}
+
+function _adicionarMsgIA(texto, lado, isLoading) {
+    const container = document.getElementById('chatIA_NC_msgs');
+    const div = document.createElement('div');
+    div.className = 'cia-msg' + (lado === 'usr' ? ' user' : '');
+    div.innerHTML = `
+        <div class="cia-avatar ${lado === 'usr' ? 'usr' : 'ia'}">${lado === 'usr' ? '👤' : '🤖'}</div>
+        <div class="cia-bubble ${lado === 'usr' ? 'usr' : 'ia'}${isLoading ? ' loading' : ''}">${_escapeHtml(texto)}</div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+function _substituirUltimaMsgIA(texto, comBotaoInserir) {
+    const container = document.getElementById('chatIA_NC_msgs');
+    const msgs = container.querySelectorAll('.cia-msg');
+    if (!msgs.length) { _adicionarMsgIA(texto, 'ia'); return; }
+    const ultima = msgs[msgs.length - 1];
+    const bubble = ultima.querySelector('.cia-bubble');
+    if (bubble) {
+        bubble.classList.remove('loading');
+        bubble.innerHTML = _formatIATexto(texto);
+        if (comBotaoInserir) {
+            const btn = document.createElement('button');
+            btn.className = 'cia-insert-btn';
+            btn.textContent = '📋 Inserir nos campos da NC';
+            btn.onclick = () => chatIA_NC_acao('inserir_campos');
+            bubble.appendChild(btn);
+        }
+    }
+    container.scrollTop = container.scrollHeight;
+}
+
+function _escapeHtml(t) {
+    return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function _formatIATexto(t) {
+    // Formatar markdown básico para HTML
+    return _escapeHtml(t)
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/^- (.+)$/gm, '• $1')
+        .replace(/\n/g, '<br>');
+}
+
+// ============================================================
+// RELATÓRIO MENSAL IA
+// ============================================================
+// Exibe o item de menu Rel. Mensal IA apenas para admin
+function _iaAtualizarMenuAdmin() {
+    const btn = document.getElementById('tabRelMensalIA');
+    if (btn) btn.style.display = (typeof perfilAtual !== 'undefined' && perfilAtual === 'admin') ? 'block' : 'none';
+}
+
+// Wrapper com verificação de perfil
+function abrirRelatorioMensalIA_seguro() {
+    if (typeof perfilAtual === 'undefined' || perfilAtual !== 'admin') {
+        sgqToast('⛔ Acesso restrito. Apenas administradores podem acessar o Relatório Mensal IA.', 'error');
+        return;
+    }
+    abrirRelatorioMensalIA();
+}
+
+function abrirRelatorioMensalIA() {
+    const modal = document.getElementById('modalRelatorioMensalIA');
+    modal.style.display = 'flex';
+    // Pré-selecionar mês atual
+    const agora = new Date();
+    const mesAtual = agora.getFullYear() + '-' + String(agora.getMonth() + 1).padStart(2, '0');
+    document.getElementById('relMensalIA_mes').value = mesAtual;
+}
+
+function fecharRelatorioMensalIA() {
+    document.getElementById('modalRelatorioMensalIA').style.display = 'none';
+}
+
+async function gerarRelatorioMensalIA() {
+    const mesVal = document.getElementById('relMensalIA_mes').value;
+    if (!mesVal) { alert('Selecione o mês para análise.'); return; }
+
+    const [ano, mes] = mesVal.split('-');
+    const prefixo = mesVal; // YYYY-MM
+    const nomeMes = new Date(parseInt(ano), parseInt(mes) - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+    const conteudoEl = document.getElementById('relMensalIA_conteudo');
+    const btn = document.getElementById('btnGerarRelMensalIA');
+    btn.disabled = true;
+    btn.textContent = '⏳ Analisando...';
+
+    conteudoEl.innerHTML = `<div class="rml-loading"><div class="spinner"></div>Analisando dados de ${nomeMes}...<br><small style="color:#aaa;">Consultando normas Embrapa e Compêndio Brasileiro de Nutrição Animal</small></div>`;
+
+    try {
+        // ---- COLETAR DADOS DO MÊS ----
+        const prodMes   = (producoes      || []).filter(r => r.data && r.data.startsWith(prefixo));
+        const mpMes     = (materiasPrimas  || []).filter(r => r.data && r.data.startsWith(prefixo));
+        const classMes  = (classificacoes  || []).filter(r => r.data && r.data.startsWith(prefixo));
+        const ncMes     = (listaNC         || []).filter(r => r.data && r.data.startsWith(prefixo));
+        const devMes    = (listaDev        || []).filter(r => r.data && r.data.startsWith(prefixo));
+
+        // Métricas Produção
+        const totalProd = prodMes.length;
+        const racoes = [...new Set(prodMes.map(r => r.racao).filter(Boolean))];
+        const medUmProd = totalProd ? (prodMes.reduce((s,r)=>(s+(parseFloat(r.umidade)||0)),0)/totalProd).toFixed(2) : 0;
+        const medProtProd = totalProd ? (prodMes.reduce((s,r)=>(s+(parseFloat(r.proteina)||0)),0)/totalProd).toFixed(2) : 0;
+
+        // Métricas MP
+        const totalMP   = mpMes.length;
+        const prodsMP   = [...new Set(mpMes.map(r => r.produto).filter(Boolean))];
+        const medUmMP   = totalMP ? (mpMes.reduce((s,r)=>(s+(parseFloat(r.umidade)||0)),0)/totalMP).toFixed(2) : 0;
+        const medProtMP = totalMP ? (mpMes.reduce((s,r)=>(s+(parseFloat(r.proteina)||0)),0)/totalMP).toFixed(2) : 0;
+        const altaUmMP  = mpMes.filter(r=>(parseFloat(r.umidade)||0)>14).length;
+        const altoPerMP = mpMes.filter(r=>(parseFloat(r.peroxido)||0)>20).length;
+
+        // Métricas Classificação
+        const totalClass = classMes.length;
+        const prodsClass = [...new Set(classMes.map(r => r.produto).filter(Boolean))];
+        const medUmClass = totalClass ? (classMes.reduce((s,r)=>(s+(parseFloat(r.umidade)||0)),0)/totalClass).toFixed(2) : 0;
+        const aflaMax    = classMes.length ? Math.max(...classMes.map(r=>parseFloat(r.aflatoxinas)||0)).toFixed(2) : 0;
+        const fumoMax    = classMes.length ? Math.max(...classMes.map(r=>parseFloat(r.fumonisinas)||0)).toFixed(0) : 0;
+
+        // Métricas NC
+        const ncCrit    = ncMes.filter(n => n.gravidade === 'Crítica').length;
+        const ncMaior   = ncMes.filter(n => n.gravidade === 'Maior').length;
+        const ncAberta  = ncMes.filter(n => n.status === 'Pendente' || n.status === 'Em Análise').length;
+        const ncFornece = {};
+        ncMes.forEach(n => { const f = n.fornecedor||'Interno'; ncFornece[f] = (ncFornece[f]||0)+1; });
+        const topFornNC = Object.entries(ncFornece).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([f,n])=>`${f} (${n})`).join(', ');
+
+        // Tendências MP — pegar últimos 4 dias do mês
+        const diasMes = [...new Set(mpMes.map(r=>r.data))].sort().slice(-4);
+        const tendUmidade = diasMes.map(d => {
+            const regs = mpMes.filter(r=>r.data===d);
+            return regs.length ? (regs.reduce((s,r)=>s+(parseFloat(r.umidade)||0),0)/regs.length).toFixed(1) : null;
+        }).filter(Boolean);
+
+        // ---- MONTAR PROMPT ----
+        const prompt = `RELATÓRIO MENSAL DE QUALIDADE — ${nomeMes.toUpperCase()}
+
+== DADOS DE PRODUÇÃO (${totalProd} registros) ==
+Rações produzidas: ${racoes.join(', ') || 'nenhuma'}
+Umidade média produto acabado: ${medUmProd}%
+Proteína média produto acabado: ${medProtProd}%
+
+== MATÉRIA PRIMA (${totalMP} registros) ==
+Produtos analisados: ${prodsMP.join(', ') || 'nenhum'}
+Umidade média MP: ${medUmMP}%
+Proteína média MP: ${medProtMP}%
+Registros com umidade > 14% (limite Embrapa): ${altaUmMP} de ${totalMP}
+Registros com peróxido > 20 meq/kg (alerta oxidação): ${altoPerMP} de ${totalMP}
+Tendência de umidade nos últimos dias: ${tendUmidade.join('% → ')}%
+
+== CLASSIFICAÇÃO DE GRÃOS (${totalClass} registros) ==
+Produtos: ${prodsClass.join(', ') || 'nenhum'}
+Umidade média grãos: ${medUmClass}%
+Aflatoxina máxima detectada: ${aflaMax} ppb ${parseFloat(aflaMax)>20?'[⚠️ ACIMA DO LIMITE MAPA 20 ppb]':'[dentro do limite]'}
+Fumonisina máxima detectada: ${fumoMax} ppb ${parseInt(fumoMax)>5000?'[⚠️ ACIMA DO LIMITE MAPA 5000 ppb]':'[dentro do limite]'}
+
+== NÃO CONFORMIDADES (${ncMes.length} registros) ==
+Críticas: ${ncCrit} | Maiores: ${ncMaior} | Ainda abertas: ${ncAberta}
+Fornecedores com mais NCs: ${topFornNC || 'nenhum'}
+Tipos: ${[...new Set(ncMes.map(n=>n.tipo))].join(', ') || '—'}
+Produtos mais afetados: ${[...new Set(ncMes.map(n=>n.produto))].slice(0,5).join(', ') || '—'}
+
+== DEVOLUÇÕES (${devMes.length} registros) ==
+Motivos: ${[...new Set(devMes.map(d=>d.motivo))].join(', ') || 'nenhuma'}
+
+Gere um RELATÓRIO MENSAL CONSOLIDADO DE QUALIDADE completo com:
+1. RESUMO EXECUTIVO (3–4 linhas)
+2. INDICADORES DO MÊS (interpretar cada métrica contra a norma)
+3. DESVIOS E NÃO CONFORMIDADES (analisar padrões, causas sistêmicas)
+4. ANÁLISE DE MICOTOXINAS (se houver dados, avaliar risco conforme MAPA)
+5. TENDÊNCIAS IDENTIFICADAS (ex: umidade crescente, fornecedor problemático)
+6. DIAGNÓSTICO TÉCNICO
+7. SUGESTÕES DE MELHORIA (3–5 ações com base normativa)
+8. CONCLUSÃO
+
+Referencie as normas Embrapa e Compêndio Brasileiro de Nutrição Animal. Use linguagem executiva clara.`;
+
+        const respTexto = await _iaCallComFallback(_IA_SYSTEM_RELATORIO, [{ role:'user', content: prompt }], 2500);
+        _relMensalIA_ultimoTexto = respTexto;
+
+        // ---- RENDERIZAR RESULTADO ----
+        // KPIs visuais
+        const kpiHtml = `
+        <div class="rml-grid" style="margin-bottom:20px;">
+            <div class="rml-kpi"><div class="rml-kpi-val" style="color:#0a1e7f;">${totalProd}</div><div class="rml-kpi-lbl">Lotes Produção</div></div>
+            <div class="rml-kpi"><div class="rml-kpi-val" style="color:#8e44ad;">${totalMP}</div><div class="rml-kpi-lbl">Análises MP</div></div>
+            <div class="rml-kpi"><div class="rml-kpi-val" style="color:#e67e22;">${totalClass}</div><div class="rml-kpi-lbl">Classificações</div></div>
+            <div class="rml-kpi"><div class="rml-kpi-val" style="color:${ncMes.length>5?'#e74c3c':ncMes.length>0?'#e67e22':'#27ae60'};">${ncMes.length}</div><div class="rml-kpi-lbl">NCs no Mês</div></div>
+            <div class="rml-kpi"><div class="rml-kpi-val" style="color:${altaUmMP>0?'#e74c3c':'#27ae60'};">${altaUmMP}</div><div class="rml-kpi-lbl">MP Umid > 14%</div></div>
+            <div class="rml-kpi"><div class="rml-kpi-val" style="color:${parseFloat(aflaMax)>20?'#e74c3c':parseFloat(aflaMax)>10?'#e67e22':'#27ae60'};">${aflaMax}</div><div class="rml-kpi-lbl">Aflatox. Máx (ppb)</div></div>
+            <div class="rml-kpi"><div class="rml-kpi-val" style="color:${ncCrit>0?'#e74c3c':'#27ae60'};">${ncCrit}</div><div class="rml-kpi-lbl">NCs Críticas</div></div>
+            <div class="rml-kpi"><div class="rml-kpi-val" style="color:${devMes.length>0?'#e67e22':'#27ae60'};">${devMes.length}</div><div class="rml-kpi-lbl">Devoluções</div></div>
+        </div>`;
+
+        // Texto do relatório formatado
+        const textoHtml = `<div style="font-size:12px;line-height:1.8;color:#2c3e50;white-space:pre-wrap;">${_formatIATextoRelatorio(respTexto)}</div>`;
+
+        conteudoEl.innerHTML = `
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #eef2ff;">
+                <div>
+                    <div style="font-size:17px;font-weight:900;color:#0a1e7f;">📊 Relatório de Qualidade — ${nomeMes.charAt(0).toUpperCase()+nomeMes.slice(1)}</div>
+                    <div style="font-size:11px;color:#888;margin-top:3px;">Gerado por IA com base nas normas Embrapa e Compêndio Brasileiro de Nutrição Animal • ${new Date().toLocaleString('pt-BR')}</div>
+                </div>
+            </div>
+            ${kpiHtml}
+            <div style="background:#f8faff;border:1px solid #dce4f5;border-radius:8px;padding:18px 20px;">
+                ${textoHtml}
+            </div>
+            <div style="margin-top:14px;font-size:10px;color:#bdc3c7;text-align:right;">
+                ⚠️ Este relatório foi gerado por inteligência artificial com base nos dados cadastrados no sistema. Sempre valide com o responsável técnico antes de tomar decisões.
+            </div>`;
+
+    } catch(e) {
+        conteudoEl.innerHTML = `<div style="padding:40px;text-align:center;color:#e74c3c;"><div style="font-size:40px;margin-bottom:12px;">❌</div><div style="font-size:13px;font-weight:700;">Erro ao gerar relatório</div><div style="font-size:11px;margin-top:6px;color:#888;">${e.message}</div></div>`;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '🤖 Gerar Relatório';
+    }
+}
+
+function _formatIATextoRelatorio(t) {
+    return _escapeHtml(t)
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/^#+\s(.+)$/gm, '<div style="font-size:13px;font-weight:900;color:#0a1e7f;margin:16px 0 6px;border-bottom:1px solid #dce4f5;padding-bottom:4px;">$1</div>')
+        .replace(/^- (.+)$/gm, '<div style="margin-left:12px;margin-bottom:3px;">• $1</div>')
+        .replace(/\n\n/g, '<br><br>')
+        .replace(/\n/g, '<br>');
+}
+
+function copiarRelMensalIA() {
+    if (!_relMensalIA_ultimoTexto) { alert('Gere o relatório primeiro.'); return; }
+    navigator.clipboard.writeText(_relMensalIA_ultimoTexto)
+        .then(() => sgqToast('✅ Relatório copiado para a área de transferência!', 'success'))
+        .catch(() => {
+            const ta = document.createElement('textarea');
+            ta.value = _relMensalIA_ultimoTexto;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            sgqToast('✅ Relatório copiado!', 'success');
+        });
+}
+
+function imprimirRelMensalIA() {
+    const conteudo = document.getElementById('relMensalIA_conteudo');
+    if (!conteudo || conteudo.textContent.includes('Selecione o mês')) { alert('Gere o relatório primeiro.'); return; }
+    const w = window.open('', '_blank', 'width=900,height=700');
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório Mensal IA</title>
+    <style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}
+    .rml-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+    .rml-kpi{border:1px solid #ddd;border-radius:6px;padding:10px;text-align:center;}
+    .rml-kpi-val{font-size:20px;font-weight:900;}
+    .rml-kpi-lbl{font-size:9px;color:#888;text-transform:uppercase;}
+    @media print{body{padding:10mm;}}</style></head><body>
+    ${conteudo.innerHTML}
+    </body></html>`);
+    w.document.close();
+    setTimeout(() => { w.focus(); w.print(); }, 400);
+}
 </script>
 
 </body>
