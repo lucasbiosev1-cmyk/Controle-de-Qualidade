@@ -18232,12 +18232,20 @@ MÓDULOS: ${_modulosNomes}
 ANALISTAS: ${_analistasStr}
 ${_blocosProd}${_blocosMP}${_blocosClass}${_blocosNC}${_blocosDev}
 ---
+REGRA OBRIGATÓRIA DE CITAÇÃO — DEVE SER SEGUIDA EM TODAS AS SEÇÕES:
+Cada afirmação técnica relevante DEVE ser acompanhada da referência bibliográfica ou normativa correspondente, integrada naturalmente ao texto. Exemplos obrigatórios:
+- Granulometria: "Leeson & Summers (2005) recomendam DGM entre 600–800 µm para frangos na fase inicial..."
+- Nutrição: "Rostagno et al. (2017) estabelecem para frangos de corte fase inicial mínimo de 22% de proteína bruta..."
+- Micotoxinas: "conforme IN MAPA 07/2011, Anexo I, o limite máximo de aflatoxinas para aves é de 20 ppb..."
+- Armazenamento: "a Embrapa (Circular Técnica X) orienta que umidade acima de 13,5% favorece crescimento de Aspergillus..."
+- Energia: "segundo NRC (1994), cada 1% de variação de umidade no milho impacta em aproximadamente X kcal/kg de EM..."
+NÃO apresente nenhum desvio, recomendação ou diagnóstico sem citar a referência que o embasa.
+
 Analise EXCLUSIVAMENTE os módulos fornecidos.
 Estruture o relatório nas seguintes seções (siga a ordem exatamente):
 ${_secsRel.join('\n')}
 ${_multi ? '\nCada seção de especialista deve começar com o ícone e nome do analista em negrito (ex: **🔬 CQ — Controle de Qualidade**).' : ''}
-Referencie normas Embrapa, MAPA, IN MAPA 07/2011, Compêndio Brasileiro de Nutrição Animal e Rostagno et al. quando aplicável.
-Use linguagem executiva clara e técnica. Máxima objetividade. Cite valores exatos dos dados fornecidos.
+Use linguagem executiva clara e técnica. Cite valores exatos dos dados. Inclua referência bibliográfica em cada ponto técnico.`;
 
         // ---- PROMPT LIVRE: sobrescreve o prompt padrão ----
         const _usaPromptLivre = _rmlAnalistas['prompt'];
@@ -18254,7 +18262,7 @@ Use linguagem executiva clara e técnica. Máxima objetividade. Cite valores exa
 
         const _systemPromptFinal = _usaPromptLivre ? _IA_SYSTEM_RELATORIO_MULTI : _rmlGetSystemPrompt(_anAtivos);
 
-        const respTexto = await _iaCallComFallback(_systemPromptFinal, [{ role:'user', content: promptFinal }], 4000);
+        const respTexto = await _iaCallComFallback(_systemPromptFinal, [{ role:'user', content: promptFinal }], 6000);
         _relMensalIA_ultimoTexto = respTexto;
 
         // ---- KPIs VISUAIS ----
