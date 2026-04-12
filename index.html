@@ -16799,121 +16799,94 @@ REGRAS:
 - Inicie o diálogo fazendo UMA pergunta técnica ao usuário para entender melhor o contexto (ex: há quanto tempo está ocorrendo, lote específico, condições de armazenagem). Use o diálogo para aprofundar o diagnóstico progressivamente.`;
 
 /**
- * Coleta desvios de um módulo consultando PARAMETROS do sistema.
- * Ignora entradas sem valor medido e sem parâmetro configurado.
+ * Coleta desvios usando EXATAMENTE os mesmos arrays CAMPOS_PROD / CAMPOS_MP / CAMPOS_CLASS
+ * e a função getParam() do sistema. Ignora campos sem valor medido e sem parâmetro ativo.
  */
 function _coletarDesviosComParametros(modulo) {
-    const desvios  = [];
-    const paramInfo = {};
+    const desvios   = [];
+    const paramInfo = {};   // campo.label → { min, max } — só campos com parâmetro ativo
+
+    // ── helper interno ───────────────────────────────────────────────────────
+    function _avaliarCampo(modId, prodKey, campo, valor, produto, data) {
+        // Lê parâmetro pelo getParam real do sistema
+        const cfg = getParam(modId, prodKey, campo.key, data);
+        // Ignora se parâmetro não está ativo
+        if (!cfg || !cfg.ativo) return;
+        // Ignora se valor não foi informado (NaN, null, vazio, zero para a maioria)
+        const v = parseFloat(valor);
+        if (isNaN(v) || valor === '' || valor === null || valor === undefined) return;
+        // Para campos onde 0 é valor válido (ex: defeitos de grãos), não filtramos por v===0
+        // Mas para campos quantitativos onde 0 = sem informação, filtramos
+        const camposOndeZeroEhValido = ['queimado','ardido','mofado','esverdeado','fermentando',
+            'chocho','picado','gessado','quebrado','germinado','carunchado','impureza','avariados'];
+        if (v === 0 && !camposOndeZeroEhValido.includes(campo.key)) return;
+
+        const foraMin = cfg.min > 0    && v < cfg.min;
+        const foraMax = cfg.max < 9999 && v > cfg.max;
+        if (!foraMin && !foraMax) return;
+
+        const limMin = cfg.min > 0    ? cfg.min : '—';
+        const limMax = cfg.max < 9999 ? cfg.max : '—';
+        const delta  = foraMax ? +(v - cfg.max).toFixed(4) : +(cfg.min - v).toFixed(4);
+
+        desvios.push({
+            modulo: modId,
+            produto: produto || '—',
+            data:    data    || '—',
+            campo:   campo.label,
+            valor:   v,
+            limMin, limMax,
+            delta:   (foraMax ? '+' : '-') + delta,
+            sentido: foraMax ? 'acima do limite máximo' : 'abaixo do limite mínimo'
+        });
+        // Registra o parâmetro real usado (sobrescreve se aparece em mais de um registro)
+        paramInfo[`${modId}|${campo.label}`] = { produto, campo: campo.label, min: limMin, max: limMax };
+    }
+    // ────────────────────────────────────────────────────────────────────────
 
     if (modulo === 'prod') {
         (producoes || []).forEach(r => {
             const racaKey = (r.racao || '').replace(/ /g, '_');
-            const CAMPOS = [
-                { key: 'dgm',      label: 'DGM (µm)' },
-                { key: 'dpg',      label: 'DPG' },
-                { key: 'pen1',     label: 'Peneira 1 (%)' },
-                { key: 'pen2',     label: 'Peneira 2 (%)' },
-                { key: 'pen3',     label: 'Peneira 3 (%)' },
-                { key: 'pen4',     label: 'Peneira 4 (%)' },
-                { key: 'pen5',     label: 'Peneira 5 (%)' },
-                { key: 'umidade',  label: 'Umidade (%)' },
-                { key: 'proteina', label: 'Proteína (%)' },
-                { key: 'fibra',    label: 'Fibra (%)' },
-                { key: 'calcio',   label: 'Cálcio (%)' },
-                { key: 'fosforo',  label: 'Fósforo (%)' },
-                { key: 'extrato',  label: 'Extrato Etéreo (%)' },
-            ];
-            CAMPOS.forEach(c => {
-                const cfg = (typeof getParam === 'function') ? getParam('prod', racaKey, c.key, r.data) : null;
-                if (!cfg || !cfg.ativo) return;
-                const v = parseFloat(r[c.key]);
-                if (isNaN(v) || v === 0) return; // sem informação
-                const foraMin = cfg.min > 0       && v < cfg.min;
-                const foraMax = cfg.max < 9999    && v > cfg.max;
-                if (!foraMin && !foraMax) return;
-                const limMin = cfg.min > 0    ? cfg.min : '—';
-                const limMax = cfg.max < 9999 ? cfg.max : '—';
-                const delta  = foraMax ? +(v - cfg.max).toFixed(4) : +(cfg.min - v).toFixed(4);
-                desvios.push({ modulo:'prod', produto: r.racao||'—', data: r.data||'—', campo: c.label, valor: v, limMin, limMax, delta: (foraMax ? '+' : '-') + delta, sentido: foraMax ? 'acima' : 'abaixo' });
-                paramInfo[c.label] = { min: limMin, max: limMax };
+            // Usa EXATAMENTE CAMPOS_PROD do sistema
+            CAMPOS_PROD.forEach(c => {
+                _avaliarCampo('prod', racaKey, c, r[c.key], r.racao, r.data);
             });
         });
-        return { modulo:'prod', titulo:'Produção', desvios, paramInfo };
+        return { modulo: 'prod', titulo: 'Produção', desvios, paramInfo };
     }
 
     if (modulo === 'mp') {
         (materiasPrimas || []).forEach(r => {
             const prodKey = (r.produto || '').replace(/ /g, '_');
-            const CAMPOS = [
-                { key: 'umidade',    label: 'Umidade (%)' },
-                { key: 'proteina',   label: 'Proteína (%)' },
-                { key: 'fibra',      label: 'Fibra (%)' },
-                { key: 'calcio',     label: 'Cálcio (%)' },
-                { key: 'fosforo',    label: 'Fósforo (%)' },
-                { key: 'extrato',    label: 'Extrato Etéreo (%)' },
-                { key: 'peroxido',   label: 'Peróxido (meq/kg)' },
-                { key: 'atividade_uretica', label: 'Atividade Urética' },
-                { key: 'solubilidade',      label: 'Solubilidade (%)' },
-            ];
-            CAMPOS.forEach(c => {
-                const cfg = (typeof getParam === 'function') ? getParam('mp', prodKey, c.key, r.data) : null;
-                if (!cfg || !cfg.ativo) return;
-                const v = parseFloat(r[c.key]);
-                if (isNaN(v) || v === 0) return;
-                const foraMin = cfg.min > 0       && v < cfg.min;
-                const foraMax = cfg.max < 9999    && v > cfg.max;
-                if (!foraMin && !foraMax) return;
-                const limMin = cfg.min > 0    ? cfg.min : '—';
-                const limMax = cfg.max < 9999 ? cfg.max : '—';
-                const delta  = foraMax ? +(v - cfg.max).toFixed(4) : +(cfg.min - v).toFixed(4);
-                desvios.push({ modulo:'mp', produto: r.produto||'—', data: r.data||'—', campo: c.label, valor: v, limMin, limMax, delta: (foraMax ? '+' : '-') + delta, sentido: foraMax ? 'acima' : 'abaixo' });
-                paramInfo[c.label] = { min: limMin, max: limMax };
+            // Usa EXATAMENTE CAMPOS_MP do sistema
+            CAMPOS_MP.forEach(c => {
+                _avaliarCampo('mp', prodKey, c, r[c.key], r.produto, r.data);
             });
         });
-        return { modulo:'mp', titulo:'Matéria-Prima', desvios, paramInfo };
+        return { modulo: 'mp', titulo: 'Matéria-Prima', desvios, paramInfo };
     }
 
     if (modulo === 'class') {
         (classificacoes || []).forEach(r => {
             const prodKey = (r.produto || '').replace(/ /g, '_');
-            const CAMPOS = [
-                { key: 'umidade',    label: 'Umidade (%)' },
-                { key: 'aflatoxina', label: 'Aflatoxina (ppb)' },
-                { key: 'fumonisina', label: 'Fumonisina (ppb)' },
-                { key: 'zearalenona',label: 'Zearalenona (ppb)' },
-                { key: 'avariados',  label: 'Avariados (%)' },
-                { key: 'ardidos',    label: 'Ardidos (%)' },
-                { key: 'carunchados',label: 'Carunchados (%)' },
-                { key: 'quebrados',  label: 'Quebrados (%)' },
-                { key: 'impurezas',  label: 'Impurezas (%)' },
-            ];
-            CAMPOS.forEach(c => {
-                const cfg = (typeof getParam === 'function') ? getParam('class', prodKey, c.key, r.data) : null;
-                if (!cfg || !cfg.ativo) return;
-                const v = parseFloat(r[c.key]);
-                if (isNaN(v) || v === 0) return;
-                const foraMin = cfg.min > 0       && v < cfg.min;
-                const foraMax = cfg.max < 9999    && v > cfg.max;
-                if (!foraMin && !foraMax) return;
-                const limMin = cfg.min > 0    ? cfg.min : '—';
-                const limMax = cfg.max < 9999 ? cfg.max : '—';
-                const delta  = foraMax ? +(v - cfg.max).toFixed(4) : +(cfg.min - v).toFixed(4);
-                desvios.push({ modulo:'class', produto: r.produto||'—', data: r.data||'—', campo: c.label, valor: v, limMin, limMax, delta: (foraMax ? '+' : '-') + delta, sentido: foraMax ? 'acima' : 'abaixo' });
-                paramInfo[c.label] = { min: limMin, max: limMax };
+            // Usa EXATAMENTE CAMPOS_CLASS do sistema
+            CAMPOS_CLASS.forEach(c => {
+                // Campo calculado: avariados = soma dos defeitos individuais
+                const valorBruto = c.calculado ? getAvariados(r) : r[c.key];
+                _avaliarCampo('class', prodKey, c, valorBruto, r.produto, r.data);
             });
         });
-        return { modulo:'class', titulo:'Classificação de Grãos', desvios, paramInfo };
+        return { modulo: 'class', titulo: 'Classificação de Grãos', desvios, paramInfo };
     }
 
-    // Todos os módulos juntos (análise geral)
+    // Geral: todos os módulos juntos
     const r1 = _coletarDesviosComParametros('prod');
     const r2 = _coletarDesviosComParametros('mp');
     const r3 = _coletarDesviosComParametros('class');
     return {
-        modulo: 'geral',
-        titulo: 'Geral (Produção + MP + Classificação)',
-        desvios: [...r1.desvios, ...r2.desvios, ...r3.desvios],
+        modulo:    'geral',
+        titulo:    'Geral (Produção + MP + Classificação)',
+        desvios:   [...r1.desvios,   ...r2.desvios,   ...r3.desvios],
         paramInfo: { ...r1.paramInfo, ...r2.paramInfo, ...r3.paramInfo }
     };
 }
@@ -16927,9 +16900,12 @@ function _formatarDesviosParaPrompt(ctx) {
 }
 
 function _formatarParamsParaPrompt(ctx) {
-    if (!ctx || Object.keys(ctx.paramInfo).length === 0) return 'Nenhum parâmetro configurado encontrado.';
+    if (!ctx || Object.keys(ctx.paramInfo).length === 0) return 'Nenhum parâmetro configurado com desvio encontrado.';
+    // Agrupa por campo (remove prefixo "modulo|")
+    const vistos = new Set();
     return Object.entries(ctx.paramInfo)
-        .map(([campo, p]) => `• ${campo}: mín=${p.min}, máx=${p.max}`)
+        .filter(([k]) => { const label = k.split('|')[1]; if (vistos.has(label)) return false; vistos.add(label); return true; })
+        .map(([k, p]) => `• ${k.split('|')[1]}: mín=${p.min}, máx=${p.max}`)
         .join('\n');
 }
 
