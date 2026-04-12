@@ -16658,7 +16658,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div id="chatDesvio_subtitulo" style="font-size:10px;opacity:.75;margin-top:2px;">Diagnóstico baseado nos parâmetros do sistema e normas Embrapa / MAPA</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <button onclick="_iaConfigurarChave()" title="Configurar chave API" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;">⚙️ Config. IA</button>
+        <button onclick="_iaConfigurarChave()" title="Configurar chave API" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;">⚙️ Config. API</button>
         <button onclick="fecharChatIA_Desvio()" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;opacity:.8;line-height:1;">×</button>
       </div>
     </div>
@@ -16696,7 +16696,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div style="font-size:10px;opacity:.75;margin-top:2px;">Baseado nas normas Embrapa e Compêndio Brasileiro de Nutrição Animal</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <button onclick="_iaConfigurarChave()" title="Configurar chave API OpenAI" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;">⚙️ Config. IA</button>
+        <button onclick="_iaConfigurarChave()" title="Configurar chave API OpenAI" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;">⚙️ Config. API</button>
         <button onclick="fecharChatIA_NC()" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;opacity:.8;line-height:1;">×</button>
       </div>
     </div>
@@ -16704,7 +16704,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div id="chatIA_NC_contexto" style="background:#f5eeff;border-bottom:1px solid #d7b8f3;padding:10px 16px;font-size:11px;color:#4a1070;flex-shrink:0;"></div>
     <!-- Banner status chave -->
     <div id="chatIA_NC_keyBanner" style="display:none;background:#fff8e1;border-bottom:1px solid #ffe082;padding:8px 16px;font-size:11px;color:#856404;flex-shrink:0;display:flex;align-items:center;gap:8px;">
-      <span>⚠️ <strong>Chave API não configurada.</strong> Clique em <strong>⚙️ Config. IA</strong> no cabeçalho para adicionar sua chave OpenAI (sk-...).</span>
+      <span>⚠️ <strong>Chave API não configurada.</strong> Clique em <strong>⚙️ Config. API</strong> no cabeçalho para adicionar sua chave OpenAI (sk-...).</span>
     </div>
     <!-- Mensagens -->
     <div id="chatIA_NC_msgs" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;min-height:200px;"></div>
@@ -16735,7 +16735,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div style="font-size:11px;opacity:.75;margin-top:3px;">Análise consolidada com referências Embrapa e Compêndio Brasileiro de Nutrição Animal</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <button onclick="_iaConfigurarChave()" title="Configurar chave API OpenAI" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;">⚙️ Config. IA</button>
+        <button onclick="_iaConfigurarChave()" title="Configurar chave API OpenAI" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;">⚙️ Config. API</button>
         <button onclick="fecharRelatorioMensalIA()" style="background:none;border:none;color:#fff;font-size:26px;cursor:pointer;opacity:.8;line-height:1;">×</button>
       </div>
     </div>
@@ -17395,7 +17395,7 @@ async function _iaCallComFallback(systemPrompt, messages, maxTokens) {
                 _iaConfigurarChave();
                 throw new Error('Configure a chave e tente novamente.');
             }
-            throw new Error('Chave API não configurada. Clique em "⚙️ Config. IA" para configurar.');
+            throw new Error('Chave API não configurada. Clique em "⚙️ Config. API" para configurar.');
         }
         throw e;
     }
@@ -17544,11 +17544,7 @@ async function _iaAnalisarNC_inicial() {
         prompt += `\n${ctx.dadosMPContexto}`;
     }
 
-    prompt += `\n\nCom base nesses dados, faça uma ANÁLISE TÉCNICA INICIAL:
-1. Quais são as causas mais prováveis desta NC?
-2. Qual é o risco para o produto e para a cadeia produtiva?
-3. Quais etapas ou insumos podem estar comprometidos?
-Referencie as normas aplicáveis (Embrapa / Compêndio Bras. Nutrição Animal).`;
+    prompt += `\\n\\nCom base nos dados acima, gere uma ANÁLISE TÉCNICA ESPECÍFICA sobre esta NC seguindo exatamente esta estrutura:\n\n**RESUMO DO PROBLEMA**\nSeja específico ao descrever o que ocorreu: mencione o problema real (ex: lona rasgada, embalagem violada, produto exposto), o produto afetado e o responsável.\n\n**IMPACTO NA MATÉRIA PRIMA / PRODUTO**\nExplique tecnicamente como ESTE problema específico pode comprometer a qualidade do produto recebido (contaminação, oxidação, infestação, perda nutricional). Cite a norma aplicável.\n\n**SUGESTÕES DE CORREÇÃO IMEDIATA**\nListe 3-5 ações práticas: o que fazer com o produto agora, como notificar o fornecedor/transportadora e o que exigir.\n\n**AÇÃO PREVENTIVA**\nSugira 2-3 medidas para evitar a recorrência deste problema específico.`;
 
     _adicionarMsgIA('🤖', 'ia', '⏳ Analisando os dados da NC...');
 
