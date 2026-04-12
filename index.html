@@ -10694,7 +10694,7 @@ function gerarBoletim() {
     };
 
     // Produção: cada campo conta 1, exceto granulo1/2/3 que juntos contam 1
-    const camposProdBol = ['dgm','dpg','umidade','densidade','proteina','fibra','mineral','calcio','fosforo','fundo'];
+    const camposProdBol = ['dgm','dpg','extrato','umidade','densidade','proteina','fibra','mineral','calcio','fosforo','fundo'];
     let analisesBoletim = 0;
     if (incProd) {
         prod_f.forEach(r => {
@@ -10714,7 +10714,7 @@ function gerarBoletim() {
         });
     }
     // Matéria Prima: cada campo preenchido = 1
-    const camposMPBol = ['proteina','solubil','umidade','densidade','mineral','acidez','ureatica','rancidez','peroxido','digestibilidade'];
+    const camposMPBol = ['extrato','proteina','solubil','umidade','densidade','mineral','acidez','ureatica','rancidez','peroxido','digestibilidade'];
     if (incMP) {
         mp_f.forEach(r => { camposMPBol.forEach(c => { if (temValBol(r, c)) analisesBoletim++; }); });
     }
@@ -10977,7 +10977,7 @@ function gerarTabelaProd(rows, compacto, destNC) {
             <td>${r.lote||'-'}</td>
             <td${cl(r.dgm,'dgm')}>${fmtN(r.dgm,0)}</td>
             <td${cl(r.dpg,'dpg')}>${fmtN(r.dpg,2)}</td>
-            <td${cl(r.extrato,'extrato')}>${fmtN(r.extrato||0,2)}</td>
+            <td${cl(r.extrato,'extrato')}>${(r.extrato===null||r.extrato===undefined||r.extrato==='')?'-':fmtN(r.extrato,2)}</td>
             <td${cl(r.proteina,'proteina')}>${fmtN(r.proteina,2)}</td>
             <td${cl(r.fibra,'fibra')}>${fmtN(r.fibra,2)}</td>
             <td${cl(r.solubil,'solubil')}>${(r.solubil&&r.solubil!==0)?fmtN(r.solubil,2):'-'}</td>
@@ -11170,7 +11170,7 @@ function gerarTabelaMP(rows, compacto, destNC) {
             <td>${r.nf||'-'}</td>
             <td${cl(r.umidade,'umidade')}>${fmtN(r.umidade,1)}</td>
             <td${cl(r.densidade,'densidade')}>${fmtN(r.densidade,0)}</td>
-            <td${cl(r.extrato,'extrato')}>${fmtN(r.extrato||0,2)}</td>
+            <td${cl(r.extrato,'extrato')}>${(r.extrato===null||r.extrato===undefined||r.extrato==='')?'-':fmtN(r.extrato,2)}</td>
             <td${cl(r.proteina,'proteina')}>${fmtN(r.proteina,2)}</td>
             <td>${fmtN(r.fibra,2)}</td>
             <td${cl(r.solubil,'solubil')}>${(r.solubil&&r.solubil!==0)?fmtN(r.solubil,2):'-'}</td>
