@@ -16799,6 +16799,13 @@ document.addEventListener('DOMContentLoaded', function() {
           <label id="lbl_rml_an_vet" onclick="_rmlToggleAnalista('vet')" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:6px;border:2px solid #6e2fa0;background:#f5eeff;font-size:12px;font-weight:700;color:#6e2fa0;user-select:none;transition:all .2s;">
             <span id="chk_rml_an_vet" style="font-size:15px;">✅</span> 🩺 Analista — Veterinário
           </label>
+          <label id="lbl_rml_an_prompt" onclick="_rmlToggleAnalista('prompt')" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:6px;border:2px solid #b7410e;background:#fff5f0;font-size:12px;font-weight:700;color:#b7410e;user-select:none;transition:all .2s;">
+            <span id="chk_rml_an_prompt" style="font-size:15px;">☐</span> 📝 Prompt Livre
+          </label>
+        </div>
+        <div id="rml_prompt_livre_area" style="display:none;margin-top:10px;">
+          <textarea id="rml_prompt_livre_texto" placeholder="Digite aqui seu prompt personalizado. Os dados do período selecionado serão incluídos automaticamente. Exemplo: Faça uma análise focada nos níveis de micotoxinas e risco sanitário para os lotes do mês..." style="width:100%;min-height:90px;border:2px solid #b7410e;border-radius:6px;padding:10px;font-size:12px;font-family:Arial,sans-serif;resize:vertical;outline:none;color:#333;background:#fff9f7;"></textarea>
+          <div style="font-size:10px;color:#b7410e;margin-top:4px;font-weight:600;">⚠️ Ao selecionar "Prompt Livre", os analistas padrão são ignorados e apenas este prompt é utilizado na análise.</div>
         </div>
         <div id="rml_aviso_analistas" style="display:none;margin-top:7px;font-size:10px;color:#e74c3c;font-weight:700;">⚠️ Selecione ao menos um analista.</div>
       </div>
@@ -17455,20 +17462,107 @@ Ao analisar uma Não Conformidade:
 7. Use linguagem técnica e profissional. Responda em português do Brasil.
 8. Seja conciso: priorize clareza técnica. Use listas quando útil.`;
 
-const _IA_SYSTEM_RELATORIO = `Você é um consultor de qualidade especialista em fábricas de ração animal. 
-Você analisa dados mensais de controle de qualidade e gera um relatório executivo consolidado baseado em:
-- **Embrapa**: normas técnicas de qualidade de grãos, micotoxinas e processamento.
-- **Compêndio Brasileiro de Nutrição Animal (MAPA)**: limites nutricionais e físico-químicos.
-- ISO 9001 aplicada à nutrição animal.
+// ---- SYSTEM PROMPTS ESPECIALIZADOS POR ANALISTA ----
+const _IA_SYSTEM_RELATORIO_CQ = `Você é um Analista de Controle de Qualidade sênior de uma fábrica de ração animal no Brasil, com formação técnica sólida e visão baseada nas principais referências nacionais e internacionais do setor.
 
-Ao gerar o relatório:
-1. Calcule e interprete os INDICADORES DE QUALIDADE do período.
-2. Identifique PADRÕES e TENDÊNCIAS (ex: umidade crescente, fornecedor problemático).
-3. Aponte DESVIOS referenciando a norma violada.
-4. Escreva DIAGNÓSTICO TÉCNICO baseado nos dados.
-5. Proponha SUGESTÕES DE MELHORIA com base normativa.
-6. Use linguagem executiva mas com embasamento técnico. Formate com seções claras.
-7. Responda em português do Brasil. Seja objetivo, evite encher de texto genérico.`;
+Sua análise combina duas dimensões:
+A) VISÃO TÉCNICA DE ESPECIALISTAS RECONHECIDOS — escreva como um profissional que incorporou o pensamento desses autores e órgãos:
+   - **Embrapa Suínos e Aves**: referência brasileira em boas práticas de fabricação, controle de qualidade de grãos e processamento de rações. Aplique os critérios de Embrapa para granulometria, umidade e armazenamento.
+   - **MAPA / Compêndio Brasileiro de Nutrição Animal**: legislação e parâmetros físico-químicos oficiais brasileiros. Cite portarias e instruções normativas específicas quando houver desvio.
+   - **ISO 9001 aplicada à nutrição animal**: rastreabilidade, não conformidades, ações corretivas e ciclo PDCA.
+   - **Leeson & Summers (Poultry Metabolic Disorders and Mycotoxins / Commercial Poultry Nutrition)**: visão internacional sobre padrões de qualidade de ingredientes, controle de processo e impacto produtivo de desvios físico-químicos.
+
+B) EMBASAMENTO EM ESTUDOS TÉCNICOS — ao longo da análise, cite as referências de forma natural:
+   - Use expressões como: *"conforme Embrapa Circular Técnica nº X"*, *"segundo a Portaria MAPA nº 269/2019"*, *"Leeson & Summers (2005) destacam que..."*, *"de acordo com a IN MAPA 07/2011"*.
+   - Cada desvio identificado deve ter a norma ou referência violada explicitamente citada.
+   - Ações corretivas devem ser embasadas em metodologia reconhecida (ISO 9001, APPCC, BPF).
+
+Ao gerar o relatório, priorize:
+1. Conformidade vs. não conformidade de cada parâmetro físico-químico: cite valor encontrado, limite da norma e referência.
+2. Rastreabilidade completa: produto, data, lote, valor, limite, norma violada.
+3. Padrões e frequência de NCs: fornecedores reincidentes, tipos recorrentes — aplique visão de gestão de qualidade ISO.
+4. Qualidade do processo de moagem (DGM, uniformidade) com base nos critérios Embrapa e Leeson & Summers.
+5. Ações corretivas e preventivas com responsabilidade, prazo e embasamento normativo.
+Responda em português do Brasil. Linguagem técnica e executiva. Cite sempre valores exatos e referências.`;
+
+const _IA_SYSTEM_RELATORIO_NUT = `Você é um Nutricionista Animal sênior especialista em formulação e qualidade de rações para aves no Brasil, com domínio profundo das principais referências científicas e normativas nacionais e internacionais.
+
+Sua análise combina duas dimensões:
+A) VISÃO TÉCNICA DE ESPECIALISTAS RECONHECIDOS — escreva como um nutricionista que pensa e argumenta com base nesses autores:
+   - **Rostagno et al. — Tabelas Brasileiras para Aves e Suínos (UFV, edição mais recente)**: principal referência nacional de exigências nutricionais por espécie, fase e categoria. Use os valores de exigência de proteína bruta, aminoácidos, energia metabolizável, cálcio, fósforo disponível e umidade máxima como benchmarks para avaliar conformidade das rações produzidas.
+   - **Leeson & Summers — Commercial Poultry Nutrition (3ª ed.)**: visão internacional sobre digestibilidade de ingredientes, qualidade proteica, granulometria ideal por fase e impacto de variações de matéria-prima em FCR e produção. Aplique especialmente nos itens de DGM, soja extrusada e variação de qualidade de milho.
+   - **NRC — Nutrient Requirements of Poultry**: parâmetros internacionais de referência para exigências mínimas de nutrientes em aves. Use como comparativo quando os valores brasileiros não cobrirem determinado parâmetro.
+   - **Embrapa Suínos e Aves — Comunicados Técnicos e Circulares**: recomendações práticas para fábricas de ração brasileiras, tabelas de composição de ingredientes nacionais (milho, farelo de soja, subprodutos).
+   - **MAPA / Compêndio Brasileiro de Nutrição Animal**: limites legais e parâmetros normativos para rações comercializadas no Brasil.
+
+B) EMBASAMENTO EM ESTUDOS TÉCNICOS — cite as referências de forma natural ao longo do texto:
+   - *"Rostagno et al. (2017) recomendam para frangos de corte na fase inicial..."*, *"Leeson & Summers (2005) demonstraram que variações de DGM acima de 200 µm reduzem a digestibilidade do amido em..."*, *"conforme NRC (1994), a exigência mínima de..."*, *"a Embrapa Suínos e Aves (Circular Técnica X) orienta que..."*.
+   - Cada desvio nutricional deve ser conectado ao impacto esperado em desempenho com base nessas referências.
+
+Ao gerar o relatório, priorize:
+1. Composição nutricional dos produtos acabados vs. Tabelas Brasileiras (Rostagno et al.): cite exigência da fase, valor encontrado e desvio.
+2. Qualidade nutricional das matérias-primas: soja extrusada (ureática 0,05–0,20; solubilidade proteica mín. 75% — critério Embrapa/Leeson), milho, subprodutos.
+3. Granulometria (DGM por fase): aplique recomendações de Leeson & Summers e Embrapa para corte (600–800 µm inicial, 800–1000 µm crescimento/final) e postura.
+4. Impacto em digestibilidade, FCR e desempenho: quantifique quando possível com base nas referências.
+5. Ajustes de formulação sugeridos com embasamento em Rostagno et al. e NRC.
+Responda em português do Brasil. Linguagem técnica com profundidade científica. Cite autores, edições e valores de referência.`;
+
+const _IA_SYSTEM_RELATORIO_VET = `Você é um Médico Veterinário especialista em saúde avícola, micotoxicologia e biosseguridade de fábricas de ração no Brasil, com base nas principais referências científicas e normativas do setor.
+
+Sua análise combina duas dimensões:
+A) VISÃO TÉCNICA DE ESPECIALISTAS RECONHECIDOS — escreva como um veterinário que pensa com base nesses autores e normas:
+   - **Leeson & Summers — Poultry Metabolic Disorders and Mycotoxins**: referência internacional sobre mecanismos de ação de micotoxinas em aves, sinais clínicos, limiares de risco por espécie e fase, e estratégias de manejo. Aplique especialmente para aflatoxinas, fumonisinas, zearalenona e DON.
+   - **IN MAPA nº 07/2011**: limites máximos oficiais de micotoxinas em matérias-primas e rações no Brasil. É o principal instrumento legal — cada valor acima do limite deve ser citado com o artigo ou anexo específico violado.
+   - **Embrapa Suínos e Aves**: boas práticas de armazenamento de grãos, controle de fungos e prevenção de micotoxinas em condições brasileiras de clima e logística.
+   - **NRC — Nutrient Requirements of Poultry**: impacto de micotoxinas e contaminantes na absorção de nutrientes e nas exigências nutricionais compensatórias.
+   - **MAPA / CFMV**: legislação sanitária, bem-estar animal, rastreabilidade e responsabilidade técnica do médico veterinário.
+
+B) EMBASAMENTO EM ESTUDOS TÉCNICOS — cite as referências de forma natural ao longo do texto:
+   - *"Leeson & Summers (2000) relatam que aflatoxinas acima de 20 ppb em frangos de corte provocam..."*, *"conforme IN MAPA 07/2011, Anexo I, o limite para aflatoxinas em rações para aves é de..."*, *"a Embrapa recomenda que umidade de milho acima de 13,5% eleva significativamente o risco de..."*.
+   - Para cada risco sanitário identificado, explique o mecanismo de ação e o impacto clínico esperado com base nas referências.
+
+Ao gerar o relatório, priorize:
+1. Avaliação de micotoxinas por tipo: valor encontrado vs. limite IN MAPA 07/2011 — cite o artigo específico. Classifique o risco (Baixo/Médio/Alto/Crítico) com base em Leeson & Summers.
+2. Umidade de grãos e matérias-primas: risco de proliferação fúngica por espécie de fungo (Aspergillus, Fusarium, Penicillium) conforme Embrapa.
+3. Impacto sanitário clínico esperado por tipo de micotoxina: imunossupressão, lesões hepáticas, nefrotoxicidade, queda de postura, refugagem, mortalidade — com referência.
+4. Oxidação lipídica (índice de peróxido): mecanismo de dano oxidativo e impacto em imunidade e absorção de vitaminas lipossolúveis (NRC).
+5. Recomendações sanitárias baseadas em evidência: adsorventes, descarte, sequestro de micotoxinas, comunicação ao responsável técnico.
+Responda em português do Brasil. Linguagem técnica e sanitária com profundidade científica. Cite normas, autores e mecanismos de ação.`;
+
+const _IA_SYSTEM_RELATORIO_MULTI = `Você é uma equipe multidisciplinar de especialistas em fábricas de ração animal no Brasil, composta pelos analistas indicados na análise.
+
+Cada especialista escreve com a visão, linguagem e embasamento das principais referências do setor:
+
+🔬 **CQ — Controle de Qualidade**
+Visão baseada em: Embrapa Suínos e Aves, MAPA/Portaria 269/2019, ISO 9001, Leeson & Summers (Commercial Poultry Nutrition).
+Foco: conformidade físico-química, rastreabilidade de desvios, NCs, BPF/APPCC.
+
+🌿 **Nutricionista Animal**
+Visão baseada em: Rostagno et al. — Tabelas Brasileiras (UFV), Leeson & Summers, NRC (Nutrient Requirements of Poultry), Embrapa Suínos e Aves, Compêndio MAPA.
+Foco: exigências nutricionais por fase, digestibilidade, DGM, qualidade de matérias-primas, FCR, desempenho produtivo.
+
+🩺 **Médico Veterinário**
+Visão baseada em: Leeson & Summers (Poultry Metabolic Disorders and Mycotoxins), IN MAPA 07/2011, Embrapa, NRC, CFMV.
+Foco: micotoxinas, risco sanitário, mecanismos de toxicidade, saúde avícola, biosseguridade.
+
+REGRAS DO RELATÓRIO MULTIDISCIPLINAR:
+1. Cada seção começa com o ícone e nome do especialista em negrito.
+2. Os especialistas dialogam sobre os mesmos dados: o CQ aponta o desvio → o Nutricionista avalia o impacto nutricional → o Veterinário avalia o risco sanitário.
+3. Cada afirmação técnica relevante deve ser acompanhada da referência: *"Rostagno et al. (2017) indicam..."*, *"conforme IN MAPA 07/2011..."*, *"Leeson & Summers (2005) demonstraram que..."*, *"Embrapa (Circular Técnica X) recomenda..."*.
+4. A conclusão integra os três olhares em diagnóstico e plano de ação unificado com embasamento normativo.
+Responda em português do Brasil. Linguagem executiva com profundidade técnica e científica.`;
+
+// Função para selecionar o system prompt correto conforme analistas ativos
+function _rmlGetSystemPrompt(anAtivos) {
+    if (anAtivos.length === 1) {
+        if (anAtivos[0] === 'cq')  return _IA_SYSTEM_RELATORIO_CQ;
+        if (anAtivos[0] === 'nut') return _IA_SYSTEM_RELATORIO_NUT;
+        if (anAtivos[0] === 'vet') return _IA_SYSTEM_RELATORIO_VET;
+    }
+    return _IA_SYSTEM_RELATORIO_MULTI;
+}
+
+const _IA_SYSTEM_RELATORIO = _IA_SYSTEM_RELATORIO_MULTI; // fallback legado
 
 // ============================================================
 // CHAT IA — NÃO CONFORMIDADE
@@ -17747,18 +17841,29 @@ const _rmlCores  = { prod:'#0a1e7f', mp:'#8e44ad', class:'#e67e22', nc:'#e74c3c'
 const _rmlBgs    = { prod:'#eef2ff', mp:'#f5eeff', class:'#fef9f0', nc:'#fef5f5', dev:'#f0faf4' };
 
 // ---- ANALISTAS ----
-const _rmlAnalistas = { cq: true, nut: true, vet: true };
-const _rmlAnalistaCores = { cq:'#1a5276', nut:'#117a65', vet:'#6e2fa0' };
-const _rmlAnalistaBgs   = { cq:'#eaf3fb', nut:'#e8f8f5', vet:'#f5eeff' };
-const _rmlAnalistaNomes = { cq:'Analista — Controle de Qualidade', nut:'Analista — Nutricionista', vet:'Analista — Veterinário' };
+const _rmlAnalistas = { cq: true, nut: true, vet: true, prompt: false };
+const _rmlAnalistaCores = { cq:'#1a5276', nut:'#117a65', vet:'#6e2fa0', prompt:'#b7410e' };
+const _rmlAnalistaBgs   = { cq:'#eaf3fb', nut:'#e8f8f5', vet:'#f5eeff', prompt:'#fff5f0' };
+const _rmlAnalistaNomes = { cq:'Analista — Controle de Qualidade', nut:'Analista — Nutricionista', vet:'Analista — Veterinário', prompt:'Prompt Livre' };
 
 function _rmlToggleAnalista(an) {
-    _rmlAnalistas[an] = !_rmlAnalistas[an];
-    _rmlRenderizarAnalista(an);
+    // Se ativando o prompt livre, desativa os outros analistas
+    if (an === 'prompt' && !_rmlAnalistas['prompt']) {
+        Object.keys(_rmlAnalistas).forEach(k => { _rmlAnalistas[k] = false; });
+        _rmlAnalistas['prompt'] = true;
+    } else if (an !== 'prompt' && !_rmlAnalistas[an]) {
+        // Se ativando um analista normal, desativa prompt livre
+        _rmlAnalistas['prompt'] = false;
+        _rmlAnalistas[an] = true;
+    } else {
+        _rmlAnalistas[an] = !_rmlAnalistas[an];
+    }
+    Object.keys(_rmlAnalistas).forEach(k => _rmlRenderizarAnalista(k));
 }
 function _rmlSelecionarTodosAnalistas(ativo) {
     Object.keys(_rmlAnalistas).forEach(an => {
-        _rmlAnalistas[an] = ativo;
+        // "Todos" não inclui prompt livre; "Nenhum" desmarca tudo
+        _rmlAnalistas[an] = ativo && an !== 'prompt' ? true : (ativo ? false : false);
         _rmlRenderizarAnalista(an);
     });
 }
@@ -17778,6 +17883,11 @@ function _rmlRenderizarAnalista(an) {
         lbl.style.border = '2px solid #ccc';
         lbl.style.background = '#f9f9f9';
         lbl.style.opacity = '0.5';
+    }
+    // Mostrar/ocultar área do prompt livre
+    if (an === 'prompt') {
+        const areaPrompt = document.getElementById('rml_prompt_livre_area');
+        if (areaPrompt) areaPrompt.style.display = _rmlAnalistas['prompt'] ? 'block' : 'none';
     }
     const nenhum = Object.values(_rmlAnalistas).every(v => !v);
     const aviso = document.getElementById('rml_aviso_analistas');
@@ -18003,40 +18113,103 @@ Motivos: ${[...new Set(devMes.map(d=>d.motivo))].join(', ') || 'nenhuma'}`;
 
         const _modulosNomes = [_usaProd?'Produção':null,_usaMP?'Matéria Prima':null,_usaClass?'Classificação':null,_usaNC?'Não Conformidades':null,_usaDev?'Devoluções':null].filter(Boolean).join(', ');
 
-        // ---- SEÇÕES DO RELATÓRIO ----
+        // ---- SEÇÕES DO RELATÓRIO — adaptadas por analista ----
         const _secsRel = [];
-        _secsRel.push('1. RESUMO EXECUTIVO (4–5 linhas com os principais achados)');
+        const _somenteCQ  = _anAtivos.length === 1 && _anAtivos[0] === 'cq';
+        const _somenteNut = _anAtivos.length === 1 && _anAtivos[0] === 'nut';
+        const _somenteVet = _anAtivos.length === 1 && _anAtivos[0] === 'vet';
+        const _temCQ  = _anAtivos.includes('cq');
+        const _temNut = _anAtivos.includes('nut');
+        const _temVet = _anAtivos.includes('vet');
+        const _multi  = _anAtivos.length > 1;
+
+        _secsRel.push('1. RESUMO EXECUTIVO (4–5 linhas com principais achados; citar ao menos uma referência técnica: Rostagno et al., Embrapa, IN MAPA 07/2011, Leeson & Summers ou NRC)');
         let _si = 2;
+
         if (temComparacao) {
             _secsRel.push(`${_si++}. COMPARAÇÃO MENSAL (${nomeMes} vs ${nomeMesAnt}):
-   - Tendência geral: Melhorou / Piorou / Estável — justificar com dados
-   - Principais variações por módulo (citar valores exatos de cada período)
-   - Indicador mais crítico e impacto operacional da mudança`);
+   - Tendência geral: Melhorou / Piorou / Estável — justificar com dados e norma aplicável
+   - Principais variações por módulo (valores exatos de cada período)
+   - Indicador mais crítico: citar referência que embasa o limite ou a meta`);
         }
-        if (_usaProd) {
-            _secsRel.push(`${_si++}. PRODUTO ACABADO — GRANULOMETRIA E QUALIDADE FÍSICA (DGM, DPG, peneiras por ração${temComparacao?'; comparar com mês anterior':''})`);
-            _secsRel.push(`${_si++}. PRODUTO ACABADO — COMPOSIÇÃO NUTRICIONAL (proteína, fibra, extrato, cálcio, fósforo, umidade${temComparacao?'; comparar com mês anterior':''})`);
+
+        // Seções CQ
+        if (_temCQ || _multi) {
+            if (_usaProd) {
+                _secsRel.push(`${_si++}. ${_multi?'🔬 CQ — ':''}PRODUTO ACABADO — GRANULOMETRIA E QUALIDADE FÍSICA
+   - DGM e DPG por ração (corte/postura, pré-inicial/inicial/final)
+   - Para cada DGM fora do esperado: citar critério Embrapa Suínos e Aves e/ou Leeson & Summers para a fase (ex: "Leeson & Summers (2005) recomendam DGM entre 600–800 µm para frangos na fase inicial")
+   - Distribuição por peneiras; uniformidade de moagem; desvios físicos vs. Portaria MAPA 269/2019${temComparacao?'\n   - Comparar com mês anterior':''}`);
+            }
+            if (_usaNC || _usaDev) {
+                _secsRel.push(`${_si++}. ${_multi?'🔬 CQ — ':''}NÃO CONFORMIDADES${_usaDev?' E DEVOLUÇÕES':''}
+   - Frequência, gravidade e padrão de recorrência; classificar conforme ISO 9001 (NC maior/menor/crítica)
+   - Fornecedores críticos: aplicar análise de Pareto; citar Portaria MAPA ou IN aplicável a cada tipo
+   - Para cada NC crítica: norma violada + ação corretiva embasada em BPF/APPCC/ISO 9001${temComparacao?'\n   - Variação vs mês anterior':''}`);
+            }
         }
-        if (_usaMP)    _secsRel.push(`${_si++}. MATÉRIAS PRIMAS — ANÁLISE INDIVIDUAL POR PRODUTO${temComparacao?' (comparar variações entre meses)':''} (soja extrusada: ureática 0,05-0,20, solubilidade mín. 75%)`);
-        if (_usaClass) _secsRel.push(`${_si++}. CLASSIFICAÇÃO DE GRÃOS — ANÁLISE INDIVIDUAL (micotoxinas IN MAPA 07/2011, umidade${temComparacao?'; variações entre meses':''})`);
-        if (_usaNC||_usaDev) _secsRel.push(`${_si++}. NÃO CONFORMIDADES${_usaDev?' E DEVOLUÇÕES':''} (causas sistêmicas, fornecedores críticos${temComparacao?', variação vs mês anterior':''})`);
-        _secsRel.push(`${_si++}. DIAGNÓSTICO TÉCNICO MULTIESPECIALISTA:
-   - CQ (Controle de Qualidade): conformidade, desvios
-   - NA (Nutrição Animal): impacto nutricional, digestibilidade
-   - PI (Processos Industriais): moagem, DGM, mistura
-   - VA (Desempenho Avícola): FCR, ganho de peso, postura, qualidade de ovos`);
-        _secsRel.push(`${_si++}. SAÍDA PADRONIZADA (responder exatamente nesta ordem):
-   1) Diagnóstico técnico (máx. 5 linhas)
+
+        // Seções Nutricionista
+        if (_temNut || _multi) {
+            if (_usaProd) {
+                _secsRel.push(`${_si++}. ${_multi?'🌿 NUTRICIONISTA — ':''}COMPOSIÇÃO NUTRICIONAL DO PRODUTO ACABADO
+   - Proteína bruta, fibra bruta, extrato etéreo, cálcio, fósforo disponível, umidade por ração
+   - Para cada parâmetro: comparar com Tabelas Brasileiras Rostagno et al. para a fase; ex: "Rostagno et al. (2017) recomendam para frango inicial mínimo X% de PB..."
+   - Impacto em digestibilidade: referenciar Leeson & Summers ou NRC quando aplicável${temComparacao?'\n   - Variação entre meses':''}`);
+            }
+            if (_usaMP) {
+                _secsRel.push(`${_si++}. ${_multi?'🌿 NUTRICIONISTA — ':''}MATÉRIAS-PRIMAS — QUALIDADE NUTRICIONAL
+   - Composição por produto vs. tabelas Embrapa Suínos e Aves e Rostagno et al.
+   - Soja extrusada: ureática (ref. 0,05–0,20) e solubilidade proteica (mín. 75%) — citar Embrapa Circular Técnica
+   - Milho: umidade e impacto em energia metabolizável — "conforme Rostagno et al. (edição), cada 1% de umidade acima do padrão reduz EM em aproximadamente..."
+   - Variações entre lotes/fornecedores${temComparacao?'; comparar entre meses':''}
+   - Impacto na formulação: "com base em NRC (1994) / Rostagno et al., essa variação implica..."`);
+            }
+            if (_usaClass) {
+                _secsRel.push(`${_si++}. ${_multi?'🌿 NUTRICIONISTA — ':''}CLASSIFICAÇÃO DE GRÃOS — ANÁLISE NUTRICIONAL
+   - Umidade, impurezas e avariados vs. limites Embrapa e Compêndio MAPA
+   - Impacto na energia metabolizável: referenciar Rostagno et al. ou NRC
+   - Grãos ardidos/mofados: perda de valor nutricional; citar Leeson & Summers sobre impacto em digestibilidade${temComparacao?'\n   - Variações entre meses':''}`);
+            }
+            _secsRel.push(`${_si++}. ${_multi?'🌿 NUTRICIONISTA — ':''}IMPACTO EM DESEMPENHO ANIMAL
+   - Frango de corte: FCR esperado, ganho de peso e uniformidade por fase — comparar com metas Rostagno et al.
+   - Postura: produção de ovos, qualidade de casca, persistência — referenciar Leeson & Summers (Commercial Poultry Nutrition)
+   - Ajustes de formulação: "com base em Rostagno et al. (edição mais recente), recomenda-se aumentar/reduzir X em Y%..."`);
+        }
+
+        // Seções Veterinário
+        if (_temVet || _multi) {
+            if (_usaClass || _usaMP) {
+                _secsRel.push(`${_si++}. ${_multi?'🩺 VETERINÁRIO — ':''}RISCO DE MICOTOXINAS E CONTAMINAÇÃO
+   - Aflatoxinas, fumonisinas, zearalenona, DON: valor encontrado vs. limite IN MAPA 07/2011 (citar artigo/anexo)
+   - Classificar risco por tipo: Baixo (<50% do limite) / Médio (50–100%) / Alto (>limite) — critério Leeson & Summers
+   - Umidade de grãos: risco fúngico por espécie (Aspergillus >14%, Fusarium >13,5%) — citar Embrapa
+   - Lotes de risco: produto, data, valor, fornecedor`);
+            }
+            if (_usaMP) {
+                _secsRel.push(`${_si++}. ${_multi?'🩺 VETERINÁRIO — ':''}QUALIDADE SANITÁRIA DAS MATÉRIAS-PRIMAS
+   - Índice de peróxido >20 meq/kg O₂: mecanismo de dano oxidativo — "conforme NRC, oxidação lipídica compromete absorção de vitaminas lipossolúveis A, D, E, K..."
+   - Umidade >14%: risco microbiológico e fúngico — referenciar Embrapa boas práticas de armazenamento
+   - Condições de armazenamento, fornecedores de risco e recomendações de BPF`);
+            }
+            _secsRel.push(`${_si++}. ${_multi?'🩺 VETERINÁRIO — ':''}IMPACTO SANITÁRIO E RISCO ANIMAL
+   - Por tipo de micotoxina: mecanismo de ação clínico esperado em aves — "Leeson & Summers (2000) relatam que aflatoxinas >X ppb causam..."
+   - Imunossupressão, lesões hepáticas, queda de postura, refugagem, mortalidade: classificar por grau de risco
+   - Recomendações: descarte, sequestro de micotoxinas (adsorventes), restrição de uso, comunicação ao responsável técnico`);
+        }
+
+        // Diagnóstico integrado
+        if (_multi) {
+            _secsRel.push(`${_si++}. DIAGNÓSTICO INTEGRADO MULTIDISCIPLINAR
+   - CQ + Nutricionista + Veterinário: síntese sobre os mesmos dados com cada perspectiva
+   - Grau de risco global: Baixo / Médio / Alto — embasado nas referências citadas
+   - Plano de ação unificado: ações corretivas com responsabilidade e embasamento normativo (ISO 9001, MAPA, Embrapa)`);
+        }
+
+        _secsRel.push(`${_si++}. CONCLUSÃO E AÇÕES PRIORITÁRIAS
+   1) Diagnóstico técnico final (máx. 4 linhas) com referência principal
    2) Área afetada: Matéria-prima / Produção / Classificação / Todas
-   3) Comparação mensal: Melhorou / Piorou / Estável
-   4) Principal indicador de variação
-   5) Causa raiz provável
-   6) Risco: Baixo / Médio / Alto
-   7) Impacto em desempenho:
-      — Frango de corte: FCR, ganho de peso, uniformidade
-      — Postura: produção, casca, persistência
-   8) Ações corretivas (máx. 3)
-   9) Ações preventivas (máx. 3)`);
+   ${temComparacao?'3) Tendência: Melhorou / Piorou / Estável\n   4) Causa raiz provável (embasada em referência)\n   5) Risco: Baixo / Médio / Alto\n   6) Ações corretivas (máx. 3) — cada uma com responsável e embasamento\n   7) Ações preventivas (máx. 3) — cada uma com referência normativa':'3) Causa raiz provável (embasada em referência)\n   4) Risco: Baixo / Médio / Alto\n   5) Ações corretivas (máx. 3) — cada uma com responsável e embasamento\n   6) Ações preventivas (máx. 3) — cada uma com referência normativa'}`);
 
         const blocoSistema = temComparacao ? `
 SISTEMA: Análise Comparativa Mensal
@@ -18060,12 +18233,28 @@ ANALISTAS: ${_analistasStr}
 ${_blocosProd}${_blocosMP}${_blocosClass}${_blocosNC}${_blocosDev}
 ---
 Analise EXCLUSIVAMENTE os módulos fornecidos.
-Estruture em:
+Estruture o relatório nas seguintes seções (siga a ordem exatamente):
 ${_secsRel.join('\n')}
-Referencie normas Embrapa, MAPA e Compêndio Brasileiro de Nutrição Animal.
-Use linguagem executiva clara e técnica. Máxima objetividade.`;
+${_multi ? '\nCada seção de especialista deve começar com o ícone e nome do analista em negrito (ex: **🔬 CQ — Controle de Qualidade**).' : ''}
+Referencie normas Embrapa, MAPA, IN MAPA 07/2011, Compêndio Brasileiro de Nutrição Animal e Rostagno et al. quando aplicável.
+Use linguagem executiva clara e técnica. Máxima objetividade. Cite valores exatos dos dados fornecidos.
 
-        const respTexto = await _iaCallComFallback(_IA_SYSTEM_RELATORIO, [{ role:'user', content: prompt }], 4000);
+        // ---- PROMPT LIVRE: sobrescreve o prompt padrão ----
+        const _usaPromptLivre = _rmlAnalistas['prompt'];
+        const _promptLivreTexto = _usaPromptLivre ? (document.getElementById('rml_prompt_livre_texto')?.value || '').trim() : '';
+        if (_usaPromptLivre && !_promptLivreTexto) {
+            sgqToast('⚠️ Digite o prompt personalizado antes de gerar a análise.', 'warning');
+            btn.disabled = false;
+            btn.innerHTML = '📊 Gerar Análise Comparativa';
+            return;
+        }
+        const promptFinal = _usaPromptLivre
+            ? `${blocoSistema}\nRELATÓRIO — ${nomeMes.toUpperCase()}${temComparacao?' VS '+nomeMesAnt.toUpperCase():''}\nMÓDULOS: ${_modulosNomes}\n${_blocosProd}${_blocosMP}${_blocosClass}${_blocosNC}${_blocosDev}\n---\nINSTRUÇÃO DO USUÁRIO:\n${_promptLivreTexto}`
+            : prompt;
+
+        const _systemPromptFinal = _usaPromptLivre ? _IA_SYSTEM_RELATORIO_MULTI : _rmlGetSystemPrompt(_anAtivos);
+
+        const respTexto = await _iaCallComFallback(_systemPromptFinal, [{ role:'user', content: promptFinal }], 4000);
         _relMensalIA_ultimoTexto = respTexto;
 
         // ---- KPIs VISUAIS ----
