@@ -16743,9 +16743,16 @@ document.addEventListener('DOMContentLoaded', function() {
     <div style="background:#eef2ff;border-bottom:1px solid #c5d5f0;padding:12px 20px;flex-shrink:0;">
       <!-- Linha 1: período + botões -->
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
-        <div style="font-size:12px;font-weight:700;color:#0a1e7f;white-space:nowrap;">📅 Período:</div>
-        <input type="month" id="relMensalIA_mes" style="padding:7px 10px;border:1px solid #bcd;border-radius:6px;font-size:13px;font-weight:700;" onchange="">
-        <button onclick="gerarRelatorioMensalIA()" id="btnGerarRelMensalIA" style="background:linear-gradient(135deg,#0a1e7f,#1a3a9f);color:#fff;border:none;border-radius:6px;padding:9px 22px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:7px;">📋 Gerar Análise Técnica</button>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div style="font-size:12px;font-weight:700;color:#0a1e7f;white-space:nowrap;">📅 Mês Atual:</div>
+          <input type="month" id="relMensalIA_mes" style="padding:7px 10px;border:1px solid #bcd;border-radius:6px;font-size:13px;font-weight:700;" onchange="">
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div style="font-size:12px;font-weight:700;color:#7f8c8d;white-space:nowrap;">📅 Mês Anterior:</div>
+          <input type="month" id="relMensalIA_mesAnterior" style="padding:7px 10px;border:1px solid #bcd;border-radius:6px;font-size:13px;font-weight:700;background:#f8f9fa;" onchange="">
+          <span id="rml_label_comparacao" style="font-size:10px;color:#27ae60;font-weight:800;display:none;">✅ Comparação ativa</span>
+        </div>
+        <button onclick="gerarRelatorioMensalIA()" id="btnGerarRelMensalIA" style="background:linear-gradient(135deg,#0a1e7f,#1a3a9f);color:#fff;border:none;border-radius:6px;padding:9px 22px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:7px;">📊 Gerar Análise Comparativa</button>
         <button onclick="imprimirRelMensalIA()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;">🖨️ Imprimir</button>
         <button onclick="copiarRelMensalIA()" style="background:#34495e;color:#fff;border:none;border-radius:6px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;">📋 Copiar</button>
       </div>
@@ -16800,8 +16807,8 @@ document.addEventListener('DOMContentLoaded', function() {
     <div id="relMensalIA_conteudo" style="flex:1;overflow-y:auto;padding:20px 24px;">
       <div style="text-align:center;padding:60px 20px;color:#bdc3c7;">
         <div style="font-size:60px;margin-bottom:16px;">📊</div>
-        <div style="font-size:14px;font-weight:700;color:#95a5a6;">Selecione o mês, escolha os módulos e clique em "Gerar Análise Técnica"</div>
-        <div style="font-size:11px;color:#bdc3c7;margin-top:6px;">Selecione apenas os módulos que deseja analisar para economizar tokens</div>
+        <div style="font-size:14px;font-weight:700;color:#95a5a6;">Selecione o mês atual e o mês anterior, escolha os módulos e clique em "Gerar Análise Comparativa"</div>
+        <div style="font-size:11px;color:#bdc3c7;margin-top:6px;">A análise compara automaticamente os dois períodos: tendências, desvios e impacto operacional</div>
       </div>
     </div>
   </div>
@@ -17707,10 +17714,25 @@ function abrirRelatorioMensalIA_seguro() {
 function abrirRelatorioMensalIA() {
     const modal = document.getElementById('modalRelatorioMensalIA');
     modal.style.display = 'flex';
-    // Pré-selecionar mês atual
+    // Pré-selecionar mês atual e mês anterior
     const agora = new Date();
     const mesAtual = agora.getFullYear() + '-' + String(agora.getMonth() + 1).padStart(2, '0');
     document.getElementById('relMensalIA_mes').value = mesAtual;
+    // Calcular mês anterior automaticamente
+    const dataAnterior = new Date(agora.getFullYear(), agora.getMonth() - 1, 1);
+    const mesAnterior = dataAnterior.getFullYear() + '-' + String(dataAnterior.getMonth() + 1).padStart(2, '0');
+    document.getElementById('relMensalIA_mesAnterior').value = mesAnterior;
+    _rmlAtualizarLabelComparacao();
+    // Listener para atualizar label ao mudar os campos
+    document.getElementById('relMensalIA_mes').onchange = _rmlAtualizarLabelComparacao;
+    document.getElementById('relMensalIA_mesAnterior').onchange = _rmlAtualizarLabelComparacao;
+}
+
+function _rmlAtualizarLabelComparacao() {
+    const mesAtual = document.getElementById('relMensalIA_mes').value;
+    const mesAnt   = document.getElementById('relMensalIA_mesAnterior').value;
+    const label    = document.getElementById('rml_label_comparacao');
+    if (label) label.style.display = (mesAtual && mesAnt && mesAtual !== mesAnt) ? 'inline' : 'none';
 }
 
 function fecharRelatorioMensalIA() {
@@ -17816,11 +17838,18 @@ async function gerarRelatorioMensalIA() {
     const _analistasStr = _anAtivos.map(k => _rmlAnalistaNomes[k]).join(', ');
 
     const mesVal = document.getElementById('relMensalIA_mes').value;
-    if (!mesVal) { alert('Selecione o mês para análise.'); return; }
+    if (!mesVal) { alert('Selecione o mês atual para análise.'); return; }
+    const mesAntVal = document.getElementById('relMensalIA_mesAnterior').value;
+    const temComparacao = mesAntVal && mesAntVal !== mesVal;
 
     const [ano, mes] = mesVal.split('-');
-    const prefixo = mesVal; // YYYY-MM
+    const prefixo = mesVal;
     const nomeMes = new Date(parseInt(ano), parseInt(mes) - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    let nomeMesAnt = '';
+    if (temComparacao) {
+        const [anoA, mesA] = mesAntVal.split('-');
+        nomeMesAnt = new Date(parseInt(anoA), parseInt(mesA) - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    }
 
     const conteudoEl = document.getElementById('relMensalIA_conteudo');
     const btn = document.getElementById('btnGerarRelMensalIA');
@@ -17828,58 +17857,73 @@ async function gerarRelatorioMensalIA() {
     btn.textContent = '⏳ Analisando...';
 
     const _nomesAtivos = [_rmlEstado.prod?'🏭 Produção':null,_rmlEstado.mp?'🌾 Mat. Prima':null,_rmlEstado.class?'🌽 Classificação':null,_rmlEstado.nc?'⚠️ NCs':null,_rmlEstado.dev?'🔄 Devoluções':null].filter(Boolean).join(', ');
-    conteudoEl.innerHTML = `<div class="rml-loading"><div class="spinner"></div>Analisando: <strong>${_nomesAtivos}</strong><br><small style="color:#aaa;">Período: ${nomeMes} — consultando normas Embrapa e Compêndio Brasileiro de Nutrição Animal</small></div>`;
+    conteudoEl.innerHTML = `<div class="rml-loading"><div class="spinner"></div>Analisando: <strong>${_nomesAtivos}</strong><br><small style="color:#aaa;">Período: ${nomeMes}${temComparacao?' vs '+nomeMesAnt:''} — consultando normas Embrapa e Compêndio Brasileiro de Nutrição Animal</small></div>`;
 
     try {
-        // ---- COLETAR DADOS DO MÊS (somente módulos ativos) ----
         const _usaProd  = _rmlEstado.prod;
         const _usaMP    = _rmlEstado.mp;
         const _usaClass = _rmlEstado.class;
         const _usaNC    = _rmlEstado.nc;
         const _usaDev   = _rmlEstado.dev;
 
+        // ---- DADOS MÊS ATUAL ----
         const prodMes   = _usaProd  ? (producoes      || []).filter(r => r.data && r.data.startsWith(prefixo)) : [];
         const mpMes     = _usaMP    ? (materiasPrimas  || []).filter(r => r.data && r.data.startsWith(prefixo)) : [];
         const classMes  = _usaClass ? (classificacoes  || []).filter(r => r.data && r.data.startsWith(prefixo)) : [];
         const ncMes     = _usaNC    ? (listaNC         || []).filter(r => r.data && r.data.startsWith(prefixo)) : [];
         const devMes    = _usaDev   ? (listaDev        || []).filter(r => r.data && r.data.startsWith(prefixo)) : [];
 
+        // ---- DADOS MÊS ANTERIOR ----
+        const prodAnt   = (temComparacao && _usaProd)  ? (producoes      || []).filter(r => r.data && r.data.startsWith(mesAntVal)) : [];
+        const mpAnt     = (temComparacao && _usaMP)    ? (materiasPrimas  || []).filter(r => r.data && r.data.startsWith(mesAntVal)) : [];
+        const classAnt  = (temComparacao && _usaClass) ? (classificacoes  || []).filter(r => r.data && r.data.startsWith(mesAntVal)) : [];
+        const ncAnt     = (temComparacao && _usaNC)    ? (listaNC         || []).filter(r => r.data && r.data.startsWith(mesAntVal)) : [];
+        const devAnt    = (temComparacao && _usaDev)   ? (listaDev        || []).filter(r => r.data && r.data.startsWith(mesAntVal)) : [];
+
         // ---- UTILITÁRIOS ----
         const _med = (arr, campo) => { const v = arr.map(r=>parseFloat(r[campo])).filter(v=>!isNaN(v)&&v>0); return v.length ? v.reduce((s,x)=>s+x,0)/v.length : null; };
         const _max = (arr, campo) => { const v = arr.map(r=>parseFloat(r[campo])).filter(v=>!isNaN(v)&&v>0); return v.length ? Math.max(...v) : null; };
         const _fmt = (v, dec=2)   => v !== null && v !== undefined ? Number(v).toFixed(dec) : 'N/D';
+        const _delta = (atual, ant) => {
+            if (atual === null || ant === null || ant === 0) return '';
+            const d = ((atual - ant) / Math.abs(ant) * 100).toFixed(1);
+            return d > 0 ? `▲${d}%` : `▼${Math.abs(d)}%`;
+        };
+        const _cmpSeta = (atual, ant, menorMelhor=false) => {
+            if (atual === null || ant === null) return '—';
+            const melhorou = menorMelhor ? atual < ant : atual > ant;
+            const igual = Math.abs(atual - ant) < 0.01;
+            if (igual) return '<span style="color:#7f8c8d;">●</span>';
+            return melhorou ? '<span style="color:#27ae60;">▲</span>' : '<span style="color:#e74c3c;">▼</span>';
+        };
 
-        // ---- TOTAIS SIMPLES (para KPIs visuais) ----
+        // ---- TOTAIS ----
         const totalProd  = prodMes.length;
         const totalMP    = mpMes.length;
         const totalClass = classMes.length;
         const medDGM     = _med(prodMes, 'dgm');
+        const medDGMAnt  = _med(prodAnt, 'dgm');
         const aflaMax    = _max(classMes, 'aflatoxinas');
+        const aflaMaxAnt = _max(classAnt, 'aflatoxinas');
         const aflaMaxNum = aflaMax !== null ? aflaMax : 0;
-
-        // KPIs de MP (mantém para cards visuais usando parâmetro padrão de umidade)
         const altaUmMP  = mpMes.filter(r=>{ const v=parseFloat(r.umidade); return !isNaN(v)&&v>14; }).length;
         const altoPerMP = mpMes.filter(r=>{ const v=parseFloat(r.peroxido); return !isNaN(v)&&v>20; }).length;
+        const altaUmMPAnt  = mpAnt.filter(r=>{ const v=parseFloat(r.umidade); return !isNaN(v)&&v>14; }).length;
+        const altoPerMPAnt = mpAnt.filter(r=>{ const v=parseFloat(r.peroxido); return !isNaN(v)&&v>20; }).length;
 
-        // ============================================================
-        // COLETA DE DESVIOS USANDO getParam() — PARÂMETROS REAIS DO SISTEMA
-        // Mesmo critério das células vermelhas do sistema.
-        // Ignora valores sem informação (NaN, null, 0 para campos quantitativos).
-        // ============================================================
-
-        // Campos onde 0 é valor válido (defeitos de grãos)
+        // ---- CAMPOS ZEROVOS VÁLIDOS ----
         const _zerosValidos = new Set(['queimado','ardido','mofado','esverdeado','fermentando',
             'chocho','picado','gessado','quebrado','germinado','carunchado','impureza','avariados']);
 
-        function _avaliarRegistro(modId, chave, campos, registro, nomeExibicao) {
+        function _avaliarRegistro(modId, chave, campos, registro) {
             const linhas = [];
             campos.forEach(c => {
                 const cfg = getParam(modId, chave, c.key, registro.data);
-                if (!cfg || !cfg.ativo) return; // campo sem parâmetro ativo → ignora
+                if (!cfg || !cfg.ativo) return;
                 const valorBruto = c.calculado ? getAvariados(registro) : registro[c.key];
                 const v = parseFloat(valorBruto);
                 if (isNaN(v) || valorBruto === '' || valorBruto === null || valorBruto === undefined) return;
-                if (v === 0 && !_zerosValidos.has(c.key)) return; // sem informação
+                if (v === 0 && !_zerosValidos.has(c.key)) return;
                 const foraMin = cfg.min > 0    && v < cfg.min;
                 const foraMax = cfg.max < 9999 && v > cfg.max;
                 if (!foraMin && !foraMax) return;
@@ -17891,226 +17935,221 @@ async function gerarRelatorioMensalIA() {
             return linhas;
         }
 
-        // ---- PRODUÇÃO: desvios por ração, registro a registro ----
-        const racoes = [...new Set(prodMes.map(r => r.racao).filter(Boolean))];
-        const prodBlocos = [];
-        racoes.forEach(racao => {
-            const regs = prodMes.filter(r => r.racao === racao);
-            const chave = racao.replace(/ /g, '_');
-            const desviosRacao = [];
-            regs.forEach(r => {
-                const linhas = _avaliarRegistro('prod', chave, CAMPOS_PROD, r, racao);
-                if (linhas.length) desviosRacao.push(...linhas);
+        function _montarBlocos(registros, modId, campos, chaveKey) {
+            const grupos = [...new Set(registros.map(r => r[chaveKey]).filter(Boolean))];
+            return grupos.map(grupo => {
+                const regs = registros.filter(r => r[chaveKey] === grupo);
+                const chave = grupo.replace(/ /g, '_');
+                const desvios = [];
+                regs.forEach(r => { const l = _avaliarRegistro(modId, chave, campos, r); if (l.length) desvios.push(...l); });
+                const dataRef = regs[0]?.data || null;
+                const paramsAtivos = campos.map(c => { const cfg = getParam(modId, chave, c.key, dataRef); return cfg && cfg.ativo ? `${c.label}: ${cfg.min>0?cfg.min:'—'}–${cfg.max<9999?cfg.max:'—'}` : null; }).filter(Boolean);
+                const limInfo = paramsAtivos.length ? `PARÂMETROS ATIVOS: ${paramsAtivos.join(' | ')}` : 'PARÂMETROS ATIVOS: nenhum configurado';
+                return `  [${grupo}] (${regs.length} reg.)\n  ${limInfo}`
+                    + (desvios.length ? `\n  ⚠️ DESVIOS:\n${desvios.join('\n')}` : '\n  ✅ Dentro dos parâmetros');
             });
-            // Lista completa de parâmetros ATIVOS para esta ração (todos os campos com ativo=true)
-            const dataRef = regs[0]?.data || null;
-            const paramsAtivos = CAMPOS_PROD
-                .map(c => { const cfg = getParam('prod', chave, c.key, dataRef); return cfg && cfg.ativo ? `${c.label}: ${cfg.min>0?cfg.min:'—'}–${cfg.max<9999?cfg.max:'—'}` : null; })
-                .filter(Boolean);
-            const limInfo = paramsAtivos.length ? `PARÂMETROS ATIVOS: ${paramsAtivos.join(' | ')}` : 'PARÂMETROS ATIVOS: nenhum configurado';
-            prodBlocos.push(`  [${racao}] (${regs.length} registro(s))\n  ${limInfo}`
-                + (desviosRacao.length ? `\n  ⚠️ DESVIOS REGISTRADOS:\n${desviosRacao.join('\n')}` : '\n  ✅ Todos os registros dentro dos parâmetros'));
-        });
+        }
 
-        // ---- MATÉRIA PRIMA: desvios por produto, registro a registro ----
-        const prodsMP = [...new Set(mpMes.map(r => r.produto).filter(Boolean))];
-        const mpBlocos = [];
-        prodsMP.forEach(prod => {
-            const regs = mpMes.filter(r => r.produto === prod);
-            const chave = prod.replace(/ /g, '_');
-            const desviosProd = [];
-            regs.forEach(r => {
-                const linhas = _avaliarRegistro('mp', chave, CAMPOS_MP, r, prod);
-                if (linhas.length) desviosProd.push(...linhas);
-            });
-            // Lista completa de parâmetros ATIVOS para este produto MP
-            const dataRef = regs[0]?.data || null;
-            const paramsAtivosMP = CAMPOS_MP
-                .map(c => { const cfg = getParam('mp', chave, c.key, dataRef); return cfg && cfg.ativo ? `${c.label}: ${cfg.min>0?cfg.min:'—'}–${cfg.max<9999?cfg.max:'—'}` : null; })
-                .filter(Boolean);
-            const limInfoMP = paramsAtivosMP.length ? `PARÂMETROS ATIVOS: ${paramsAtivosMP.join(' | ')}` : 'PARÂMETROS ATIVOS: nenhum configurado';
-            mpBlocos.push(`  [${prod}] (${regs.length} registro(s))\n  ${limInfoMP}`
-                + (desviosProd.length ? `\n  ⚠️ DESVIOS REGISTRADOS:\n${desviosProd.join('\n')}` : '\n  ✅ Todos os registros dentro dos parâmetros'));
-        });
-
-        // ---- CLASSIFICAÇÃO: desvios por produto, registro a registro ----
-        const prodsClass = [...new Set(classMes.map(r => r.produto).filter(Boolean))];
-        const classBlocos = [];
-        prodsClass.forEach(prod => {
-            const regs = classMes.filter(r => r.produto === prod);
-            const chave = prod.replace(/ /g, '_');
-            const desviosProd = [];
-            regs.forEach(r => {
-                const linhas = _avaliarRegistro('class', chave, CAMPOS_CLASS, r, prod);
-                if (linhas.length) desviosProd.push(...linhas);
-            });
-            // Lista completa de parâmetros ATIVOS para este produto de classificação
-            const dataRef = regs[0]?.data || null;
-            const paramsAtivosClass = CAMPOS_CLASS
-                .map(c => { const cfg = getParam('class', chave, c.key, dataRef); return cfg && cfg.ativo ? `${c.label}: ${cfg.min>0?cfg.min:'—'}–${cfg.max<9999?cfg.max:'—'}` : null; })
-                .filter(Boolean);
-            const limInfoClass = paramsAtivosClass.length ? `PARÂMETROS ATIVOS: ${paramsAtivosClass.join(' | ')}` : 'PARÂMETROS ATIVOS: nenhum configurado';
-            classBlocos.push(`  [${prod}] (${regs.length} registro(s))\n  ${limInfoClass}`
-                + (desviosProd.length ? `\n  ⚠️ DESVIOS REGISTRADOS:\n${desviosProd.join('\n')}` : '\n  ✅ Todos os registros dentro dos parâmetros'));
-        });
+        const prodBlocos    = _montarBlocos(prodMes, 'prod', CAMPOS_PROD, 'racao');
+        const prodBlocosAnt = temComparacao ? _montarBlocos(prodAnt, 'prod', CAMPOS_PROD, 'racao') : [];
+        const mpBlocos      = _montarBlocos(mpMes, 'mp', CAMPOS_MP, 'produto');
+        const mpBlocosAnt   = temComparacao ? _montarBlocos(mpAnt, 'mp', CAMPOS_MP, 'produto') : [];
+        const classBlocos   = _montarBlocos(classMes, 'class', CAMPOS_CLASS, 'produto');
+        const classBlocosAnt= temComparacao ? _montarBlocos(classAnt, 'class', CAMPOS_CLASS, 'produto') : [];
 
         // ---- MÉTRICAS NC ----
         const ncCrit    = ncMes.filter(n => n.gravidade === 'Crítica').length;
         const ncMaior   = ncMes.filter(n => n.gravidade === 'Maior').length;
         const ncAberta  = ncMes.filter(n => n.status === 'Pendente' || n.status === 'Em Análise').length;
+        const ncCritAnt = ncAnt.filter(n => n.gravidade === 'Crítica').length;
         const ncFornece = {};
         ncMes.forEach(n => { const f = n.fornecedor||'Interno'; ncFornece[f] = (ncFornece[f]||0)+1; });
         const topFornNC = Object.entries(ncFornece).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([f,n])=>`${f} (${n})`).join(', ');
 
-        // ---- MONTAR PROMPT DINÂMICO (somente módulos selecionados) ----
+        // ---- MONTAR BLOCOS DO PROMPT ----
+        const _blocosMesAtual = (blocos, nome, total) => !blocos.length ? `Nenhum registro de ${nome}.` : blocos.join('\n\n');
+        const _blocosMesAnt   = (blocos, nome, total) => !temComparacao ? '' : (!blocos.length ? `Nenhum registro de ${nome}.` : blocos.join('\n\n'));
+
         const _blocosProd = !_usaProd ? '' : `
-== PRODUTO ACABADO / PRODUÇÃO (${totalProd} registros no período) ==
-PARÂMETROS: lidos do sistema via getParam() por ração e por data de vigência.
-ANÁLISE REGISTRO A REGISTRO POR RAÇÃO (valores sem informação ignorados):
-${prodBlocos.length ? prodBlocos.join('\n\n') : 'Nenhum registro de produção no período.'}`;
+== PRODUTO ACABADO / PRODUÇÃO ==
+--- MÊS ATUAL (${nomeMes}) — ${totalProd} registros ---
+${_blocosMesAtual(prodBlocos,'produção',totalProd)}
+${temComparacao ? `--- MÊS ANTERIOR (${nomeMesAnt}) — ${prodAnt.length} registros ---\n${_blocosMesAnt(prodBlocosAnt,'produção',prodAnt.length)}` : ''}`;
 
         const _blocosMP = !_usaMP ? '' : `
-== MATÉRIA PRIMA (${totalMP} registros no período) ==
-PARÂMETROS: lidos do sistema via getParam() por produto e por data de vigência.
-ANÁLISE REGISTRO A REGISTRO POR PRODUTO (valores sem informação ignorados):
-${mpBlocos.length ? mpBlocos.join('\n\n') : 'Nenhum registro de matéria-prima no período.'}`;
+== MATÉRIA PRIMA ==
+--- MÊS ATUAL (${nomeMes}) — ${totalMP} registros ---
+${_blocosMesAtual(mpBlocos,'matéria-prima',totalMP)}
+${temComparacao ? `--- MÊS ANTERIOR (${nomeMesAnt}) — ${mpAnt.length} registros ---\n${_blocosMesAnt(mpBlocosAnt,'matéria-prima',mpAnt.length)}` : ''}`;
 
         const _blocosClass = !_usaClass ? '' : `
-== CLASSIFICAÇÃO DE GRÃOS (${totalClass} registros no período) ==
-PARÂMETROS: lidos do sistema via getParam() por produto e por data de vigência.
-ANÁLISE REGISTRO A REGISTRO POR PRODUTO (valores sem informação ignorados):
-${classBlocos.length ? classBlocos.join('\n\n') : 'Nenhum registro de classificação no período.'}`;
+== CLASSIFICAÇÃO DE GRÃOS ==
+--- MÊS ATUAL (${nomeMes}) — ${totalClass} registros ---
+${_blocosMesAtual(classBlocos,'classificação',totalClass)}
+${temComparacao ? `--- MÊS ANTERIOR (${nomeMesAnt}) — ${classAnt.length} registros ---\n${_blocosMesAnt(classBlocosAnt,'classificação',classAnt.length)}` : ''}`;
 
         const _blocosNC = !_usaNC ? '' : `
-== NÃO CONFORMIDADES (${ncMes.length} registros) ==
-Críticas: ${ncCrit} | Maiores: ${ncMaior} | Ainda abertas: ${ncAberta}
-Fornecedores com mais NCs: ${topFornNC || 'nenhum'}
-Tipos: ${[...new Set(ncMes.map(n=>n.tipo))].join(', ') || '—'}
-Produtos mais afetados: ${[...new Set(ncMes.map(n=>n.produto))].slice(0,5).join(', ') || '—'}`;
+== NÃO CONFORMIDADES ==
+MÊS ATUAL (${nomeMes}): ${ncMes.length} NCs | Críticas: ${ncCrit} | Maiores: ${ncMaior} | Abertas: ${ncAberta}
+${temComparacao ? `MÊS ANTERIOR (${nomeMesAnt}): ${ncAnt.length} NCs | Críticas: ${ncCritAnt}` : ''}
+Fornecedores: ${topFornNC || 'nenhum'}
+Tipos: ${[...new Set(ncMes.map(n=>n.tipo))].join(', ') || '—'}`;
 
         const _blocosDev = !_usaDev ? '' : `
-== DEVOLUÇÕES (${devMes.length} registros) ==
+== DEVOLUÇÕES ==
+MÊS ATUAL (${nomeMes}): ${devMes.length}
+${temComparacao ? `MÊS ANTERIOR (${nomeMesAnt}): ${devAnt.length}` : ''}
 Motivos: ${[...new Set(devMes.map(d=>d.motivo))].join(', ') || 'nenhuma'}`;
-
-        // Seções do relatório conforme módulos ativos
-        const _secsRel = ['1. RESUMO EXECUTIVO (4–5 linhas com os principais achados do período)'];
-        let _si = 2;
-        if (_usaProd) {
-            _secsRel.push(`${_si++}. PRODUTO ACABADO — GRANULOMETRIA E QUALIDADE FÍSICA (DGM, DPG, peneiras por ração)`);
-            _secsRel.push(`${_si++}. PRODUTO ACABADO — COMPOSIÇÃO NUTRICIONAL (proteína, fibra, extrato, cálcio, fósforo, umidade)`);
-        }
-        if (_usaMP)    _secsRel.push(`${_si++}. MATÉRIAS PRIMAS — ANÁLISE INDIVIDUAL POR PRODUTO (cada MP com todos os parâmetros; soja extrusada: ureática 0,05-0,20, solubilidade mín. 75%)`);
-        if (_usaClass) _secsRel.push(`${_si++}. CLASSIFICAÇÃO DE GRÃOS — ANÁLISE INDIVIDUAL (micotoxinas IN MAPA 07/2011, umidade, qualidade por produto)`);
-        if (_usaNC||_usaDev) _secsRel.push(`${_si++}. NÃO CONFORMIDADES${_usaDev?' E DEVOLUÇÕES':''} (padrões, causas sistêmicas, fornecedores críticos)`);
-        _secsRel.push(`${_si++}. TENDÊNCIAS E ALERTAS`);
-        _secsRel.push(`${_si++}. DIAGNÓSTICO TÉCNICO GERAL`);
-        _secsRel.push(`${_si++}. SUGESTÕES DE MELHORIA (5–7 ações específicas e praticáveis)`);
-        _secsRel.push(`${_si++}. CONCLUSÃO`);
 
         const _modulosNomes = [_usaProd?'Produção':null,_usaMP?'Matéria Prima':null,_usaClass?'Classificação':null,_usaNC?'Não Conformidades':null,_usaDev?'Devoluções':null].filter(Boolean).join(', ');
 
-        const prompt = `RELATÓRIO MENSAL DE QUALIDADE — ${nomeMes.toUpperCase()}
-MÓDULOS ANALISADOS: ${_modulosNomes}
-ANALISTAS RESPONSÁVEIS: ${_analistasStr}
+        // ---- SEÇÕES DO RELATÓRIO ----
+        const _secsRel = [];
+        _secsRel.push('1. RESUMO EXECUTIVO (4–5 linhas com os principais achados)');
+        let _si = 2;
+        if (temComparacao) {
+            _secsRel.push(`${_si++}. COMPARAÇÃO MENSAL (${nomeMes} vs ${nomeMesAnt}):
+   - Tendência geral: Melhorou / Piorou / Estável — justificar com dados
+   - Principais variações por módulo (citar valores exatos de cada período)
+   - Indicador mais crítico e impacto operacional da mudança`);
+        }
+        if (_usaProd) {
+            _secsRel.push(`${_si++}. PRODUTO ACABADO — GRANULOMETRIA E QUALIDADE FÍSICA (DGM, DPG, peneiras por ração${temComparacao?'; comparar com mês anterior':''})`);
+            _secsRel.push(`${_si++}. PRODUTO ACABADO — COMPOSIÇÃO NUTRICIONAL (proteína, fibra, extrato, cálcio, fósforo, umidade${temComparacao?'; comparar com mês anterior':''})`);
+        }
+        if (_usaMP)    _secsRel.push(`${_si++}. MATÉRIAS PRIMAS — ANÁLISE INDIVIDUAL POR PRODUTO${temComparacao?' (comparar variações entre meses)':''} (soja extrusada: ureática 0,05-0,20, solubilidade mín. 75%)`);
+        if (_usaClass) _secsRel.push(`${_si++}. CLASSIFICAÇÃO DE GRÃOS — ANÁLISE INDIVIDUAL (micotoxinas IN MAPA 07/2011, umidade${temComparacao?'; variações entre meses':''})`);
+        if (_usaNC||_usaDev) _secsRel.push(`${_si++}. NÃO CONFORMIDADES${_usaDev?' E DEVOLUÇÕES':''} (causas sistêmicas, fornecedores críticos${temComparacao?', variação vs mês anterior':''})`);
+        _secsRel.push(`${_si++}. DIAGNÓSTICO TÉCNICO MULTIESPECIALISTA:
+   - CQ (Controle de Qualidade): conformidade, desvios
+   - NA (Nutrição Animal): impacto nutricional, digestibilidade
+   - PI (Processos Industriais): moagem, DGM, mistura
+   - VA (Desempenho Avícola): FCR, ganho de peso, postura, qualidade de ovos`);
+        _secsRel.push(`${_si++}. SAÍDA PADRONIZADA (responder exatamente nesta ordem):
+   1) Diagnóstico técnico (máx. 5 linhas)
+   2) Área afetada: Matéria-prima / Produção / Classificação / Todas
+   3) Comparação mensal: Melhorou / Piorou / Estável
+   4) Principal indicador de variação
+   5) Causa raiz provável
+   6) Risco: Baixo / Médio / Alto
+   7) Impacto em desempenho:
+      — Frango de corte: FCR, ganho de peso, uniformidade
+      — Postura: produção, casca, persistência
+   8) Ações corretivas (máx. 3)
+   9) Ações preventivas (máx. 3)`);
+
+        const blocoSistema = temComparacao ? `
+SISTEMA: Análise Comparativa Mensal
+REGRAS:
+- Ignorar totalmente valores "-" ou não informados
+- Comparar mês atual (${nomeMes}) vs mês anterior (${nomeMesAnt}) OBRIGATORIAMENTE
+- Para cada desvio, citar: produto, data, valor, limite e desvio exato
+- Não inferir valores ausentes
+` : `
+SISTEMA: Análise Técnica Mensal
+REGRAS:
+- Ignorar totalmente valores "-" ou não informados
+- Para cada desvio, citar: produto, data, valor, limite e desvio exato
+- Não inferir valores ausentes
+`;
+
+        const prompt = `${blocoSistema}
+RELATÓRIO — ${nomeMes.toUpperCase()}${temComparacao?' VS '+nomeMesAnt.toUpperCase():''}
+MÓDULOS: ${_modulosNomes}
+ANALISTAS: ${_analistasStr}
 ${_blocosProd}${_blocosMP}${_blocosClass}${_blocosNC}${_blocosDev}
 ---
-Analise EXCLUSIVAMENTE os módulos fornecidos (${_modulosNomes}). NÃO mencione módulos não incluídos.
-
-REGRA CRÍTICA: Para cada desvio detectado (marcado com ⚠️ ou [DESVIO:]), cite EXPLICITAMENTE:
-  - O produto/ração/matéria prima
-  - A data do registro
-  - O valor encontrado
-  - O limite permitido
-  - Quanto desviou (ex: "Umidade de 15,4% em 2025-03-12, limite máx 14%, desvio de +1,4%")
-Nunca generalize desvios sem citar o valor exato e a data do registro.
-
-Estruture o relatório em:
+Analise EXCLUSIVAMENTE os módulos fornecidos.
+Estruture em:
 ${_secsRel.join('\n')}
-
-Referencie normas Embrapa, MAPA e Compêndio Brasileiro de Nutrição Animal onde aplicável.
-Use linguagem executiva clara e técnica.`;
+Referencie normas Embrapa, MAPA e Compêndio Brasileiro de Nutrição Animal.
+Use linguagem executiva clara e técnica. Máxima objetividade.`;
 
         const respTexto = await _iaCallComFallback(_IA_SYSTEM_RELATORIO, [{ role:'user', content: prompt }], 4000);
         _relMensalIA_ultimoTexto = respTexto;
 
-        // ---- RENDERIZAR RESULTADO ----
-        // ---- DGM POR FASE ----
-        const _dgmFase = (racoes) => {
-            const vals = prodMes.filter(r => racoes.includes(r.racao)).map(r => parseFloat(r.dgm)).filter(v => !isNaN(v) && v > 0);
+        // ---- KPIs VISUAIS ----
+        const _dgmFase = (racoes, arr) => {
+            const vals = arr.filter(r => racoes.includes(r.racao)).map(r => parseFloat(r.dgm)).filter(v => !isNaN(v) && v > 0);
             return vals.length ? vals.reduce((s,x)=>s+x,0)/vals.length : null;
         };
         const _dgmCor = (v) => v === null ? '#888' : (v < 700 || v > 1000) ? '#e74c3c' : '#27ae60';
         const _dgmFmt = (v) => v !== null ? v.toFixed(0) : 'N/D';
 
-        const dgmCortePreIni = _dgmFase(['CORTE R1 WISIUM','CORTE R1 MCASSAB']);
-        const dgmCorteIni    = _dgmFase(['CORTE R2 WISIUM','CORTE R2 MCASSAB']);
-        const dgmCorteFin    = _dgmFase(['CORTE R3 WISIUM','CORTE R3 MCASSAB','CORTE R4 WISIUM','CORTE R4 MCASSAB','CORTE R5 WISIUM','CORTE R5 MCASSAB']);
-        const dgmPosPreIni   = _dgmFase(['POSTURA MCASSAB R1']);
-        const dgmPosIni      = _dgmFase(['POSTURA MCASSAB R2']);
-        const dgmPosFin      = _dgmFase(['POSTURA MCASSAB R3','POSTURA MCASSAB R5','POSTURA MCASSAB R6','POSTURA MCASSAB R7','POSTURA MCASSAB R9','POSTURA MCASSAB R 10','POSTURA TECTRON R7','POSTURA TECTRON R8','POSTURA TECTRON R9','POSTURA TECTRON R 10']);
+        const dgmCortePreIni = _dgmFase(['CORTE R1 WISIUM','CORTE R1 MCASSAB'], prodMes);
+        const dgmCorteIni    = _dgmFase(['CORTE R2 WISIUM','CORTE R2 MCASSAB'], prodMes);
+        const dgmCorteFin    = _dgmFase(['CORTE R3 WISIUM','CORTE R3 MCASSAB','CORTE R4 WISIUM','CORTE R4 MCASSAB','CORTE R5 WISIUM','CORTE R5 MCASSAB'], prodMes);
+        const dgmPosPreIni   = _dgmFase(['POSTURA MCASSAB R1'], prodMes);
+        const dgmPosIni      = _dgmFase(['POSTURA MCASSAB R2'], prodMes);
+        const dgmPosFin      = _dgmFase(['POSTURA MCASSAB R3','POSTURA MCASSAB R5','POSTURA MCASSAB R6','POSTURA MCASSAB R7','POSTURA MCASSAB R9','POSTURA MCASSAB R 10','POSTURA TECTRON R7','POSTURA TECTRON R8','POSTURA TECTRON R9','POSTURA TECTRON R 10'], prodMes);
+        const dgmCortePreIniAnt = _dgmFase(['CORTE R1 WISIUM','CORTE R1 MCASSAB'], prodAnt);
+        const dgmCorteIniAnt    = _dgmFase(['CORTE R2 WISIUM','CORTE R2 MCASSAB'], prodAnt);
+        const dgmCorteFimAnt    = _dgmFase(['CORTE R3 WISIUM','CORTE R3 MCASSAB','CORTE R4 WISIUM','CORTE R4 MCASSAB','CORTE R5 WISIUM','CORTE R5 MCASSAB'], prodAnt);
 
+        // ---- KPI CARDS ----
         const _kpiItems = [];
-        if (_usaProd)  _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:#0a1e7f;">${totalProd}</div><div class="rml-kpi-lbl">Lotes Produção</div></div>`);
-        if (_usaMP)    _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:#8e44ad;">${totalMP}</div><div class="rml-kpi-lbl">Análises MP</div></div>`);
-        if (_usaClass) _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:#e67e22;">${totalClass}</div><div class="rml-kpi-lbl">Classificações</div></div>`);
-        if (_usaNC)    _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${ncMes.length>5?'#e74c3c':ncMes.length>0?'#e67e22':'#27ae60'};">${ncMes.length}</div><div class="rml-kpi-lbl">NCs no Mês</div></div>`);
-        if (_usaNC)    _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${ncCrit>0?'#e74c3c':'#27ae60'};">${ncCrit}</div><div class="rml-kpi-lbl">NCs Críticas</div></div>`);
-        if (_usaMP)    _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${altaUmMP>0?'#e74c3c':'#27ae60'};">${altaUmMP}</div><div class="rml-kpi-lbl">MP Umid > 14%</div></div>`);
-        if (_usaMP)    _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${altoPerMP>0?'#e74c3c':'#27ae60'};">${altoPerMP}</div><div class="rml-kpi-lbl">MP Peróx. > 20</div></div>`);
-        if (_usaClass) _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${aflaMaxNum>20?'#e74c3c':aflaMaxNum>10?'#e67e22':'#27ae60'};">${aflaMax!==null?aflaMax.toFixed(2):'N/D'}</div><div class="rml-kpi-lbl">Aflatox. Máx (ppb)</div></div>`);
-        if (_usaDev)   _kpiItems.push(`<div class="rml-kpi"><div class="rml-kpi-val" style="color:${devMes.length>0?'#e67e22':'#27ae60'};">${devMes.length}</div><div class="rml-kpi-lbl">Devoluções</div></div>`);
+        const _kpiComp = (atual, ant, lbl, cor, menorMelhor=false) => {
+            const seta = temComparacao ? ` <span style="font-size:14px;">${_cmpSeta(atual,ant,menorMelhor)}</span>` : '';
+            const antText = (temComparacao && ant !== null) ? `<div style="font-size:9px;color:#aaa;margin-top:2px;">Ant: ${typeof ant==='number'?ant.toFixed(ant%1===0?0:2):ant}</div>` : '';
+            return `<div class="rml-kpi"><div class="rml-kpi-val" style="color:${cor};">${typeof atual==='number'?atual:atual}${seta}</div><div class="rml-kpi-lbl">${lbl}</div>${antText}</div>`;
+        };
 
-        // ---- BLOCO DGM POR FASE ----
+        if (_usaProd)  _kpiItems.push(_kpiComp(totalProd, prodAnt.length, 'Lotes Produção', '#0a1e7f'));
+        if (_usaMP)    _kpiItems.push(_kpiComp(totalMP, mpAnt.length, 'Análises MP', '#8e44ad'));
+        if (_usaClass) _kpiItems.push(_kpiComp(totalClass, classAnt.length, 'Classificações', '#e67e22'));
+        if (_usaNC)    _kpiItems.push(_kpiComp(ncMes.length, ncAnt.length, 'NCs no Mês', ncMes.length>5?'#e74c3c':ncMes.length>0?'#e67e22':'#27ae60', true));
+        if (_usaNC)    _kpiItems.push(_kpiComp(ncCrit, ncCritAnt, 'NCs Críticas', ncCrit>0?'#e74c3c':'#27ae60', true));
+        if (_usaMP)    _kpiItems.push(_kpiComp(altaUmMP, altaUmMPAnt, 'MP Umid > 14%', altaUmMP>0?'#e74c3c':'#27ae60', true));
+        if (_usaMP)    _kpiItems.push(_kpiComp(altoPerMP, altoPerMPAnt, 'MP Peróx. > 20', altoPerMP>0?'#e74c3c':'#27ae60', true));
+        if (_usaClass) _kpiItems.push(_kpiComp(aflaMax!==null?parseFloat(aflaMax.toFixed(2)):null, aflaMaxAnt!==null?parseFloat(aflaMaxAnt.toFixed(2)):null, 'Aflatox. Máx (ppb)', aflaMaxNum>20?'#e74c3c':aflaMaxNum>10?'#e67e22':'#27ae60', true));
+        if (_usaDev)   _kpiItems.push(_kpiComp(devMes.length, devAnt.length, 'Devoluções', devMes.length>0?'#e67e22':'#27ae60', true));
+
+        // ---- BADGE COMPARAÇÃO ----
+        const badgeComparacaoHtml = temComparacao ? `
+        <div style="display:inline-flex;align-items:center;gap:6px;background:#e8f8f5;border:1px solid #a9dfbf;border-radius:20px;padding:4px 12px;font-size:10px;font-weight:800;color:#117a65;margin-bottom:12px;">
+            🔄 Análise Comparativa: <strong>${nomeMes.toUpperCase()}</strong> vs <strong>${nomeMesAnt.toUpperCase()}</strong>
+            &nbsp;|&nbsp; <span style="color:#888;">▲ melhorou &nbsp;▼ piorou &nbsp;● estável</span>
+        </div>` : '';
+
+        // ---- DGM FASE COM COMPARAÇÃO ----
+        const _dgmCard = (label, val, valAnt, bgColor, borderColor, fontColor) => {
+            const seta = temComparacao && valAnt !== null && val !== null
+                ? (val > valAnt ? ' <span style="color:#27ae60;font-size:13px;">▲</span>' : val < valAnt ? ' <span style="color:#e74c3c;font-size:13px;">▼</span>' : ' <span style="color:#888;font-size:13px;">●</span>')
+                : '';
+            const antLabel = (temComparacao && valAnt !== null) ? `<div style="font-size:9px;color:#aaa;">Ant: ${valAnt!==null?valAnt.toFixed(0):'N/D'}</div>` : '';
+            return `<div style="background:${bgColor};border:1px solid ${borderColor};border-radius:8px;padding:10px 12px;">
+                <div style="font-size:9px;font-weight:900;color:${fontColor};text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;border-bottom:1px solid ${borderColor};padding-bottom:4px;">${label}</div>
+                <div style="font-size:20px;font-weight:900;color:${_dgmCor(val)};">${_dgmFmt(val)}${seta}</div>
+                ${antLabel}
+            </div>`;
+        };
+
         const kpiDgmFaseHtml = _usaProd ? `
         <div style="margin-bottom:16px;">
             <div style="font-size:11px;font-weight:900;color:#0a1e7f;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #dce4f5;">
                 📏 DGM Médio por Fase (µm)
             </div>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
-                <!-- CORTE -->
-                <div style="background:#eaf3fb;border:1px solid #aed6f1;border-radius:8px;padding:10px 12px;">
-                    <div style="font-size:9px;font-weight:900;color:#1a5276;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;border-bottom:1px solid #aed6f1;padding-bottom:4px;">🐣 Corte — Pré-Inicial</div>
-                    <div style="font-size:20px;font-weight:900;color:${_dgmCor(dgmCortePreIni)};">${_dgmFmt(dgmCortePreIni)}</div>
-                    <div style="font-size:9px;color:#888;margin-top:2px;">R1 Wisium / Mcassab</div>
-                </div>
-                <div style="background:#eaf3fb;border:1px solid #aed6f1;border-radius:8px;padding:10px 12px;">
-                    <div style="font-size:9px;font-weight:900;color:#1f618d;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;border-bottom:1px solid #aed6f1;padding-bottom:4px;">🐥 Corte — Inicial</div>
-                    <div style="font-size:20px;font-weight:900;color:${_dgmCor(dgmCorteIni)};">${_dgmFmt(dgmCorteIni)}</div>
-                    <div style="font-size:9px;color:#888;margin-top:2px;">R2 Wisium / Mcassab</div>
-                </div>
-                <div style="background:#eaf3fb;border:1px solid #aed6f1;border-radius:8px;padding:10px 12px;">
-                    <div style="font-size:9px;font-weight:900;color:#2471a3;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;border-bottom:1px solid #aed6f1;padding-bottom:4px;">🐔 Corte — Final</div>
-                    <div style="font-size:20px;font-weight:900;color:${_dgmCor(dgmCorteFin)};">${_dgmFmt(dgmCorteFin)}</div>
-                    <div style="font-size:9px;color:#888;margin-top:2px;">R3-R5 Wisium / Mcassab</div>
-                </div>
-                <!-- POSTURA -->
-                <div style="background:#fef9ec;border:1px solid #f9e4b7;border-radius:8px;padding:10px 12px;">
-                    <div style="font-size:9px;font-weight:900;color:#7d6608;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;border-bottom:1px solid #f9e4b7;padding-bottom:4px;">🥚 Postura — Pré-Inicial</div>
-                    <div style="font-size:20px;font-weight:900;color:${_dgmCor(dgmPosPreIni)};">${_dgmFmt(dgmPosPreIni)}</div>
-                    <div style="font-size:9px;color:#888;margin-top:2px;">R1 Mcassab</div>
-                </div>
-                <div style="background:#fef9ec;border:1px solid #f9e4b7;border-radius:8px;padding:10px 12px;">
-                    <div style="font-size:9px;font-weight:900;color:#9a7d0a;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;border-bottom:1px solid #f9e4b7;padding-bottom:4px;">🐓 Postura — Inicial</div>
-                    <div style="font-size:20px;font-weight:900;color:${_dgmCor(dgmPosIni)};">${_dgmFmt(dgmPosIni)}</div>
-                    <div style="font-size:9px;color:#888;margin-top:2px;">R2 Mcassab</div>
-                </div>
-                <div style="background:#fef9ec;border:1px solid #f9e4b7;border-radius:8px;padding:10px 12px;">
-                    <div style="font-size:9px;font-weight:900;color:#b7950b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;border-bottom:1px solid #f9e4b7;padding-bottom:4px;">🐦 Postura — Final</div>
-                    <div style="font-size:20px;font-weight:900;color:${_dgmCor(dgmPosFin)};">${_dgmFmt(dgmPosFin)}</div>
-                    <div style="font-size:9px;color:#888;margin-top:2px;">R3-R10 Mcassab / Tectron</div>
-                </div>
+                ${_dgmCard('🐣 Corte — Pré-Inicial<br><small style="font-weight:400;">R1 Wisium / Mcassab</small>', dgmCortePreIni, dgmCortePreIniAnt, '#eaf3fb','#aed6f1','#1a5276')}
+                ${_dgmCard('🐥 Corte — Inicial<br><small style="font-weight:400;">R2 Wisium / Mcassab</small>', dgmCorteIni, dgmCorteIniAnt, '#eaf3fb','#aed6f1','#1f618d')}
+                ${_dgmCard('🐔 Corte — Final<br><small style="font-weight:400;">R3-R5 Wisium / Mcassab</small>', dgmCorteFin, dgmCorteFimAnt, '#eaf3fb','#aed6f1','#2471a3')}
+                ${_dgmCard('🥚 Postura — Pré-Inicial<br><small style="font-weight:400;">R1 Mcassab</small>', dgmPosPreIni, null, '#fef9ec','#f9e4b7','#7d6608')}
+                ${_dgmCard('🐓 Postura — Inicial<br><small style="font-weight:400;">R2 Mcassab</small>', dgmPosIni, null, '#fef9ec','#f9e4b7','#9a7d0a')}
+                ${_dgmCard('🐦 Postura — Final<br><small style="font-weight:400;">R3-R10 Mcassab / Tectron</small>', dgmPosFin, null, '#fef9ec','#f9e4b7','#b7950b')}
             </div>
         </div>` : '';
 
-        const kpiHtml = `<div class="rml-grid" style="margin-bottom:12px;">${_kpiItems.join('')}</div>${kpiDgmFaseHtml}`;
-
-        // Texto do relatório formatado
+        const kpiHtml = `${badgeComparacaoHtml}<div class="rml-grid" style="margin-bottom:12px;">${_kpiItems.join('')}</div>${kpiDgmFaseHtml}`;
         const textoHtml = `<div style="font-size:12px;line-height:1.8;color:#2c3e50;white-space:pre-wrap;">${_formatIATextoRelatorio(respTexto)}</div>`;
+
+        const tituloRel = temComparacao
+            ? `📊 Análise Comparativa — ${nomeMes.charAt(0).toUpperCase()+nomeMes.slice(1)} vs ${nomeMesAnt.charAt(0).toUpperCase()+nomeMesAnt.slice(1)}`
+            : `📊 Relatório de Qualidade — ${nomeMes.charAt(0).toUpperCase()+nomeMes.slice(1)}`;
 
         conteudoEl.innerHTML = `
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #eef2ff;">
                 <div>
-                    <div style="font-size:17px;font-weight:900;color:#0a1e7f;">📊 Relatório de Qualidade — ${nomeMes.charAt(0).toUpperCase()+nomeMes.slice(1)}</div>
+                    <div style="font-size:17px;font-weight:900;color:#0a1e7f;">${tituloRel}</div>
                     <div style="font-size:11px;color:#888;margin-top:3px;">Gerado por IA com base nas normas Embrapa e Compêndio Brasileiro de Nutrição Animal • ${new Date().toLocaleString('pt-BR')}</div>
                     <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;">
                         ${_anAtivos.map(k => {
@@ -18134,7 +18173,7 @@ Use linguagem executiva clara e técnica.`;
         conteudoEl.innerHTML = `<div style="padding:40px;text-align:center;color:#e74c3c;"><div style="font-size:40px;margin-bottom:12px;">❌</div><div style="font-size:13px;font-weight:700;">Erro ao gerar relatório</div><div style="font-size:11px;margin-top:6px;color:#888;">${e.message}</div></div>`;
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '📋 Gerar Análise Técnica';
+        btn.innerHTML = '📊 Gerar Análise Comparativa';
     }
 }
 
