@@ -14398,6 +14398,7 @@ function visualizarDev(id) {
         ${imgsHtml}
     `;
     document.getElementById('ncvModalTitulo').textContent = '↩️ Devolução — ' + dev.numero;
+    document.getElementById('modalVisualizarNC').dataset.devId = dev.id;
     document.getElementById('modalVisualizarNC').classList.add('show');
 }
 
@@ -14411,8 +14412,8 @@ function imprimirVisualizacao() {
     // Detecta se é devolução e tenta pegar o objeto completo
     let devObj = null;
     if (isDev) {
-        const match = titulo.match(/DEV-\d+/);
-        if (match) devObj = listaDev.find(d => d.numero === match[0]);
+        const devId = document.getElementById('modalVisualizarNC').dataset.devId;
+        if (devId) devObj = listaDev.find(d => String(d.id) === String(devId));
     }
 
     const win = window.open('', '_blank', 'width=1000,height=800');
