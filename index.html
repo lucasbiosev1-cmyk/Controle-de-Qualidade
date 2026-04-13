@@ -13930,16 +13930,12 @@ async function salvarDev() {
     }).filter(c => c.defeito);
     const editId = document.getElementById('dev-edit-id').value;
 
-    // Calcula o número sequencial por fornecedor
-    const prefixoForn = fornecedor.trim().toUpperCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // remove acentos
-        .replace(/[^A-Z0-9\s]/g, '')
-        .split(/\s+/).map(w => w.slice(0, 3)).join('').slice(0, 6);
+    // Calcula o número sequencial por fornecedor no formato DEV-XXXX
     const qtdForn = listaDev.filter(d =>
         (d.fornecedor || '').trim().toLowerCase() === fornecedor.toLowerCase() &&
         (editId ? String(d.id) !== String(editId) : true)
     ).length + 1;
-    const numeroCalculado = prefixoForn + '-' + String(qtdForn).padStart(4, '0');
+    const numeroCalculado = 'DEV-' + String(qtdForn).padStart(4, '0');
     document.getElementById('dev-numero').value = numeroCalculado;
 
     const dev = {
