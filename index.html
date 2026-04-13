@@ -11327,6 +11327,66 @@ function imprimirBoletim() {
     const nTotal = extrairPorLabel('Total Registros') || extrairPorLabel('Registros') || '—';
     const nAnal  = extrairPorLabel('Total Análises') || extrairPorLabel('Análises') || '—';
 
+    // ── Extrai devoluções do período do boletim ───────────────────────────────
+    // bolDataInicio e bolDataFim vêm dos filtros já usados para gerar o boletim
+    const _bolFi = document.getElementById('bolDataInicio')?.value || '';
+    const _bolFf = document.getElementById('bolDataFim')?.value || '';
+    const devBoletim = (listaDev || []).filter(d => {
+        if (!d.data) return false;
+        if (_bolFi && d.data < _bolFi) return false;
+        if (_bolFf && d.data > _bolFf) return false;
+        return true;
+    });
+    // Agrupa por fornecedor + produto e conta ocorrências
+    const _devGrupo = {};
+    devBoletim.forEach(d => {
+        const chave = (d.fornecedor || 'N/D') + '|||' + (d.produto || 'N/D');
+        if (!_devGrupo[chave]) _devGrupo[chave] = { fornecedor: d.fornecedor || 'N/D', produto: d.produto || 'N/D', quantidade: 0 };
+        _devGrupo[chave].quantidade++;
+    });
+    const _devLinhas = Object.values(_devGrupo).sort((a,b) => b.quantidade - a.quantidade);
+    const _totalDevolvidas = devBoletim.length;
+
+    const _devTabelaHtml = _totalDevolvidas > 0 ? `
+        <!-- Seção: Cargas Devolvidas -->
+        <div style="margin-bottom:10mm;">
+          <div style="display:flex;align-items:center;gap:3mm;margin-bottom:4mm;">
+            <div style="width:3px;height:6mm;background:#C0392B;border-radius:2px;flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
+            <div style="font-size:12px;font-weight:900;color:#C0392B;text-transform:uppercase;letter-spacing:1px;">↩️ Cargas Devolvidas</div>
+          </div>
+          <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:10px;">
+            <thead>
+              <tr style="-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+                <th style="text-align:left;padding:3mm 4mm;font-size:8.5px;font-weight:900;color:#fff;background:#7B241C;letter-spacing:1px;text-transform:uppercase;border:none;width:45%;">Fornecedor</th>
+                <th style="text-align:left;padding:3mm 4mm;font-size:8.5px;font-weight:900;color:#fff;background:#7B241C;letter-spacing:1px;text-transform:uppercase;border:none;width:40%;">Produto</th>
+                <th style="text-align:center;padding:3mm 4mm;font-size:8.5px;font-weight:900;color:#fff;background:#7B241C;letter-spacing:1px;text-transform:uppercase;border:none;width:15%;">Qtd</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${_devLinhas.map((r, i) => `
+              <tr style="${i % 2 === 1 ? 'background:#fef9f8;' : ''}border-bottom:1px solid #f0d0cc;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+                <td style="padding:2.5mm 4mm;color:#2c3e50;font-weight:500;">${r.fornecedor}</td>
+                <td style="padding:2.5mm 4mm;color:#2c3e50;">${r.produto}</td>
+                <td style="padding:2.5mm 4mm;text-align:center;font-weight:900;color:#C0392B;">${r.quantidade}</td>
+              </tr>`).join('')}
+              <tr style="border-top:2px solid #C0392B;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+                <td colspan="2" style="padding:3mm 4mm;font-size:11px;font-weight:900;color:#7B241C;text-transform:uppercase;letter-spacing:0.5px;">Total Devolvidas</td>
+                <td style="padding:3mm 4mm;text-align:center;font-size:15px;font-weight:900;color:#C0392B;">${_totalDevolvidas}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>` : `
+        <!-- Nenhuma devolução no período -->
+        <div style="margin-bottom:10mm;">
+          <div style="display:flex;align-items:center;gap:3mm;margin-bottom:4mm;">
+            <div style="width:3px;height:6mm;background:#27ae60;border-radius:2px;flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
+            <div style="font-size:12px;font-weight:900;color:#27ae60;text-transform:uppercase;letter-spacing:1px;">↩️ Cargas Devolvidas</div>
+          </div>
+          <div style="background:#f0fff4;border:1px solid #a9dfbf;border-radius:4px;padding:4mm 6mm;font-size:10px;color:#1e8449;font-weight:600;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+            ✅ Nenhuma devolução registrada no período.
+          </div>
+        </div>`;
+
     // Usa valores fixos se a extração por regex não funcionar (dados vêm do conteudo já renderizado)
     const resumoHTML = `
     <div style="width:210mm;min-height:297mm;background:#fff;display:flex;flex-direction:column;font-family:Arial,sans-serif;box-sizing:border-box;page-break-after:always;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
@@ -11370,7 +11430,7 @@ function imprimirBoletim() {
           <thead>
             <tr style="-webkit-print-color-adjust:exact;print-color-adjust:exact;">
               <th style="text-align:left;padding:5mm 6mm;font-size:9px;font-weight:900;color:#fff;background:#0B3C5D;letter-spacing:1.5px;text-transform:uppercase;border:none;width:70%;">Indicador</th>
-              <th style="text-align:right;padding:5mm 6mm;font-size:9px;font-weight:900;color:#fff;background:#0B3C5D;letter-spacing:1.5px;text-transform:uppercase;border:none;width:30%;">Valor</th>
+              <th style="text-align:right;padding:5mm 6mm;font-size:9px;font-weight:900;color:#fff;background:#0B3C5D;letter-spacing:1.5px;text-transform:uppercase;border:none;width:30%;">Registros</th>
             </tr>
           </thead>
           <tbody>
@@ -11398,7 +11458,9 @@ function imprimirBoletim() {
         </table>
 
         <!-- Linha divisória decorativa -->
-        <div style="height:1px;background:#eaecef;margin-bottom:10mm;"></div>
+        <div style="height:1px;background:#eaecef;margin-bottom:8mm;"></div>
+
+        ${_devTabelaHtml}
 
         <!-- Nota de rodapé da página -->
         <div style="font-size:8px;color:#bbb;font-style:italic;">
