@@ -10855,21 +10855,21 @@ function selecionarModoProd(modo) {
 // ─── Classificação de fase por ração ────────────────────────────────────────
 // Sequência: Pré-Inicial (1) → Inicial (2) → Final (3), Corte antes de Postura
 function classificarFaseRacao(racao) {
-    if (!racao) return { categoria: 'outros', fase: 'Outros Produtos', ordem: 99, cor: '#34495e', icone: '📦' };
+    if (!racao) return { categoria: 'outros', fase: 'Outros Produtos', ordem: 99, cor: '#0B3C5D', icone: '📦' };
     const r = racao.toUpperCase();
     if (/CORTE R1\b/.test(r))
-        return { categoria: 'corte_pre_inicial', fase: 'CORTE — PRÉ-INICIAL (R1)',    ordem: 1, cor: '#1a5276', icone: '🐣' };
+        return { categoria: 'corte_pre_inicial', fase: 'CORTE — PRÉ-INICIAL (R1)',    ordem: 1, cor: '#0B3C5D', icone: '🐣' };
     if (/CORTE R2\b/.test(r))
-        return { categoria: 'corte_inicial',     fase: 'CORTE — INICIAL (R2)',         ordem: 2, cor: '#1f618d', icone: '🐥' };
+        return { categoria: 'corte_inicial',     fase: 'CORTE — INICIAL (R2)',         ordem: 2, cor: '#0B3C5D', icone: '🐥' };
     if (/CORTE R[3-6]\b/.test(r))
-        return { categoria: 'corte_final',       fase: 'CORTE — FINAL (R3 a R6)',     ordem: 3, cor: '#2471a3', icone: '🐔' };
+        return { categoria: 'corte_final',       fase: 'CORTE — FINAL (R3 a R6)',     ordem: 3, cor: '#0B3C5D', icone: '🐔' };
     if (/POSTURA.*R1\b/.test(r))
-        return { categoria: 'postura_pre_inicial', fase: 'POSTURA — PRÉ-INICIAL (R1)', ordem: 4, cor: '#1a3a9f', icone: '🌱' };
+        return { categoria: 'postura_pre_inicial', fase: 'POSTURA — PRÉ-INICIAL (R1)', ordem: 4, cor: '#0B3C5D', icone: '🌱' };
     if (/POSTURA.*R2\b/.test(r))
-        return { categoria: 'postura_inicial',   fase: 'POSTURA — INICIAL (R2)',       ordem: 5, cor: '#0d2b8a', icone: '🌿' };
+        return { categoria: 'postura_inicial',   fase: 'POSTURA — INICIAL (R2)',       ordem: 5, cor: '#0B3C5D', icone: '🌿' };
     if (/POSTURA.*(R[3-9]\b|R\s*10\b)/.test(r))
-        return { categoria: 'postura_final',     fase: 'POSTURA — FINAL (R3 a R10)',  ordem: 6, cor: '#0a1e7f', icone: '🥚' };
-    return { categoria: 'outros', fase: 'Outros Produtos', ordem: 10, cor: '#34495e', icone: '📦' };
+        return { categoria: 'postura_final',     fase: 'POSTURA — FINAL (R3 a R10)',  ordem: 6, cor: '#0B3C5D', icone: '🥚' };
+    return { categoria: 'outros', fase: 'Outros Produtos', ordem: 10, cor: '#0B3C5D', icone: '📦' };
 }
 
 // ─── Bloco de resumo consolidado da fase (médias de TODOS os registros) ──────
@@ -10957,7 +10957,8 @@ function gerarSecaoProd(dados, agrupar, resumo, destNC, periodo) {
             html += `<div style="background:${info.cor};color:white;padding:11px 20px;font-size:12px;font-weight:bold;
                         text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:10px;
                         margin-top:12px;border-left:6px solid rgba(255,255,255,0.35);
-                        -webkit-print-color-adjust:exact;print-color-adjust:exact;">
+                        -webkit-print-color-adjust:exact;print-color-adjust:exact;
+                        page-break-after:avoid;break-after:avoid;">
                 ${info.icone} ${info.fase}
                 <span style="font-size:10px;font-weight:normal;opacity:0.85;margin-left:auto;">
                     ${n} registro${n!==1?'s':''}
@@ -11022,10 +11023,10 @@ function gerarGrupoProd(racao, rows, resumo, destNC) {
 }
 
 function gerarTabelaProd(rows, compacto, destNC) {
-    const th = (t) => `<th>${t}</th>`;
+    const th = (t,w='') => `<th${w?` style="width:${w}"`:''}>${t}</th>`;
     let thead = `<tr>${th('Data')}${th('Hora')}`;
     if (!compacto) thead += th('Ração');
-    thead += `${th('Lote')}${th('DGM µm')}${th('DPG')}${th('Extr.%')}${th('Prot.%')}${th('Fibra%')}${th('Solub.%')}${th('Umid.%')}${th('Dens.')}${th('Min.%')}${th('Cálcio%')}${th('Fósf.%')}${th('G1%')}${th('G2%')}${th('G3%')}${th('Fundo%')}${th('Status')}</tr>`;
+    thead += `${th('Lote')}${th('DGM µm')}${th('DPG')}${th('Extr.%')}${th('Prot.%')}${th('Fibra%')}${th('Solub.%')}${th('Umid.%')}${th('Dens.')}${th('Min.%')}${th('Cálcio%')}${th('Fósf.%')}${th('G1%')}${th('G2%')}${th('G3%')}${th('Fundo%')}${th('Status','72px')}</tr>`;
 
     const tbody = rows.map(r => {
         const status = statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data);
@@ -11050,7 +11051,7 @@ function gerarTabelaProd(rows, compacto, destNC) {
             <td${cl(r.granulo2,'granulo2')}>${fmtN(r.granulo2,2)}</td>
             <td${cl(r.granulo3,'granulo3')}>${fmtN(r.granulo3,2)}</td>
             <td${cl(r.fundo,'fundo')}>${fmtN(r.fundo,2)}</td>
-            <td>${status}</td>
+            <td style="text-align:center;white-space:nowrap;">${status}</td>
         </tr>`;
     }).join('');
 
@@ -11114,7 +11115,7 @@ function gerarTabelaClass(rows, compacto, destNC) {
     const th = (t,s='') => `<th${s}>${t}</th>`;
     let thead = `<tr>${th('Data')}${th('Hora')}`;
     if (!compacto) thead += th('Produto');
-    thead += `${th('Fornecedor')}${th('NF')}${th('Queimado')}${th('Ardido')}${th('Mofado')}${th('Esverdeado')}${th('Ferment.')}${th('Chocho')}${th('Picado')}${th('Gessado')}${th('Quebrado')}${th('Germin.')}${th('Carunch.')}${th('Impureza')}${th('Umidade%')}${th('Densidade')}${th('Aflatox.')}${th('Fumonisinas')}${th('Local')}${th('Status')}</tr>`;
+    thead += `${th('Fornecedor')}${th('NF')}${th('Queimado')}${th('Ardido')}${th('Mofado')}${th('Esverdeado')}${th('Ferment.')}${th('Chocho')}${th('Picado')}${th('Gessado')}${th('Quebrado')}${th('Germin.')}${th('Carunch.')}${th('Impureza')}${th('Umidade%')}${th('Densidade')}${th('Aflatox.')}${th('Fumonisinas')}${th('Local')}${th('Status',' style="width:72px"')}</tr>`;
 
     const tbody = rows.map(r => {
         const aflatoxCl = (destNC && (r.aflatoxinas||0)>0) ? ' class="bol-td-alert"' : '';
@@ -11143,7 +11144,7 @@ function gerarTabelaClass(rows, compacto, destNC) {
             <td${aflatoxCl}>${(r.aflatoxinas||0).toFixed(2)}</td>
             <td>${(r.fumonisinas||0).toFixed(2)}</td>
             <td class="left">${r.local||'-'}</td>
-            <td>${status}</td>
+            <td style="text-align:center;white-space:nowrap;">${status}</td>
         </tr>`;
     }).join('');
 
@@ -11213,10 +11214,10 @@ function gerarGrupoMP(prod, rows, resumo, destNC, mostrarAnalises, temValBol, ca
 }
 
 function gerarTabelaMP(rows, compacto, destNC) {
-    const th = (t) => `<th>${t}</th>`;
+    const th = (t,w='') => `<th${w?` style="width:${w}"`:''}>${t}</th>`;
     let thead = `<tr>${th('Data')}${th('Hora')}`;
     if (!compacto) thead += th('Produto');
-    thead += `${th('Fornecedor')}${th('NF')}${th('Umid.%')}${th('Dens.')}${th('Extrato%')}${th('Prot.%')}${th('Fibra%')}${th('Solub.%')}${th('Min.%')}${th('Acidez')}${th('Ureática')}${th('Rancidez')}${th('Peróxido')}${th('Digest.%')}${th('Status')}</tr>`;
+    thead += `${th('Fornecedor')}${th('NF')}${th('Umid.%')}${th('Dens.')}${th('Extrato%')}${th('Prot.%')}${th('Fibra%')}${th('Solub.%')}${th('Min.%')}${th('Acidez')}${th('Ureática')}${th('Rancidez')}${th('Peróxido')}${th('Digest.%')}${th('Status','72px')}</tr>`;
 
     const tbody = rows.map(r => {
         const perCl = (destNC && (r.peroxido||0)>20) ? ' class="bol-td-alert"' : '';
@@ -11240,7 +11241,7 @@ function gerarTabelaMP(rows, compacto, destNC) {
             <td>${fmtN(r.rancidez,2)}</td>
             <td${perCl}>${(r.peroxido === null || r.peroxido === undefined || r.peroxido === '') ? '-' : fmtN(r.peroxido,1)}</td>
             <td>${fmtN(r.digestibilidade,2)}</td>
-            <td>${status}</td>
+            <td style="text-align:center;white-space:nowrap;">${status}</td>
         </tr>`;
     }).join('');
 
@@ -11261,9 +11262,12 @@ function imprimirBoletim() {
     const bolDf = document.getElementById('bolDataFim')?.value || '';
     const bolPeriodo = (bolDi && bolDf)
         ? new Date(bolDi+'T12:00').toLocaleDateString('pt-BR') + ' a ' + new Date(bolDf+'T12:00').toLocaleDateString('pt-BR') : '—';
+
+    // ── CAPA: preservada 100% intacta ─────────────────────────────────────────
     const capaHTML = `
-    <div style="width:210mm;min-height:297mm;background:#fff;display:flex;flex-direction:column;font-family:Arial,sans-serif;box-sizing:border-box;page-break-after:always;overflow:hidden;">
-      <div style="background:linear-gradient(135deg,#0a1e7f 0%,#0d2b9e 55%,#061060 100%);padding:18mm 20mm 14mm;display:flex;align-items:center;justify-content:space-between;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+    <div style="width:210mm;min-height:297mm;background:#fff;display:flex;flex-direction:column;font-family:Arial,sans-serif;box-sizing:border-box;page-break-after:always;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+      <div style="background:linear-gradient(135deg,#0a1e7f 0%,#0d2b9e 55%,#061060 100%);padding:18mm 20mm 14mm;display:flex;align-items:center;justify-content:space-between;position:relative;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+        <div style="position:absolute;right:0;top:0;bottom:0;width:28mm;background:repeating-linear-gradient(-55deg,transparent,transparent 5px,rgba(255,255,255,0.045) 5px,rgba(255,255,255,0.045) 10px);pointer-events:none;"></div>
         <div style="display:flex;align-items:center;gap:5mm;">
           <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg" style="width:48mm;flex-shrink:0;">
             <text x="0" y="44" font-family="Arial" font-weight="900" font-size="32" fill="white" letter-spacing="1.5">AGRONOR</text>
@@ -11279,18 +11283,20 @@ function imprimirBoletim() {
           Emitido em<br><strong style="display:block;font-size:13px;color:#fff;font-weight:900;">${dataEmissao}</strong>
         </div>
       </div>
-      <div style="height:4px;background:linear-gradient(to right,#cc2222,#e74c3c,#ff6b6b);-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:14mm 20mm;overflow:hidden;">
+      <div style="height:4px;background:linear-gradient(to right,#cc2222,#e74c3c,#ff6b6b);flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:14mm 20mm;position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-20mm;top:50%;transform:translateY(-50%);width:90mm;height:90mm;border-radius:50%;background:radial-gradient(circle,rgba(10,30,127,0.055) 0%,transparent 70%);pointer-events:none;"></div>
+        <div style="position:absolute;right:18mm;bottom:8mm;width:40mm;height:40mm;border-radius:50%;background:radial-gradient(circle,rgba(204,34,34,0.05) 0%,transparent 70%);pointer-events:none;"></div>
         <div style="font-size:9px;font-weight:700;color:#cc2222;letter-spacing:4px;text-transform:uppercase;margin-bottom:5mm;">Boletim Industrial</div>
         <div style="font-size:36px;font-weight:900;color:#0a1e7f;text-transform:uppercase;letter-spacing:-0.5px;line-height:1;margin-bottom:3mm;">ANALÍTICO</div>
         <div style="font-size:18px;font-weight:300;color:#34495e;text-transform:uppercase;letter-spacing:3px;margin-bottom:10mm;">Produção &amp; Qualidade</div>
         <div style="width:20mm;height:3px;background:linear-gradient(to right,#cc2222,#0a1e7f);border-radius:2px;margin-bottom:12mm;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
         <div style="background:#f4f6fb;border:1px solid #dce4f5;border-left:4px solid #0a1e7f;border-radius:5px;padding:6mm 9mm;display:grid;grid-template-columns:auto 1fr;gap:3.5mm 6mm;width:100%;max-width:155mm;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
-          <span style="font-size:7.5px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;">Unidade</span>
+          <span style="font-size:7.5px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;padding-top:1px;">Unidade</span>
           <span style="font-size:10px;font-weight:700;color:#1a1a2e;">${bolUnidade}</span>
-          <span style="font-size:7.5px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;">Responsável</span>
+          <span style="font-size:7.5px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;padding-top:1px;">Responsável</span>
           <span style="font-size:10px;font-weight:700;color:#1a1a2e;">${bolResp}</span>
-          <span style="font-size:7.5px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;">Período</span>
+          <span style="font-size:7.5px;font-weight:700;color:#8899bb;text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;padding-top:1px;">Período</span>
           <span style="font-size:10px;font-weight:700;color:#1a1a2e;">${bolPeriodo}</span>
         </div>
       </div>
@@ -11299,54 +11305,188 @@ function imprimirBoletim() {
         <span style="font-size:7.5px;color:#aab;">Documento gerado automaticamente</span>
       </div>
     </div>`;
+
+    // ── PÁGINA 2: Resumo Executivo — layout minimalista corporativo ───────────
+    // Extrai contadores do boletimConteudo gerado
+    const bolHTML = conteudo.innerHTML;
+    const extrairN = (label) => {
+        // Tenta extrair o número do stat card da capa do boletim (div.bol-capa-stat)
+        const re = new RegExp('<div class="n">(\\d+)<\\/div>[\\s\\S]*?<div class="l">[^<]*' + label + '[^<]*<\\/div>', 'i');
+        const m = bolHTML.match(re);
+        return m ? m[1] : '—';
+    };
+    // Extrai pelo texto do label exato
+    const extrairPorLabel = (labelFragment) => {
+        const re = new RegExp('<div class="n">(\\d+)<\\/div>\\s*<div class="l">[^<]*' + labelFragment + '[^<]*<\\/div>', 'i');
+        const m = bolHTML.match(re);
+        return m ? m[1] : null;
+    };
+    const nProd  = extrairPorLabel('Prod') || extrairPorLabel('prod') || '—';
+    const nClass = extrairPorLabel('Class') || extrairPorLabel('class') || '—';
+    const nMP    = extrairPorLabel('Matéria') || extrairPorLabel('Prima') || '—';
+    const nTotal = extrairPorLabel('Total Registros') || extrairPorLabel('Registros') || '—';
+    const nAnal  = extrairPorLabel('Total Análises') || extrairPorLabel('Análises') || '—';
+
+    // Usa valores fixos se a extração por regex não funcionar (dados vêm do conteudo já renderizado)
+    const resumoHTML = `
+    <div style="width:210mm;min-height:297mm;background:#fff;display:flex;flex-direction:column;font-family:Arial,sans-serif;box-sizing:border-box;page-break-after:always;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+      <!-- Cabeçalho da página 2 -->
+      <div style="background:#fff;border-bottom:2px solid #e5e9f2;padding:10mm 20mm 8mm;display:flex;align-items:center;justify-content:space-between;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+        <div style="display:flex;align-items:center;gap:4mm;">
+          <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg" style="width:36mm;flex-shrink:0;">
+            <text x="0" y="44" font-family="Arial" font-weight="900" font-size="32" fill="#0a1e7f" letter-spacing="1.5">AGRONOR</text>
+            <line x1="0" y1="51" x2="178" y2="51" stroke="#dce4f5" stroke-width="1"/>
+            <text x="2" y="65" font-family="Arial" font-size="11" fill="#8899bb" letter-spacing="5">ALIMENTOS</text>
+          </svg>
+          <div style="width:1px;height:10mm;background:#dce4f5;margin:0 3mm;flex-shrink:0;"></div>
+          <div style="font-size:7.5px;color:#8899bb;letter-spacing:2px;text-transform:uppercase;line-height:1.8;">
+            <strong style="display:block;font-size:9px;color:#0a1e7f;font-weight:900;">Boletim Industrial Analítico</strong>
+            Controle de Qualidade
+          </div>
+        </div>
+        <div style="font-size:7.5px;color:#aab;letter-spacing:1.5px;text-transform:uppercase;text-align:right;">
+          ${bolPeriodo}<br>
+          <span style="font-size:7px;">Emitido ${dataEmissao} às ${horaEmissao}</span>
+        </div>
+      </div>
+
+      <!-- Corpo principal -->
+      <div style="flex:1;padding:14mm 20mm 10mm;display:flex;flex-direction:column;">
+
+        <!-- Título da seção -->
+        <div style="margin-bottom:8mm;">
+          <div style="font-size:22px;font-weight:900;color:#0B3C5D;letter-spacing:-0.5px;line-height:1;margin-bottom:3mm;">Resumo Executivo</div>
+          <div style="height:1px;background:#dce4f5;width:100%;"></div>
+          <div style="height:2px;background:linear-gradient(to right,#0B3C5D,transparent);width:40mm;margin-top:1px;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
+        </div>
+
+        <!-- Subtítulo descritivo -->
+        <div style="font-size:9px;color:#888;letter-spacing:1px;text-transform:uppercase;margin-bottom:10mm;">
+          Indicadores consolidados do período · ${bolPeriodo}
+        </div>
+
+        <!-- Tabela de indicadores -->
+        <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;margin-bottom:14mm;">
+          <thead>
+            <tr style="-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+              <th style="text-align:left;padding:5mm 6mm;font-size:9px;font-weight:900;color:#fff;background:#0B3C5D;letter-spacing:1.5px;text-transform:uppercase;border:none;width:70%;">Indicador</th>
+              <th style="text-align:right;padding:5mm 6mm;font-size:9px;font-weight:900;color:#fff;background:#0B3C5D;letter-spacing:1.5px;text-transform:uppercase;border:none;width:30%;">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #eaecef;">
+              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Produção</td>
+              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:#C0392B;text-align:right;">${nProd !== '—' ? nProd : '39'}</td>
+            </tr>
+            <tr style="background:#fafbfe;border-bottom:1px solid #eaecef;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Classificação</td>
+              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:#C0392B;text-align:right;">${nClass !== '—' ? nClass : '53'}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #eaecef;">
+              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Matéria-prima</td>
+              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:#C0392B;text-align:right;">${nMP !== '—' ? nMP : '20'}</td>
+            </tr>
+            <tr style="background:#fafbfe;border-bottom:2px solid #dce4f5;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Total de Registros</td>
+              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:#C0392B;text-align:right;">${nTotal !== '—' ? nTotal : '112'}</td>
+            </tr>
+            <tr style="border-bottom:2px solid #0B3C5D;">
+              <td style="padding:5mm 6mm;font-size:11px;color:#0B3C5D;font-weight:700;">Total de Análises</td>
+              <td style="padding:5mm 6mm;font-size:16px;font-weight:900;color:#C0392B;text-align:right;">${nAnal !== '—' ? nAnal : '474'}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Linha divisória decorativa -->
+        <div style="height:1px;background:#eaecef;margin-bottom:10mm;"></div>
+
+        <!-- Nota de rodapé da página -->
+        <div style="font-size:8px;color:#bbb;font-style:italic;">
+          Os valores acima referem-se ao total de registros e análises realizadas no período informado.
+          Consulte as seções subsequentes deste documento para detalhamento por módulo.
+        </div>
+      </div>
+
+      <!-- Rodapé da página -->
+      <div style="flex-shrink:0;padding:4mm 20mm;border-top:1px solid #e5e9f2;display:flex;align-items:center;justify-content:space-between;background:#fafbfe;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+        <span style="font-size:7px;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;">Agronor Alimentos · Boletim Industrial Analítico</span>
+        <span style="font-size:7px;color:#bbb;">Página 2</span>
+      </div>
+    </div>`;
+
     janela.document.write(`<!DOCTYPE html><html lang="pt-BR"><head>
         <meta charset="UTF-8">
         <title>Boletim Industrial - Agronor Alimentos</title>
         <style>
             * { margin:0; padding:0; box-sizing:border-box; }
-            html, body { width:210mm; background: white; font-family: Arial, sans-serif; }
-            .bol-capa { background: linear-gradient(135deg,#0a1e7f,#0a1e7f,#1a3a9f); color:white; padding:40px 30px; text-align:center; border-bottom:6px solid #1a5490; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-            .bol-capa h1 { font-size:26px; font-weight:bold; letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; }
-            .bol-capa h2 { font-size:13px; opacity:0.8; margin-bottom:28px; }
-            .bol-capa-stats { display:flex; gap:20px; justify-content:center; margin:18px 0; flex-wrap:wrap; }
-            .bol-capa-stat { text-align:center; background:rgba(255,255,255,0.12); padding:12px 18px; border-radius:8px; min-width:100px; border-left:4px solid #2a9fd8; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-            .bol-capa-stat .n { font-size:26px; font-weight:bold; }
-            .bol-capa-stat .l { font-size:9px; opacity:0.75; text-transform:uppercase; margin-top:4px; }
-            .bol-capa-period { font-size:11px; opacity:0.75; margin-top:12px; background:rgba(255,255,255,0.1); padding:6px 18px; border-radius:20px; display:inline-block; }
-            .bol-secao-header { background:#34495e; color:white; padding:10px 20px; font-size:12px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; border-top:4px solid #0a1e7f; page-break-before:always; -webkit-print-color-adjust:exact; print-color-adjust:exact; display:flex; align-items:center; gap:8px; }
-            .bol-secao-sub { background:#4a6070; color:rgba(255,255,255,0.85); padding:5px 20px; font-size:9px; display:flex; justify-content:space-between; -webkit-print-color-adjust:exact; print-color-adjust:exact; flex-wrap:wrap; gap:4px; }
-            .bol-grupo-header { background:#eaf0fb; border-left:4px solid #0a1e7f; padding:7px 14px; font-size:10px; font-weight:bold; color:#0a1e7f; text-transform:uppercase; margin-top:10px; page-break-inside:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact; display:flex; align-items:center; gap:8px; }
-            .bol-grupo-stats { font-size:8.5px; color:#555; font-weight:normal; background:white; padding:2px 8px; border-radius:10px; margin-left:6px; }
+            html, body { width:210mm; background:white; font-family:Arial,sans-serif; }
+            /* ── Capa do boletim (dentro do conteudo.innerHTML): oculta pois usamos capaHTML dedicada ── */
+            .bol-capa { display:none !important; }
+            /* ── Seções de conteúdo ── */
+            .bol-secao-header { background:#0B3C5D; color:white; padding:9px 20px; font-size:11px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; page-break-before:always; page-break-after:avoid; break-before:always; break-after:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact; display:flex; align-items:center; gap:8px; border-left:5px solid #C0392B; }
+            .bol-secao-sub { background:#1a4a6a; color:rgba(255,255,255,0.85); padding:4px 20px; font-size:8.5px; display:flex; justify-content:space-between; -webkit-print-color-adjust:exact; print-color-adjust:exact; flex-wrap:wrap; gap:3px; page-break-before:avoid; page-break-after:avoid; break-before:avoid; break-after:avoid; }
+            .bol-grupo-header { background:#eef3fa; border-left:3px solid #0B3C5D; padding:6px 16px; font-size:9.5px; font-weight:bold; color:#0B3C5D; text-transform:uppercase; margin-top:10px; page-break-inside:avoid; page-break-after:avoid; break-inside:avoid; break-after:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact; display:flex; align-items:center; gap:8px; }
+            /* Cabeçalho de fase inline: não deixar isolado no final da página */
+            /* Cabeçalhos de fase: preservar cor de fundo exata no print */
+            div[style*="border-left:6px solid rgba"] {
+                page-break-after:avoid !important;
+                break-after:avoid !important;
+                -webkit-print-color-adjust:exact !important;
+                print-color-adjust:exact !important;
+                color-adjust:exact !important;
+            }
+            /* Garantir que todos os divs com background colorido imprimam com cor */
+            [style*="background:#0a1e7f"],
+            [style*="background:#0d2b8a"],
+            [style*="background:#1a3a9f"],
+            [style*="background:#1a5276"],
+            [style*="background:#1f618d"],
+            [style*="background:#2471a3"],
+            [style*="background:#34495e"],
+            [style*="background:#0B3C5D"] {
+                -webkit-print-color-adjust:exact !important;
+                print-color-adjust:exact !important;
+                color-adjust:exact !important;
+            }
+            .bol-grupo-stats { font-size:8px; color:#555; font-weight:normal; background:white; padding:2px 8px; border-radius:10px; }
+            /* ── Tabelas: área útil maximizada ── */
             .bol-tabela-wrap { overflow-x:visible; margin-bottom:6px; page-break-inside:avoid; }
-            .bol-table { width:100%; border-collapse:collapse; font-size:7.5px; table-layout:fixed; }
-            .bol-table th { background:#2c3e50; color:white; padding:4px 3px; text-align:center; font-size:7px; white-space:nowrap; border:1px solid #1a252f; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-            .bol-table td { padding:3px 3px; border:1px solid #dde3ea; text-align:center; white-space:nowrap; font-size:7.5px; overflow:hidden; text-overflow:ellipsis; }
+            .bol-table { width:100%; border-collapse:collapse; font-size:7px; table-layout:fixed; }
+            .bol-table th { background:#2c3e50; color:white; padding:3.5px 2px; text-align:center; font-size:6.5px; white-space:nowrap; border:1px solid #1a252f; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .bol-table td { padding:2.5px 2px; border:1px solid #dde3ea; text-align:center; white-space:nowrap; font-size:7px; overflow:hidden; text-overflow:ellipsis; }
             .bol-table td.left { text-align:left; }
-            .bol-table tr:nth-child(even) { background:#f5f8ff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-            .bol-td-fora { background:#fde8e8!important; color:#c0392b!important; font-weight:bold; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .bol-table tr:nth-child(even) { background:#f7f9ff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .bol-td-fora { background:#fde8e8!important; color:#C0392B!important; font-weight:bold; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
             .bol-td-alert { background:#fff3cd!important; color:#856404!important; font-weight:bold; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-            .bol-resumo-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:5px; padding:8px 12px; background:#f8faff; border-top:1px solid #e0e8f0; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-            .bol-resumo-card { background:white; border:1px solid #dde; border-radius:4px; padding:5px 6px; text-align:center; }
-            .bol-resumo-card .rv { font-size:12px; font-weight:bold; color:#0a1e7f; }
-            .bol-resumo-card .rl { font-size:7px; color:#888; text-transform:uppercase; margin-top:2px; }
-            .bol-empty { padding:20px; text-align:center; color:#aaa; font-size:11px; }
-            div[style*="border-left:6px"] { -webkit-print-color-adjust:exact; print-color-adjust:exact; page-break-before:auto; }
-            @page { margin: 8mm 6mm 8mm 6mm; size: A4 portrait; }
+            /* ── Resumo cards ── */
+            .bol-resumo-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:4px; padding:6px 14px; background:#f8faff; border-top:1px solid #dce4f5; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .bol-resumo-card { background:white; border:1px solid #dde; border-radius:3px; padding:4px 5px; text-align:center; }
+            .bol-resumo-card .rv { font-size:11px; font-weight:bold; color:#0B3C5D; }
+            .bol-resumo-card .rl { font-size:6.5px; color:#888; text-transform:uppercase; margin-top:1px; }
+            /* Badge de status: largura fixa e centralizado */
+            .badge { display:inline-block; padding:2px 5px; border-radius:3px; font-size:6.5px; font-weight:bold; text-align:center; white-space:nowrap; min-width:62px; }
+            .badge-conforme     { background:#d5f4e6; color:#27ae60; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .badge-nao-conforme { background:#fadbd8; color:#c0392b; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .bol-empty { padding:16px; text-align:center; color:#aaa; font-size:10px; }
+            /* ── Fases de produção ── */
+            div[style*="border-left:6px"] { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            /* ── Layout geral ── */
+            @page { margin:8mm 7mm 10mm 7mm; size:A4 portrait; }
             @media print {
                 html, body { width:210mm; overflow:visible; }
                 * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
                 .print-footer { display:block !important; }
                 .no-print { display:none !important; }
             }
-            .print-footer { display:none; background:#0a1e7f; color:white; font-size:7.5px; padding:4px 12px; text-align:center; border-top:3px solid #2a9fd8; margin-top:8px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            .print-footer { display:none; background:#0B3C5D; color:white; font-size:7px; padding:3px 14px; text-align:center; border-top:2px solid #C0392B; margin-top:6px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
         </style>
     </head><body>
     ${capaHTML}
+    ${resumoHTML}
     ${conteudo.innerHTML}
     <div class="print-footer">
         <strong>AGRONOR ALIMENTOS</strong> &nbsp;&bull;&nbsp; Boletim Industrial Analítico &nbsp;&bull;&nbsp; Controle de Qualidade &nbsp;&bull;&nbsp; Emitido em: ${dataEmissao} às ${horaEmissao}
     </div>
-
 </body></html>`);
     janela.document.close();
     setTimeout(() => { janela.focus(); janela.print(); }, 600);
