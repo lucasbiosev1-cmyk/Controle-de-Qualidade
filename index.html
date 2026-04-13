@@ -13869,11 +13869,15 @@ async function salvarDev() {
     const editId = document.getElementById('dev-edit-id').value;
 
     // Calcula o número sequencial por fornecedor
+    const prefixoForn = fornecedor.trim().toUpperCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // remove acentos
+        .replace(/[^A-Z0-9\s]/g, '')
+        .split(/\s+/).map(w => w.slice(0, 3)).join('').slice(0, 6);
     const qtdForn = listaDev.filter(d =>
         (d.fornecedor || '').trim().toLowerCase() === fornecedor.toLowerCase() &&
         (editId ? String(d.id) !== String(editId) : true)
     ).length + 1;
-    const numeroCalculado = 'DEV-' + String(qtdForn).padStart(4, '0');
+    const numeroCalculado = prefixoForn + '-' + String(qtdForn).padStart(4, '0');
     document.getElementById('dev-numero').value = numeroCalculado;
 
     const dev = {
@@ -14459,8 +14463,8 @@ function imprimirVisualizacao() {
 
         const imgsSection = imgs.length ? `
             <div class="sec-title">📷 Evidências Fotográficas (${imgs.length})</div>
-            <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;">
-                ${imgs.map(img => `<div style="text-align:center;">
+            <div class="img-block" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;page-break-inside:avoid;">
+                ${imgs.map(img => `<div style="text-align:center;page-break-inside:avoid;">
                     <img src="${img.dataUrl}" style="max-width:150px;max-height:110px;border-radius:3px;border:1px solid #ddd;display:block;">
                     <div style="font-size:8px;color:#999;margin-top:3px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${img.name || ''}</div>
                 </div>`).join('')}
@@ -14511,6 +14515,14 @@ function imprimirVisualizacao() {
                 body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
                 button{display:none!important;}
                 .page-header{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+                .dev-banner{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+                .sec-title{-webkit-print-color-adjust:exact;print-color-adjust:exact;page-break-after:avoid;}
+                thead{display:table-header-group;}
+                table{page-break-inside:auto;}
+                tr{page-break-inside:avoid;}
+                .sign-row{page-break-inside:avoid;}
+                .img-block{page-break-inside:avoid;}
+                .content > div{page-break-inside:avoid;}
             }
         </style></head><body>
         <!-- CABEÇALHO -->
@@ -14555,7 +14567,7 @@ function imprimirVisualizacao() {
             ${imgsSection}
 
             <!-- ASSINATURAS -->
-            <div class="sign-row">
+            <div class="sign-row" style="page-break-inside:avoid;">
                 <div class="sign-box">
                     <div style="height:36px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:2px;">
                         <span style="font-size:12px;font-weight:700;color:#2c3e50;">Lucas Lima</span>
