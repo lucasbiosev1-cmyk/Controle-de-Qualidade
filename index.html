@@ -13289,6 +13289,20 @@ async function executarCorrecaoDefeitos() {
                     </label>
                 </h3>
                 <div id="classifGraosCorpo">
+                    <!-- SELETOR MILHO / SOJA -->
+                    <div style="display:flex;gap:10px;margin-bottom:12px;align-items:center;">
+                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">Tipo de Gr&#227;o:</span>
+                        <button type="button" id="btnClassifMilho"
+                            onclick="carregarClassifMilho()"
+                            style="padding:5px 18px;border-radius:20px;border:2px solid #e67e22;background:#e67e22;color:#fff;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;">
+                            &#127805; Milho
+                        </button>
+                        <button type="button" id="btnClassifSoja"
+                            onclick="carregarClassifSoja()"
+                            style="padding:5px 18px;border-radius:20px;border:2px solid #27ae60;background:#fff;color:#27ae60;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;">
+                            &#129752; Soja
+                        </button>
+                    </div>
                     <table class="nc-classif-table" id="classifTable">
                         <thead>
                             <tr>
@@ -13525,7 +13539,7 @@ function imprimirRelatorioNC(tipo) {
 
         <div class="nc-report-sign-area">
             <div class="nc-sign-block"><div class="nc-sign-space" style="height:22px;"></div><div class="nc-sign-label" style="margin-bottom:2px;">Lucas Lima</div><div class="nc-sign-line"></div><div class="nc-sign-sub">Resp. Técnico · CRQ 04473318</div></div>
-            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Analista</div><div class="nc-sign-sub">&nbsp;</div></div>
+            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Assistente</div><div class="nc-sign-sub">&nbsp;</div></div>
             <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Supervisor de Produção</div><div class="nc-sign-sub">&nbsp;</div></div>
         </div>`;
 
@@ -13615,7 +13629,7 @@ function imprimirRelatorioNC(tipo) {
 
         <div class="nc-report-sign-area">
             <div class="nc-sign-block"><div class="nc-sign-space" style="height:22px;"></div><div class="nc-sign-label" style="margin-bottom:2px;">Lucas Lima</div><div class="nc-sign-line"></div><div class="nc-sign-sub">Resp. Técnico · CRQ 04473318</div></div>
-            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Analista</div><div class="nc-sign-sub">&nbsp;</div></div>
+            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Assistente</div><div class="nc-sign-sub">&nbsp;</div></div>
             <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Supervisor de Produção</div><div class="nc-sign-sub">&nbsp;</div></div>
         </div>`;
     }
@@ -14096,6 +14110,58 @@ const DEFEITOS_PADRAO_NC = [
     { nome: 'Carunchado', param: 3.00 }, { nome: 'Mofado', param: 3.00 },
 ];
 
+// Tabela de parâmetros para MILHO (MAPA/Embrapa)
+const CLASSIF_MILHO = [
+    { nome: 'Queimado',       param: 2.00 },
+    { nome: 'Ardido',         param: 2.00 },
+    { nome: 'Mofado',         param: 3.00 },
+    { nome: 'Fermentado',     param: 3.00 },
+    { nome: 'Chochos',        param: 3.00 },
+    { nome: 'Gessados',       param: 3.00 },
+    { nome: 'Germinado',      param: 3.00 },
+    { nome: 'Avariados Total',param: 10.00 },
+    { nome: 'Quebrados',      param: 4.00 },
+    { nome: 'Carunchados',    param: 3.00 },
+    { nome: 'Impureza',       param: 1.50 },
+    { nome: 'Umidade',        param: 14.00 },
+    { nome: 'Densidade',      param: 750.00 },
+];
+
+// Tabela de parâmetros para SOJA (MAPA/Embrapa)
+const CLASSIF_SOJA = [
+    { nome: 'Queimado',       param: 2.00 },
+    { nome: 'Ardido',         param: 2.00 },
+    { nome: 'Mofado',         param: 3.00 },
+    { nome: 'Esverdeado',     param: 8.00 },
+    { nome: 'Fermentado',     param: 3.00 },
+    { nome: 'Chocho',         param: 3.00 },
+    { nome: 'Picado',         param: 3.00 },
+    { nome: 'Germinado',      param: 3.00 },
+    { nome: 'Avariado Total', param: 8.00 },
+    { nome: 'Quebrado',       param: 4.00 },
+    { nome: 'Impureza',       param: 1.00 },
+    { nome: 'Umidade',        param: 14.00 },
+    { nome: 'Densidade',      param: 700.00 },
+];
+
+function carregarClassifMilho() {
+    limparClassif();
+    CLASSIF_MILHO.forEach(d => adicionarLinhaClassif(d.nome, '', d.param));
+    const bm = document.getElementById('btnClassifMilho');
+    const bs = document.getElementById('btnClassifSoja');
+    if (bm) { bm.style.background='#e67e22'; bm.style.color='#fff'; }
+    if (bs) { bs.style.background='#fff';    bs.style.color='#27ae60'; }
+}
+
+function carregarClassifSoja() {
+    limparClassif();
+    CLASSIF_SOJA.forEach(d => adicionarLinhaClassif(d.nome, '', d.param));
+    const bm = document.getElementById('btnClassifMilho');
+    const bs = document.getElementById('btnClassifSoja');
+    if (bm) { bm.style.background='#fff';    bm.style.color='#e67e22'; }
+    if (bs) { bs.style.background='#27ae60'; bs.style.color='#fff'; }
+}
+
 function adicionarLinhaClassif(nome='', resultado='', parametro='') {
     const tbody = document.getElementById('classifBody');
     if (!tbody) return;
@@ -14122,8 +14188,8 @@ function ncAtualizarCorLinha(input) {
 function limparClassif() { const tb = document.getElementById('classifBody'); if(tb) tb.innerHTML = ''; }
 
 function carregarClassifPadrao() {
-    limparClassif();
-    DEFEITOS_PADRAO_NC.forEach(d => adicionarLinhaClassif(d.nome, '', d.param));
+    // Carrega Milho como padrão ao abrir o modal
+    carregarClassifMilho();
 }
 
 // ===== FECHAR MODAL AO CLICAR FORA =====
@@ -14623,7 +14689,7 @@ function imprimirVisualizacao() {
                     <div class="sign-box">
                         <div class="sign-name">&nbsp;</div>
                         <div class="sign-line"></div>
-                        <div class="sign-label">Analista</div>
+                        <div class="sign-label">Assistente</div>
                     </div>
                     <div class="sign-box">
                         <div class="sign-name">&nbsp;</div>
