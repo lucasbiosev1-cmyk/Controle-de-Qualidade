@@ -4709,10 +4709,17 @@
                                 <option value="POSTURA MCASSAB R1">POSTURA MCASSAB R1</option>
                                 <option value="POSTURA MCASSAB R7">POSTURA MCASSAB R7</option>
                                 <option value="POSTURA TECTRON R8">POSTURA TECTRON R8</option>
+                                <option value="BEPEL CALCÁRIO FINO">BEPEL CALCÁRIO FINO</option>
+                                <option value="BEPEL CALCÁRIO GROSSO">BEPEL CALCÁRIO GROSSO</option>
                                 <option value="__nova__">➕ Nova Ração...</option>
                             </select>
-                            <input type="text" id="cadRacaoProd" placeholder="Nome da ração" style="display:none;margin-top:5px;width:100%;padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:13px;text-transform:uppercase;">
-                            <button type="button" id="btnCancelarNovaRacao" onclick="cancelarNovaRacao()" style="display:none;margin-top:4px;font-size:11px;padding:3px 8px;background:#95a5a6;color:white;border:none;border-radius:3px;cursor:pointer;">✕ Cancelar</button>
+                            <div id="novaRacaoArea" style="display:none;margin-top:6px;">
+                                <input type="text" id="cadRacaoProd" placeholder="Digite o nome da ração..." style="width:100%;padding:8px 10px;border:1px solid #3498db;border-radius:4px;font-size:13px;text-transform:uppercase;box-sizing:border-box;outline:none;" onkeydown="if(event.key==='Enter'){event.preventDefault();confirmarNovaRacao();}">
+                                <div style="display:flex;gap:6px;margin-top:5px;">
+                                    <button type="button" onclick="confirmarNovaRacao()" style="flex:1;padding:6px 0;background:#27ae60;color:white;border:none;border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">✅ Adicionar</button>
+                                    <button type="button" onclick="cancelarNovaRacao()" style="flex:1;padding:6px 0;background:#e74c3c;color:white;border:none;border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">✕ Cancelar</button>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group required"><label>Lote (Automático)</label><input type="text" id="cadLoteProd" required readonly></div>
                     </div>
@@ -6052,46 +6059,65 @@ function limparFormularioProd() {
     const obsEl = document.getElementById('cadObsProd');
     if (obsEl) { obsEl.value = ''; const tog = obsEl.closest('.obs-body').previousElementSibling; tog.classList.remove('open'); obsEl.closest('.obs-body').classList.remove('open'); }
     // Reset ração UI
-    const sel = document.getElementById('cadRacaoProdSelect');
-    const inp = document.getElementById('cadRacaoProd');
-    const btn = document.getElementById('btnCancelarNovaRacao');
-    if (sel) { sel.value = ''; sel.style.display = 'block'; }
-    if (inp) { inp.value = ''; inp.style.display = 'none'; }
-    if (btn) { btn.style.display = 'none'; }
+    const sel  = document.getElementById('cadRacaoProdSelect');
+    const inp  = document.getElementById('cadRacaoProd');
+    const area = document.getElementById('novaRacaoArea');
+    if (sel)  { sel.value = ''; }
+    if (inp)  { inp.value = ''; }
+    if (area) { area.style.display = 'none'; }
 }
 
 function handleRacaoSelectChange(sel) {
+    const area = document.getElementById('novaRacaoArea');
     const input = document.getElementById('cadRacaoProd');
-    const btn = document.getElementById('btnCancelarNovaRacao');
     if (sel.value === '__nova__') {
-        sel.style.display = 'none';
-        input.style.display = 'block';
-        btn.style.display = 'inline-block';
+        area.style.display = 'block';
         input.value = '';
         input.focus();
     } else {
+        area.style.display = 'none';
         input.value = sel.value;
-        input.style.display = 'none';
-        btn.style.display = 'none';
     }
+}
+
+function confirmarNovaRacao() {
+    const input = document.getElementById('cadRacaoProd');
+    const sel   = document.getElementById('cadRacaoProdSelect');
+    const nome  = input.value.trim().toUpperCase();
+    if (!nome) { input.focus(); return; }
+
+    // Adiciona ao select se ainda não existir
+    if (!Array.from(sel.options).some(o => o.value === nome)) {
+        const optNova = sel.querySelector('option[value="__nova__"]');
+        const opt = document.createElement('option');
+        opt.value = nome; opt.textContent = nome;
+        sel.insertBefore(opt, optNova);
+    }
+
+    // Seleciona a nova ração no select e esconde a área
+    sel.value = nome;
+    document.getElementById('novaRacaoArea').style.display = 'none';
+
+    // Persiste para parâmetros e filtros
+    _registrarRacaoCustomizada(nome);
 }
 
 function cancelarNovaRacao() {
     const sel = document.getElementById('cadRacaoProdSelect');
     const input = document.getElementById('cadRacaoProd');
-    const btn = document.getElementById('btnCancelarNovaRacao');
     sel.value = '';
-    sel.style.display = 'block';
-    input.style.display = 'none';
     input.value = '';
-    btn.style.display = 'none';
+    document.getElementById('novaRacaoArea').style.display = 'none';
 }
 
 function salvarProducao(event) {
     event.preventDefault();
     const dataDisp = document.getElementById('cadDataProd').value;
     const data  = dataParaISO(dataDisp);
-    const racao = document.getElementById('cadRacaoProd').value;
+    // Ração: prioriza o input (nova ração confirmada) se preenchido, senão usa o select
+    const _racaoInput = (document.getElementById('cadRacaoProd').value || '').trim();
+    const _racaoSel   = (document.getElementById('cadRacaoProdSelect').value || '').trim();
+    const racao = (_racaoInput && _racaoInput !== '__nova__') ? _racaoInput : (_racaoSel !== '__nova__' ? _racaoSel : '');
     const lote  = document.getElementById('cadLoteProd').value.trim();
     const dgm   = parseFloat(document.getElementById('cadDGMProd').value);
     if (!data || !racao || !lote || isNaN(dgm)) {
@@ -6124,6 +6150,8 @@ function salvarProducao(event) {
     } else {
         producoes.push(r); mostrarSucessoProd('✓ Produção salva com sucesso!');
     }
+    // Persiste rações novas (digitadas via "Nova Ração") para uso em parâmetros e filtros
+    _registrarRacaoCustomizada(r.racao);
     // Salva no Supabase
     dbUpsertOne('producoes', r).then(() => { sgqToast('Produção salva com sucesso!', 'success'); _registrarAuditoria(idEdicaoProd ? 'EDIT' : 'CREATE', 'producoes', r.id, { racao: r.racao, data: r.data }).catch(() => {}); }).catch(e => { mostrarErroProd('❌ Erro ao salvar: ' + e.message); sgqToast('Erro ao salvar produção: ' + e.message, 'error'); });
     fecharModalCadastroProd(); limparFormularioProd(); exibirTabelaProd();
@@ -9701,6 +9729,24 @@ async function carregarTodosAsync() {
     producoes      = rawP;
     classificacoes = rawC.map(normClass);
     materiasPrimas = rawM.map(normMat);
+
+    // Ao carregar dados, auto-registra rações que existem nas produções mas não estão nos selects
+    // (ex: rações cadastradas antes deste sistema de persistência)
+    try {
+        const racoesNosRegistros = [...new Set(producoes.map(p => p.racao).filter(Boolean))];
+        racoesNosRegistros.forEach(nome => {
+            const jaExisteNativo = RACOES_GRUPOS.some(g =>
+                g.racoes.includes(nome) || (g.formulacoes && g.formulacoes.includes(nome))
+            );
+            if (!jaExisteNativo) {
+                // Adiciona ao RACOES_GRUPOS em memória (sem salvar no localStorage, pois veio do banco)
+                RACOES_GRUPOS.push({ grupo: nome, label: nome, racoes: [nome], cor: '#7f8c8d', formulacoes: [nome] });
+                _injetarRacaoNosSelects(nome);
+            }
+        });
+        // Carrega rações customizadas do Supabase (disponíveis para todos os usuários)
+        await _carregarRacoesCustomizadas();
+    } catch(e) {}
 }
 
 
@@ -9881,7 +9927,123 @@ const RACOES_GRUPOS = [
       formulacoes:['POSTURA MCASSAB R9','POSTURA TECTRON R9'] },
     { grupo:'POSTURA R10',label:'POSTURA R10',racoes:['POSTURA MCASSAB R 10','POSTURA TECTRON R 10'], cor:'#2aaaf8',
       formulacoes:['POSTURA MCASSAB R 10','POSTURA TECTRON R 10'] },
+    { grupo:'BEPEL CALCÁRIO FINO',  label:'BEPEL CALCÁRIO FINO',  racoes:['BEPEL CALCÁRIO FINO'],  cor:'#7f8c8d',
+      formulacoes:['BEPEL CALCÁRIO FINO'] },
+    { grupo:'BEPEL CALCÁRIO GROSSO',label:'BEPEL CALCÁRIO GROSSO',racoes:['BEPEL CALCÁRIO GROSSO'],cor:'#95a5a6',
+      formulacoes:['BEPEL CALCÁRIO GROSSO'] },
 ];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RAÇÕES CUSTOMIZADAS — sincronizadas com Supabase (tabela: racoes_customizadas)
+// Rações novas ficam disponíveis para todos os usuários em todos os pontos:
+// parâmetros, filtros, modal de cadastro e relatório gráfico.
+// Estrutura da tabela: id (int8, PK, generated), nome (text, unique)
+// ─────────────────────────────────────────────────────────────────────────────
+const RACOES_CUSTOM_KEY = 'sgq_racoes_customizadas_v1'; // cache local (fallback offline)
+
+function _getRacoesCustomizadasCache() {
+    try { return JSON.parse(localStorage.getItem(RACOES_CUSTOM_KEY) || '[]'); }
+    catch(e) { return []; }
+}
+
+function _injetarRacaoEmMemoria(nome) {
+    const jaExiste = RACOES_GRUPOS.some(g =>
+        g.racoes.includes(nome) || (g.formulacoes && g.formulacoes.includes(nome))
+    );
+    if (!jaExiste) {
+        RACOES_GRUPOS.push({ grupo:nome, label:nome, racoes:[nome], cor:'#7f8c8d', formulacoes:[nome] });
+    }
+}
+
+function _injetarRacaoNosSelects(nome) {
+    // Select do modal de cadastro (antes do "➕ Nova Ração...")
+    const selModal = document.getElementById('cadRacaoProdSelect');
+    if (selModal && !Array.from(selModal.options).some(o => o.value === nome)) {
+        const optNova = selModal.querySelector('option[value="__nova__"]');
+        const opt = document.createElement('option');
+        opt.value = nome; opt.textContent = nome;
+        selModal.insertBefore(opt, optNova);
+    }
+    // Select de filtro da tabela de produção
+    const selFiltro = document.getElementById('filterRacaoProd');
+    if (selFiltro && !Array.from(selFiltro.options).some(o => o.value === nome)) {
+        const opt = document.createElement('option');
+        opt.value = nome; opt.textContent = nome;
+        selFiltro.appendChild(opt);
+    }
+    // Select do relatório gráfico
+    const selRel = document.getElementById('relRacao');
+    if (selRel && !Array.from(selRel.options).some(o => o.value === nome)) {
+        const opt = document.createElement('option');
+        opt.value = nome; opt.textContent = nome;
+        selRel.appendChild(opt);
+    }
+}
+
+// Chamado ao confirmar "➕ Nova Ração": salva no Supabase + cache local + injeta em tudo
+async function _registrarRacaoCustomizada(nomeRacao) {
+    if (!nomeRacao) return;
+    const nome = nomeRacao.trim().toUpperCase();
+
+    // Já existe nativamente? Nada a fazer
+    const jaExisteNativo = RACOES_GRUPOS.some(g =>
+        g.racoes.includes(nome) || (g.formulacoes && g.formulacoes.includes(nome))
+    );
+    if (jaExisteNativo) return;
+
+    // Injeta imediatamente em memória e nos selects (UX sem espera)
+    _injetarRacaoEmMemoria(nome);
+    _injetarRacaoNosSelects(nome);
+
+    // Atualiza cache local
+    const cache = _getRacoesCustomizadasCache();
+    if (!cache.includes(nome)) {
+        cache.push(nome);
+        localStorage.setItem(RACOES_CUSTOM_KEY, JSON.stringify(cache));
+    }
+
+    // Salva no Supabase (disponível para todos os usuários)
+    try {
+        const { data: existe } = await _sbClient
+            .from('racoes_customizadas')
+            .select('id')
+            .eq('nome', nome)
+            .maybeSingle();
+        if (!existe) {
+            const { error } = await _sbClient.from('racoes_customizadas').insert({ nome });
+            if (error) throw new Error(error.message);
+            _registrarAuditoria('CREATE', 'racoes_customizadas', null, { nome }).catch(() => {});
+            sgqToast('Ração "' + nome + '" cadastrada e sincronizada!', 'success');
+        }
+    } catch(e) {
+        sgqToast('Ração salva localmente. Será sincronizada ao reconectar.', 'warning');
+    }
+
+    // Re-renderiza painel de parâmetros se estiver visível
+    try { renderizarTabelasParametros(); } catch(e) {}
+}
+
+// Carrega do Supabase e injeta em todo o sistema (chamado após login)
+async function _carregarRacoesCustomizadas() {
+    try {
+        const data = await dbGetAll('racoes_customizadas');
+        const nomes = data.map(r => r.nome).filter(Boolean);
+        // Atualiza cache local
+        localStorage.setItem(RACOES_CUSTOM_KEY, JSON.stringify(nomes));
+        nomes.forEach(nome => { _injetarRacaoEmMemoria(nome); _injetarRacaoNosSelects(nome); });
+    } catch(e) {
+        // Fallback: usa cache local se Supabase indisponível
+        _getRacoesCustomizadasCache().forEach(nome => { _injetarRacaoEmMemoria(nome); _injetarRacaoNosSelects(nome); });
+    }
+}
+
+// Restaura cache local nos selects do DOM (chamado após DOMContentLoaded)
+function _restaurarRacoesCustomizadasDOM() {
+    _getRacoesCustomizadasCache().forEach(nome => { _injetarRacaoEmMemoria(nome); _injetarRacaoNosSelects(nome); });
+}
+
+// Injeta em memória imediatamente (antes do DOM, para RACOES_GRUPOS estar pronto nos parâmetros)
+(function() { _getRacoesCustomizadasCache().forEach(_injetarRacaoEmMemoria); })();
 
 // Produtos de Classificação
 const PRODUTOS_CLASS = [
