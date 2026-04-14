@@ -10383,10 +10383,12 @@ function atualizarParametros() {
     modal._racaKey  = racaKey;
     modal._vigencia = vigencia;
     modal._campos   = {};
-    catAtiva.querySelectorAll('[id^="pinput_"]').forEach(el => {
-        const parts = el.id.split('_');
-        const tipo  = parts[parts.length-1];
-        const camp  = parts[parts.length-2];
+    const _prefixo1 = `pinput_${modulo}_`;
+    catAtiva.querySelectorAll(`[id^="${_prefixo1}"]`).forEach(el => {
+        const _sem1  = el.id.slice(_prefixo1.length);
+        const _last1 = _sem1.lastIndexOf('_');
+        const tipo   = _sem1.slice(_last1 + 1);
+        const camp   = _sem1.slice(0, _last1);
         if (!modal._campos[camp]) modal._campos[camp] = {min:0,max:9999,ativo:false};
         if (tipo==='ativo') modal._campos[camp].ativo = el.checked;
         else if (tipo==='max') modal._campos[camp][tipo] = (el.value===''||el.value===null) ? 9999 : (parseFloat(el.value) ?? 9999);
@@ -14954,10 +14956,12 @@ async function salvarParametros() {
     const vigencia = tempTudo ? '2000-01-01' : vigenciaInput;
 
     const campos = {};
-    catAtiva.querySelectorAll('[id^="pinput_"]').forEach(el => {
-        const parts = el.id.split('_');
-        const tipo  = parts[parts.length-1];
-        const camp  = parts[parts.length-2];
+    const _prefixo2 = `pinput_${modulo}_`;
+    catAtiva.querySelectorAll(`[id^="${_prefixo2}"]`).forEach(el => {
+        const _sem2  = el.id.slice(_prefixo2.length);
+        const _last2 = _sem2.lastIndexOf('_');
+        const tipo   = _sem2.slice(_last2 + 1);
+        const camp   = _sem2.slice(0, _last2);
         if (!campos[camp]) campos[camp] = {min:0,max:9999,ativo:false};
         if (tipo==='ativo') campos[camp].ativo = el.checked;
         else if (tipo==='max') campos[camp][tipo] = (el.value===''||el.value===null) ? 9999 : (parseFloat(el.value) ?? 9999);
