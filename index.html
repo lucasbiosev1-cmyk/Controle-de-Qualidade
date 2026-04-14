@@ -4718,7 +4718,7 @@
                                 <input type="text" id="cadRacaoProd" placeholder="Digite o nome da ração..." style="width:100%;padding:8px 10px;border:1px solid #3498db;border-radius:4px;font-size:13px;text-transform:uppercase;box-sizing:border-box;outline:none;" onkeydown="if(event.key==='Enter'){event.preventDefault();confirmarNovaRacao();}">
                                 <div style="display:flex;gap:6px;margin-top:5px;">
                                     <button type="button" onclick="confirmarNovaRacao()" style="flex:1;padding:6px 0;background:#27ae60;color:white;border:none;border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">✅ Adicionar</button>
-                                    <button type="button" onclick="cancelarNovaRacao()" style="flex:1;padding:6px 0;background:#e74c3c;color:white;border:none;border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">✕ Cancelar</button>
+                                    <button type="button" id="btnCancelarNovaRacao" onclick="cancelarNovaRacao()" style="flex:1;padding:6px 0;background:#e74c3c;color:white;border:none;border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;">✕ Cancelar</button>
                                 </div>
                             </div>
                         </div>
@@ -6009,11 +6009,11 @@ function abrirModalEdicaoProd(id) {
     const _uProd = USUARIOS[usuarioAtual] || {};
     let _prProd = _uProd.perms || {};
     if (typeof _prProd === 'string') { try { _prProd = JSON.parse(_prProd); } catch(e) { _prProd = {}; } }
-    const _podeProd = perfilAtual === 'admin' || !!_prProd.cadastro;
-    if (!_podeProd) return;
+    const _podeProd = perfilAtual === 'admin' || _prProd.cadastro === true || _prProd.cadastro === 'true' || _prProd.cadastro === 1;
+    if (!_podeProd) { console.warn('[SGQ] sem permissão para editar produção', { perfilAtual, perms: _prProd }); return; }
     idEdicaoProd = id;
-    const r = producoes.find(x => x.id === id);
-    if (!r) return;
+    const r = producoes.find(x => String(x.id) === String(id));
+    if (!r) { alert('[SGQ DEBUG] id recebido: ' + id + ' | tipo: ' + typeof id + ' | total producoes: ' + producoes.length + ' | ids: ' + producoes.slice(0,3).map(x=>x.id).join(',')); return; }
     document.getElementById('modalTituloProd').textContent    = 'Editar Produção';
     document.getElementById('cadIdProd').value                = id;
     document.getElementById('cadDataProd').value              = dataParaDisplay(r.data);
@@ -6086,8 +6086,11 @@ function limparFormularioProd() {
 function handleRacaoSelectChange(sel) {
     const area = document.getElementById('novaRacaoArea');
     const input = document.getElementById('cadRacaoProd');
+    const btn = document.getElementById('btnCancelarNovaRacao');
     if (sel.value === '__nova__') {
         area.style.display = 'block';
+        input.style.display = 'block';
+        if (btn) btn.style.display = 'inline-block';
         input.value = '';
         input.focus();
     } else {
@@ -6161,7 +6164,7 @@ function salvarProducao(event) {
         obs:       (document.getElementById('cadObsProd').value || '').trim()
     };
     if (idEdicaoProd) {
-        const idx = producoes.findIndex(x => x.id === idEdicaoProd);
+        const idx = producoes.findIndex(x => String(x.id) === String(idEdicaoProd));
         if (idx !== -1) { producoes[idx] = r; mostrarSucessoProd('✓ Produção atualizada com sucesso!'); }
     } else {
         producoes.push(r); mostrarSucessoProd('✓ Produção salva com sucesso!');
@@ -6184,7 +6187,7 @@ function exibirTabelaProd() {
     const _uExib = USUARIOS[usuarioAtual] || {};
     let _prExib = _uExib.perms || {};
     if (typeof _prExib === 'string') { try { _prExib = JSON.parse(_prExib); } catch(e) { _prExib = {}; } }
-    const podeCadastroProd = isAdmin || !!_prExib.cadastro;
+    const podeCadastroProd = isAdmin || _prExib.cadastro === true || _prExib.cadastro === 'true' || _prExib.cadastro === 1;
     tbody.innerHTML = filtrados.map(r => {
         const status = statusPorParametros(r, 'prod', r.racao, CAMPOS_PROD, r.data);
         const acaoTd = podeCadastroProd
@@ -6238,7 +6241,7 @@ function limparFiltrosProd() {
 function deletarProd(id) {
     if (perfilAtual !== 'admin') return;
     if (confirm('Tem certeza que deseja deletar este registro?')) {
-        producoes = producoes.filter(r => r.id !== id);
+        producoes = producoes.filter(r => String(r.id) !== String(id));
         dbDeleteOne('producoes', id).then(() => _registrarAuditoria('DELETE', 'producoes', id, {}).catch(() => {})).catch(e => { sgqToast('Erro ao excluir produção: ' + e.message, 'error'); });
         exibirTabelaProd(); mostrarSucessoProd('✓ Registro deletado!');
     }
@@ -6263,7 +6266,7 @@ function abrirModalCadastroClass() {
 function abrirModalEdicaoClass(id) {
     if (perfilAtual !== 'admin') return;
     idEdicaoClass = id;
-    const r = classificacoes.find(x => x.id === id);
+    const r = classificacoes.find(x => String(x.id) === String(id));
     if (!r) return;
     document.getElementById('modalTituloClass').textContent       = 'Editar Classificação';
     document.getElementById('cadIdClass').value                   = id;
@@ -6364,7 +6367,7 @@ function salvarClassificacao(event) {
         obs:         (document.getElementById('cadObsClass').value || '').trim()
     };
     if (idEdicaoClass) {
-        const idx = classificacoes.findIndex(x => x.id === idEdicaoClass);
+        const idx = classificacoes.findIndex(x => String(x.id) === String(idEdicaoClass));
         if (idx !== -1) { classificacoes[idx] = r; mostrarSucessoClass('✓ Classificação atualizada com sucesso!'); }
     } else {
         classificacoes.push(r); mostrarSucessoClass('✓ Classificação salva com sucesso!');
@@ -6463,7 +6466,7 @@ function limparFiltrosClass() {
 function deletarClass(id) {
     if (perfilAtual !== 'admin') return;
     if (confirm('Tem certeza que deseja deletar este registro?')) {
-        classificacoes = classificacoes.filter(r => r.id !== id);
+        classificacoes = classificacoes.filter(r => String(r.id) !== String(id));
         dbDeleteOne('classificacoes', id).then(() => _registrarAuditoria('DELETE', 'classificacoes', id, {}).catch(() => {})).catch(e => { sgqToast('Erro ao excluir classificação: ' + e.message, 'error'); });
         exibirTabelaClass(); mostrarSucessoClass('✓ Registro deletado!');
     }
@@ -6490,7 +6493,7 @@ function abrirModalCadastroMP() {
 function abrirModalEdicaoMP(id) {
     if (perfilAtual !== 'admin') return;
     idEdicaoMP = id;
-    const r = materiasPrimas.find(x => x.id === id);
+    const r = materiasPrimas.find(x => String(x.id) === String(id));
     if (!r) return;
     document.getElementById('modalTituloMP').textContent          = 'EDITAR MATÉRIA PRIMA';
     document.getElementById('cadIdMP').value                      = id;
@@ -6583,7 +6586,7 @@ function salvarMateriaPrima(event) {
         obs:            (document.getElementById('cadObsMP').value || '').trim()
     };
     if (idEdicaoMP) {
-        const idx = materiasPrimas.findIndex(x => x.id === idEdicaoMP);
+        const idx = materiasPrimas.findIndex(x => String(x.id) === String(idEdicaoMP));
         if (idx !== -1) { materiasPrimas[idx] = r; mostrarSucessoMP('✓ MATÉRIA PRIMA ATUALIZADA COM SUCESSO!'); }
     } else {
         materiasPrimas.push(r); mostrarSucessoMP('✓ MATÉRIA PRIMA SALVA COM SUCESSO!');
@@ -6662,7 +6665,7 @@ function limparFiltrosMP() {
 function deletarMP(id) {
     if (perfilAtual !== 'admin') return;
     if (confirm('TEM CERTEZA QUE DESEJA DELETAR ESTE REGISTRO?')) {
-        materiasPrimas = materiasPrimas.filter(r => r.id !== id);
+        materiasPrimas = materiasPrimas.filter(r => String(r.id) !== String(id));
         dbDeleteOne('materias_primas', id).then(() => _registrarAuditoria('DELETE', 'materias_primas', id, {}).catch(() => {})).catch(e => { sgqToast('Erro ao excluir Matéria Prima: ' + e.message, 'error'); });
         exibirTabelaMP(); mostrarSucessoMP('✓ REGISTRO DELETADO!');
     }
@@ -9165,7 +9168,7 @@ function abrirModalEMP() {
 }
 
 function editarEntradaMP(id) {
-    const entrada = entradasMP.find(e => e.id === id);
+    const entrada = entradasMP.find(e => String(e.id) === String(id));
     if (!entrada) return;
     _empEditandoId = id;
     document.getElementById('modalTituloEMP').textContent = '✏️ Editar Entrada de Matéria Prima';
@@ -9256,14 +9259,14 @@ function mostrarMsgEMP(tipo, msg) {
 
 async function excluirEntradaMP(id) {
     if (!confirm('Excluir este registro de entrada?')) return;
-    entradasMP = entradasMP.filter(e => e.id !== id);
+    entradasMP = entradasMP.filter(e => String(e.id) !== String(id));
     try { await dbDeleteOne('entradas_mp', id); } catch(e){}
     exibirTabelaEMP();
     mostrarMsgEMP('sucesso','✅ Entrada excluída.');
 }
 
 function abrirModalAprovarEMP(id) {
-    const entrada = entradasMP.find(e => e.id === id);
+    const entrada = entradasMP.find(e => String(e.id) === String(id));
     if (!entrada) return;
     _empAprovarId = id;
     document.getElementById('modalAprovarNF').textContent = entrada.nf || '-';
@@ -13977,7 +13980,7 @@ async function excluirNC(id) {
     try {
         const { error } = await _sbClient.from('nao_conformidades').delete().eq('id', id);
         if (error) throw error;
-        listaNC = listaNC.filter(n => n.id !== id);
+        listaNC = listaNC.filter(n => String(n.id) !== String(id));
         salvarStorageNC();
         renderizarNC(listaNC);
         sgqToast('🗑️ NC excluída do servidor.', 'success');
@@ -14178,7 +14181,7 @@ async function excluirDev(id) {
     try {
         const { error } = await _sbClient.from('devolucoes').delete().eq('id', id);
         if (error) throw error;
-        listaDev = listaDev.filter(d => d.id !== id);
+        listaDev = listaDev.filter(d => String(d.id) !== String(id));
         salvarStorageNC();
         renderizarDev(listaDev);
         sgqToast('🗑️ Devolução excluída do servidor.', 'success');
@@ -15929,7 +15932,7 @@ async function _reagRegistrarComoMateriais(itens, fornecedor, chave) {
 }
 
 function reagVerNota(id) {
-    const n = _reagNotas.find(x => x.id === id);
+    const n = _reagNotas.find(x => String(x.id) === String(id));
     if (!n) return;
 
     const custoTotal = n.valorTotalNF;
@@ -15994,7 +15997,7 @@ function reagVerNota(id) {
 }
 
 async function reagExcluirNota(id) {
-    const n = _reagNotas.find(x => x.id === id);
+    const n = _reagNotas.find(x => String(x.id) === String(id));
     if (!n) return;
 
     // Montar lista de produtos para o confirm
@@ -16047,7 +16050,7 @@ ${listaProds}
         }
 
         // 3) Remover do estado local
-        _reagNotas = _reagNotas.filter(x => x.id !== id);
+        _reagNotas = _reagNotas.filter(x => String(x.id) !== String(id));
 
         reagRenderTabela();
         reagRenderNotas();
@@ -16077,7 +16080,7 @@ function reagAbrirModalCadastro() {
     document.getElementById('reagModalCadastro').style.display = 'flex';
 }
 function reagEditarCadastro(id) {
-    const r = _reagentes.find(x => x.id === id);
+    const r = _reagentes.find(x => String(x.id) === String(id));
     if (!r) return;
     _reagEditId = id;
     document.getElementById('reagCadTitulo').textContent      = '✏️ Editar Reagente';
@@ -16253,7 +16256,7 @@ async function reagExcluir(id) {
     try {
         const { error } = await _sbClient.from('produtos_quimicos').delete().eq('id', id);
         if (error) throw error;
-        _reagentes = _reagentes.filter(x => x.id !== id);
+        _reagentes = _reagentes.filter(x => String(x.id) !== String(id));
         reagRenderTabela();
         reagAtualizarCards();
         reagVerificarAlertas();
@@ -16263,7 +16266,7 @@ async function reagExcluir(id) {
 
 // ── Modal Consumo / Ajuste ────────────────────────────────────────
 function reagAbrirConsumo(id) {
-    const r = _reagentes.find(x => x.id === id);
+    const r = _reagentes.find(x => String(x.id) === String(id));
     if (!r) return;
     document.getElementById('reagConsumoId').value      = id;
     document.getElementById('reagConsumoNome').textContent = r.nome + ' — Estoque atual: ' + r.qtdAtual + ' ' + r.unidade;
@@ -16278,7 +16281,7 @@ async function reagSalvarConsumo() {
     const qtd  = parseFloat(document.getElementById('reagConsumoQtd').value) || 0;
     const obs  = document.getElementById('reagConsumoObs').value.trim();
     if (!qtd) { sgqToast('⚠️ Informe a quantidade.', 'warning'); return; }
-    const r = _reagentes.find(x => x.id === id);
+    const r = _reagentes.find(x => String(x.id) === String(id));
     if (!r) return;
 
     const novaQtd = (tipo === 'consumo' || tipo === 'descarte')
