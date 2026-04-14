@@ -1196,9 +1196,9 @@
         .capa-kpi-label { font-size: 9px; font-weight: 800; letter-spacing: 1.8px; text-transform: uppercase; color: #b0b0ae; font-family: 'Montserrat', Arial, sans-serif; }
         .capa-kpi-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
         .capa-kpi-value { font-size: 38px; font-weight: 900; line-height: 1; font-family: 'Montserrat', Arial, sans-serif; letter-spacing: -1px; margin-bottom: 6px; }
-        .capa-kpi-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-        .capa-kpi-sub { font-size: 10px; font-weight: 600; font-family: 'Montserrat', Arial, sans-serif; }
-        .capa-kpi-badge { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 20px; font-family: 'Montserrat', Arial, sans-serif; letter-spacing: .3px; }
+        .capa-kpi-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+        .capa-kpi-sub { font-size: 10px; font-weight: 600; font-family: 'Montserrat', Arial, sans-serif; flex-shrink: 0; }
+        .capa-kpi-badge { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 20px; font-family: 'Montserrat', Arial, sans-serif; letter-spacing: .3px; white-space: nowrap; flex-shrink: 0; }
         .capa-kpi-up   { color: #27ae60; }
         .capa-kpi-down { color: #c0392b; }
         .capa-kpi-bar  { height: 6px; background: #f0f0ee; border-radius: 6px; overflow: hidden; }
@@ -1560,10 +1560,11 @@
                         </div>
                         <div style="display:flex;align-items:baseline;gap:4px;">
                             <div class="capa-kpi-value" id="kpiConfClassVal" style="color:#e67e22;">—</div>
-                            <span class="capa-kpi-value" id="kpiConfClassPct" style="color:#e67e22;font-size:16px;font-weight:700;">—</span>
+                            <span class="kpi-trend" id="kpiConfClassTrend"></span>
                         </div>
                         <div class="capa-kpi-row">
                             <div class="capa-kpi-sub" style="color:#aaa;">Grãos dentro do limite</div>
+                            <span class="capa-kpi-badge" id="kpiConfClassP" style="background:#fef5ec;color:#e67e22;">—</span>
                         </div>
                         <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiConfClassBar" style="background:#e67e22;width:0%;"></div></div>
                         <div style="font-size:9px;color:#bbb;margin-top:4px;font-weight:600;font-family:'Montserrat',Arial,sans-serif;" id="kpiConfClassSub">—</div>
@@ -5794,13 +5795,17 @@ function atualizarKpisCapa() {
         const pctMPAnt  = totalMPAnt > 0 ? Math.round(confMPAnt / totalMPAnt * 100) : null;
         function _spMP(r) { return statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data); }
 
-        // ── Classificação ──
+        // ── Classificação — mês atual e anterior ──
         const classMes = (classificacoes||[]).filter(isMesAtual);
+        const classMesAnt = (classificacoes||[]).filter(isMesAnt);
         const confClass   = classMes.filter(r => _isConf(_spClass(r))).length;
         const nconfClass  = classMes.filter(r => _isNConf(_spClass(r))).length;
         const totalClass  = classMes.filter(r => _temParam(_spClass(r))).length;
         const semParamClass = classMes.filter(r => _semParam(_spClass(r))).length;
         const pctClass    = totalClass > 0 ? Math.round(confClass / totalClass * 100) : 0;
+        const confClassAnt = classMesAnt.filter(r => _isConf(_spClass(r))).length;
+        const totalClassAnt = classMesAnt.filter(r => _temParam(_spClass(r))).length;
+        const pctClassAnt  = totalClassAnt > 0 ? Math.round(confClassAnt / totalClassAnt * 100) : null;
         function _spClass(r) { return statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data); }
 
         // ── Geral (todos os módulos) ──
@@ -5857,9 +5862,10 @@ function atualizarKpisCapa() {
         // ── Módulo Classificação ──
         const corClass = corConf(pctClass);
         const kpiClassV = document.getElementById('kpiConfClassVal'); if(kpiClassV) { kpiClassV.textContent = pctClass + '%'; kpiClassV.style.color = corClass; }
-        const kpiClassPct = document.getElementById('kpiConfClassPct'); if(kpiClassPct) { kpiClassPct.textContent = confClass + '/' + totalClass; kpiClassPct.style.color = corClass; }
+        const kpiClassT = document.getElementById('kpiConfClassTrend'); if(kpiClassT) kpiClassT.innerHTML = tendencia(pctClass, pctClassAnt);
         const barClass = document.getElementById('kpiConfClassBar'); if(barClass) { barClass.style.width = pctClass + '%'; barClass.style.background = corClass; }
         const kpiClassSub = document.getElementById('kpiConfClassSub'); if(kpiClassSub) kpiClassSub.textContent = nconfClass + ' NC detectadas em ' + nomeMes;
+        const kpiClassP = document.getElementById('kpiConfClassP'); if(kpiClassP) { kpiClassP.textContent = confClass + ' de ' + totalClass + ' grãos'; kpiClassP.style.background = corClass + '22'; kpiClassP.style.color = corClass; }
 
         // ── Módulo S/ Parâmetro ──
         const kpiSPV = document.getElementById('kpiSemParamVal'); if(kpiSPV) kpiSPV.textContent = semParamTotal;
