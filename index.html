@@ -6009,7 +6009,8 @@ function abrirModalEdicaoProd(id) {
     const _uProd = USUARIOS[usuarioAtual] || {};
     let _prProd = _uProd.perms || {};
     if (typeof _prProd === 'string') { try { _prProd = JSON.parse(_prProd); } catch(e) { _prProd = {}; } }
-    if (perfilAtual !== 'admin' && !_prProd.cadastro) return;
+    const _podeProd = perfilAtual === 'admin' || !!_prProd.cadastro;
+    if (!_podeProd) return;
     idEdicaoProd = id;
     const r = producoes.find(x => x.id === id);
     if (!r) return;
@@ -6183,7 +6184,7 @@ function exibirTabelaProd() {
     const _uExib = USUARIOS[usuarioAtual] || {};
     let _prExib = _uExib.perms || {};
     if (typeof _prExib === 'string') { try { _prExib = JSON.parse(_prExib); } catch(e) { _prExib = {}; } }
-    const podeCadastroProd = isAdmin || _prExib.cadastro;
+    const podeCadastroProd = isAdmin || !!_prExib.cadastro;
     tbody.innerHTML = filtrados.map(r => {
         const status = statusPorParametros(r, 'prod', r.racao, CAMPOS_PROD, r.data);
         const acaoTd = podeCadastroProd
