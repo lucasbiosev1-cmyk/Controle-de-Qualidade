@@ -5813,6 +5813,11 @@ function atualizarKpisCapa() {
         const totalTudo  = totalProd + totalMP + totalClass;
         const semParamTotal = semParamProd + semParamMP + semParamClass;
         const pctGeral   = totalTudo > 0 ? Math.round(confTotal / totalTudo * 100) : 0;
+        const confTotalAnt = prodsMesAnt.filter(r => _isConf(_spProd(r))).length
+                           + mpMesAnt.filter(r => _isConf(_spMP(r))).length
+                           + classMesAnt.filter(r => _isConf(_spClass(r))).length;
+        const totalTudoAnt = totalProdAnt + totalMPAnt + totalClassAnt;
+        const pctGeralAnt  = totalTudoAnt > 0 ? Math.round(confTotalAnt / totalTudoAnt * 100) : null;
 
         // ── NC abertas (aba Não Conformidade) ──
         const ncAbertas  = (listaNC||[]).filter(n => n.status === 'Pendente' || n.status === 'Em Análise');
@@ -5874,6 +5879,7 @@ function atualizarKpisCapa() {
         // ── Módulo Geral ──
         const corGeral = corConf(pctGeral);
         const kpiGV = document.getElementById('kpiConfGeralVal'); if(kpiGV) { kpiGV.textContent = pctGeral + '%'; kpiGV.style.color = corGeral; }
+        const kpiGT = document.getElementById('kpiConfGeralTrend'); if(kpiGT) kpiGT.innerHTML = tendencia(pctGeral, pctGeralAnt);
         const barG = document.getElementById('kpiConfGeralBar'); if(barG) { barG.style.width = pctGeral + '%'; barG.style.background = corGeral; }
         const kpiGSub = document.getElementById('kpiConfGeralSub'); if(kpiGSub) { kpiGSub.textContent = confTotal + ' de ' + totalTudo + ' lotes'; kpiGSub.style.background = corGeral + '22'; kpiGSub.style.color = corGeral; }
 
