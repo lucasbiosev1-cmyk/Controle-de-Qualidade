@@ -10832,6 +10832,9 @@ function statusPorParametros(registro, modulo, racaoOuProduto, campos, dataRegis
     campos.forEach(c => {
         const cfg = getParam(modulo, chaveKey, c.key, dataRegistro || null);
         if (!cfg || !cfg.ativo) return; // não marcado como ativo → ignora
+        // Ativo mas sem limite real (min=0 e max≥9999) → ignora
+        const semLimiteReal = (cfg.min === 0) && (cfg.max >= 9999);
+        if (semLimiteReal) return;
         // Campo calculado: avariados totais
         const v = c.calculado && c.key === 'avariados'
             ? getAvariados(registro)
@@ -10860,8 +10863,9 @@ function estiloFora(valor, modulo, racaoOuProduto, campo, dataRegistro) {
     // Para campo calculado avariados, o valor já foi calculado pelo chamador
     const v = parseFloat(valor);
     if (isNaN(v)) return '';
-    const semMin = cfg.min === 0;
-    const semMax = cfg.max >= 9999;
+    const semMin = cfg.min === 0 || cfg.min === null;
+    const semMax = cfg.max >= 9999 || cfg.max === null;
+    if (semMin && semMax) return ''; // sem limite real → sai antes de qualquer pintura
     const foraMin = !semMin && v < cfg.min;
     const foraMax = !semMax && v > cfg.max;
     if (foraMin || foraMax) return ' class="td-fora"';
