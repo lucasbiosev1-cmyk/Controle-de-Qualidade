@@ -6412,8 +6412,8 @@ function exibirTabelaClass() {
             <td${estiloFora(avariado,'class',r.produto,'avariados',r.data)} style="font-weight:bold;white-space:nowrap;">${fmtN(avariado,2)}</td>
             <td${estiloFora(r.umidade,'class',r.produto,'umidade',r.data)}>${fmtN(r.umidade,2)}</td>
             <td${estiloFora(r.densidade,'class',r.produto,'densidade',r.data)}>${fmtN(r.densidade,2)}</td>
-            <td style="padding:4px;text-align:center;${getMicoStyle(getMicoNivel(r.aflatoxinas??0,'afla'))}">${r.aflatoxinas!=null&&r.aflatoxinas>0?r.aflatoxinas.toFixed(2):'—'}</td>
-            <td style="padding:4px;text-align:center;${getMicoStyle(getMicoNivel(r.fumonisinas??0,'fumo'))}">${r.fumonisinas!=null&&r.fumonisinas>0?r.fumonisinas.toFixed(2):'—'}</td>
+            <td style="padding:4px;text-align:center;${getMicoStyle(getMicoNivel(r.aflatoxinas??0,'afla'))}">${r.aflatoxinas!=null&&r.aflatoxinas>0?r.aflatoxinas.toFixed(2):'-'}</td>
+            <td style="padding:4px;text-align:center;${getMicoStyle(getMicoNivel(r.fumonisinas??0,'fumo'))}">${r.fumonisinas!=null&&r.fumonisinas>0?r.fumonisinas.toFixed(2):'-'}</td>
             <td${estiloFora(r.zearalenona??0,'class',r.produto,'zearalenona',r.data)}>${fmtN(r.zearalenona,2)}</td>
             <td${estiloFora(r.don??0,'class',r.produto,'don',r.data)}>${fmtN(r.don,2)}</td>
             <td style="text-transform:uppercase;">${r.local}</td><td>${status}</td>${acaoTd}
@@ -7834,8 +7834,8 @@ function renderRCTabelaProd(dados) {
             <td style="padding:7px;text-align:center;">${f('impureza')}</td>
             <td style="padding:7px;text-align:center;">${f('umidade',2)}</td>
             <td style="padding:7px;text-align:center;">${med(dd.map(r=>r.densidade||0)).toFixed(0)}</td>
-            <td style="padding:7px;text-align:center;">${med(dd.map(r=>r.aflatoxinas||0)).toFixed(2)}</td>
-            <td style="padding:7px;text-align:center;">${med(dd.map(r=>r.fumonisinas||0)).toFixed(0)}</td>
+            <td style="padding:7px;text-align:center;">${(()=>{const v=med(dd.map(r=>r.aflatoxinas||0));return v>0?v.toFixed(2):'-';})()}</td>
+            <td style="padding:7px;text-align:center;">${(()=>{const v=med(dd.map(r=>r.fumonisinas||0));return v>0?v.toFixed(0):'-';})()}</td>
             <td style="padding:7px;text-align:center;">${status}</td>
         </tr>`;
     }).join('');
@@ -7883,8 +7883,8 @@ function renderRCTabelaDetalhe(dados) {
             ${tdDefeito('impureza')}
             <td${estiloFora(r.umidade||0,'class',r.produto,'umidade',r.data)} style="padding:4px;text-align:center;">${n('umidade',2)}</td>
             <td${estiloFora(r.densidade||0,'class',r.produto,'densidade',r.data)} style="padding:4px;text-align:center;">${(r.densidade||0).toFixed(0)}</td>
-            <td style="padding:4px;text-align:center;">${(r.aflatoxinas||0).toFixed(2)}</td>
-            <td style="padding:4px;text-align:center;">${(r.fumonisinas||0).toFixed(0)}</td>
+            <td style="padding:4px;text-align:center;">${(r.aflatoxinas!=null&&r.aflatoxinas>0)?r.aflatoxinas.toFixed(2):'-'}</td>
+            <td style="padding:4px;text-align:center;">${(r.fumonisinas!=null&&r.fumonisinas>0)?r.fumonisinas.toFixed(0):'-'}</td>
             <td style="padding:4px;text-align:center;">${(r.zearalenona||0).toFixed(2)}</td>
             <td style="padding:4px;text-align:center;">${(r.don||0).toFixed(2)}</td>
             <td style="padding:4px 6px;text-transform:uppercase;">${r.local||''}</td>
@@ -10383,10 +10383,12 @@ function atualizarParametros() {
     modal._racaKey  = racaKey;
     modal._vigencia = vigencia;
     modal._campos   = {};
-    catAtiva.querySelectorAll('[id^="pinput_"]').forEach(el => {
-        const parts = el.id.split('_');
-        const tipo  = parts[parts.length-1];
-        const camp  = parts[parts.length-2];
+    const _prefixo1 = `pinput_${modulo}_`;
+    catAtiva.querySelectorAll(`[id^="${_prefixo1}"]`).forEach(el => {
+        const _sem1  = el.id.slice(_prefixo1.length);
+        const _last1 = _sem1.lastIndexOf('_');
+        const tipo   = _sem1.slice(_last1 + 1);
+        const camp   = _sem1.slice(0, _last1);
         if (!modal._campos[camp]) modal._campos[camp] = {min:0,max:9999,ativo:false};
         if (tipo==='ativo') modal._campos[camp].ativo = el.checked;
         else if (tipo==='max') modal._campos[camp][tipo] = (el.value===''||el.value===null) ? 9999 : (parseFloat(el.value) ?? 9999);
@@ -10830,6 +10832,9 @@ function statusPorParametros(registro, modulo, racaoOuProduto, campos, dataRegis
     campos.forEach(c => {
         const cfg = getParam(modulo, chaveKey, c.key, dataRegistro || null);
         if (!cfg || !cfg.ativo) return; // não marcado como ativo → ignora
+        // Ativo mas sem limite real (min=0 e max≥9999) → ignora
+        const semLimiteReal = (cfg.min === 0) && (cfg.max >= 9999);
+        if (semLimiteReal) return;
         // Campo calculado: avariados totais
         const v = c.calculado && c.key === 'avariados'
             ? getAvariados(registro)
@@ -10858,8 +10863,9 @@ function estiloFora(valor, modulo, racaoOuProduto, campo, dataRegistro) {
     // Para campo calculado avariados, o valor já foi calculado pelo chamador
     const v = parseFloat(valor);
     if (isNaN(v)) return '';
-    const semMin = cfg.min === 0;
-    const semMax = cfg.max >= 9999;
+    const semMin = cfg.min === 0 || cfg.min === null;
+    const semMax = cfg.max >= 9999 || cfg.max === null;
+    if (semMin && semMax) return ''; // sem limite real → sai antes de qualquer pintura
     const foraMin = !semMin && v < cfg.min;
     const foraMax = !semMax && v > cfg.max;
     if (foraMin || foraMax) return ' class="td-fora"';
@@ -11322,8 +11328,8 @@ function gerarTabelaClass(rows, compacto, destNC) {
             <td${cl(r.impureza,'impureza')}>${(r.impureza||0).toFixed(2)}</td>
             <td${cl(r.umidade,'umidade')}>${(r.umidade||0).toFixed(2)}</td>
             <td${cl(r.densidade,'densidade')}>${(r.densidade||0).toFixed(0)}</td>
-            <td${aflatoxCl}>${(r.aflatoxinas||0).toFixed(2)}</td>
-            <td>${(r.fumonisinas||0).toFixed(2)}</td>
+            <td${aflatoxCl}>${(r.aflatoxinas!=null&&r.aflatoxinas>0)?r.aflatoxinas.toFixed(2):'-'}</td>
+            <td>${(r.fumonisinas!=null&&r.fumonisinas>0)?r.fumonisinas.toFixed(2):'-'}</td>
             <td class="left">${r.local||'-'}</td>
             <td style="text-align:center;white-space:nowrap;">${status}</td>
         </tr>`;
@@ -12369,10 +12375,10 @@ function renderRCMicotoxinas(dados, di, df) {
             <td style="padding:4px 6px;white-space:nowrap;text-align:center;">${r.fornecedor||''}</td>
             <td style="padding:4px;text-align:center;">${r.nf||''}</td>
             <td style="padding:4px 6px;text-transform:uppercase;text-align:center;">${r.local||'—'}</td>
-            <td style="padding:4px;text-align:center;${aflaCol}">${afla>0?afla.toFixed(2):'—'}</td>
-            <td style="padding:4px;text-align:center;${fumoCol}">${fumo>0?fumo.toFixed(0):'—'}</td>
-            <td style="padding:4px;text-align:center;">${(r.zearalenona||0)>0?(r.zearalenona).toFixed(2):'—'}</td>
-            <td style="padding:4px;text-align:center;">${(r.don||0)>0?(r.don).toFixed(2):'—'}</td>
+            <td style="padding:4px;text-align:center;${aflaCol}">${afla>0?afla.toFixed(2):'-'}</td>
+            <td style="padding:4px;text-align:center;${fumoCol}">${fumo>0?fumo.toFixed(0):'-'}</td>
+            <td style="padding:4px;text-align:center;">${(r.zearalenona||0)>0?(r.zearalenona).toFixed(2):'-'}</td>
+            <td style="padding:4px;text-align:center;">${(r.don||0)>0?(r.don).toFixed(2):'-'}</td>
             <td style="padding:4px;text-align:center;">${getRisco(afla,fumo, r.produto)}</td>
         </tr>`;
     }).join('') : '<tr><td colspan="11" style="text-align:center;padding:16px;color:#999;">Nenhum registro com micotoxinas no período</td></tr>';
@@ -14954,10 +14960,12 @@ async function salvarParametros() {
     const vigencia = tempTudo ? '2000-01-01' : vigenciaInput;
 
     const campos = {};
-    catAtiva.querySelectorAll('[id^="pinput_"]').forEach(el => {
-        const parts = el.id.split('_');
-        const tipo  = parts[parts.length-1];
-        const camp  = parts[parts.length-2];
+    const _prefixo2 = `pinput_${modulo}_`;
+    catAtiva.querySelectorAll(`[id^="${_prefixo2}"]`).forEach(el => {
+        const _sem2  = el.id.slice(_prefixo2.length);
+        const _last2 = _sem2.lastIndexOf('_');
+        const tipo   = _sem2.slice(_last2 + 1);
+        const camp   = _sem2.slice(0, _last2);
         if (!campos[camp]) campos[camp] = {min:0,max:9999,ativo:false};
         if (tipo==='ativo') campos[camp].ativo = el.checked;
         else if (tipo==='max') campos[camp][tipo] = (el.value===''||el.value===null) ? 9999 : (parseFloat(el.value) ?? 9999);
@@ -18734,7 +18742,8 @@ Use linguagem executiva clara e técnica. Cite valores exatos dos dados. Inclua 
         const _kpiComp = (atual, ant, lbl, cor, menorMelhor=false) => {
             const seta = temComparacao ? ` <span style="font-size:14px;">${_cmpSeta(atual,ant,menorMelhor)}</span>` : '';
             const antText = (temComparacao && ant !== null) ? `<div style="font-size:9px;color:#aaa;margin-top:2px;">Ant: ${typeof ant==='number'?ant.toFixed(ant%1===0?0:2):ant}</div>` : '';
-            return `<div class="rml-kpi"><div class="rml-kpi-val" style="color:${cor};">${typeof atual==='number'?atual:atual}${seta}</div><div class="rml-kpi-lbl">${lbl}</div>${antText}</div>`;
+            const atualDisplay = atual === null || atual === undefined ? '-' : (typeof atual==='number'?atual:atual);
+            return `<div class="rml-kpi"><div class="rml-kpi-val" style="color:${cor};">${atualDisplay}${seta}</div><div class="rml-kpi-lbl">${lbl}</div>${antText}</div>`;
         };
 
         if (_usaProd)  _kpiItems.push(_kpiComp(totalProd, prodAnt.length, 'Lotes Produção', '#0a1e7f'));
