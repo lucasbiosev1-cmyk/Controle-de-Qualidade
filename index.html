@@ -13355,10 +13355,6 @@ async function executarCorrecaoDefeitos() {
                         <input type="date" id="nc-prazo">
                     </div>
                     <div class="nc-form-group nc-full">
-                        <label>Causa Raiz</label>
-                        <textarea id="nc-causa-raiz" rows="2" placeholder="Descreva a análise da causa raiz..."></textarea>
-                    </div>
-                    <div class="nc-form-group nc-full">
                         <label>Ação Corretiva / Preventiva Proposta</label>
                         <textarea id="nc-acao-corretiva" rows="2" placeholder="Descreva a ação corretiva e/ou preventiva a ser implementada..."></textarea>
                     </div>
@@ -13652,12 +13648,44 @@ let listaNC  = JSON.parse(ncStorage.getItem('sgq_nc')  || '[]');
 let listaDev = JSON.parse(ncStorage.getItem('sgq_dev') || '[]');
 let ncIdSeq  = parseInt(ncStorage.getItem('sgq_nc_seq')  || '1');
 let devIdSeq = parseInt(ncStorage.getItem('sgq_dev_seq') || '1');
+// Sequência por fornecedor: { "FORNECEDOR_A": 3, "FORNECEDOR_B": 1, ... }
+let ncSeqPorFornecedor = JSON.parse(ncStorage.getItem('sgq_nc_seq_forn') || '{}');
 
 function salvarStorageNC() {
     ncStorage.setItem('sgq_nc',      JSON.stringify(listaNC));
     ncStorage.setItem('sgq_dev',     JSON.stringify(listaDev));
     ncStorage.setItem('sgq_nc_seq',  String(ncIdSeq));
     ncStorage.setItem('sgq_dev_seq', String(devIdSeq));
+    ncStorage.setItem('sgq_nc_seq_forn', JSON.stringify(ncSeqPorFornecedor));
+}
+
+// Gera prefixo curto do fornecedor (máx 6 chars, sem espaços/especiais)
+function _ncFornPrefixo(fornecedor) {
+    if (!fornecedor || !fornecedor.trim()) return 'GERAL';
+    return fornecedor.trim().toUpperCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^A-Z0-9]/g, '')
+        .substring(0, 6) || 'GERAL';
+}
+
+// Próximo número para o fornecedor
+function _ncProximoNumero(fornecedor) {
+    const pref = _ncFornPrefixo(fornecedor);
+    const seq  = (ncSeqPorFornecedor[pref] || 0) + 1;
+    return `NC-${pref}-${String(seq).padStart(4, '0')}`;
+}
+
+// Atualiza sequência após salvar
+function _ncRegistrarSequencia(numero) {
+    // Extrai prefixo do número gerado ex: NC-AGRONOR-0001
+    const parts = numero.split('-');
+    if (parts.length >= 3) {
+        const pref = parts[1];
+        const num  = parseInt(parts[2]) || 1;
+        if (!ncSeqPorFornecedor[pref] || num > ncSeqPorFornecedor[pref]) {
+            ncSeqPorFornecedor[pref] = num;
+        }
+    }
 }
 
 // ===== SUB-ABA NC/DEV =====
@@ -13720,65 +13748,91 @@ function imprimirRelatorioNC(tipo) {
             : '<p style="color:#95a5a6;font-size:11px;">Nenhuma evidência fotográfica registrada.</p>';
 
         printArea.innerHTML = `
-        <div class="nc-report-header">
-            <div style="font-size:18px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:#fff;margin-bottom:2px;">AGRONOR ALIMENTOS</div>
-            <h1>🏭 Sistema de Gestão da Qualidade — SGQ</h1>
-            <div class="nc-report-meta">RELATÓRIO DE NÃO CONFORMIDADE &nbsp;|&nbsp; Emitido em: ${new Date().toLocaleString('pt-BR')}</div>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <span style="font-size:22px;font-weight:900;color:#c0392b;">${num}</span>
-            <span style="padding:5px 16px;border-radius:20px;background:${gravColor};color:white;font-weight:bold;font-size:13px;">⚠️ ${grav}</span>
-            <span style="font-size:12px;color:#666;">Status: <strong>${status}</strong></span>
-        </div>
+        <style>
+        .ncr-wrap { font-family: Arial, sans-serif; font-size: 11px; color: #2c3e50; max-width: 100%; }
+        .ncr-header { background: linear-gradient(to right, #c0392b, #e74c3c); color: #fff; padding: 10px 14px; border-radius: 4px 4px 0 0; display: flex; justify-content: space-between; align-items: center; }
+        .ncr-header-left { }
+        .ncr-header-empresa { font-size: 15px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
+        .ncr-header-sub { font-size: 9px; opacity: .85; letter-spacing: 1px; text-transform: uppercase; margin-top: 1px; }
+        .ncr-header-right { text-align: right; }
+        .ncr-header-num { font-size: 20px; font-weight: 900; }
+        .ncr-header-emissao { font-size: 9px; opacity: .8; margin-top: 2px; }
+        .ncr-badge-grav { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 10px; font-weight: 800; color: #fff; margin-top: 4px; }
+        .ncr-body { border: 1px solid #ddd; border-top: none; border-radius: 0 0 4px 4px; padding: 10px 14px; }
+        .ncr-row { display: grid; gap: 0; margin-bottom: 6px; }
+        .ncr-row-2 { grid-template-columns: 1fr 1fr; }
+        .ncr-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .ncr-row-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+        .ncr-field { border: 1px solid #e0e0e0; padding: 4px 7px; background: #fafafa; }
+        .ncr-field label { display: block; font-size: 8px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 1px; }
+        .ncr-field span { font-size: 11px; font-weight: 600; color: #2c3e50; }
+        .ncr-section-title { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .8px; color: #fff; background: #34495e; padding: 3px 8px; margin: 8px 0 4px; border-radius: 2px; }
+        .ncr-desc { font-size: 11px; color: #2c3e50; line-height: 1.5; padding: 6px 8px; background: #fdf2f2; border-left: 3px solid #e74c3c; border-radius: 2px; margin-bottom: 6px; }
+        .ncr-acao { font-size: 11px; color: #2c3e50; line-height: 1.5; padding: 6px 8px; background: #eafaf1; border-left: 3px solid #27ae60; border-radius: 2px; margin-bottom: 6px; }
+        .ncr-corretiva { font-size: 11px; color: #2c3e50; line-height: 1.5; padding: 6px 8px; background: #f8f4ff; border-left: 3px solid #8e44ad; border-radius: 2px; margin-bottom: 6px; }
+        .ncr-causas { font-size: 11px; padding: 4px 8px; background: #fff8e1; border-left: 3px solid #f39c12; border-radius: 2px; margin-bottom: 6px; }
+        .ncr-sign-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 14px; padding-top: 8px; border-top: 1px solid #ddd; }
+        .ncr-sign-block { text-align: center; }
+        .ncr-sign-line { border-top: 1px solid #555; margin: 18px 8px 3px; }
+        .ncr-sign-label { font-size: 10px; font-weight: 700; }
+        .ncr-sign-sub { font-size: 8px; color: #888; }
+        @media print { @page { size: A4; margin: 10mm; } body { margin: 0; } }
+        </style>
+        <div class="ncr-wrap">
+          <div class="ncr-header">
+            <div class="ncr-header-left">
+              <div class="ncr-header-empresa">AGRONOR ALIMENTOS</div>
+              <div class="ncr-header-sub">Sistema de Gestão da Qualidade — SGQ</div>
+              <div class="ncr-header-sub" style="margin-top:3px;">RELATÓRIO DE NÃO CONFORMIDADE</div>
+            </div>
+            <div class="ncr-header-right">
+              <div class="ncr-header-num">${num}</div>
+              <div><span class="ncr-badge-grav" style="background:${gravColor};">${grav}</span></div>
+              <div class="ncr-header-emissao">Emitido: ${new Date().toLocaleString('pt-BR')}</div>
+              <div class="ncr-header-emissao">Status: <strong style="color:#fff;">${status}</strong></div>
+            </div>
+          </div>
+          <div class="ncr-body">
+            <div class="ncr-section-title">1. Identificação</div>
+            <div class="ncr-row ncr-row-4">
+              <div class="ncr-field"><label>Data de Abertura</label><span>${data}</span></div>
+              <div class="ncr-field"><label>Tipo de NC</label><span>${tipoNC}</span></div>
+              <div class="ncr-field"><label>Gravidade</label><span>${grav}</span></div>
+              <div class="ncr-field"><label>Local de Detecção</label><span>${local}</span></div>
+            </div>
+            <div class="ncr-row ncr-row-4">
+              <div class="ncr-field"><label>Fornecedor / Origem</label><span>${forn}</span></div>
+              <div class="ncr-field"><label>Produto / Item</label><span>${produto}</span></div>
+              <div class="ncr-field"><label>Lote / Nº NF</label><span>${lote}</span></div>
+              <div class="ncr-field"><label>Causas Marcadas</label><span style="font-size:10px;">${causas}</span></div>
+            </div>
 
-        <div class="nc-report-section-title">1. Identificação</div>
-        <div class="nc-report-field">
-            <div class="nc-report-field-item"><label>Data de Abertura</label><span>${data}</span></div>
-            <div class="nc-report-field-item"><label>Tipo de NC</label><span>${tipoNC}</span></div>
-            <div class="nc-report-field-item"><label>Produto / Item</label><span>${produto}</span></div>
-            <div class="nc-report-field-item"><label>Lote / Nº NF</label><span>${lote}</span></div>
-            <div class="nc-report-field-item"><label>Fornecedor / Origem</label><span>${forn}</span></div>
-            <div class="nc-report-field-item"><label>Local de Detecção</label><span>${local}</span></div>
-        </div>
+            <div class="ncr-section-title">2. Descrição da Não Conformidade</div>
+            <div class="ncr-desc">${desc}</div>
 
-        <div class="nc-report-section-title">2. Descrição da Não Conformidade</div>
-        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#fdf2f2;border-left:4px solid #e74c3c;border-radius:3px;margin-bottom:14px;">${desc}</p>
+            <div class="ncr-section-title">3. Ação Imediata / Disposição do Material</div>
+            <div class="ncr-row ncr-row-2" style="margin-bottom:4px;">
+              <div class="ncr-field"><label>Disposição do Material</label><span>${disp}</span></div>
+              <div class="ncr-field"><label>Responsável pela Ação</label><span>${respA}</span></div>
+            </div>
+            <div class="ncr-acao">${acaoIm}</div>
 
-        <div class="nc-report-section-title">3. Causas Identificadas</div>
-        <p style="font-size:12px;margin-bottom:14px;">${causas}</p>
+            <div class="ncr-section-title">4. Ação Corretiva / Preventiva</div>
+            <div class="ncr-row ncr-row-3" style="margin-bottom:4px;">
+              <div class="ncr-field"><label>Responsável pela Correção</label><span>${resp}</span></div>
+              <div class="ncr-field"><label>Prazo para Conclusão</label><span>${prazo}</span></div>
+              <div class="ncr-field"><label>Eficácia da Ação</label><span>${efic}</span></div>
+            </div>
+            <div class="ncr-corretiva">${acaoCor}</div>
 
-        <div class="nc-report-section-title">4. Ação Imediata / Disposição do Material</div>
-        <div class="nc-report-field">
-            <div class="nc-report-field-item"><label>Disposição do Material</label><span>${disp}</span></div>
-            <div class="nc-report-field-item"><label>Responsável pela Ação</label><span>${respA}</span></div>
-        </div>
-        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#eafaf1;border-left:4px solid #27ae60;border-radius:3px;margin-bottom:14px;">${acaoIm}</p>
+            ${obs && obs !== '-' ? `<div class="ncr-section-title">5. Observações</div><div class="ncr-causas">${obs}</div>` : ''}
 
-        <div class="nc-report-section-title">5. Análise de Causa Raiz</div>
-        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#f8f9fa;border:1px solid #ddd;border-radius:3px;margin-bottom:14px;">${cauRaiz}</p>
-
-        <div class="nc-report-section-title">6. Ação Corretiva / Preventiva</div>
-        <div class="nc-report-field" style="margin-bottom:8px;">
-            <div class="nc-report-field-item"><label>Responsável pela Correção</label><span>${resp}</span></div>
-            <div class="nc-report-field-item"><label>Prazo para Conclusão</label><span>${prazo}</span></div>
-        </div>
-        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#f8f9fa;border:1px solid #ddd;border-radius:3px;margin-bottom:14px;">${acaoCor}</p>
-
-        <div class="nc-report-section-title">7. Encerramento</div>
-        <div class="nc-report-field">
-            <div class="nc-report-field-item"><label>Data de Encerramento</label><span>${dataEnc}</span></div>
-            <div class="nc-report-field-item"><label>Eficácia da Ação</label><span>${efic}</span></div>
-        </div>
-
-        <div class="nc-report-section-title">8. Observações</div>
-        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#f8f9fa;border:1px solid #ddd;border-radius:3px;margin-bottom:14px;">${obs}</p>
-
-        ${imgsHtml}
-
-        <div class="nc-report-sign-area">
-            <div class="nc-sign-block"><div class="nc-sign-space" style="height:22px;"></div><div class="nc-sign-label" style="margin-bottom:2px;">Lucas Lima</div><div class="nc-sign-line"></div><div class="nc-sign-sub">Resp. Técnico · CRQ 04473318</div></div>
-            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Assistente</div><div class="nc-sign-sub">&nbsp;</div></div>
-            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Supervisor de Produção</div><div class="nc-sign-sub">&nbsp;</div></div>
+            <div class="ncr-sign-area">
+              <div class="ncr-sign-block"><div class="ncr-sign-line"></div><div class="ncr-sign-label">Lucas Lima</div><div class="ncr-sign-sub">Resp. Técnico · CRQ 04473318</div></div>
+              <div class="ncr-sign-block"><div class="ncr-sign-line"></div><div class="ncr-sign-label">Assistente</div><div class="ncr-sign-sub">&nbsp;</div></div>
+              <div class="ncr-sign-block"><div class="ncr-sign-line"></div><div class="ncr-sign-label">Supervisor de Produção</div><div class="ncr-sign-sub">&nbsp;</div></div>
+            </div>
+          </div>
         </div>`;
 
     } else {
@@ -13906,7 +13960,8 @@ function abrirModalNC(id = null) {
     const hoje = new Date().toISOString().slice(0,10);
     document.getElementById('nc-data').value = hoje;
     if (id === null) {
-        document.getElementById('nc-numero').value = 'NC-' + String(ncIdSeq).padStart(4, '0');
+        // Número provisório (será recalculado ao alterar fornecedor)
+        document.getElementById('nc-numero').value = 'NC-GERAL-' + String(ncIdSeq).padStart(4, '0');
         document.getElementById('modalNCTitulo').textContent = 'Nova Não Conformidade';
         document.getElementById('modalNCNumero').textContent = 'Preenchimento obrigatório dos campos marcados com *';
         document.getElementById('nc-edit-id').value = '';
@@ -13919,13 +13974,27 @@ function abrirModalNC(id = null) {
         document.getElementById('nc-edit-id').value = id;
     }
     document.getElementById('modalNC').classList.add('show');
+
+    // Atualiza número automaticamente ao digitar fornecedor (só para NCs novas)
+    const fornInput = document.getElementById('nc-fornecedor');
+    if (fornInput && !id) {
+        const _atualizarNumNC = () => {
+            const forn = fornInput.value.trim();
+            const novoNum = _ncProximoNumero(forn);
+            document.getElementById('nc-numero').value = novoNum;
+        };
+        fornInput.removeEventListener('input', fornInput._ncNumHandler);
+        fornInput._ncNumHandler = _atualizarNumNC;
+        fornInput.addEventListener('input', _atualizarNumNC);
+        _atualizarNumNC(); // atualiza já na abertura
+    }
 }
 
 function fecharModalNC() { document.getElementById('modalNC').classList.remove('show'); }
 
 function limparFormNC() {
     ['nc-numero','nc-data','nc-produto','nc-lote','nc-qtd','nc-fornecedor','nc-placa',
-     'nc-descricao','nc-acao-imediata','nc-causa-raiz','nc-acao-corretiva',
+     'nc-descricao','nc-acao-imediata','nc-acao-corretiva',
      'nc-responsavel','nc-resp-acao','nc-prazo','nc-data-enc','nc-obs','nc-edit-id']
         .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
     ['nc-tipo','nc-gravidade','nc-local','nc-disposicao','nc-status','nc-eficacia']
@@ -13939,10 +14008,10 @@ function limparFormNC() {
 function preencherFormNC(nc) {
     const ids = ['nc-numero','nc-data','nc-tipo','nc-gravidade','nc-produto','nc-lote','nc-fornecedor','nc-placa',
                  'nc-local','nc-descricao','nc-disposicao','nc-resp-acao','nc-acao-imediata',
-                 'nc-responsavel','nc-prazo','nc-causa-raiz','nc-acao-corretiva','nc-status','nc-data-enc','nc-eficacia','nc-obs'];
+                 'nc-responsavel','nc-prazo','nc-acao-corretiva','nc-status','nc-data-enc','nc-eficacia','nc-obs'];
     const vals = ['numero','data','tipo','gravidade','produto','lote','fornecedor','placa',
                   'local','descricao','disposicao','resp_acao','acao_imediata',
-                  'responsavel','prazo','causa_raiz','acao_corretiva','status','data_enc','eficacia','obs'];
+                  'responsavel','prazo','acao_corretiva','status','data_enc','eficacia','obs'];
     ids.forEach((id, i) => { const el = document.getElementById(id); if(el) el.value = nc[vals[i]] || ''; });
     const causas = typeof nc.causas === 'string' ? JSON.parse(nc.causas || '[]') : (nc.causas || []);
     document.querySelectorAll('#causasGrid input').forEach(cb => { cb.checked = causas.includes(cb.value); });
@@ -14010,7 +14079,7 @@ async function salvarNC() {
         if (editId) {
             const idx = listaNC.findIndex(n => n.id == editId);
             if (idx > -1) listaNC[idx] = nc;
-        } else { listaNC.push(nc); ncIdSeq++; }
+        } else { listaNC.push(nc); ncIdSeq++; _ncRegistrarSequencia(nc.numero); }
         salvarStorageNC();
         fecharModalNC();
         renderizarNC(listaNC);
@@ -18200,30 +18269,16 @@ async function _iaAnalisarNC_inicial() {
     const ctx = _chatIA_NC_contextoNC;
     if (!ctx) return;
 
-    const nc = ctx.nc;
-    let prompt = `DADOS DA NÃO CONFORMIDADE:
-- Número: ${nc.numero || 'Nova'}
-- Data: ${nc.data || '—'}
-- Tipo: ${nc.tipo || '—'}
-- Gravidade: ${nc.gravidade || '—'}
-- Produto/Item: ${nc.produto || '—'}
-- Lote/NF: ${nc.lote || '—'}
-- Fornecedor: ${nc.fornecedor || '—'}
-- Local de detecção: ${nc.local || '—'}
-- Descrição do problema: ${nc.descricao || '—'}
-- Causas já identificadas: ${nc.causas && nc.causas.length ? nc.causas.join(', ') : 'Nenhuma marcada'}
-- Disposição: ${nc.disposicao || '—'}`;
+    const descricao = (ctx.nc.descricao || '').trim();
 
-    if (ctx.historicoNCs && ctx.historicoNCs.length) {
-        prompt += `\n\nHISTÓRICO DE NCs ANTERIORES (mesmo produto):\n${ctx.historicoNCs.join('\n')}`;
-    }
-    if (ctx.dadosMPContexto) {
-        prompt += `\n${ctx.dadosMPContexto}`;
+    if (!descricao) {
+        _adicionarMsgIA('⚠️ Nenhuma descrição da não conformidade informada. Preencha o campo "Descrição Detalhada" antes de consultar a IA.', 'ia');
+        return;
     }
 
-    prompt += `\\n\\nCom base nos dados acima, gere uma ANÁLISE TÉCNICA ESPECÍFICA sobre esta NC seguindo exatamente esta estrutura:\n\n**RESUMO DO PROBLEMA**\nSeja específico ao descrever o que ocorreu: mencione o problema real (ex: lona rasgada, embalagem violada, produto exposto), o produto afetado e o responsável.\n\n**IMPACTO NA MATÉRIA PRIMA / PRODUTO**\nExplique tecnicamente como ESTE problema específico pode comprometer a qualidade do produto recebido (contaminação, oxidação, infestação, perda nutricional). Cite a norma aplicável.\n\n**SUGESTÕES DE CORREÇÃO IMEDIATA**\nListe 3-5 ações práticas: o que fazer com o produto agora, como notificar o fornecedor/transportadora e o que exigir.\n\n**AÇÃO PREVENTIVA**\nSugira 2-3 medidas para evitar a recorrência deste problema específico.`;
+    const prompt = `DESCRIÇÃO DA NÃO CONFORMIDADE:\n"${descricao}"\n\nCom base EXCLUSIVAMENTE na descrição acima, gere uma ANÁLISE TÉCNICA OBJETIVA seguindo esta estrutura:\n\n**RESUMO DO PROBLEMA**\nDescreva com clareza o que foi relatado, o produto ou item afetado e o impacto imediato.\n\n**IMPACTO NA QUALIDADE / PRODUTO**\nExplique como este problema pode comprometer a qualidade, segurança ou conformidade do produto. Cite norma aplicável se houver.\n\n**SUGESTÕES DE AÇÃO IMEDIATA**\nListe 3–4 ações práticas e objetivas para conter o problema agora.\n\n**AÇÃO CORRETIVA SUGERIDA**\nProponha 2–3 medidas para prevenir a recorrência.\n\nResponda em português do Brasil, linguagem técnica e objetiva.`;
 
-    _adicionarMsgIA('🤖', 'ia', '⏳ Analisando os dados da NC...');
+    _adicionarMsgIA('⏳ Analisando a descrição da NC...', 'ia');
 
     try {
         const resp = await _iaCallComFallback(_IA_SYSTEM_NC, [{ role: 'user', content: prompt }], 1200);
