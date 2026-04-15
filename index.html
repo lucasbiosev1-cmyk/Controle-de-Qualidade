@@ -12920,10 +12920,35 @@ document.addEventListener('DOMContentLoaded', function() {
     // Garante popular o select quando a aba é aberta
     document.querySelectorAll('[onclick*="relMP"]').forEach(btn => {
         btn.addEventListener('click', function() {
-            setTimeout(_rmpPopularSelectProduto, 100);
+            setTimeout(_rmpIniciarComFareloSoja, 150);
         });
     });
 });
+
+function _rmpIniciarComFareloSoja() {
+    _rmpPopularSelectProduto();
+
+    // Datas: 1º dia do mês atual até hoje
+    const hoje = new Date();
+    const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    const pad = n => String(n).padStart(2, '0');
+    const fmtDate = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+
+    const di = document.getElementById('rmpDataInicio');
+    const df = document.getElementById('rmpDataFim');
+    if (di && !di.value) di.value = fmtDate(primeiroDia);
+    if (df && !df.value) df.value = fmtDate(hoje);
+
+    // Selecionar Farelo de Soja se existir no select
+    const sel = document.getElementById('rmpProduto');
+    if (sel) {
+        const opt = [...sel.options].find(o => o.value.toLowerCase().includes('farelo de soja'));
+        if (opt) sel.value = opt.value;
+    }
+
+    // Aplicar filtro automaticamente
+    aplicarFiltrosRelMP();
+}
 
 // ===================================================
 // CORREÇÃO DE DEFEITOS DECIMAIS → PERCENTUAL
