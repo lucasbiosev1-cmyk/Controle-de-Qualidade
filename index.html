@@ -13206,10 +13206,24 @@ async function executarCorrecaoDefeitos() {
 .nc-sign-label { font-size:11px;font-weight:bold;color:#333; }
 .nc-sign-sub { font-size:10px;color:#888; }
 @media print {
+    @page { size: A4 portrait; margin: 6mm 7mm 6mm 7mm; }
     body > *:not(#ncPrintArea) { display:none !important; }
-    #ncPrintArea { display:block !important;position:static !important;width:100% !important;padding:0 !important; }
-    .nc-report-header { -webkit-print-color-adjust:exact;print-color-adjust:exact; }
-    .nc-report-section-title { -webkit-print-color-adjust:exact;print-color-adjust:exact; }
+    #ncPrintArea { display:block !important;position:static !important;width:100% !important;max-width:100% !important;padding:0 !important;margin:0 !important; }
+    .nc-report-header { -webkit-print-color-adjust:exact;print-color-adjust:exact;padding:8px 12px !important;margin-bottom:6px !important;border-radius:3px !important; }
+    .nc-report-header h1 { font-size:11px !important;margin-bottom:1px !important; }
+    .nc-report-meta { font-size:8px !important; }
+    .nc-report-section-title { font-size:8px !important;margin:5px 0 4px !important;padding-bottom:2px !important;-webkit-print-color-adjust:exact;print-color-adjust:exact; }
+    .nc-report-field { gap:4px !important;margin-bottom:5px !important; }
+    .nc-report-field-item { padding:4px 6px !important; }
+    .nc-report-field-item label { font-size:7px !important;margin-bottom:1px !important; }
+    .nc-report-field-item span { font-size:9px !important; }
+    #ncPrintArea p { font-size:9px !important;padding:4px 6px !important;margin-bottom:4px !important;min-height:unset !important;line-height:1.3 !important; }
+    .nc-report-sign-area { margin-top:8px !important;padding-top:6px !important;gap:16px !important; }
+    .nc-sign-space { height:18px !important; }
+    .nc-sign-label { font-size:8px !important; }
+    .nc-sign-sub { font-size:7px !important; }
+    #ncPrintArea > div:nth-child(2) { margin-bottom:4px !important; }
+    #ncPrintArea > div:nth-child(2) span { font-size:14px !important; }
 }
 /* ===== CHECK ITEMS ===== */
 .nc-check-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px; }
@@ -13650,46 +13664,49 @@ const ncStorage = {
 
 let listaNC  = JSON.parse(ncStorage.getItem('sgq_nc')  || '[]');
 let listaDev = JSON.parse(ncStorage.getItem('sgq_dev') || '[]');
-let ncIdSeq  = parseInt(ncStorage.getItem('sgq_nc_seq')  || '1');
-let devIdSeq = parseInt(ncStorage.getItem('sgq_dev_seq') || '1');
-// Sequência por fornecedor: { "FORNECEDOR_A": 3, "FORNECEDOR_B": 1, ... }
+// Sequências por fornecedor: { "NUTRITINS": 3, "OUTRO": 1, ... }
 let ncSeqPorFornecedor = JSON.parse(ncStorage.getItem('sgq_nc_seq_forn') || '{}');
+let devIdSeq = parseInt(ncStorage.getItem('sgq_dev_seq') || '1');
 
 function salvarStorageNC() {
-    ncStorage.setItem('sgq_nc',      JSON.stringify(listaNC));
-    ncStorage.setItem('sgq_dev',     JSON.stringify(listaDev));
-    ncStorage.setItem('sgq_nc_seq',  String(ncIdSeq));
-    ncStorage.setItem('sgq_dev_seq', String(devIdSeq));
-    ncStorage.setItem('sgq_nc_seq_forn', JSON.stringify(ncSeqPorFornecedor));
+    ncStorage.setItem('sgq_nc',           JSON.stringify(listaNC));
+    ncStorage.setItem('sgq_dev',          JSON.stringify(listaDev));
+    ncStorage.setItem('sgq_nc_seq_forn',  JSON.stringify(ncSeqPorFornecedor));
+    ncStorage.setItem('sgq_dev_seq',      String(devIdSeq));
 }
 
-// Gera prefixo curto do fornecedor (máx 6 chars, sem espaços/especiais)
-function _ncFornPrefixo(fornecedor) {
-    if (!fornecedor || !fornecedor.trim()) return 'GERAL';
-    return fornecedor.trim().toUpperCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^A-Z0-9]/g, '')
-        .substring(0, 6) || 'GERAL';
-}
-
-// Próximo número para o fornecedor
-function _ncProximoNumero(fornecedor) {
-    const pref = _ncFornPrefixo(fornecedor);
-    const seq  = (ncSeqPorFornecedor[pref] || 0) + 1;
-    return `NC-${pref}-${String(seq).padStart(4, '0')}`;
-}
-
-// Atualiza sequência após salvar
-function _ncRegistrarSequencia(numero) {
-    // Extrai prefixo do número gerado ex: NC-AGRONOR-0001
-    const parts = numero.split('-');
-    if (parts.length >= 3) {
-        const pref = parts[1];
-        const num  = parseInt(parts[2]) || 1;
-        if (!ncSeqPorFornecedor[pref] || num > ncSeqPorFornecedor[pref]) {
-            ncSeqPorFornecedor[pref] = num;
+// Reconstrói sequências por fornecedor a partir da lista existente (útil ao carregar do Supabase)
+function _ncReconstruirSequencias() {
+    ncSeqPorFornecedor = {};
+    listaNC.forEach(nc => {
+        const fKey = (nc.fornecedor || '').toUpperCase().trim();
+        if (!fKey) return;
+        // numero formato: NC-FORN-0001 ou NC-0001 (legado)
+        const parts = nc.numero ? nc.numero.split('-') : [];
+        const num = parseInt(parts[parts.length - 1]) || 0;
+        if (!ncSeqPorFornecedor[fKey] || num >= ncSeqPorFornecedor[fKey]) {
+            ncSeqPorFornecedor[fKey] = num + 1;
         }
+    });
+    salvarStorageNC();
+}
+
+// Próximo número por fornecedor: NC-0001, NC-0002 (específico de cada fornecedor)
+function _ncProximoNumero(fornecedor) {
+    const fKey = (fornecedor || 'GERAL').toUpperCase().trim();
+    const seq = ncSeqPorFornecedor[fKey] || 1;
+    return `NC-${String(seq).padStart(4, '0')}`;
+}
+
+// Registra sequência após salvar (incrementa o contador do fornecedor)
+function _ncRegistrarSequencia(numero, fornecedor) {
+    const fKey = (fornecedor || 'GERAL').toUpperCase().trim();
+    const parts = numero ? numero.split('-') : [];
+    const num = parseInt(parts[parts.length - 1]) || 1;
+    if (!ncSeqPorFornecedor[fKey] || num >= ncSeqPorFornecedor[fKey]) {
+        ncSeqPorFornecedor[fKey] = num + 1;
     }
+    salvarStorageNC();
 }
 
 // ===== SUB-ABA NC/DEV =====
@@ -13752,91 +13769,61 @@ function imprimirRelatorioNC(tipo) {
             : '<p style="color:#95a5a6;font-size:11px;">Nenhuma evidência fotográfica registrada.</p>';
 
         printArea.innerHTML = `
-        <style>
-        .ncr-wrap { font-family: Arial, sans-serif; font-size: 11px; color: #2c3e50; max-width: 100%; }
-        .ncr-header { background: linear-gradient(to right, #c0392b, #e74c3c); color: #fff; padding: 10px 14px; border-radius: 4px 4px 0 0; display: flex; justify-content: space-between; align-items: center; }
-        .ncr-header-left { }
-        .ncr-header-empresa { font-size: 15px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
-        .ncr-header-sub { font-size: 9px; opacity: .85; letter-spacing: 1px; text-transform: uppercase; margin-top: 1px; }
-        .ncr-header-right { text-align: right; }
-        .ncr-header-num { font-size: 20px; font-weight: 900; }
-        .ncr-header-emissao { font-size: 9px; opacity: .8; margin-top: 2px; }
-        .ncr-badge-grav { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 10px; font-weight: 800; color: #fff; margin-top: 4px; }
-        .ncr-body { border: 1px solid #ddd; border-top: none; border-radius: 0 0 4px 4px; padding: 10px 14px; }
-        .ncr-row { display: grid; gap: 0; margin-bottom: 6px; }
-        .ncr-row-2 { grid-template-columns: 1fr 1fr; }
-        .ncr-row-3 { grid-template-columns: 1fr 1fr 1fr; }
-        .ncr-row-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
-        .ncr-field { border: 1px solid #e0e0e0; padding: 4px 7px; background: #fafafa; }
-        .ncr-field label { display: block; font-size: 8px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 1px; }
-        .ncr-field span { font-size: 11px; font-weight: 600; color: #2c3e50; }
-        .ncr-section-title { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .8px; color: #fff; background: #34495e; padding: 3px 8px; margin: 8px 0 4px; border-radius: 2px; }
-        .ncr-desc { font-size: 11px; color: #2c3e50; line-height: 1.5; padding: 6px 8px; background: #fdf2f2; border-left: 3px solid #e74c3c; border-radius: 2px; margin-bottom: 6px; }
-        .ncr-acao { font-size: 11px; color: #2c3e50; line-height: 1.5; padding: 6px 8px; background: #eafaf1; border-left: 3px solid #27ae60; border-radius: 2px; margin-bottom: 6px; }
-        .ncr-corretiva { font-size: 11px; color: #2c3e50; line-height: 1.5; padding: 6px 8px; background: #f8f4ff; border-left: 3px solid #8e44ad; border-radius: 2px; margin-bottom: 6px; }
-        .ncr-causas { font-size: 11px; padding: 4px 8px; background: #fff8e1; border-left: 3px solid #f39c12; border-radius: 2px; margin-bottom: 6px; }
-        .ncr-sign-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 14px; padding-top: 8px; border-top: 1px solid #ddd; }
-        .ncr-sign-block { text-align: center; }
-        .ncr-sign-line { border-top: 1px solid #555; margin: 18px 8px 3px; }
-        .ncr-sign-label { font-size: 10px; font-weight: 700; }
-        .ncr-sign-sub { font-size: 8px; color: #888; }
-        @media print { @page { size: A4; margin: 10mm; } body { margin: 0; } }
-        </style>
-        <div class="ncr-wrap">
-          <div class="ncr-header">
-            <div class="ncr-header-left">
-              <div class="ncr-header-empresa">AGRONOR ALIMENTOS</div>
-              <div class="ncr-header-sub">Sistema de Gestão da Qualidade — SGQ</div>
-              <div class="ncr-header-sub" style="margin-top:3px;">RELATÓRIO DE NÃO CONFORMIDADE</div>
-            </div>
-            <div class="ncr-header-right">
-              <div class="ncr-header-num">${num}</div>
-              <div><span class="ncr-badge-grav" style="background:${gravColor};">${grav}</span></div>
-              <div class="ncr-header-emissao">Emitido: ${new Date().toLocaleString('pt-BR')}</div>
-              <div class="ncr-header-emissao">Status: <strong style="color:#fff;">${status}</strong></div>
-            </div>
-          </div>
-          <div class="ncr-body">
-            <div class="ncr-section-title">1. Identificação</div>
-            <div class="ncr-row ncr-row-4">
-              <div class="ncr-field"><label>Data de Abertura</label><span>${data}</span></div>
-              <div class="ncr-field"><label>Tipo de NC</label><span>${tipoNC}</span></div>
-              <div class="ncr-field"><label>Gravidade</label><span>${grav}</span></div>
-              <div class="ncr-field"><label>Local de Detecção</label><span>${local}</span></div>
-            </div>
-            <div class="ncr-row ncr-row-4">
-              <div class="ncr-field"><label>Fornecedor / Origem</label><span>${forn}</span></div>
-              <div class="ncr-field"><label>Produto / Item</label><span>${produto}</span></div>
-              <div class="ncr-field"><label>Lote / Nº NF</label><span>${lote}</span></div>
-              <div class="ncr-field"><label>Causas Marcadas</label><span style="font-size:10px;">${causas}</span></div>
-            </div>
+        <div class="nc-report-header" style="background:linear-gradient(to right,#c0392b,#e74c3c);">
+            <div style="font-size:18px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:#fff;margin-bottom:2px;">AGRONOR ALIMENTOS</div>
+            <h1>🏭 Sistema de Gestão da Qualidade — SGQ</h1>
+            <div class="nc-report-meta">RELATÓRIO DE NÃO CONFORMIDADE &nbsp;|&nbsp; Emitido em: ${new Date().toLocaleString('pt-BR')}</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <span style="font-size:22px;font-weight:900;color:#c0392b;">${num}</span>
+            <span style="display:inline-block;padding:4px 14px;border-radius:10px;font-size:12px;font-weight:800;color:#fff;background:${gravColor};">${grav}</span>
+        </div>
 
-            <div class="ncr-section-title">2. Descrição da Não Conformidade</div>
-            <div class="ncr-desc">${desc}</div>
+        <div class="nc-report-section-title">1. Identificação</div>
+        <div class="nc-report-field">
+            <div class="nc-report-field-item"><label>Data de Abertura</label><span>${data}</span></div>
+            <div class="nc-report-field-item"><label>Tipo de NC</label><span>${tipoNC}</span></div>
+            <div class="nc-report-field-item"><label>Gravidade</label><span>${grav}</span></div>
+            <div class="nc-report-field-item"><label>Local de Detecção</label><span>${local}</span></div>
+        </div>
+        <div class="nc-report-field" style="margin-top:6px;">
+            <div class="nc-report-field-item"><label>Fornecedor / Origem</label><span>${forn}</span></div>
+            <div class="nc-report-field-item"><label>Produto / Item</label><span>${produto}</span></div>
+            <div class="nc-report-field-item"><label>Lote / Nº NF</label><span>${lote}</span></div>
+            <div class="nc-report-field-item"><label>Status</label><span>${status}</span></div>
+        </div>
 
-            <div class="ncr-section-title">3. Ação Imediata / Disposição do Material</div>
-            <div class="ncr-row ncr-row-2" style="margin-bottom:4px;">
-              <div class="ncr-field"><label>Disposição do Material</label><span>${disp}</span></div>
-              <div class="ncr-field"><label>Responsável pela Ação</label><span>${respA}</span></div>
-            </div>
-            <div class="ncr-acao">${acaoIm}</div>
+        <div class="nc-report-section-title">2. Descrição da Não Conformidade</div>
+        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#fdf2f2;border-left:4px solid #e74c3c;border-radius:3px;margin-bottom:8px;min-height:40px;">${desc}</p>
 
-            <div class="ncr-section-title">4. Ação Corretiva / Preventiva</div>
-            <div class="ncr-row ncr-row-3" style="margin-bottom:4px;">
-              <div class="ncr-field"><label>Responsável pela Correção</label><span>${resp}</span></div>
-              <div class="ncr-field"><label>Prazo para Conclusão</label><span>${prazo}</span></div>
-              <div class="ncr-field"><label>Eficácia da Ação</label><span>${efic}</span></div>
-            </div>
-            <div class="ncr-corretiva">${acaoCor}</div>
+        ${causas && causas !== '-' ? `<div class="nc-report-section-title">3. Causas Identificadas</div>
+        <p style="font-size:12px;padding:8px;background:#fff8e1;border-left:4px solid #f39c12;border-radius:3px;margin-bottom:8px;">${causas}</p>` : ''}
 
-            ${obs && obs !== '-' ? `<div class="ncr-section-title">5. Observações</div><div class="ncr-causas">${obs}</div>` : ''}
+        <div class="nc-report-section-title">4. Ação Imediata / Disposição do Material</div>
+        <div class="nc-report-field" style="margin-bottom:8px;">
+            <div class="nc-report-field-item"><label>Disposição do Material</label><span>${disp}</span></div>
+            <div class="nc-report-field-item"><label>Responsável pela Ação</label><span>${respA}</span></div>
+        </div>
+        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#eafaf1;border-left:4px solid #27ae60;border-radius:3px;margin-bottom:8px;min-height:36px;">${acaoIm}</p>
 
-            <div class="ncr-sign-area">
-              <div class="ncr-sign-block"><div class="ncr-sign-line"></div><div class="ncr-sign-label">Lucas Lima</div><div class="ncr-sign-sub">Resp. Técnico · CRQ 04473318</div></div>
-              <div class="ncr-sign-block"><div class="ncr-sign-line"></div><div class="ncr-sign-label">Assistente</div><div class="ncr-sign-sub">&nbsp;</div></div>
-              <div class="ncr-sign-block"><div class="ncr-sign-line"></div><div class="ncr-sign-label">Supervisor de Produção</div><div class="ncr-sign-sub">&nbsp;</div></div>
-            </div>
-          </div>
+        <div class="nc-report-section-title">5. Ação Corretiva / Preventiva</div>
+        <div class="nc-report-field" style="margin-bottom:8px;">
+            <div class="nc-report-field-item"><label>Responsável pela Correção</label><span>${resp}</span></div>
+            <div class="nc-report-field-item"><label>Prazo para Conclusão</label><span>${prazo}</span></div>
+            <div class="nc-report-field-item"><label>Eficácia da Ação</label><span>${efic}</span></div>
+        </div>
+        ${cauRaiz && cauRaiz !== '-' ? `<p style="font-size:11px;color:#555;margin-bottom:4px;font-weight:700;">Causa Raiz:</p><p style="font-size:12px;color:#2c3e50;padding:6px 8px;background:#f0eaff;border-left:4px solid #8e44ad;border-radius:3px;margin-bottom:6px;">${cauRaiz}</p>` : ''}
+        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#f8f4ff;border-left:4px solid #8e44ad;border-radius:3px;margin-bottom:8px;min-height:36px;">${acaoCor}</p>
+
+        ${obs && obs !== '-' ? `<div class="nc-report-section-title">6. Observações</div>
+        <p style="font-size:12px;padding:8px;background:#fef5e7;border-left:4px solid #e67e22;border-radius:3px;margin-bottom:14px;">${obs}</p>` : ''}
+
+        ${imgsHtml}
+
+        <div class="nc-report-sign-area">
+            <div class="nc-sign-block"><div class="nc-sign-space" style="height:22px;"></div><div class="nc-sign-label" style="margin-bottom:2px;">Lucas Lima</div><div class="nc-sign-line"></div><div class="nc-sign-sub">Resp. Técnico · CRQ 04473318</div></div>
+            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Assistente</div><div class="nc-sign-sub">&nbsp;</div></div>
+            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Supervisor de Produção</div><div class="nc-sign-sub">&nbsp;</div></div>
         </div>`;
 
     } else {
@@ -13965,7 +13952,7 @@ function abrirModalNC(id = null) {
     document.getElementById('nc-data').value = hoje;
     if (id === null) {
         // Número provisório (será recalculado ao alterar fornecedor)
-        document.getElementById('nc-numero').value = 'NC-GERAL-' + String(ncIdSeq).padStart(4, '0');
+        document.getElementById('nc-numero').value = _ncProximoNumero('');
         document.getElementById('modalNCTitulo').textContent = 'Nova Não Conformidade';
         document.getElementById('modalNCNumero').textContent = 'Preenchimento obrigatório dos campos marcados com *';
         document.getElementById('nc-edit-id').value = '';
@@ -14083,7 +14070,7 @@ async function salvarNC() {
         if (editId) {
             const idx = listaNC.findIndex(n => n.id == editId);
             if (idx > -1) listaNC[idx] = nc;
-        } else { listaNC.push(nc); ncIdSeq++; _ncRegistrarSequencia(nc.numero); }
+        } else { listaNC.push(nc); _ncRegistrarSequencia(nc.numero, nc.fornecedor); }
         salvarStorageNC();
         fecharModalNC();
         renderizarNC(listaNC);
@@ -14962,47 +14949,46 @@ function imprimirVisualizacao() {
         win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
         <title>Relatório de Devolução — ${dev.numero}</title>
         <style>
-            @page{size:A4 portrait;margin:8mm 10mm 8mm 10mm;}
+            @page{size:A4 portrait;margin:8mm 8mm 8mm 8mm;}
             *{margin:0;padding:0;box-sizing:border-box;}
             html,body{width:100%;height:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-            body{font-family:Arial,sans-serif;background:#fff;color:#333;font-size:10px;}
+            body{font-family:Arial,sans-serif;background:#fff;color:#333;font-size:11px;}
             /* CABEÇALHO */
-            .page-header{background:linear-gradient(135deg,#c0392b 0%,#d35400 100%);color:#fff;padding:7px 14px;display:flex;justify-content:space-between;align-items:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-            .header-brand{font-size:14px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
-            .header-sub{font-size:8px;letter-spacing:1px;opacity:.9;margin-top:1px;}
+            .page-header{background:linear-gradient(135deg,#c0392b 0%,#d35400 100%);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+            .header-brand{font-size:17px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
+            .header-sub{font-size:9px;letter-spacing:1px;opacity:.9;margin-top:2px;}
             /* FAIXA NÚMERO */
-            .dev-banner{border-bottom:2px solid #d35400;padding:5px 14px;display:flex;align-items:center;gap:12px;}
-            .dev-num{font-size:18px;font-weight:900;color:#d35400;letter-spacing:1px;}
-            .dev-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;background:#eaf7f0;color:#27ae60;border:1px solid #a9dfbf;text-transform:uppercase;}
+            .dev-banner{border-bottom:2px solid #d35400;padding:7px 16px;display:flex;align-items:center;gap:14px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+            .dev-num{font-size:20px;font-weight:900;color:#d35400;letter-spacing:1px;}
+            .dev-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;background:#eaf7f0;color:#27ae60;border:1px solid #a9dfbf;text-transform:uppercase;}
             /* CONTEÚDO */
-            .content{padding:6px 14px;}
+            .content{padding:8px 16px;}
             /* TÍTULO DE SEÇÃO */
-            .sec-title{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#fff;background:#7f8c8d;padding:3px 8px;margin:6px 0 4px;display:block;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+            .sec-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#fff;background:#7f8c8d;padding:4px 10px;margin:10px 0 6px;display:block;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
             /* GRID DE CAMPOS */
-            .field-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:4px;}
+            .field-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:6px;}
             .field-full{grid-column:1/-1;}
-            .field{background:#f9fafb;border:1px solid #e4e8ed;border-radius:3px;padding:4px 7px;}
-            .field-label{font-size:7px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:1px;}
-            .field-value{font-size:10px;color:#2c3e50;font-weight:600;line-height:1.3;}
-            .field-value.normal{font-weight:400;line-height:1.4;}
+            .field{background:#f9fafb;border:1px solid #e4e8ed;border-radius:3px;padding:6px 9px;}
+            .field-label{font-size:8px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+            .field-value{font-size:11px;color:#2c3e50;font-weight:600;line-height:1.4;}
+            .field-value.normal{font-weight:400;line-height:1.5;}
             /* TABELA PARÂMETROS */
-            table{width:100%;border-collapse:collapse;font-size:9px;margin-bottom:5px;}
+            table{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:8px;}
             thead tr{background:#d35400;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-            th{padding:4px 8px;text-align:left;font-size:8px;font-weight:700;text-transform:uppercase;}
+            th{padding:5px 10px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;}
             th:not(:first-child){text-align:center;}
-            td{padding:3px 8px;border-bottom:1px solid #f0d9c0;}
+            td{padding:5px 10px;border-bottom:1px solid #f0d9c0;}
             /* FOTOS */
-            .img-block{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;}
-            .img-block img{max-width:110px;max-height:80px;border-radius:3px;border:1px solid #ddd;}
+            .img-block{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+            .img-block img{max-width:130px;max-height:95px;border-radius:3px;border:1px solid #ddd;}
             /* ASSINATURAS */
-            .sign-wrap{margin-top:10px;padding-top:8px;border-top:1px solid #e0e0e0;}
+            .sign-wrap{margin-top:14px;padding-top:10px;border-top:1px solid #e0e0e0;}
             .sign-row{display:table;width:100%;table-layout:fixed;}
-            .sign-box{display:table-cell;text-align:center;padding:0 8px;}
-            .sign-name{font-size:10px;font-weight:700;color:#2c3e50;height:28px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:2px;}
-            .sign-line{border-bottom:1px solid #333;margin-bottom:3px;}
-            .sign-label{font-size:7px;color:#777;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+            .sign-box{display:table-cell;text-align:center;padding:0 10px;}
+            .sign-name{font-size:11px;font-weight:700;color:#2c3e50;height:32px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;}
+            .sign-line{border-bottom:1px solid #333;margin-bottom:4px;}
+            .sign-label{font-size:8px;color:#777;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
             @media print{
-                body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
                 button{display:none!important;}
                 .sign-wrap{page-break-inside:avoid;break-inside:avoid;}
             }
@@ -15069,23 +15055,25 @@ function imprimirVisualizacao() {
         win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
         <title>${titulo}</title>
         <style>
+            @page{size:A4 portrait;margin:8mm 8mm 8mm 8mm;}
             *{margin:0;padding:0;box-sizing:border-box;}
-            body{font-family:Arial,sans-serif;background:#fff;margin:0;padding:20px;color:#333;font-size:12px;}
-            .page-header{background:linear-gradient(135deg,#1a2a6e 0%,#c0392b 100%);color:#fff;padding:14px 24px 10px;margin:-20px -20px 18px;display:flex;justify-content:space-between;align-items:center;}
-            .header-brand{font-size:16px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
-            .header-sub{font-size:9px;letter-spacing:1px;opacity:.85;margin-top:2px;}
-            .ncv-header-bar{background:#f8f9fa;border-left:5px solid #c0392b;padding:14px 18px;border-radius:4px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;}
-            .ncv-section-title{font-size:10px;font-weight:bold;text-transform:uppercase;color:#fff;background:#34495e;padding:5px 10px;border-radius:3px;margin:14px 0 8px;letter-spacing:.5px;display:inline-block;}
-            .ncv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+            html,body{width:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+            body{font-family:Arial,sans-serif;background:#fff;color:#333;font-size:12px;}
+            .page-header{background:linear-gradient(135deg,#1a2a6e 0%,#c0392b 100%);color:#fff;padding:14px 18px 12px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+            .header-brand{font-size:17px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
+            .header-sub{font-size:10px;letter-spacing:1px;opacity:.85;margin-top:2px;}
+            .ncv-header-bar{background:#f8f9fa;border-left:5px solid #c0392b;padding:12px 16px;border-radius:4px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;}
+            .ncv-section-title{font-size:10px;font-weight:bold;text-transform:uppercase;color:#fff;background:#34495e;padding:5px 10px;border-radius:3px;margin:12px 0 8px;letter-spacing:.5px;display:inline-block;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+            .ncv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
             .ncv-field{background:#f8f9fa;border:1px solid #e8ecf0;border-radius:4px;padding:8px 10px;}
             .ncv-label{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
             .ncv-value{font-size:12px;color:#333;font-weight:600;}
-            .ncv-text-block{background:#f8f9fa;border:1px solid #e0e0e0;border-left:3px solid #3498db;border-radius:3px;padding:10px 12px;font-size:12px;line-height:1.6;margin-bottom:12px;color:#333;}
+            .ncv-text-block{background:#f8f9fa;border:1px solid #e0e0e0;border-left:4px solid #3498db;border-radius:3px;padding:10px 12px;font-size:12px;line-height:1.6;margin-bottom:12px;color:#333;min-height:42px;}
             table{width:100%;border-collapse:collapse;font-size:12px;}
-            th{background:#d35400;color:white;padding:7px 10px;}
-            td{padding:5px 10px;border-bottom:1px solid #eee;}
-            img{max-width:140px;max-height:100px;margin:4px;border-radius:3px;}
-            @media print{body{padding:10px;} button{display:none;} .page-header{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+            th{background:#d35400;color:white;padding:7px 10px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+            td{padding:6px 10px;border-bottom:1px solid #eee;}
+            img{max-width:150px;max-height:110px;margin:4px;border-radius:3px;}
+            @media print{button{display:none!important;}}
         </style></head><body>
         <div class="page-header">
             <div>
