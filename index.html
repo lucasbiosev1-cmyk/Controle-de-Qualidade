@@ -10331,10 +10331,18 @@ function diagnosticarClass() {
 // Para exibição na tela de parâmetros (usa snapshot selecionado ou mais recente)
 function getParam(modulo, racaKey, campo, dataRegistro) {
     const snap = getSnapshotVigente(modulo, racaKey, dataRegistro);
-    const cfg = (snap && snap.campos && snap.campos[campo]) || getParamDefault(modulo, campo, racaKey);
+    // Se há snapshot salvo para esta ração/produto mas o campo não está nele,
+    // significa que o usuário configurou os parâmetros e esse campo estava inativo.
+    // Nesse caso NÃO usa o default (que pode ter ativo:true), retorna inativo.
+    if (snap && snap.campos) {
+        const cfg = snap.campos[campo];
+        if (!cfg) return { min: 0, max: 9999, ativo: false };
+        return cfg;
+    }
+    // Sem snapshot algum → usa defaults
+    const cfg = getParamDefault(modulo, campo, racaKey);
     // Proteção: se não há snapshot salvo pelo usuário E max=0 E min=0, trata como 9999 (padrão vazio)
-    // Se o usuário salvou explicitamente um snapshot, respeita o valor mesmo que seja 0
-    if (cfg && cfg.ativo && cfg.max === 0 && cfg.min === 0 && !snap) {
+    if (cfg && cfg.ativo && cfg.max === 0 && cfg.min === 0) {
         return { ...cfg, max: 9999 };
     }
     return cfg;
