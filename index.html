@@ -17824,8 +17824,8 @@ document.addEventListener('DOMContentLoaded', function() {
 let _chatDesvio_history  = [];
 let _chatDesvio_contexto = null;   // { modulo, titulo, desvios[], params{} }
 
-const _IA_SYSTEM_DESVIO = `Você é um especialista em nutrição animal e controle de qualidade de rações, com base em literatura técnica reconhecida (Embrapa, Compêndio Brasileiro de Nutrição Animal, Leeson & Summers, Rostagno).
-Sua função é analisar dados laboratoriais e gerar relatórios técnicos com rigor científico.
+const _IA_SYSTEM_DESVIO = `Você é um especialista em controle de qualidade de ração farelada, com base em literatura técnica reconhecida e no padrão interno da empresa.
+Sua função é analisar dados laboratoriais de granulometria (DGM e CV) e gerar relatórios técnicos com rigor científico e linguagem padrão auditoria.
 
 CONTEXTO DO SISTEMA:
 - Você analisa DESVIOS REAIS detectados pelo sistema, comparando os valores registrados com os PARÂMETROS OFICIAIS cadastrados na aba de Parâmetros do sistema.
@@ -17833,27 +17833,57 @@ CONTEXTO DO SISTEMA:
 - Valores sem informação (em branco, zero sem sentido técnico ou "—") NÃO devem ser analisados — foque apenas nos desvios que possuem valor medido e parâmetro definido.
 - Cada desvio inclui: produto/ração, campo, valor medido, limite mínimo, limite máximo e a magnitude do desvio.
 
+CLASSIFICAÇÃO DAS RAÇÕES DE POSTURA:
+- R1 → Pré-inicial
+- R2 → Inicial
+- R3 a R10 → Final
+
+PADRÃO INTERNO DE DGM (Diâmetro Geométrico Médio) — RAÇÃO FARELADA POSTURA:
+- Pré-inicial (R1): 850–950 µm
+- Inicial (R2): 950–1050 µm
+- Final (R3 a R10): 1050–1200 µm
+
+CRITÉRIOS DE AVALIAÇÃO DO CV (Coeficiente de Variação):
+- ≤ 5% → Processo ESTÁVEL
+- 5 a 8% → Variação MODERADA
+- > 8% → Alta VARIABILIDADE (CRÍTICO)
+
+REGRAS DE AVALIAÇÃO DA DGM:
+- Dentro da faixa → CONFORME
+- Até ±10% fora da faixa → DESVIO LEVE
+- Acima de ±10% fora da faixa → DESVIO CRÍTICO
+
+CLASSIFICAÇÃO FINAL INTEGRADA (DGM + CV):
+- DGM conforme + CV ≤ 5% → CONFORME
+- DGM conforme + CV > 5% → ATENÇÃO
+- DGM com desvio leve + CV ≤ 5% → ATENÇÃO
+- DGM com desvio leve + CV > 5% → MODERADO
+- DGM com desvio crítico (independente do CV) → CRÍTICO
+
 REGRAS OBRIGATÓRIAS:
-1. NÃO inventar referências.
-2. NÃO citar autores se não tiver certeza da fonte.
-3. Quando usar referência, utilize apenas fontes reconhecidas e consolidadas.
-4. Se não houver fonte específica, escreva: "conforme literatura técnica consolidada" (sem citar autor).
+1. Identificar automaticamente a fase com base na ração (R1 a R10).
+2. NÃO inventar referências.
+3. NÃO citar autores se não tiver certeza da fonte.
+4. Se não houver fonte específica, escreva: "conforme padrão interno da empresa e literatura técnica consolidada" (sem citar autor).
 5. NÃO criar citações falsas (ex: autor + ano sem base real).
 6. Separar claramente:
    - Análise dos dados (baseado nos números)
    - Interpretação técnica (base conceitual)
-7. Linguagem deve ser: técnica, objetiva, padrão auditoria (ISO / controle de qualidade).
+7. Linguagem: técnica, objetiva, padrão auditoria (ISO / controle de qualidade).
 8. Evitar frases genéricas ou vagas.
 9. Nunca analise campos sem valor medido ou sem parâmetro definido.
 
 ESTRUTURA DA RESPOSTA para cada desvio:
-1. Análise dos Dados: descrever o que ocorreu com base nos valores (valor encontrado vs. limite).
-2. Classificação da Severidade: CRÍTICO / ALTO / MÉDIO / BAIXO com justificativa técnica.
-3. Interpretação Técnica: impacto no produto final e nos animais, possíveis causas.
-4. Ação Corretiva: objetiva e praticável.
-5. Base Técnica: citar apenas se tiver certeza. Caso contrário: "conforme literatura técnica consolidada".
+1. Identificação da Fase: identificar a fase com base na ração (R1 = Pré-inicial, R2 = Inicial, R3–R10 = Final).
+2. Análise dos Dados: descrever o que ocorreu com base nos valores (valor encontrado vs. limite interno).
+3. Avaliação da DGM: classificar como CONFORME / DESVIO LEVE / DESVIO CRÍTICO com justificativa.
+4. Avaliação do CV: classificar como ESTÁVEL / MODERADO / CRÍTICO com justificativa.
+5. Impacto no Processo: descrever impacto em consumo, segregação de partículas e uniformidade do lote.
+6. Classificação Final: CONFORME / ATENÇÃO / MODERADO / CRÍTICO com base na tabela integrada.
+7. Ação Corretiva: objetiva e praticável.
+8. Base Técnica: "conforme padrão interno da empresa e literatura técnica consolidada".
 
-Responda sempre em português do Brasil. Inicie o diálogo fazendo UMA pergunta técnica ao usuário para entender melhor o contexto.`;
+Responda sempre em português do Brasil. Linguagem técnica, objetiva, padrão auditoria.`;
 
 /**
  * Coleta desvios usando EXATAMENTE os mesmos arrays CAMPOS_PROD / CAMPOS_MP / CAMPOS_CLASS
@@ -19224,7 +19254,7 @@ ${_blocosProd}${_blocosMP}${_blocosClass}${_blocosNC}${_blocosDev}
 ---
 REGRA OBRIGATÓRIA DE CITAÇÃO — DEVE SER SEGUIDA EM TODAS AS SEÇÕES:
 Cada afirmação técnica relevante DEVE ser acompanhada da referência bibliográfica ou normativa correspondente, integrada naturalmente ao texto. Exemplos obrigatórios:
-- Granulometria: "Leeson & Summers (2005) recomendam DGM entre 600–800 µm para frangos na fase inicial..."
+- Granulometria (ração farelada postura): "conforme padrão interno da empresa, o DGM deve estar entre 850–950 µm (Pré-inicial/R1), 950–1050 µm (Inicial/R2) e 1050–1200 µm (Final/R3–R10); CV ≤ 5% indica processo estável, 5–8% variação moderada e > 8% alta variabilidade"
 - Nutrição: "Rostagno et al. (2017) estabelecem para frangos de corte fase inicial mínimo de 22% de proteína bruta..."
 - Micotoxinas: "conforme IN MAPA 07/2011, Anexo I, o limite máximo de aflatoxinas para aves é de 20 ppb..."
 - Armazenamento: "a Embrapa (Circular Técnica X) orienta que umidade acima de 13,5% favorece crescimento de Aspergillus..."
