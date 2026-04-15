@@ -3973,80 +3973,99 @@
                     <span style="font-size:28px;">🗄️</span>
                     <div>
                         <div style="font-size:16px;font-weight:bold;color:#34495e;text-transform:uppercase;">Monitoramento de Armazenamento</div>
-                        <div style="font-size:12px;color:#777;margin-top:2px;">Uso do IndexedDB e espaço disponível no navegador</div>
+                        <div style="font-size:12px;color:#777;margin-top:2px;">Uso real do banco de dados Supabase (PostgreSQL)</div>
                     </div>
                     <button onclick="atualizarMemoria()" style="margin-left:auto;background:#3498db;color:white;padding:8px 18px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;">🔄 Atualizar</button>
                 </div>
 
                 <!-- ALERTA DE ESPAÇO -->
                 <div id="memAlerta" style="display:none;background:#fadbd8;border:1px solid #e74c3c;border-radius:6px;padding:14px;margin-bottom:16px;border-left:5px solid #e74c3c;">
-                    <div style="font-size:14px;font-weight:bold;color:#c0392b;">⚠️ ATENÇÃO: Espaço de armazenamento baixo!</div>
+                    <div style="font-size:14px;font-weight:bold;color:#c0392b;">⚠️ ATENÇÃO: Banco de dados acima de 80% da cota!</div>
                     <div id="memAlertaTxt" style="font-size:12px;color:#c0392b;margin-top:4px;"></div>
                     <button onclick="trocarAba('backup', null)" style="margin-top:10px;background:#e74c3c;color:white;padding:7px 16px;border:none;border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;text-transform:uppercase;">💾 Ir para Backup agora</button>
                 </div>
 
-                <!-- BARRA DE USO TOTAL -->
-                <div style="margin-bottom:20px;">
-                    <div style="font-size:13px;font-weight:bold;color:#34495e;margin-bottom:8px;text-transform:uppercase;">📊 Uso Total de Armazenamento</div>
-                    <div style="background:#ecf0f1;border-radius:6px;height:28px;overflow: visible;position:relative;">
-                        <div id="memBarraTotal" style="height:100%;width:0%;background:linear-gradient(to right,#27ae60,#f39c12,#e74c3c);transition:width 0.5s;border-radius:6px;"></div>
-                        <div id="memBarraLabel" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:11px;font-weight:bold;color:#333;">—</div>
+                <!-- CARD SUPABASE DB -->
+                <div style="background:white;border:1px solid #dce4f5;border-radius:8px;padding:18px;margin-bottom:20px;border-left:4px solid #3ecf8e;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                        <img src="https://supabase.com/favicon/favicon-32x32.png" onerror="this.style.display='none'" style="width:20px;height:20px;border-radius:3px;">
+                        <div style="font-size:13px;font-weight:bold;color:#1a2a3a;text-transform:uppercase;letter-spacing:.5px;">☁️ Supabase — Banco de Dados (PostgreSQL)</div>
+                        <div id="memSupabasePlano" style="margin-left:auto;background:#e8f5e9;color:#1e8449;border:1px solid #a9dfbf;border-radius:10px;padding:2px 10px;font-size:10px;font-weight:700;">Free Plan</div>
                     </div>
-                    <div style="display:flex;justify-content:space-between;font-size:11px;color:#666;margin-top:4px;">
-                        <span>0</span>
-                        <span id="memTotalDisp">—</span>
+
+                    <!-- BARRA DB -->
+                    <div style="margin-bottom:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <span style="font-size:12px;font-weight:bold;color:#34495e;">📊 Banco de Dados</span>
+                            <span id="memDbLabel" style="font-size:12px;font-weight:bold;color:#2c3e50;">carregando...</span>
+                        </div>
+                        <div style="background:#ecf0f1;border-radius:8px;height:22px;position:relative;overflow:hidden;">
+                            <div id="memBarraDB" style="height:100%;width:0%;background:linear-gradient(to right,#3ecf8e,#f39c12,#e74c3c);transition:width 0.7s ease;border-radius:8px;"></div>
+                            <div id="memBarraDBPct" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:10px;font-weight:bold;color:#2c3e50;white-space:nowrap;">—</div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:3px;">
+                            <span>0 MB</span>
+                            <span style="font-weight:600;color:#888;">Limite Free: 500 MB</span>
+                        </div>
+                    </div>
+
+                    <!-- CARDS DETALHES DB -->
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+                        <div style="background:#eaf4fb;border:1px solid #aed6f1;border-radius:6px;padding:12px;text-align:center;">
+                            <div style="font-size:10px;font-weight:bold;color:#1a5276;text-transform:uppercase;margin-bottom:5px;">Usado</div>
+                            <div id="memUsado" style="font-size:20px;font-weight:bold;color:#2980b9;">—</div>
+                            <div style="font-size:10px;color:#888;margin-top:2px;">de dados reais</div>
+                        </div>
+                        <div style="background:#eafaf1;border:1px solid #a9dfbf;border-radius:6px;padding:12px;text-align:center;">
+                            <div style="font-size:10px;font-weight:bold;color:#1e8449;text-transform:uppercase;margin-bottom:5px;">Disponível</div>
+                            <div id="memDisponivel" style="font-size:20px;font-weight:bold;color:#27ae60;">—</div>
+                            <div style="font-size:10px;color:#888;margin-top:2px;">restante</div>
+                        </div>
+                        <div style="background:#fef9e7;border:1px solid #f9e79f;border-radius:6px;padding:12px;text-align:center;">
+                            <div style="font-size:10px;font-weight:bold;color:#7d6608;text-transform:uppercase;margin-bottom:5px;">Limite</div>
+                            <div id="memTotal" style="font-size:20px;font-weight:bold;color:#d4ac0d;">500 MB</div>
+                            <div style="font-size:10px;color:#888;margin-top:2px;">plano gratuito</div>
+                        </div>
+                    </div>
+
+                    <!-- INFO PLANO -->
+                    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px;font-size:11px;color:#166534;line-height:1.7;">
+                        <strong>ℹ️ Limites reais do Supabase Free Plan:</strong>
+                        500 MB banco de dados (modo somente-leitura ao exceder) • 1 GB file storage •
+                        5 GB de egress • 50.000 usuários ativos/mês • Projetos pausam após 7 dias sem atividade
                     </div>
                 </div>
 
-                <!-- CARDS DE DETALHES -->
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
-                    <div style="background:#eaf4fb;border:1px solid #aed6f1;border-radius:6px;padding:14px;text-align:center;">
-                        <div style="font-size:11px;font-weight:bold;color:#1a5276;text-transform:uppercase;margin-bottom:6px;">Espaço Usado</div>
-                        <div id="memUsado" style="font-size:22px;font-weight:bold;color:#2980b9;">—</div>
-                        <div style="font-size:10px;color:#888;margin-top:2px;">IndexedDB + outros</div>
-                    </div>
-                    <div style="background:#eafaf1;border:1px solid #a9dfbf;border-radius:6px;padding:14px;text-align:center;">
-                        <div style="font-size:11px;font-weight:bold;color:#1e8449;text-transform:uppercase;margin-bottom:6px;">Espaço Disponível</div>
-                        <div id="memDisponivel" style="font-size:22px;font-weight:bold;color:#27ae60;">—</div>
-                        <div style="font-size:10px;color:#888;margin-top:2px;">estimado pelo navegador</div>
-                    </div>
-                    <div style="background:#fef9e7;border:1px solid #f9e79f;border-radius:6px;padding:14px;text-align:center;">
-                        <div style="font-size:11px;font-weight:bold;color:#7d6608;text-transform:uppercase;margin-bottom:6px;">Espaço Total</div>
-                        <div id="memTotal" style="font-size:22px;font-weight:bold;color:#d4ac0d;">—</div>
-                        <div style="font-size:10px;color:#888;margin-top:2px;">cota do navegador</div>
-                    </div>
-                </div>
-
-                <!-- DETALHES IndexedDB por store -->
+                <!-- DETALHES por tabela (registros) -->
                 <div style="margin-bottom:16px;">
-                    <div style="font-size:13px;font-weight:bold;color:#34495e;margin-bottom:10px;text-transform:uppercase;">📦 Registros no IndexedDB</div>
+                    <div style="font-size:13px;font-weight:bold;color:#34495e;margin-bottom:10px;text-transform:uppercase;">📦 Registros no Banco (Supabase)</div>
                     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
                         <div style="background:#f4f6f7;border:1px solid #ddd;border-radius:4px;padding:12px;text-align:center;">
                             <div style="font-size:22px;margin-bottom:4px;">🌾</div>
                             <div style="font-size:10px;color:#666;text-transform:uppercase;">Produção</div>
                             <div id="memNProd" style="font-size:20px;font-weight:bold;color:#2980b9;margin:4px 0;">—</div>
-                            <div style="font-size:10px;color:#aaa;">registros novos</div>
+                            <div style="font-size:10px;color:#aaa;">registros</div>
                         </div>
                         <div style="background:#f4f6f7;border:1px solid #ddd;border-radius:4px;padding:12px;text-align:center;">
                             <div style="font-size:22px;margin-bottom:4px;">🌽</div>
                             <div style="font-size:10px;color:#666;text-transform:uppercase;">Classificação</div>
                             <div id="memNClass" style="font-size:20px;font-weight:bold;color:#27ae60;margin:4px 0;">—</div>
-                            <div style="font-size:10px;color:#aaa;">registros novos</div>
+                            <div style="font-size:10px;color:#aaa;">registros</div>
                         </div>
                         <div style="background:#f4f6f7;border:1px solid #ddd;border-radius:4px;padding:12px;text-align:center;">
                             <div style="font-size:22px;margin-bottom:4px;">🧪</div>
                             <div style="font-size:10px;color:#666;text-transform:uppercase;">Matéria Prima</div>
                             <div id="memNMP" style="font-size:20px;font-weight:bold;color:#d4ac0d;margin:4px 0;">—</div>
-                            <div style="font-size:10px;color:#aaa;">registros novos</div>
+                            <div style="font-size:10px;color:#aaa;">registros</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- INFO SOBRE API -->
+                <!-- INFO -->
                 <div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;padding:12px;font-size:11px;color:#555;line-height:1.6;">
-                    <strong>ℹ️ Informação:</strong> Os dados novos são armazenados no <strong>IndexedDB</strong> do navegador (com fallback para localStorage).
-                    A quota disponível é gerenciada pelo próprio navegador e pode variar conforme o dispositivo e espaço em disco.
-                    <strong>Faça backup regularmente</strong> para evitar perda de dados.
+                    <strong>ℹ️ Como é calculado:</strong> O tamanho é obtido diretamente do PostgreSQL via <code>pg_database_size()</code>.
+                    O valor reflete o uso real de dados, índices e views materializadas no Supabase.
+                    <strong>Faça backup regularmente</strong> para evitar perda de dados ao aproximar o limite.
                 </div>
             </div>
         </div>
@@ -9859,19 +9878,76 @@ function formatBytes(bytes) {
 }
 
 async function atualizarMemoria() {
+    const el = id => document.getElementById(id);
+
+    // Atualiza contagem de registros
     const [nP, nC, nM] = await Promise.all([
         dbCount('producoes'),
         dbCount('classificacoes'),
         dbCount('materias_primas')
     ]);
-    const el = id => document.getElementById(id);
     if (el('memNProd'))  el('memNProd').textContent  = nP;
     if (el('memNClass')) el('memNClass').textContent = nC;
     if (el('memNMP'))    el('memNMP').textContent    = nM;
 
-    if (el('memUsado'))      el('memUsado').textContent      = '☁️ Supabase';
-    if (el('memDisponivel')) el('memDisponivel').textContent = 'Ilimitado';
-    if (el('memTotal'))      el('memTotal').textContent      = 'Nuvem';
+    // Limites reais do Supabase Free Plan
+    const LIMITE_DB_MB = 500;
+
+    // Busca tamanho real do banco via pg_database_size
+    try {
+        const { data, error } = await _sbClient.rpc('get_db_size');
+        let usadoMB = null;
+
+        if (!error && data !== null && data !== undefined) {
+            // Retorna bytes
+            usadoMB = Math.round((data / (1024 * 1024)) * 10) / 10;
+        } else {
+            // Fallback: tenta via SQL direto
+            const { data: d2, error: e2 } = await _sbClient
+                .from('_db_size_view')
+                .select('size_mb')
+                .maybeSingle();
+            if (!e2 && d2) usadoMB = parseFloat(d2.size_mb);
+        }
+
+        if (usadoMB !== null) {
+            const pct = Math.min(100, (usadoMB / LIMITE_DB_MB) * 100);
+            const dispMB = Math.max(0, LIMITE_DB_MB - usadoMB);
+
+            const fmt = mb => mb >= 1000 ? (mb/1024).toFixed(2)+' GB' : mb.toFixed(1)+' MB';
+
+            if (el('memUsado'))      el('memUsado').textContent      = fmt(usadoMB);
+            if (el('memDisponivel')) el('memDisponivel').textContent  = fmt(dispMB);
+            if (el('memTotal'))      el('memTotal').textContent       = '500 MB';
+            if (el('memBarraDB'))    el('memBarraDB').style.width     = pct.toFixed(1)+'%';
+            if (el('memBarraDBPct')) el('memBarraDBPct').textContent  = fmt(usadoMB)+' / 500 MB ('+pct.toFixed(1)+'%)';
+            if (el('memDbLabel'))    el('memDbLabel').textContent     = fmt(usadoMB)+' / 500 MB';
+
+            // Alerta se acima de 80%
+            if (pct >= 80) {
+                if (el('memAlerta'))    el('memAlerta').style.display    = 'block';
+                if (el('memAlertaTxt')) el('memAlertaTxt').textContent   =
+                    'Banco de dados em '+pct.toFixed(1)+'% da cota. Faça backup e limpe registros antigos.';
+            } else {
+                if (el('memAlerta')) el('memAlerta').style.display = 'none';
+            }
+        } else {
+            // Não foi possível obter o tamanho — mostra fallback informativo
+            _memFallbackDisplay();
+        }
+    } catch(e) {
+        _memFallbackDisplay();
+    }
+}
+
+function _memFallbackDisplay() {
+    const el = id => document.getElementById(id);
+    if (el('memUsado'))      el('memUsado').textContent      = 'N/D';
+    if (el('memDisponivel')) el('memDisponivel').textContent = 'N/D';
+    if (el('memTotal'))      el('memTotal').textContent      = '500 MB';
+    if (el('memBarraDB'))    el('memBarraDB').style.width    = '0%';
+    if (el('memBarraDBPct')) el('memBarraDBPct').textContent = 'Sem permissão para consultar tamanho';
+    if (el('memDbLabel'))    el('memDbLabel').textContent    = '⚠️ Crie a função get_db_size no Supabase';
 }
 
 async function verificarEspacoAoIniciar() {
