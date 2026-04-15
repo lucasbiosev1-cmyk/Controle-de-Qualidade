@@ -13202,44 +13202,270 @@ async function executarCorrecaoDefeitos() {
 .nc-alert-warning { background:#fef9e7;color:#7d6608;border-color:#f1c40f; }
 /* ===== PRINT NC ===== */
 .nc-print-report { display:none; }
-/* ===== ESTILOS DO RELATÓRIO DE IMPRESSÃO NC/DEV ===== */
-.nc-report-header { background:linear-gradient(to right,#0a1e7f,#1a3a9f);color:white;padding:18px 24px;border-radius:4px 4px 0 0;margin-bottom:20px; }
-.nc-report-header h1 { font-size:16px;font-weight:bold;margin-bottom:4px; }
-.nc-report-meta { font-size:11px;opacity:0.8; }
-.nc-report-section-title { font-size:12px;font-weight:bold;text-transform:uppercase;color:#0a1e7f;border-bottom:2px solid #0a1e7f;padding-bottom:4px;margin:16px 0 10px; }
-.nc-report-field { display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-bottom:12px; }
-.nc-report-field-item { background:#f8f9fa;border:1px solid #e8ecf0;border-radius:4px;padding:8px 10px; }
-.nc-report-field-item label { display:block;font-size:9px;font-weight:bold;text-transform:uppercase;color:#888;margin-bottom:3px; }
-.nc-report-field-item span { font-size:12px;color:#2c3e50;font-weight:600; }
-.nc-report-imgs { display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px; }
-.nc-report-img-item { text-align:center; }
-.nc-report-img-item img { max-width:180px;max-height:130px;border:1px solid #ddd;border-radius:4px;display:block; }
-.nc-report-img-item .cap { font-size:9px;color:#888;margin-top:3px; }
-.nc-report-sign-area { display:flex;gap:30px;margin-top:30px;padding-top:16px;border-top:1px solid #ddd; }
-.nc-sign-block { flex:1;text-align:center; }
-.nc-sign-space { height:40px; }
-.nc-sign-line { border-top:1px solid #333;margin:4px 0; }
-.nc-sign-label { font-size:11px;font-weight:bold;color:#333; }
-.nc-sign-sub { font-size:10px;color:#888; }
+
+/* ===== ESTILOS DO RELATÓRIO DE IMPRESSÃO NC/DEV — PADRÃO CORPORATIVO/AUDITORIA ===== */
+#ncPrintArea {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #1a1a1a;
+    background: #fff;
+    line-height: 1.4;
+}
+
+/* CABEÇALHO */
+.nc-report-header {
+    background: #1a2a6e !important;
+    color: white;
+    padding: 14px 20px 12px;
+    margin-bottom: 0;
+    border-radius: 0;
+    border-bottom: 3px solid #c0392b;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+.nc-report-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+.nc-report-header-empresa {
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #fff;
+}
+.nc-report-header-sgq {
+    font-size: 9px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+.nc-report-header h1 {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #fff;
+    margin: 0;
+}
+.nc-report-meta {
+    font-size: 9px;
+    color: rgba(255,255,255,0.65);
+    margin-top: 2px;
+}
+/* FAIXA DE IDENTIFICAÇÃO RÁPIDA (Nº NC + Gravidade) */
+.nc-report-id-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f4f6fb;
+    border: 1px solid #d0d8ea;
+    border-top: none;
+    padding: 8px 20px;
+    margin-bottom: 10px;
+}
+.nc-report-id-bar .nc-id-num {
+    font-size: 16px;
+    font-weight: 900;
+    color: #1a2a6e;
+    letter-spacing: 1px;
+}
+.nc-report-id-bar .nc-id-badge {
+    font-size: 10px;
+    font-weight: 800;
+    color: #fff;
+    padding: 3px 14px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* SEÇÕES */
+.nc-report-section-title {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #1a2a6e;
+    background: #eef1f8;
+    border-left: 3px solid #1a2a6e;
+    padding: 4px 10px;
+    margin: 10px 0 6px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* GRID DE CAMPOS */
+.nc-report-field {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+    margin-bottom: 6px;
+}
+.nc-report-field.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.nc-report-field.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.nc-report-field-item {
+    background: #fff;
+    border: 1px solid #d8dde6;
+    border-radius: 2px;
+    padding: 5px 8px;
+}
+.nc-report-field-item label {
+    display: block;
+    font-size: 7.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #6b7a99;
+    margin-bottom: 2px;
+}
+.nc-report-field-item span {
+    font-size: 10.5px;
+    color: #1a1a2e;
+    font-weight: 700;
+}
+
+/* CAIXAS DE TEXTO (descrição, causas, ações) */
+#ncPrintArea .nc-text-box {
+    font-size: 10px;
+    color: #1a1a2e;
+    line-height: 1.5;
+    padding: 7px 10px;
+    background: #fbfcfe;
+    border: 1px solid #d0d8ea;
+    border-radius: 2px;
+    margin-bottom: 6px;
+    min-height: unset;
+}
+#ncPrintArea .nc-text-box.red   { border-left: 3px solid #c0392b; background: #fdf8f8; }
+#ncPrintArea .nc-text-box.amber { border-left: 3px solid #e67e22; background: #fffaf5; }
+#ncPrintArea .nc-text-box.green { border-left: 3px solid #27ae60; background: #f5fdf8; }
+#ncPrintArea .nc-text-box.purple{ border-left: 3px solid #8e44ad; background: #faf7fd; }
+
+/* IMAGENS */
+.nc-report-imgs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.nc-report-img-item { text-align: center; }
+.nc-report-img-item img {
+    max-width: 160px;
+    max-height: 110px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    display: block;
+}
+.nc-report-img-item .cap {
+    font-size: 8px;
+    color: #888;
+    margin-top: 2px;
+}
+
+/* ASSINATURAS */
+.nc-report-sign-area {
+    display: flex;
+    gap: 16px;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1.5px solid #1a2a6e;
+}
+.nc-sign-block {
+    flex: 1;
+    text-align: center;
+    background: #f8f9fb;
+    border: 1px solid #d0d8ea;
+    border-radius: 2px;
+    padding: 10px 8px 8px;
+}
+.nc-sign-space { height: 32px; }
+.nc-sign-line {
+    border-top: 1px solid #333;
+    margin: 4px 8px;
+}
+.nc-sign-label {
+    font-size: 9px;
+    font-weight: 800;
+    color: #1a2a6e;
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+.nc-sign-sub {
+    font-size: 8px;
+    color: #7b8ab0;
+    margin-top: 1px;
+}
+
+/* RODAPÉ DO RELATÓRIO */
+.nc-report-footer {
+    margin-top: 12px;
+    padding-top: 6px;
+    border-top: 1px solid #d0d8ea;
+    display: flex;
+    justify-content: space-between;
+    font-size: 7.5px;
+    color: #9aa3bc;
+    letter-spacing: 0.3px;
+}
+
+/* TABELA (Parâmetros de Devolução) */
+#ncPrintArea table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+    margin-bottom: 8px;
+}
+#ncPrintArea table th {
+    background: #1a2a6e;
+    color: #fff;
+    padding: 5px 8px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: 700;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+#ncPrintArea table td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #e2e6ee;
+    color: #1a1a2e;
+}
+#ncPrintArea table tr:nth-child(even) td {
+    background: #f6f8fc;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
 @media print {
-    @page { size: A4 portrait; margin: 6mm 7mm 6mm 7mm; }
-    body > *:not(#ncPrintArea) { display:none !important; }
-    #ncPrintArea { display:block !important;position:static !important;width:100% !important;max-width:100% !important;padding:0 !important;margin:0 !important; }
-    .nc-report-header { -webkit-print-color-adjust:exact;print-color-adjust:exact;padding:8px 12px !important;margin-bottom:6px !important;border-radius:3px !important; }
-    .nc-report-header h1 { font-size:11px !important;margin-bottom:1px !important; }
-    .nc-report-meta { font-size:8px !important; }
-    .nc-report-section-title { font-size:8px !important;margin:5px 0 4px !important;padding-bottom:2px !important;-webkit-print-color-adjust:exact;print-color-adjust:exact; }
-    .nc-report-field { gap:4px !important;margin-bottom:5px !important; }
-    .nc-report-field-item { padding:4px 6px !important; }
-    .nc-report-field-item label { font-size:7px !important;margin-bottom:1px !important; }
-    .nc-report-field-item span { font-size:9px !important; }
-    #ncPrintArea p { font-size:9px !important;padding:4px 6px !important;margin-bottom:4px !important;min-height:unset !important;line-height:1.3 !important; }
-    .nc-report-sign-area { margin-top:8px !important;padding-top:6px !important;gap:16px !important; }
-    .nc-sign-space { height:18px !important; }
-    .nc-sign-label { font-size:8px !important; }
-    .nc-sign-sub { font-size:7px !important; }
-    #ncPrintArea > div:nth-child(2) { margin-bottom:4px !important; }
-    #ncPrintArea > div:nth-child(2) span { font-size:14px !important; }
+    @page { size: A4 portrait; margin: 12mm 14mm 12mm 14mm; }
+    body > *:not(#ncPrintArea) { display: none !important; }
+    #ncPrintArea {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 10px !important;
+        overflow: visible !important;
+    }
+    .nc-report-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .nc-report-section-title { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .nc-report-id-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .nc-sign-block { -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-inside: avoid; }
+    .nc-report-sign-area { page-break-inside: avoid; }
+    #ncPrintArea table th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    #ncPrintArea table tr:nth-child(even) td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .nc-text-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 /* ===== CHECK ITEMS ===== */
 .nc-check-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px; }
@@ -13785,16 +14011,41 @@ function imprimirRelatorioNC(tipo) {
             : '<p style="color:#95a5a6;font-size:11px;">Nenhuma evidência fotográfica registrada.</p>';
 
         printArea.innerHTML = `
-        <div class="nc-report-header" style="background:linear-gradient(to right,#c0392b,#e74c3c);">
-            <div style="font-size:18px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:#fff;margin-bottom:2px;">AGRONOR ALIMENTOS</div>
-            <h1>🏭 Sistema de Gestão da Qualidade — SGQ</h1>
-            <div class="nc-report-meta">RELATÓRIO DE NÃO CONFORMIDADE &nbsp;|&nbsp; Emitido em: ${new Date().toLocaleString('pt-BR')}</div>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <span style="font-size:22px;font-weight:900;color:#c0392b;">${num}</span>
-            <span style="display:inline-block;padding:4px 14px;border-radius:10px;font-size:12px;font-weight:800;color:#fff;background:${gravColor};">${grav}</span>
+        <!-- CABEÇALHO CORPORATIVO -->
+        <div class="nc-report-header">
+            <div class="nc-report-header-top">
+                <div>
+                    <div class="nc-report-header-empresa">AGRONOR ALIMENTOS</div>
+                    <div class="nc-report-header-sgq">Sistema de Gestão da Qualidade — SGQ</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.5px;">Doc. Controlado</div>
+                    <div style="font-size:9px;color:rgba(255,255,255,0.8);font-weight:700;">SGQ-NC-001</div>
+                </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+                <h1>Relatório de Não Conformidade</h1>
+                <div class="nc-report-meta">Emitido em: ${new Date().toLocaleString('pt-BR')}</div>
+            </div>
         </div>
 
+        <!-- FAIXA NC Nº + GRAVIDADE -->
+        <div class="nc-report-id-bar">
+            <div style="display:flex;align-items:center;gap:18px;">
+                <div>
+                    <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:0.5px;color:#6b7a99;font-weight:700;">Número da NC</div>
+                    <div class="nc-id-num">${num}</div>
+                </div>
+                <div style="width:1px;height:36px;background:#d0d8ea;"></div>
+                <div>
+                    <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:0.5px;color:#6b7a99;font-weight:700;">Status</div>
+                    <div style="font-size:11px;font-weight:700;color:#1a2a6e;">${status}</div>
+                </div>
+            </div>
+            <span class="nc-id-badge" style="background:${gravColor};">${grav}</span>
+        </div>
+
+        <!-- SEÇÃO 1: IDENTIFICAÇÃO -->
         <div class="nc-report-section-title">1. Identificação</div>
         <div class="nc-report-field">
             <div class="nc-report-field-item"><label>Data de Abertura</label><span>${data}</span></div>
@@ -13802,44 +14053,71 @@ function imprimirRelatorioNC(tipo) {
             <div class="nc-report-field-item"><label>Gravidade</label><span>${grav}</span></div>
             <div class="nc-report-field-item"><label>Local de Detecção</label><span>${local}</span></div>
         </div>
-        <div class="nc-report-field" style="margin-top:6px;">
+        <div class="nc-report-field">
             <div class="nc-report-field-item"><label>Fornecedor / Origem</label><span>${forn}</span></div>
             <div class="nc-report-field-item"><label>Produto / Item</label><span>${produto}</span></div>
             <div class="nc-report-field-item"><label>Lote / Nº NF</label><span>${lote}</span></div>
-            <div class="nc-report-field-item"><label>Status</label><span>${status}</span></div>
+            <div class="nc-report-field-item"><label>Prazo</label><span>${prazo}</span></div>
         </div>
 
+        <!-- SEÇÃO 2: DESCRIÇÃO -->
         <div class="nc-report-section-title">2. Descrição da Não Conformidade</div>
-        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#fdf2f2;border-left:4px solid #e74c3c;border-radius:3px;margin-bottom:8px;min-height:40px;">${desc}</p>
+        <div class="nc-text-box red">${desc}</div>
 
-        ${causas && causas !== '-' ? `<div class="nc-report-section-title">3. Causas Identificadas</div>
-        <p style="font-size:12px;padding:8px;background:#fff8e1;border-left:4px solid #f39c12;border-radius:3px;margin-bottom:8px;">${causas}</p>` : ''}
+        ${causas && causas !== '-' ? `
+        <div class="nc-report-section-title">3. Causas Identificadas</div>
+        <div class="nc-text-box amber">${causas}</div>` : ''}
 
+        <!-- SEÇÃO 4: AÇÃO IMEDIATA -->
         <div class="nc-report-section-title">4. Ação Imediata / Disposição do Material</div>
-        <div class="nc-report-field" style="margin-bottom:8px;">
+        <div class="nc-report-field cols-2">
             <div class="nc-report-field-item"><label>Disposição do Material</label><span>${disp}</span></div>
-            <div class="nc-report-field-item"><label>Responsável pela Ação</label><span>${respA}</span></div>
+            <div class="nc-report-field-item"><label>Responsável pela Ação Imediata</label><span>${respA}</span></div>
         </div>
-        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#eafaf1;border-left:4px solid #27ae60;border-radius:3px;margin-bottom:8px;min-height:36px;">${acaoIm}</p>
+        <div class="nc-text-box green">${acaoIm}</div>
 
+        <!-- SEÇÃO 5: AÇÃO CORRETIVA -->
         <div class="nc-report-section-title">5. Ação Corretiva / Preventiva</div>
-        <div class="nc-report-field" style="margin-bottom:8px;">
+        <div class="nc-report-field cols-3">
             <div class="nc-report-field-item"><label>Responsável pela Correção</label><span>${resp}</span></div>
             <div class="nc-report-field-item"><label>Prazo para Conclusão</label><span>${prazo}</span></div>
             <div class="nc-report-field-item"><label>Eficácia da Ação</label><span>${efic}</span></div>
         </div>
-        ${cauRaiz && cauRaiz !== '-' ? `<p style="font-size:11px;color:#555;margin-bottom:4px;font-weight:700;">Causa Raiz:</p><p style="font-size:12px;color:#2c3e50;padding:6px 8px;background:#f0eaff;border-left:4px solid #8e44ad;border-radius:3px;margin-bottom:6px;">${cauRaiz}</p>` : ''}
-        <p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#f8f4ff;border-left:4px solid #8e44ad;border-radius:3px;margin-bottom:8px;min-height:36px;">${acaoCor}</p>
+        ${cauRaiz && cauRaiz !== '-' ? `<div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:0.4px;color:#6b7a99;margin-bottom:3px;">Causa Raiz:</div><div class="nc-text-box purple" style="margin-bottom:5px;">${cauRaiz}</div>` : ''}
+        <div class="nc-text-box purple">${acaoCor}</div>
 
-        ${obs && obs !== '-' ? `<div class="nc-report-section-title">6. Observações</div>
-        <p style="font-size:12px;padding:8px;background:#fef5e7;border-left:4px solid #e67e22;border-radius:3px;margin-bottom:14px;">${obs}</p>` : ''}
+        ${obs && obs !== '-' ? `
+        <div class="nc-report-section-title">6. Observações</div>
+        <div class="nc-text-box amber">${obs}</div>` : ''}
 
         ${imgsHtml}
 
+        <!-- ASSINATURAS -->
         <div class="nc-report-sign-area">
-            <div class="nc-sign-block"><div class="nc-sign-space" style="height:22px;"></div><div class="nc-sign-label" style="margin-bottom:2px;">Lucas Lima</div><div class="nc-sign-line"></div><div class="nc-sign-sub">Resp. Técnico · CRQ 04473318</div></div>
-            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Assistente</div><div class="nc-sign-sub">&nbsp;</div></div>
-            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Supervisor de Produção</div><div class="nc-sign-sub">&nbsp;</div></div>
+            <div class="nc-sign-block">
+                <div class="nc-sign-space"></div>
+                <div class="nc-sign-line"></div>
+                <div class="nc-sign-label">Lucas Lima</div>
+                <div class="nc-sign-sub">Resp. Técnico · CRQ 04473318</div>
+            </div>
+            <div class="nc-sign-block">
+                <div class="nc-sign-space"></div>
+                <div class="nc-sign-line"></div>
+                <div class="nc-sign-label">Assistente de Qualidade</div>
+                <div class="nc-sign-sub">&nbsp;</div>
+            </div>
+            <div class="nc-sign-block">
+                <div class="nc-sign-space"></div>
+                <div class="nc-sign-line"></div>
+                <div class="nc-sign-label">Supervisor de Produção</div>
+                <div class="nc-sign-sub">&nbsp;</div>
+            </div>
+        </div>
+
+        <!-- RODAPÉ -->
+        <div class="nc-report-footer">
+            <span>AGRONOR ALIMENTOS — SGQ · Documento interno confidencial</span>
+            <span>Revisão: 01 · ${new Date().toLocaleDateString('pt-BR')}</span>
         </div>`;
 
     } else {
@@ -13885,11 +14163,11 @@ function imprimirRelatorioNC(tipo) {
             <div class="nc-report-section-title">3. Parâmetros Avaliados</div>
             <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;">
                 <thead>
-                    <tr style="background:#d35400;color:white;">
-                        <th style="padding:7px 10px;text-align:left;font-size:11px;">Avaliados</th>
-                        <th style="padding:7px 10px;text-align:center;font-size:11px;">Resultado (%)</th>
-                        <th style="padding:7px 10px;text-align:center;font-size:11px;">Parâmetro (%)</th>
-                        <th style="padding:7px 10px;text-align:center;font-size:11px;">Situação</th>
+                    <tr style="background:#1a2a6e;color:white;">
+                        <th style="padding:5px 8px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:0.4px;">Avaliados</th>
+                        <th style="padding:5px 8px;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:0.4px;">Resultado (%)</th>
+                        <th style="padding:5px 8px;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:0.4px;">Parâmetro (%)</th>
+                        <th style="padding:5px 8px;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:0.4px;">Situação</th>
                     </tr>
                 </thead>
                 <tbody>${rowsHtml}</tbody>
@@ -13897,39 +14175,95 @@ function imprimirRelatorioNC(tipo) {
         }
 
         printArea.innerHTML = `
-        <div class="nc-report-header" style="background:linear-gradient(to right,#d35400,#e67e22);">
-            <div style="font-size:18px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:#fff;margin-bottom:2px;">AGRONOR ALIMENTOS</div>
-            <h1>🏭 Sistema de Gestão da Qualidade — SGQ</h1>
-            <div class="nc-report-meta">RELATÓRIO DE DEVOLUÇÃO &nbsp;|&nbsp; Emitido em: ${new Date().toLocaleString('pt-BR')}</div>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <span style="font-size:22px;font-weight:900;color:#d35400;">${num}</span>
+        <!-- CABEÇALHO CORPORATIVO -->
+        <div class="nc-report-header" style="border-bottom-color:#d35400;">
+            <div class="nc-report-header-top">
+                <div>
+                    <div class="nc-report-header-empresa">AGRONOR ALIMENTOS</div>
+                    <div class="nc-report-header-sgq">Sistema de Gestão da Qualidade — SGQ</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.5px;">Doc. Controlado</div>
+                    <div style="font-size:9px;color:rgba(255,255,255,0.8);font-weight:700;">SGQ-DEV-001</div>
+                </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+                <h1>Relatório de Devolução</h1>
+                <div class="nc-report-meta">Emitido em: ${new Date().toLocaleString('pt-BR')}</div>
+            </div>
         </div>
 
+        <!-- FAIXA DEV Nº + STATUS -->
+        <div class="nc-report-id-bar">
+            <div style="display:flex;align-items:center;gap:18px;">
+                <div>
+                    <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:0.5px;color:#6b7a99;font-weight:700;">Número da Devolução</div>
+                    <div class="nc-id-num">${num}</div>
+                </div>
+                <div style="width:1px;height:36px;background:#d0d8ea;"></div>
+                <div>
+                    <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:0.5px;color:#6b7a99;font-weight:700;">Status</div>
+                    <div style="font-size:11px;font-weight:700;color:#1a2a6e;">${status}</div>
+                </div>
+            </div>
+            <span class="nc-id-badge" style="background:#d35400;">${tipoDev}</span>
+        </div>
+
+        <!-- SEÇÃO 1: IDENTIFICAÇÃO -->
         <div class="nc-report-section-title">1. Identificação</div>
         <div class="nc-report-field">
             <div class="nc-report-field-item"><label>Data</label><span>${data}</span></div>
             <div class="nc-report-field-item"><label>Tipo de Devolução</label><span>${tipoDev}</span></div>
             <div class="nc-report-field-item"><label>Produto</label><span>${produto}</span></div>
-            <div class="nc-report-field-item"><label>Lote / NF Entrada</label><span>${lote}</span></div>
+            <div class="nc-report-field-item"><label>Lote / Nº NF Entrada</label><span>${lote}</span></div>
+        </div>
+        <div class="nc-report-field cols-2">
             <div class="nc-report-field-item"><label>Fornecedor</label><span>${forn}</span></div>
+            <div class="nc-report-field-item"><label>Status</label><span>${status}</span></div>
         </div>
 
+        <!-- SEÇÃO 2: MOTIVO -->
         <div class="nc-report-section-title">2. Motivo da Devolução</div>
-        <div class="nc-report-field" style="margin-bottom:8px;">
+        <div class="nc-report-field cols-2">
             <div class="nc-report-field-item"><label>Motivo Principal</label><span>${motivo}</span></div>
             <div class="nc-report-field-item"><label>Parâmetro Não Conforme</label><span>${param}</span></div>
         </div>
-        ${descMot && descMot !== '-' ? `<p style="font-size:12px;color:#2c3e50;line-height:1.6;padding:8px;background:#fef5e7;border-left:4px solid #e67e22;border-radius:3px;margin-bottom:14px;">${descMot}</p>` : ''}
+        ${descMot && descMot !== '-' ? `<div class="nc-text-box amber">${descMot}</div>` : ''}
 
         ${classifHtml}
 
         ${imgsHtml}
 
+        ${obs && obs !== '-' ? `
+        <div class="nc-report-section-title">Observações</div>
+        <div class="nc-text-box amber">${obs}</div>` : ''}
+
+        <!-- ASSINATURAS -->
         <div class="nc-report-sign-area">
-            <div class="nc-sign-block"><div class="nc-sign-space" style="height:22px;"></div><div class="nc-sign-label" style="margin-bottom:2px;">Lucas Lima</div><div class="nc-sign-line"></div><div class="nc-sign-sub">Resp. Técnico · CRQ 04473318</div></div>
-            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Assistente</div><div class="nc-sign-sub">&nbsp;</div></div>
-            <div class="nc-sign-block"><div class="nc-sign-space"></div><div class="nc-sign-line"></div><div class="nc-sign-label">Supervisor de Produção</div><div class="nc-sign-sub">&nbsp;</div></div>
+            <div class="nc-sign-block">
+                <div class="nc-sign-space"></div>
+                <div class="nc-sign-line"></div>
+                <div class="nc-sign-label">Lucas Lima</div>
+                <div class="nc-sign-sub">Resp. Técnico · CRQ 04473318</div>
+            </div>
+            <div class="nc-sign-block">
+                <div class="nc-sign-space"></div>
+                <div class="nc-sign-line"></div>
+                <div class="nc-sign-label">Assistente de Qualidade</div>
+                <div class="nc-sign-sub">&nbsp;</div>
+            </div>
+            <div class="nc-sign-block">
+                <div class="nc-sign-space"></div>
+                <div class="nc-sign-line"></div>
+                <div class="nc-sign-label">Supervisor de Produção</div>
+                <div class="nc-sign-sub">&nbsp;</div>
+            </div>
+        </div>
+
+        <!-- RODAPÉ -->
+        <div class="nc-report-footer">
+            <span>AGRONOR ALIMENTOS — SGQ · Documento interno confidencial</span>
+            <span>Revisão: 01 · ${new Date().toLocaleDateString('pt-BR')}</span>
         </div>`;
     }
 
