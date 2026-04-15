@@ -18072,20 +18072,15 @@ CONTEXTO FUNDAMENTAL — LEIA COM ATENÇÃO:
 - Nunca defenda o fornecedor ou a transportadora. Adote sempre a perspectiva de quem RECEBEU o produto e identificou o problema.
 - Sua análise deve proteger os interesses da empresa receptora, garantir a rastreabilidade e embasar ações corretivas e cobranças ao fornecedor/transportadora.
 
-Suas respostas são técnicas, objetivas e fundamentadas nas normas:
-- **Embrapa**: Instruções Técnicas sobre qualidade de grãos, controle de micotoxinas, armazenamento e processamento de alimentos para animais.
-- **Compêndio Brasileiro de Nutrição Animal (MAPA)**: parâmetros nutricionais, limites de umidade, proteína, micotoxinas e parâmetros físico-químicos por tipo de ingrediente.
-- Portaria MAPA nº 269/2019 e legislação vigente sobre controle de qualidade na nutrição animal.
-
-Ao analisar uma Não Conformidade:
-1. Identifique as possíveis causas técnicas com base nos dados fornecidos, apontando a responsabilidade do FORNECEDOR/TRANSPORTADORA.
-2. Avalie o RISCO DO PRODUTO para a produção e para os animais (segurança alimentar) sob a ótica da empresa receptora.
-3. Indique quais ETAPAS DO PROCESSO ou INSUMOS podem estar comprometidos na fábrica receptora.
-4. Sugira AÇÃO TOMADA imediata clara e objetiva (bloqueio, devolução, segregação, comunicação ao fornecedor).
-5. Sugira AÇÃO CORRETIVA com prazo, responsabilidade implícita e mecanismo de cobrança ao fornecedor.
-6. SEMPRE referencie a norma aplicável (ex: "conforme Embrapa – Circular Técnica 89", "Compêndio Bras. Nutrição Animal, tabela X").
+REGRAS DE RESPOSTA:
+1. Identifique claramente o PRODUTO afetado e o tipo de não conformidade detectada.
+2. Descreva os IMPACTOS PRÁTICOS do problema: risco à qualidade da ração, risco à saúde animal, perdas de processo, risco de contaminação cruzada, problemas de armazenamento, etc.
+3. Indique quais ETAPAS DO PROCESSO podem estar comprometidas na fábrica receptora.
+4. Sugira AÇÃO IMEDIATA clara e objetiva (bloqueio, devolução, segregação, comunicação ao fornecedor).
+5. Sugira AÇÃO CORRETIVA para prevenir recorrência.
+6. NÃO é obrigatório citar Compêndio, MAPA, Embrapa ou normas específicas. Cite normas SOMENTE se for altamente relevante e você tiver certeza. Priorize sempre a clareza técnica e os impactos reais.
 7. Use linguagem técnica e profissional. Responda em português do Brasil.
-8. Seja conciso: priorize clareza técnica. Use listas quando útil.`;
+8. Seja conciso e direto. Use listas quando útil.`;
 
 // ---- SYSTEM PROMPTS ESPECIALIZADOS POR ANALISTA ----
 const _IA_SYSTEM_RELATORIO_CQ = `Você é um Analista de Controle de Qualidade sênior de uma fábrica de ração animal no Brasil, com formação técnica sólida e visão baseada nas principais referências nacionais e internacionais do setor.
@@ -18269,16 +18264,61 @@ async function _iaAnalisarNC_inicial() {
     const ctx = _chatIA_NC_contextoNC;
     if (!ctx) return;
 
-    const descricao = (ctx.nc.descricao || '').trim();
+    const nc = ctx.nc;
+    const descricao = (nc.descricao || '').trim();
 
     if (!descricao) {
         _adicionarMsgIA('⚠️ Nenhuma descrição da não conformidade informada. Preencha o campo "Descrição Detalhada" antes de consultar a IA.', 'ia');
         return;
     }
 
-    const prompt = `DESCRIÇÃO DA NÃO CONFORMIDADE:\n"${descricao}"\n\nCom base EXCLUSIVAMENTE na descrição acima, gere uma ANÁLISE TÉCNICA OBJETIVA seguindo esta estrutura:\n\n**RESUMO DO PROBLEMA**\nDescreva com clareza o que foi relatado, o produto ou item afetado e o impacto imediato.\n\n**IMPACTO NA QUALIDADE / PRODUTO**\nExplique como este problema pode comprometer a qualidade, segurança ou conformidade do produto. Cite norma aplicável se houver.\n\n**SUGESTÕES DE AÇÃO IMEDIATA**\nListe 3–4 ações práticas e objetivas para conter o problema agora.\n\n**AÇÃO CORRETIVA SUGERIDA**\nProponha 2–3 medidas para prevenir a recorrência.\n\nResponda em português do Brasil, linguagem técnica e objetiva.`;
+    // Monta bloco de contexto completo do formulário
+    const produto    = (nc.produto    || '').trim();
+    const tipo       = (nc.tipo       || '').trim();
+    const gravidade  = (nc.gravidade  || '').trim();
+    const fornecedor = (nc.fornecedor || '').trim();
+    const lote       = (nc.lote       || '').trim();
+    const local      = (nc.local      || '').trim();
+    const numero     = (nc.numero     || '').trim();
+    const causas     = Array.isArray(nc.causas) && nc.causas.length > 0 ? nc.causas.join(', ') : '';
 
-    _adicionarMsgIA('⏳ Analisando a descrição da NC...', 'ia');
+    let contextoFormulario = '';
+    if (produto)    contextoFormulario += `- Produto/Item: ${produto}\n`;
+    if (tipo)       contextoFormulario += `- Tipo de NC: ${tipo}\n`;
+    if (gravidade)  contextoFormulario += `- Gravidade: ${gravidade}\n`;
+    if (fornecedor) contextoFormulario += `- Fornecedor: ${fornecedor}\n`;
+    if (lote)       contextoFormulario += `- Lote: ${lote}\n`;
+    if (local)      contextoFormulario += `- Local detectado: ${local}\n`;
+    if (numero)     contextoFormulario += `- Número NC: ${numero}\n`;
+    if (causas)     contextoFormulario += `- Causas prováveis marcadas: ${causas}\n`;
+    if (ctx.dadosMPContexto) contextoFormulario += ctx.dadosMPContexto + '\n';
+
+    const historicoTxt = ctx.historicoNCs && ctx.historicoNCs.length > 0
+        ? `\nHISTÓRICO DE NCs ANTERIORES DO PRODUTO:\n${ctx.historicoNCs.map(h => '  • ' + h).join('\n')}\n`
+        : '';
+
+    const prompt = `DADOS DA NÃO CONFORMIDADE:
+${contextoFormulario}
+DESCRIÇÃO DO PROBLEMA:
+"${descricao}"
+${historicoTxt}
+Com base nos dados acima, gere uma ANÁLISE TÉCNICA OBJETIVA seguindo esta estrutura:
+
+**RESUMO DO PROBLEMA**
+Descreva com clareza o que foi detectado, identificando o produto ${produto ? `(${produto})` : ''} e o desvio relatado.
+
+**IMPACTOS POSSÍVEIS**
+Explique os riscos práticos deste problema: impacto na qualidade da ração, risco à saúde animal, perdas de processo, risco de contaminação cruzada ou outros efeitos relevantes para este produto e tipo de não conformidade.
+
+**AÇÃO IMEDIATA SUGERIDA**
+Liste 3–4 ações práticas e objetivas para conter o problema agora (bloqueio, segregação, devolução, comunicação ao fornecedor, etc.).
+
+**AÇÃO CORRETIVA SUGERIDA**
+Proponha 2–3 medidas para prevenir a recorrência deste desvio.
+
+Responda em português do Brasil, linguagem técnica e objetiva. Não cite normas ou compêndios desnecessariamente — foque nos impactos reais e nas ações práticas.`;
+
+    _adicionarMsgIA('⏳ Analisando a não conformidade...', 'ia');
 
     try {
         const resp = await _iaCallComFallback(_IA_SYSTEM_NC, [{ role: 'user', content: prompt }], 1200);
@@ -18314,14 +18354,19 @@ async function chatIA_NC_acao(tipo) {
     const ctx = _chatIA_NC_contextoNC;
     if (!ctx) return;
 
+    const nc = ctx.nc;
+    const produtoCtx = (nc.produto || '').trim() ? ` referente ao produto "${nc.produto}"` : '';
+    const tipoCtx    = (nc.tipo    || '').trim() ? ` (tipo: ${nc.tipo})` : '';
+    const descCtx    = (nc.descricao || '').trim() ? `\nDescrição do problema: "${nc.descricao.slice(0, 200)}"` : '';
+
     const prompts = {
-        acao_tomada: `Com base na NC descrita, escreva um TEXTO PADRÃO DE AÇÃO TOMADA IMEDIATA (3–5 linhas). Deve ser objetivo, técnico, indicar o que foi feito imediatamente com o produto/processo e referenciar a norma. Formate para ser copiado diretamente para o campo "Ação Imediata" do formulário.`,
-        causa_raiz:  `Com base nos dados da NC e no histórico, realize uma análise de CAUSA RAIZ usando a metodologia dos 5 Porquês ou Diagrama de Ishikawa. Identifique a causa raiz mais provável e referencie a norma técnica aplicável.`,
-        risco_produto: `Avalie detalhadamente o RISCO DO PRODUTO envolvido nesta NC. Classifique o risco (Crítico / Alto / Médio / Baixo), descreva o impacto na qualidade e na segurança alimentar animal, e indique o que o Compêndio Brasileiro de Nutrição Animal e as normas Embrapa estabelecem para este parâmetro.`,
-        acao_corretiva: `Redija um texto de AÇÃO CORRETIVA técnica e completa para esta NC. Inclua: o que deve ser feito, quem é o responsável implícito (por função), prazo sugerido, indicador de eficácia da ação, e referência normativa. Formate para ser copiado para o campo "Ação Corretiva".`,
-        inserir_campos: `Gere um JSON com as seguintes chaves exatas para preencher os campos do formulário de NC:
+        acao_tomada: `Com base na NC${produtoCtx}${tipoCtx}${descCtx}, escreva um TEXTO PADRÃO DE AÇÃO TOMADA IMEDIATA (3–5 linhas). Deve ser objetivo, técnico, indicar o que foi feito imediatamente com o produto/processo. Formate para ser copiado diretamente para o campo "Ação Imediata" do formulário.`,
+        causa_raiz:  `Com base na NC${produtoCtx}${tipoCtx}${descCtx}, realize uma análise de CAUSA RAIZ usando a metodologia dos 5 Porquês. Identifique a causa raiz mais provável para este tipo de desvio no produto informado.`,
+        risco_produto: `Avalie detalhadamente o RISCO DO PRODUTO para a NC${produtoCtx}${tipoCtx}${descCtx}. Classifique o risco (Crítico / Alto / Médio / Baixo), descreva o impacto prático na qualidade da ração e na saúde animal. Seja específico para o produto e tipo de desvio informados.`,
+        acao_corretiva: `Redija um texto de AÇÃO CORRETIVA técnica e completa para a NC${produtoCtx}${tipoCtx}${descCtx}. Inclua: o que deve ser feito, quem é o responsável implícito (por função), prazo sugerido e indicador de eficácia da ação. Formate para ser copiado para o campo "Ação Corretiva".`,
+        inserir_campos: `Para a NC${produtoCtx}${tipoCtx}${descCtx}, gere um JSON com as seguintes chaves exatas para preencher os campos do formulário:
 { "acao_imediata": "...", "causa_raiz": "...", "acao_corretiva": "...", "obs": "..." }
-Cada valor deve ser um texto técnico completo e pronto para uso. Responda APENAS com o JSON, sem markdown, sem explicações fora do JSON.`
+Cada valor deve ser um texto técnico completo, específico para o produto e desvio informados, pronto para uso. Responda APENAS com o JSON, sem markdown, sem explicações fora do JSON.`
     };
 
     const msg = prompts[tipo];
