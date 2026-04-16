@@ -5249,7 +5249,8 @@ async function _salvarUsuarioSupabase(email, dados) {
             ativo:    true
         };
 
-        const { error } = await _sbClient.from('perfis').insert(payload);
+        // ✅ upsert evita erro de chave duplicada caso o usuário já exista na tabela perfis
+        const { error } = await _sbClient.from('perfis').upsert(payload, { onConflict: 'id' });
         if (error) throw new Error(error.message);
         sgqToast('Usuário "' + dados.nome + '" cadastrado com sucesso! Login: ' + dados.username, 'success', 5000);
     } catch(e) {
