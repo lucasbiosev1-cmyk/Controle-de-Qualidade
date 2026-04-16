@@ -3585,6 +3585,10 @@
                         <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">FORNECEDOR</label>
                         <input id="reagCadFornecedor" placeholder="Nome do fornecedor" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
                     </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">VALOR UNITÁRIO (R$)</label>
+                        <input type="number" step="0.01" min="0" id="reagCadValorUnit" placeholder="Ex: 45.90" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                    </div>
                     <div style="grid-column:1/-1;" id="reagCadNFDiv">
                         <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">NOTA FISCAL (Chave de Acesso)</label>
                         <input id="reagCadNFChave" placeholder="Deixe em branco se não houver Nota Fiscal" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;font-family:monospace;">
@@ -16370,10 +16374,7 @@ async function reagSalvarNota() {
         sgqToast('⚠️ Informe a quantidade de pelo menos um produto.', 'warning');
         return;
     }
-    if (!itens.length) {
-        sgqToast('⚠️ Vincule pelo menos um produto a um reagente cadastrado.', 'warning');
-        return;
-    }
+    // Se só há materiais (sem vínculo a reagente), permite salvar normalmente.
 
     try {
         // ── Atualizar estoque de cada reagente no Supabase ────────
@@ -16413,7 +16414,8 @@ async function reagSalvarNota() {
         reagRenderNotas();
         reagAtualizarCards();
         reagVerificarAlertas();
-        sgqToast('✅ Entrada registrada! ' + itens.length + ' reagente(s) atualizados.', 'success');
+        const msgSucesso = itens.length > 0 ? '✅ Entrada registrada! ' + itens.length + ' reagente(s) atualizados.' : '✅ Nota registrada! Somente materiais (sem produtos químicos vínculados).';
+        sgqToast(msgSucesso, 'success');
 
         // ── Popup para itens não vinculados ───────────────────────
         if (itensNaoVinculados.length > 0) {
@@ -16654,6 +16656,7 @@ function reagAbrirModalCadastro() {
     _reagEditId = null;
     document.getElementById('reagCadTitulo').textContent = '🧪 Cadastrar Reagente';
     ['reagCadId','reagCadNome','reagCadLote','reagCadFornecedor','reagCadPortaria'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    const elValorUnit = document.getElementById('reagCadValorUnit'); if (elValorUnit) elValorUnit.value = '';
     document.getElementById('reagCadMinimo').value      = '';
     document.getElementById('reagCadQtdInicial').value  = '';
     document.getElementById('reagCadValidade').value    = '';
@@ -16678,6 +16681,7 @@ function reagEditarCadastro(id) {
     document.getElementById('reagCadFornecedor').value        = r.fornecedor || '';
     document.getElementById('reagCadControlePF').checked      = !!r.controlePF;
     document.getElementById('reagCadPortaria').value          = r.portaria || '';
+    const elVU = document.getElementById('reagCadValorUnit'); if (elVU) elVU.value = r.custoUnit != null ? r.custoUnit : '';
     const elNF = document.getElementById('reagCadNFChave');
     if (elNF) {
         // Se o reagente já tem chave no banco, usa ela.
@@ -16792,6 +16796,7 @@ async function reagSalvarCadastro() {
         portaria:   document.getElementById('reagCadPortaria').value.trim(),
         dataEntrada:_reagHoje(),
         nfChave:    (document.getElementById('reagCadNFChave') || {}).value?.trim() || (_reagCadRetornoSelect ? (_reagCadChaveNF || '') : ''),
+        custoUnit:  (() => { const v = parseFloat(document.getElementById('reagCadValorUnit')?.value); return isNaN(v) ? null : v; })(),
     };
 
     try {
