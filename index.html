@@ -3188,6 +3188,68 @@
         </div>
     </div>
 
+    <!-- MODAL BAIXA MATERIAL -->
+    <div id="modalBaixaMaterial" style="display:none;position:fixed;inset:0;z-index:8100;background:rgba(0,0,0,0.55);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:12px;width:100%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,0.22);margin:20px;max-height:90vh;overflow-y:auto;">
+            <div style="background:linear-gradient(135deg,#b7430a,#e67e22);color:#fff;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div style="font-size:15px;font-weight:900;">📉 Registrar Baixa / Consumo</div>
+                    <div style="font-size:11px;opacity:.8;" id="matBaixaSubtitulo">Material</div>
+                </div>
+                <button onclick="matFecharBaixa()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;opacity:.8;">✕</button>
+            </div>
+            <div style="padding:22px;">
+                <input type="hidden" id="matBaixaId">
+                <div style="background:#fff8f0;border:1px solid #f0a060;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+                    <span style="font-size:22px;">📦</span>
+                    <div>
+                        <div style="font-size:10px;font-weight:700;color:#b7430a;text-transform:uppercase;letter-spacing:.5px;">Estoque Atual</div>
+                        <div style="font-size:18px;font-weight:900;color:#2c3e50;" id="matBaixaEstoqueAtual">—</div>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Quantidade a Baixar *</label>
+                        <input id="matBaixaQtd" type="number" min="0.01" step="0.01" placeholder="0" style="width:100%;padding:9px 11px;border:2px solid #e67e22;border-radius:6px;font-size:15px;font-weight:700;box-sizing:border-box;color:#b7430a;">
+                    </div>
+                    <div>
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Data da Baixa</label>
+                        <input id="matBaixaData" type="date" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Motivo *</label>
+                        <select id="matBaixaMotivo" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                            <option value="">Selecione o motivo...</option>
+                            <option value="Consumo em análise">🔬 Consumo em análise</option>
+                            <option value="Consumo em produção">🏭 Consumo em produção</option>
+                            <option value="Vencimento / descarte">⚠️ Vencimento / descarte</option>
+                            <option value="Avaria / quebra">💥 Avaria / quebra</option>
+                            <option value="Transferência interna">🔄 Transferência interna</option>
+                            <option value="Devolução ao fornecedor">↩️ Devolução ao fornecedor</option>
+                            <option value="Ajuste de inventário">📋 Ajuste de inventário</option>
+                            <option value="Outro">📝 Outro</option>
+                        </select>
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Responsável</label>
+                        <input id="matBaixaResponsavel" placeholder="Nome do responsável..." style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Observações</label>
+                        <textarea id="matBaixaObs" rows="3" placeholder="Detalhes, NF de referência, destino, etc..." style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;resize:vertical;box-sizing:border-box;"></textarea>
+                    </div>
+                </div>
+                <div style="background:#f0f4ff;border:1px solid #c0ccee;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:12px;color:#1a2a6e;">
+                    <span style="font-weight:700;">Saldo após baixa:</span> <span id="matBaixaSaldo" style="font-weight:900;font-size:14px;">—</span>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:10px;">
+                    <button onclick="matFecharBaixa()" style="background:#ecf0f1;color:#555;border:none;border-radius:6px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
+                    <button onclick="matConfirmarBaixa()" style="background:#e67e22;color:#fff;border:none;border-radius:6px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer;">📉 Confirmar Baixa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== ABA EQUIPAMENTOS ===== -->
     <div id="aba-equipamentos" class="tab-content">
     <div style="max-width:1300px;margin:0 auto;padding:16px 10px;">
@@ -3387,6 +3449,55 @@
                 <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px;">
                     <button onclick="eqFecharModal()" style="background:#ecf0f1;color:#555;border:none;border-radius:6px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
                     <button onclick="eqSalvar()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer;">💾 Salvar Equipamento</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL REGISTRO DE USO / BAIXA EQUIPAMENTO -->
+    <div id="modalBaixaEquipamento" style="display:none;position:fixed;inset:0;z-index:8100;background:rgba(0,0,0,0.55);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:12px;width:100%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,0.22);margin:20px;max-height:90vh;overflow-y:auto;">
+            <div style="background:linear-gradient(135deg,#5b2c8d,#8e44ad);color:#fff;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div style="font-size:15px;font-weight:900;">📋 Registro de Uso / Ocorrência</div>
+                    <div style="font-size:11px;opacity:.8;" id="eqBaixaSubtitulo">Equipamento</div>
+                </div>
+                <button onclick="eqFecharBaixa()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;opacity:.8;">✕</button>
+            </div>
+            <div style="padding:22px;">
+                <input type="hidden" id="eqBaixaId">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Data do Registro</label>
+                        <input id="eqBaixaData" type="date" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Responsável</label>
+                        <input id="eqBaixaResponsavel" placeholder="Nome..." style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Tipo de Registro *</label>
+                        <select id="eqBaixaTipo" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+                            <option value="">Selecione...</option>
+                            <option value="Uso em análise">🔬 Uso em análise</option>
+                            <option value="Empréstimo interno">🔄 Empréstimo interno</option>
+                            <option value="Manutenção preventiva">🔧 Manutenção preventiva</option>
+                            <option value="Manutenção corretiva">🛠️ Manutenção corretiva</option>
+                            <option value="Calibração realizada">📐 Calibração realizada</option>
+                            <option value="Retirada de uso">⛔ Retirada de uso</option>
+                            <option value="Retorno ao uso">✅ Retorno ao uso</option>
+                            <option value="Defeito / Falha">⚠️ Defeito / Falha</option>
+                            <option value="Outro">📝 Outro</option>
+                        </select>
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Observações *</label>
+                        <textarea id="eqBaixaObs" rows="4" placeholder="Descreva o ocorrido, local de uso, número de OS, etc..." style="width:100%;padding:9px 11px;border:1px solid #8e44ad;border-radius:6px;font-size:13px;resize:vertical;box-sizing:border-box;"></textarea>
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:10px;">
+                    <button onclick="eqFecharBaixa()" style="background:#ecf0f1;color:#555;border:none;border-radius:6px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
+                    <button onclick="eqConfirmarBaixa()" style="background:#8e44ad;color:#fff;border:none;border-radius:6px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer;">💾 Salvar Registro</button>
                 </div>
             </div>
         </div>
@@ -17291,6 +17402,7 @@ function matRenderTabela() {
             </td>
             <td style="padding:9px 8px;text-align:center;">${_matStatusBadge(st)}</td>
             <td style="padding:9px 8px;text-align:center;">
+                <button onclick="matAbrirBaixa('${m.id}')" style="background:#e67e22;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;margin-right:4px;" title="Registrar baixa/consumo">📉 Baixa</button>
                 <button onclick="matEditar('${m.id}')" style="background:#3498db;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;margin-right:4px;">✏️</button>
                 <button onclick="matExcluir('${m.id}')" style="background:#e74c3c;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;">🗑️</button>
             </td>
@@ -17397,6 +17509,114 @@ function matExportar() {
     a.download = 'materiais_' + _matHoje() + '.csv';
     a.click(); URL.revokeObjectURL(url);
     sgqToast('✅ CSV exportado!', 'success');
+}
+
+// ── BAIXA DE MATERIAL ────────────────────────────────────────────
+function matAbrirBaixa(id) {
+    const m = _materiais.find(x => String(x.id) === String(id));
+    if (!m) return;
+    const qtdAtual = parseFloat(m.qtd_atual !== undefined ? m.qtd_atual : (m.qtdAtual || 0));
+    document.getElementById('matBaixaId').value = m.id;
+    document.getElementById('matBaixaSubtitulo').textContent = m.nome + ' · ' + qtdAtual + ' ' + (m.unidade || '');
+    document.getElementById('matBaixaEstoqueAtual').textContent = qtdAtual + ' ' + (m.unidade || '');
+    document.getElementById('matBaixaQtd').value = '';
+    document.getElementById('matBaixaMotivo').value = '';
+    document.getElementById('matBaixaObs').value = '';
+    document.getElementById('matBaixaResponsavel').value = '';
+    document.getElementById('matBaixaData').value = _matHoje();
+    document.getElementById('matBaixaSaldo').textContent = '—';
+    document.getElementById('matBaixaSaldo').style.color = '#1a2a6e';
+    document.getElementById('matBaixaQtd').oninput = function() {
+        const baixa = parseFloat(this.value) || 0;
+        const saldo = qtdAtual - baixa;
+        const el = document.getElementById('matBaixaSaldo');
+        el.textContent = saldo.toFixed(2) + ' ' + (m.unidade || '');
+        el.style.color = saldo < 0 ? '#e74c3c' : (saldo <= parseFloat(m.minimo || 0) ? '#e67e22' : '#1a7a3a');
+    };
+    document.getElementById('modalBaixaMaterial').style.display = 'flex';
+    setTimeout(() => document.getElementById('matBaixaQtd').focus(), 100);
+}
+
+function matFecharBaixa() {
+    document.getElementById('modalBaixaMaterial').style.display = 'none';
+}
+
+async function matConfirmarBaixa() {
+    const id       = document.getElementById('matBaixaId').value;
+    const m        = _materiais.find(x => String(x.id) === String(id));
+    if (!m) return;
+    const qtdAtual = parseFloat(m.qtd_atual !== undefined ? m.qtd_atual : m.qtdAtual) || 0;
+    const baixa    = parseFloat(document.getElementById('matBaixaQtd').value);
+    const motivo   = document.getElementById('matBaixaMotivo').value;
+    if (!baixa || baixa <= 0)  { sgqToast('Informe uma quantidade válida para a baixa.', 'warning'); return; }
+    if (!motivo)               { sgqToast('Selecione o motivo da baixa.', 'warning'); return; }
+    if (baixa > qtdAtual) {
+        if (!confirm(`A quantidade informada (${baixa}) é maior que o estoque atual (${qtdAtual}). Deseja continuar mesmo assim?`)) return;
+    }
+    const novaQtd = Math.max(0, qtdAtual - baixa);
+    const obs     = document.getElementById('matBaixaObs').value.trim();
+    const resp    = document.getElementById('matBaixaResponsavel').value.trim();
+    const data    = document.getElementById('matBaixaData').value || _matHoje();
+    const registro = `[BAIXA ${data}] Qtd: -${baixa} ${m.unidade||''} | Motivo: ${motivo}` +
+        (resp ? ` | Resp: ${resp}` : '') + (obs ? ` | Obs: ${obs}` : '');
+    const obsAnterior = (m.obs || '').trim();
+    const novaObs = obsAnterior ? obsAnterior + '\n' + registro : registro;
+    const atualizado = { ...m, qtd_atual: novaQtd, obs: novaObs };
+    try {
+        const saved = await dbUpsertOne('materiais', atualizado);
+        const idx = _materiais.findIndex(x => String(x.id) === String(id));
+        if (idx > -1) _materiais[idx] = saved;
+        matFecharBaixa();
+        matRenderTabela();
+        sgqToast(`📉 Baixa registrada! Novo estoque: ${novaQtd} ${m.unidade||''}`, 'success');
+    } catch(e) {
+        sgqToast('❌ Erro ao registrar baixa: ' + e.message, 'error');
+    }
+}
+
+// ── REGISTRO DE USO / OCORRÊNCIA DE EQUIPAMENTO ─────────────────
+function eqAbrirBaixa(id) {
+    const eq = _equipamentos.find(x => String(x.id) === String(id));
+    if (!eq) return;
+    document.getElementById('eqBaixaId').value = eq.id;
+    document.getElementById('eqBaixaSubtitulo').textContent = eq.nome + (eq.tag ? ' · TAG: ' + eq.tag : '');
+    document.getElementById('eqBaixaTipo').value = '';
+    document.getElementById('eqBaixaObs').value = '';
+    document.getElementById('eqBaixaResponsavel').value = '';
+    document.getElementById('eqBaixaData').value = _eqHoje();
+    document.getElementById('modalBaixaEquipamento').style.display = 'flex';
+    setTimeout(() => document.getElementById('eqBaixaTipo').focus(), 100);
+}
+
+function eqFecharBaixa() {
+    document.getElementById('modalBaixaEquipamento').style.display = 'none';
+}
+
+async function eqConfirmarBaixa() {
+    const id   = document.getElementById('eqBaixaId').value;
+    const eq   = _equipamentos.find(x => String(x.id) === String(id));
+    if (!eq) return;
+    const tipo = document.getElementById('eqBaixaTipo').value;
+    const obs  = document.getElementById('eqBaixaObs').value.trim();
+    const resp = document.getElementById('eqBaixaResponsavel').value.trim();
+    const data = document.getElementById('eqBaixaData').value || _eqHoje();
+    if (!tipo)       { sgqToast('Selecione o tipo de registro.', 'warning'); return; }
+    if (!obs)        { sgqToast('Preencha as observações.', 'warning'); return; }
+    const registro = `[${data}] ${tipo}` +
+        (resp ? ` | Resp: ${resp}` : '') + ` | ${obs}`;
+    const obsAnterior = (eq.obs || '').trim();
+    const novaObs = obsAnterior ? obsAnterior + '\n' + registro : registro;
+    const atualizado = { ...eq, obs: novaObs };
+    try {
+        const saved = await dbUpsertOne('equipamentos', atualizado);
+        const idx = _equipamentos.findIndex(x => String(x.id) === String(id));
+        if (idx > -1) _equipamentos[idx] = saved;
+        eqFecharBaixa();
+        eqRenderTabela();
+        sgqToast('✅ Registro salvo com sucesso!', 'success');
+    } catch(e) {
+        sgqToast('❌ Erro ao salvar registro: ' + e.message, 'error');
+    }
 }
 
 // Inicializar aba materiais ao clicar
@@ -17527,6 +17747,7 @@ function eqRenderTabela() {
             <td style="padding:9px 8px;text-align:center;font-size:11px;font-weight:${st==='vencida'?'700':'400'};color:${st==='vencida'?'#e74c3c':st==='vencendo'?'#e67e22':'inherit'};">${fmtDate(proxCalib)}</td>
             <td style="padding:9px 8px;text-align:center;">${_eqStatusBadge(st)}</td>
             <td style="padding:9px 8px;text-align:center;">
+                <button onclick="eqAbrirBaixa('${eq.id}')" style="background:#8e44ad;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;margin-right:4px;" title="Registrar uso/ocorrência">📋 Registro</button>
                 <button onclick="eqEditar('${eq.id}')" style="background:#3498db;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;margin-right:4px;">✏️</button>
                 <button onclick="eqExcluir('${eq.id}')" style="background:#e74c3c;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;">🗑️</button>
             </td>
