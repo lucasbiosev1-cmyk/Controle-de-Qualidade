@@ -15164,7 +15164,22 @@ async function carregarNCeDevSupabase() {
             _sbClient.from('devolucoes').select('*').order('id', { ascending: false })
         ]);
         if (ncData.data)  { listaNC  = ncData.data;  renderizarNC(listaNC); }
-        if (devData.data) { listaDev = devData.data; renderizarDev(listaDev); }
+        if (devData.data) {
+            listaDev = devData.data;
+            // ✅ Filtra automaticamente o mês atual ao carregar
+            const hoje = new Date();
+            const anoMes = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
+            const primeiroDia = anoMes + '-01';
+            const ultimoDia   = anoMes + '-' + String(new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate()).padStart(2, '0');
+            // Preenche os campos de data na tela
+            const elFi = document.getElementById('dev-fi');
+            const elFf = document.getElementById('dev-ff');
+            if (elFi) elFi.value = primeiroDia;
+            if (elFf) elFf.value = ultimoDia;
+            // Renderiza já filtrado
+            const devMesAtual = listaDev.filter(d => d.data && d.data >= primeiroDia && d.data <= ultimoDia);
+            renderizarDev(devMesAtual);
+        }
     } catch(e) {
         // Tabelas ainda não existem — mantém comportamento atual com localStorage
         // Execute o SQL de criação fornecido no guia de migração
