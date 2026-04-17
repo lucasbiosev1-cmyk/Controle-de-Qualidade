@@ -5350,7 +5350,7 @@ function initAutocompleteFornecedor(inputId, modulo) {
 
 // Inicializa os autocompletes quando os modais forem abertos
 function _initAllAutocompletes() {
-    initAutocompleteFornecedor('cadFornecedorClass', 'all');
+    initAutocompleteFornecedor('cadFornecedorClass', 'class');
     initAutocompleteFornecedor('cadFornecedorMP', 'all');
 }
 // Aguarda o DOM estar pronto e dados carregados
@@ -6625,7 +6625,7 @@ function abrirModalCadastroClass() {
     document.getElementById('formCadastroClass').reset();
     document.getElementById('cadDataClass').value = dataHoje();
     document.getElementById('modalCadastroClass').classList.add('show');
-    initAutocompleteFornecedor('cadFornecedorClass', 'all');
+    initAutocompleteFornecedor('cadFornecedorClass', 'class');
 }
 
 function abrirModalEdicaoClass(id) {
