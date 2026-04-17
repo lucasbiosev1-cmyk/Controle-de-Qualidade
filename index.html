@@ -5352,7 +5352,7 @@ function initAutocompleteFornecedor(inputId, modulo) {
 // Inicializa os autocompletes quando os modais forem abertos
 function _initAllAutocompletes() {
     initAutocompleteFornecedor('cadFornecedorClass', 'class');
-    initAutocompleteFornecedor('cadFornecedorMP', 'all');
+    initAutocompleteFornecedor('cadFornecedorMP', 'mp');
 }
 // Aguarda o DOM estar pronto e dados carregados
 document.addEventListener('DOMContentLoaded', () => {
@@ -6854,7 +6854,7 @@ function abrirModalCadastroMP() {
     const btnSalvarNew = document.getElementById('btnSalvarMP');
     if (btnSalvarNew) { btnSalvarNew.textContent = 'Salvar'; btnSalvarNew.style.background = ''; }
     document.getElementById('modalCadastroMP').classList.add('show');
-    initAutocompleteFornecedor('cadFornecedorMP', 'all');
+    initAutocompleteFornecedor('cadFornecedorMP', 'mp');
 }
 
 function abrirModalEdicaoMP(id) {
