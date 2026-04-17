@@ -2965,6 +2965,10 @@
                 <option value="nao">Não controlados</option>
             </select>
             <button id="reagBtnLimparNF" onclick="reagLimparFiltroNF()" style="display:none;background:#eaf3fb;color:#1a5276;border:1px solid #aed6f1;border-radius:6px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;">✕ Limpar N.F</button>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;background:#fff8e1;border:1px solid #f9ca34;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;color:#7d5a00;" title="Oculta itens com quantidade atual igual a zero">
+                <input type="checkbox" id="reagFiltroOcultarZerado" onchange="reagRenderTabela()" style="width:15px;height:15px;accent-color:#e67e22;cursor:pointer;">
+                🚫 Ocultar estoque zerado
+            </label>
         </div>
 
         <!-- TABELA -->
@@ -16031,10 +16035,11 @@ function reagLimparFiltroNF() {
 function reagRenderTabela() {
     const tbody = document.getElementById('reagTbody');
     if (!tbody) return;
-    const filtNome   = (document.getElementById('reagFiltroNome')   || {}).value || '';
-    const filtStatus = (document.getElementById('reagFiltroStatus') || {}).value || '';
-    const filtPF     = (document.getElementById('reagFiltroPF')     || {}).value || '';
-    const filtNF     = ((document.getElementById('reagFiltroNF')    || {}).value || '').trim().toLowerCase();
+    const filtNome        = (document.getElementById('reagFiltroNome')          || {}).value || '';
+    const filtStatus      = (document.getElementById('reagFiltroStatus')         || {}).value || '';
+    const filtPF          = (document.getElementById('reagFiltroPF')             || {}).value || '';
+    const filtNF          = ((document.getElementById('reagFiltroNF')            || {}).value || '').trim().toLowerCase();
+    const filtOcultarZero = (document.getElementById('reagFiltroOcultarZerado')  || {}).checked || false;
 
     // Mostra/oculta botão de limpar NF
     const btnLimpar = document.getElementById('reagBtnLimparNF');
@@ -16050,6 +16055,7 @@ function reagRenderTabela() {
             const nfChave = (r.nfChave || '').toLowerCase();
             if (!nfNum.includes(filtNF) && !nfChave.includes(filtNF)) return false;
         }
+        if (filtOcultarZero && (parseFloat(r.qtdAtual) || 0) <= 0) return false;
         return true;
     });
 
