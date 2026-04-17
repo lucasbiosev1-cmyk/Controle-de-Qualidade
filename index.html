@@ -16380,6 +16380,9 @@ function reagImportarXML(input) {
                 reagAdicionarItemNota();
             }
 
+            // Verificar alertas de lote apos preenchimento dos campos do XML
+            setTimeout(_reagVerificarAlertasLoteNF, 100);
+
             // Feedback de sucesso
             status.style.background = '#d4edda';
             status.style.color = '#155724';
@@ -16528,9 +16531,64 @@ function reagAdicionarItemNota(nomeNF) {
     if (matchId) {
         const sel = div.querySelector('.reagNFItemSelect');
         if (sel) sel.value = matchId;
+
+        // Marcar para verificacao de lote apos preenchimento do XML
+        const reagExist = _reagentes.find(r => String(r.id) === String(matchId));
+        if (reagExist && reagExist.lote) {
+            div.setAttribute('data-match-reagid', matchId);
+            div.setAttribute('data-match-lote-estoque', reagExist.lote);
+            div.setAttribute('data-match-qtd-estoque', reagExist.qtdAtual + ' ' + reagExist.unidade);
+        }
     }
 
     return div;
+}
+
+function _reagVerificarAlertasLoteNF() {
+    document.querySelectorAll('div[data-match-reagid]').forEach(div => {
+        const loteEstoque = div.getAttribute('data-match-lote-estoque');
+        const qtdEstoque  = div.getAttribute('data-match-qtd-estoque');
+        const reagId      = div.getAttribute('data-match-reagid');
+        const inputLote   = div.querySelector('input[placeholder*="LT"]');
+        const loteNF      = inputLote ? inputLote.value.trim() : '';
+
+        const alertaAnterior = div.querySelector('.reag-alerta-lote');
+        if (alertaAnterior) alertaAnterior.remove();
+
+        if (loteNF && loteNF !== loteEstoque) {
+            const alerta = document.createElement('div');
+            alerta.className = 'reag-alerta-lote';
+            alerta.style.cssText = 'background:#fff3cd;border:1.5px solid #f39c12;border-radius:7px;padding:10px 12px;margin-bottom:8px;font-size:11px;';
+            alerta.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:16px;">⚠️</span><span style="font-weight:800;color:#a04000;">Lote diferente do estoque atual!</span></div>'
+                + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">'
+                + '<div style="background:#fff;border:1px solid #e8d5b7;border-radius:5px;padding:7px;text-align:center;"><div style="font-size:9px;color:#999;font-weight:700;text-transform:uppercase;margin-bottom:2px;">No Estoque</div><div style="font-size:13px;font-weight:900;color:#2c3e50;">' + loteEstoque + '</div><div style="font-size:10px;color:#27ae60;margin-top:1px;">' + qtdEstoque + '</div></div>'
+                + '<div style="background:#fff;border:2px solid #e67e22;border-radius:5px;padding:7px;text-align:center;"><div style="font-size:9px;color:#999;font-weight:700;text-transform:uppercase;margin-bottom:2px;">Nova NF</div><div style="font-size:13px;font-weight:900;color:#e67e22;">' + loteNF + '</div></div>'
+                + '</div>'
+                + '<div style="display:flex;gap:6px;">'
+                + '<button onclick="_reagLoteOpcaoNovo(this)" data-reagid="' + reagId + '" style="flex:1;background:#27ae60;color:#fff;border:none;border-radius:6px;padding:7px 8px;font-size:10px;font-weight:800;cursor:pointer;">✅ Criar novo registro (recomendado)</button>'
+                + '<button onclick="_reagLoteOpcaoSomar(this)" style="flex:1;background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:7px 8px;font-size:10px;font-weight:800;cursor:pointer;">⚠️ Somar e substituir lote</button>'
+                + '</div>';
+            div.insertBefore(alerta, div.firstChild);
+        }
+    });
+}
+
+function _reagLoteOpcaoNovo(btn) {
+    const itemDiv = btn.closest('div[id^="reagNFItem_"]') || btn.closest('div[style*="border"]');
+    const sel = itemDiv ? itemDiv.querySelector('.reagNFItemSelect') : null;
+    if (sel) { sel.value = '__novo__'; reagNovoDoSelect(sel); }
+    const alerta = btn.closest('.reag-alerta-lote');
+    if (alerta) alerta.remove();
+}
+
+function _reagLoteOpcaoSomar(btn) {
+    const alerta = btn.closest('.reag-alerta-lote');
+    const itemDiv = btn.closest('div[id^="reagNFItem_"]') || btn.closest('div[style*="border"]');
+    const loteEstoque = itemDiv ? itemDiv.getAttribute('data-match-lote-estoque') : '';
+    const inputLote = itemDiv ? itemDiv.querySelector('input[placeholder*="LT"]') : null;
+    const loteNF = inputLote ? inputLote.value.trim() : '';
+    if (alerta) alerta.remove();
+    sgqToast('⚠️ Lote ' + loteEstoque + ' sera substituido pelo lote ' + loteNF + ' ao salvar.', 'warning');
 }
 
 async function reagSalvarNota() {
@@ -16933,6 +16991,96 @@ function reagFecharModalCadastro() {
 
 // ✅ FIX: abre cadastro ao selecionar "➕ Cadastrar novo reagente" no select da nota
 function reagNovoDoSelect(selectEl) {
+    // ── Validação de lote diferente ao vincular produto já cadastrado ──
+    if (selectEl.value && selectEl.value !== '__novo__') {
+        const reagId  = selectEl.value;
+        const reagExist = _reagentes.find(r => String(r.id) === String(reagId));
+        if (reagExist && reagExist.lote) {
+            // Pega o lote digitado no item da NF atual
+            const itemDiv   = selectEl.closest('div[id^="reagNFItem_"]') || selectEl.closest('div[style*="border"]');
+            const inputLote = itemDiv ? itemDiv.querySelector('input[placeholder*="LT"]') : null;
+            const loteNF    = inputLote ? inputLote.value.trim() : '';
+
+            if (loteNF && loteNF !== reagExist.lote) {
+                // Lotes diferentes — exibe alerta de decisão
+                const modal = document.createElement('div');
+                modal.id = 'reagAlertaLoteModal';
+                modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;';
+                modal.innerHTML = `
+                <div style="background:#fff;border-radius:12px;width:480px;max-width:96vw;box-shadow:0 8px 40px rgba(0,0,0,0.3);overflow:hidden;">
+                    <div style="background:linear-gradient(to right,#e67e22,#f39c12);padding:16px 20px;display:flex;align-items:center;gap:10px;">
+                        <span style="font-size:24px;">⚠️</span>
+                        <div>
+                            <div style="color:#fff;font-size:15px;font-weight:900;letter-spacing:.3px;">Lote Diferente Detectado</div>
+                            <div style="color:rgba(255,255,255,0.85);font-size:11px;margin-top:2px;">Este produto já existe no estoque com outro lote</div>
+                        </div>
+                    </div>
+                    <div style="padding:20px 22px;">
+                        <div style="background:#fff8f0;border:1px solid #f5cba7;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+                            <div style="font-size:11px;font-weight:800;color:#a04000;text-transform:uppercase;margin-bottom:10px;letter-spacing:.5px;">📦 ${reagExist.nome}</div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                                <div style="background:#fff;border:1px solid #e8d5b7;border-radius:6px;padding:10px;text-align:center;">
+                                    <div style="font-size:9px;color:#999;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Lote no Estoque</div>
+                                    <div style="font-size:16px;font-weight:900;color:#2c3e50;">${reagExist.lote}</div>
+                                    <div style="font-size:10px;color:#27ae60;margin-top:2px;">Saldo atual: ${reagExist.qtdAtual} ${reagExist.unidade}</div>
+                                </div>
+                                <div style="background:#fff;border:2px solid #e67e22;border-radius:6px;padding:10px;text-align:center;">
+                                    <div style="font-size:9px;color:#999;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Lote da Nova NF</div>
+                                    <div style="font-size:16px;font-weight:900;color:#e67e22;">${loteNF}</div>
+                                    <div style="font-size:10px;color:#e67e22;margin-top:2px;">Entrada nova</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="font-size:12px;color:#555;margin-bottom:16px;line-height:1.6;">
+                            Como deseja registrar esta entrada?
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <button id="reagLoteBtnNovo" style="background:#27ae60;color:#fff;border:none;border-radius:8px;padding:12px 16px;font-size:12px;font-weight:800;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:18px;">✅</span>
+                                <div>
+                                    <div>Criar novo registro (recomendado)</div>
+                                    <div style="font-weight:400;font-size:10px;opacity:.85;margin-top:2px;">Lotes separados — rastreabilidade completa. Use o lote mais antigo primeiro.</div>
+                                </div>
+                            </button>
+                            <button id="reagLoteBtnSomar" style="background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:12px 16px;font-size:12px;font-weight:800;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:18px;">⚠️</span>
+                                <div>
+                                    <div>Somar ao registro existente</div>
+                                    <div style="font-weight:400;font-size:10px;opacity:.85;margin-top:2px;">O lote ${reagExist.lote} será substituído pelo lote ${loteNF}. Rastreabilidade perdida.</div>
+                                </div>
+                            </button>
+                            <button id="reagLoteBtnCancelar" style="background:#ecf0f1;color:#555;border:none;border-radius:8px;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer;">
+                                Cancelar — voltar ao modal
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+                document.body.appendChild(modal);
+
+                // Botão: criar novo registro (redireciona para __novo__)
+                document.getElementById('reagLoteBtnNovo').onclick = function() {
+                    document.body.removeChild(modal);
+                    selectEl.value = '__novo__';
+                    reagNovoDoSelect(selectEl);
+                };
+                // Botão: somar mesmo assim (mantém seleção atual)
+                document.getElementById('reagLoteBtnSomar').onclick = function() {
+                    document.body.removeChild(modal);
+                    // Mantém o reagente selecionado — fluxo normal
+                    selectEl.style.borderColor = '#e74c3c';
+                    sgqToast('⚠️ Lote antigo será substituído pelo lote ' + loteNF + ' ao salvar.', 'warning');
+                };
+                // Botão: cancelar
+                document.getElementById('reagLoteBtnCancelar').onclick = function() {
+                    document.body.removeChild(modal);
+                    selectEl.value = '';
+                };
+                return; // aguarda decisão do usuário
+            }
+        }
+        return; // produto sem lote ou lote igual — fluxo normal
+    }
+
     if (selectEl.value !== '__novo__') return;
 
     // Lê dados já preenchidos no item da nota (lote, validade, qtd, unidade, PF)
