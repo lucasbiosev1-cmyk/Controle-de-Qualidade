@@ -1313,7 +1313,9 @@
             padding: 7px 10px; font-size: 12px; cursor: pointer;
             border-bottom: 1px solid #f0f0f0; color: #333;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            pointer-events: auto;
         }
+        .sgq-autocomplete-item[title] { pointer-events: auto; }
         .sgq-autocomplete-item:last-child { border-bottom: none; }
         .sgq-autocomplete-item:hover, .sgq-autocomplete-item.active {
             background: #eaf4fc; color: #1a2a6e; font-weight: 700;
@@ -5302,7 +5304,7 @@ function initAutocompleteFornecedor(inputId, modulo) {
         if (!filtered.length) { list.classList.remove('open'); return; }
 
         list.innerHTML = filtered.map((f, i) =>
-            `<div class="sgq-autocomplete-item" data-value="${f}" data-idx="${i}">${_highlightMatch(f, query)}</div>`
+            `<div class="sgq-autocomplete-item" data-value="${f}" data-idx="${i}" title="">${_highlightMatch(f, query)}</div>`
         ).join('');
 
         list.classList.add('open');
