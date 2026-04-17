@@ -20315,44 +20315,71 @@ async function sgqCarregarHistoricoAcessos() {
     el.innerHTML = '<div style="color:#bbb;font-size:12px;font-style:italic;text-align:center;padding:12px;">Carregando...</div>';
 
     try {
-        const { data, error } = await _sbClient
-            .from('audit_log')
-            .select('usuario, perfil, acao, criado_em')
-            .in('acao', ['LOGIN', 'LOGOUT'])
-            .order('criado_em', { ascending: false })
-            .limit(500);
+        // ✅ Busca audit_log E tabela perfis em paralelo para normalizar identidades
+        const [logRes, perfisRes] = await Promise.all([
+            _sbClient
+                .from('audit_log')
+                .select('usuario, perfil, acao, criado_em')
+                .in('acao', ['LOGIN', 'LOGOUT'])
+                .order('criado_em', { ascending: false })
+                .limit(500),
+            _sbClient
+                .from('perfis')
+                .select('username, email, nome, perfil')
+        ]);
 
-        if (error) throw error;
-        if (!data || data.length === 0) {
+        if (logRes.error) throw logRes.error;
+        const data = logRes.data || [];
+        if (data.length === 0) {
             el.innerHTML = '<div style="color:#bbb;font-size:12px;font-style:italic;text-align:center;padding:12px;">Nenhum acesso registrado ainda.</div>';
             return;
         }
 
-        // ✅ Mantém apenas o registro mais recente de cada usuário
+        // ── Monta mapa: email → username canônico e username → username canônico
+        // Isso resolve o caso onde registros antigos gravaram o e-mail como "usuario"
+        const perfis = perfisRes.data || [];
+        const _canonMap = {}; // qualquer identidade → username canônico
+        perfis.forEach(p => {
+            const user = (p.username || '').trim().toLowerCase();
+            const mail = (p.email   || '').trim().toLowerCase();
+            if (user) _canonMap[user] = p.username || p.email; // username → si mesmo
+            if (mail) _canonMap[mail] = p.username || p.email; // email   → username
+        });
+        // Função que normaliza qualquer identidade registrada no audit_log
+        function _canonico(raw) {
+            return _canonMap[(raw || '').trim().toLowerCase()] || raw;
+        }
+
+        // ✅ Normaliza cada registro e agrupa pelo username canônico
+        // Mantém apenas o acesso mais recente por usuário (já vem ordenado DESC)
         const vistos = new Set();
         const dataFiltrada = data.filter(r => {
-            if (vistos.has(r.usuario)) return false;
-            vistos.add(r.usuario);
+            const canon = _canonico(r.usuario);
+            if (vistos.has(canon)) return false;
+            vistos.add(canon);
             return true;
         });
 
-        const rows = dataFiltrada.map(r => {
+        const rows = dataFiltrada.map((r, idx) => {
+            const nomeExibido = _canonico(r.usuario); // username limpo
             const dt = new Date(r.criado_em);
             const dataFmt = dt.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
             const horaFmt = dt.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
             const isLogin = r.acao === 'LOGIN';
             const isAdmin = r.perfil === 'admin';
-            const isSelf  = r.usuario === usuarioAtual;
+            // isSelf: compara tanto o valor raw quanto o canônico
+            const isSelf  = r.usuario === usuarioAtual || nomeExibido === usuarioAtual
+                         || (r.usuario || '').toLowerCase() === (usuarioAtual || '').toLowerCase();
             const acaoBadge = isLogin
                 ? `<span style="background:#e8f8f0;color:#27ae60;border:1px solid #a9dfbf;border-radius:10px;padding:2px 9px;font-size:10px;font-weight:700;">🔓 LOGIN</span>`
                 : `<span style="background:#fdf2f8;color:#8e44ad;border:1px solid #d7bde2;border-radius:10px;padding:2px 9px;font-size:10px;font-weight:700;">🔒 LOGOUT</span>`;
             const perfilBadge = isAdmin
                 ? `<span style="background:#fef3e2;color:#a04000;border:1px solid #f5cba7;border-radius:10px;padding:2px 7px;font-size:9px;font-weight:700;">👑 Admin</span>`
                 : `<span style="background:#eaf4fb;color:#1a5276;border:1px solid #aed6f1;border-radius:10px;padding:2px 7px;font-size:9px;font-weight:700;">👤 Usuário</span>`;
-            const trStyle = isSelf ? 'background:#fffde7;' : (parseInt(data.indexOf(r)) % 2 === 0 ? 'background:#fafafa;' : '');
+            const trStyle = isSelf ? 'background:#fffde7;' : (idx % 2 === 0 ? 'background:#fafafa;' : '');
 
             return `<tr style="${trStyle}">
-                <td style="padding:7px 10px;font-size:12px;font-weight:700;color:#2c3e50;">${r.usuario}${isSelf ? ' <span style="font-size:9px;color:#888;">(você)</span>' : ''}</td>
+                <td style="padding:7px 10px;font-size:12px;font-weight:700;color:#2c3e50;">${nomeExibido}${isSelf ? ' <span style="font-size:9px;color:#888;">(você)</span>' : ''}</td>
                 <td style="padding:7px 10px;">${perfilBadge}</td>
                 <td style="padding:7px 10px;">${acaoBadge}</td>
                 <td style="padding:7px 10px;font-size:11px;color:#555;">${dataFmt}</td>
