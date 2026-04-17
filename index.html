@@ -19808,12 +19808,65 @@ async function gerarRelatorioMensalIA() {
             });
         }
 
+        // ── SÉRIE TEMPORAL COMPLETA: todos os registros individuais com valores e flags de desvio ──
+        function _montarSerieCompleta(registros, modId, campos, chaveKey) {
+            const grupos = [...new Set(registros.map(r => r[chaveKey]).filter(Boolean))];
+            return grupos.map(grupo => {
+                const regs = registros.filter(r => r[chaveKey] === grupo).sort((a,b) => (a.data||'').localeCompare(b.data||''));
+                const chave = grupo.replace(/ /g, '_');
+                const dataRef = regs[0]?.data || null;
+                const paramsAtivos = campos.filter(c => { const cfg = getParam(modId, chave, c.key, dataRef); return cfg && cfg.ativo; });
+                if (!paramsAtivos.length) return null;
+                const limInfo = paramsAtivos.map(c => {
+                    const cfg = getParam(modId, chave, c.key, dataRef);
+                    return `${c.label}:[${cfg.min>0?cfg.min:'—'}–${cfg.max<9999?cfg.max:'—'}]`;
+                }).join(' | ');
+                const linhasReg = regs.map(r => {
+                    const vals = paramsAtivos.map(c => {
+                        const cfg = getParam(modId, chave, c.key, r.data);
+                        const valorBruto = c.calculado ? getAvariados(r) : r[c.key];
+                        const v = parseFloat(valorBruto);
+                        if (isNaN(v) || valorBruto === '' || valorBruto === null || valorBruto === undefined) return `${c.label}:N/D`;
+                        const foraMin = cfg && cfg.min > 0    && v < cfg.min;
+                        const foraMax = cfg && cfg.max < 9999 && v > cfg.max;
+                        const flag = foraMin ? '[⚠️BAIXO]' : foraMax ? '[⚠️ALTO]' : '[✅]';
+                        return `${c.label}:${v}${flag}`;
+                    }).join(' | ');
+                    return `    ${r.data||'—'} → ${vals}`;
+                }).join('\n');
+                const resumoEst = paramsAtivos.map(c => {
+                    const cfg = getParam(modId, chave, c.key, dataRef);
+                    const vals = regs.map(r => {
+                        const valorBruto = c.calculado ? getAvariados(r) : r[c.key];
+                        const v = parseFloat(valorBruto);
+                        return (!isNaN(v) && valorBruto !== '' && valorBruto !== null && valorBruto !== undefined) ? v : null;
+                    }).filter(v => v !== null);
+                    if (!vals.length) return null;
+                    const med = (vals.reduce((s,x)=>s+x,0)/vals.length).toFixed(3);
+                    const mn  = Math.min(...vals).toFixed(3);
+                    const mx  = Math.max(...vals).toFixed(3);
+                    const nDesvios = vals.filter(v => (cfg && cfg.min > 0 && v < cfg.min) || (cfg && cfg.max < 9999 && v > cfg.max)).length;
+                    const pctConf = vals.length > 0 ? (((vals.length - nDesvios)/vals.length)*100).toFixed(1) : '—';
+                    return `${c.label} → Mín:${mn} | Méd:${med} | Máx:${mx} | Desvios:${nDesvios}/${vals.length} | Conformidade:${pctConf}%`;
+                }).filter(Boolean).join('\n    ');
+                return `  [${grupo}] LIMITES: ${limInfo} | ${regs.length} registros\n  SÉRIE DIÁRIA:\n${linhasReg}\n  ESTATÍSTICAS:\n    ${resumoEst}`;
+            }).filter(Boolean);
+        }
+
         const prodBlocos    = _montarBlocos(prodMes, 'prod', CAMPOS_PROD, 'racao');
         const prodBlocosAnt = temComparacao ? _montarBlocos(prodAnt, 'prod', CAMPOS_PROD, 'racao') : [];
         const mpBlocos      = _montarBlocos(mpMes, 'mp', CAMPOS_MP, 'produto');
         const mpBlocosAnt   = temComparacao ? _montarBlocos(mpAnt, 'mp', CAMPOS_MP, 'produto') : [];
         const classBlocos   = _montarBlocos(classMes, 'class', CAMPOS_CLASS, 'produto');
         const classBlocosAnt= temComparacao ? _montarBlocos(classAnt, 'class', CAMPOS_CLASS, 'produto') : [];
+
+        // ── Gerar séries temporais completas para envio ao prompt ──
+        const prodSerie     = _montarSerieCompleta(prodMes,   'prod',  CAMPOS_PROD,  'racao');
+        const mpSerie       = _montarSerieCompleta(mpMes,     'mp',    CAMPOS_MP,    'produto');
+        const classSerie    = _montarSerieCompleta(classMes,  'class', CAMPOS_CLASS, 'produto');
+        const prodSerieAnt  = temComparacao ? _montarSerieCompleta(prodAnt,  'prod',  CAMPOS_PROD,  'racao')   : [];
+        const mpSerieAnt    = temComparacao ? _montarSerieCompleta(mpAnt,    'mp',    CAMPOS_MP,    'produto') : [];
+        const classSerieAnt = temComparacao ? _montarSerieCompleta(classAnt, 'class', CAMPOS_CLASS, 'produto') : [];
 
         // ---- MÉTRICAS NC ----
         const ncCrit    = ncMes.filter(n => n.gravidade === 'Crítica').length;
@@ -19827,24 +19880,31 @@ async function gerarRelatorioMensalIA() {
         // ---- MONTAR BLOCOS DO PROMPT ----
         const _blocosMesAtual = (blocos, nome, total) => !blocos.length ? `Nenhum registro de ${nome}.` : blocos.join('\n\n');
         const _blocosMesAnt   = (blocos, nome, total) => !temComparacao ? '' : (!blocos.length ? `Nenhum registro de ${nome}.` : blocos.join('\n\n'));
+        const _serieJoin      = (serie)              => serie.length ? serie.join('\n\n') : 'Nenhuma série disponível.';
 
         const _blocosProd = !_usaProd ? '' : `
 == PRODUTO ACABADO / PRODUÇÃO ==
---- MÊS ATUAL (${nomeMes}) — ${totalProd} registros ---
+[RESUMO DE DESVIOS — MÊS ATUAL (${nomeMes}) — ${totalProd} registros]
 ${_blocosMesAtual(prodBlocos,'produção',totalProd)}
-${temComparacao ? `--- MÊS ANTERIOR (${nomeMesAnt}) — ${prodAnt.length} registros ---\n${_blocosMesAnt(prodBlocosAnt,'produção',prodAnt.length)}` : ''}`;
+[SÉRIE TEMPORAL COMPLETA — registro a registro, ordenada por data]
+${_serieJoin(prodSerie)}
+${temComparacao ? `[RESUMO DE DESVIOS — MÊS ANTERIOR (${nomeMesAnt}) — ${prodAnt.length} registros]\n${_blocosMesAnt(prodBlocosAnt,'produção',prodAnt.length)}\n[SÉRIE TEMPORAL COMPLETA — MÊS ANTERIOR]\n${_serieJoin(prodSerieAnt)}` : ''}`;
 
         const _blocosMP = !_usaMP ? '' : `
 == MATÉRIA PRIMA ==
---- MÊS ATUAL (${nomeMes}) — ${totalMP} registros ---
+[RESUMO DE DESVIOS — MÊS ATUAL (${nomeMes}) — ${totalMP} registros]
 ${_blocosMesAtual(mpBlocos,'matéria-prima',totalMP)}
-${temComparacao ? `--- MÊS ANTERIOR (${nomeMesAnt}) — ${mpAnt.length} registros ---\n${_blocosMesAnt(mpBlocosAnt,'matéria-prima',mpAnt.length)}` : ''}`;
+[SÉRIE TEMPORAL COMPLETA — registro a registro, ordenada por data]
+${_serieJoin(mpSerie)}
+${temComparacao ? `[RESUMO DE DESVIOS — MÊS ANTERIOR (${nomeMesAnt}) — ${mpAnt.length} registros]\n${_blocosMesAnt(mpBlocosAnt,'matéria-prima',mpAnt.length)}\n[SÉRIE TEMPORAL COMPLETA — MÊS ANTERIOR]\n${_serieJoin(mpSerieAnt)}` : ''}`;
 
         const _blocosClass = !_usaClass ? '' : `
 == CLASSIFICAÇÃO DE GRÃOS ==
---- MÊS ATUAL (${nomeMes}) — ${totalClass} registros ---
+[RESUMO DE DESVIOS — MÊS ATUAL (${nomeMes}) — ${totalClass} registros]
 ${_blocosMesAtual(classBlocos,'classificação',totalClass)}
-${temComparacao ? `--- MÊS ANTERIOR (${nomeMesAnt}) — ${classAnt.length} registros ---\n${_blocosMesAnt(classBlocosAnt,'classificação',classAnt.length)}` : ''}`;
+[SÉRIE TEMPORAL COMPLETA — registro a registro, ordenada por data]
+${_serieJoin(classSerie)}
+${temComparacao ? `[RESUMO DE DESVIOS — MÊS ANTERIOR (${nomeMesAnt}) — ${classAnt.length} registros]\n${_blocosMesAnt(classBlocosAnt,'classificação',classAnt.length)}\n[SÉRIE TEMPORAL COMPLETA — MÊS ANTERIOR]\n${_serieJoin(classSerieAnt)}` : ''}`;
 
         const _blocosNC = !_usaNC ? '' : `
 == NÃO CONFORMIDADES ==
@@ -19871,7 +19931,11 @@ Motivos: ${[...new Set(devMes.map(d=>d.motivo))].join(', ') || 'nenhuma'}`;
         const _temVet = _anAtivos.includes('vet');
         const _multi  = _anAtivos.length > 1;
 
-        _secsRel.push('1. RESUMO EXECUTIVO (4–5 linhas com principais achados; citar ao menos uma referência técnica: Rostagno et al., Embrapa, IN MAPA 07/2011, Leeson & Summers ou NRC)');
+        _secsRel.push(`1. RESUMO EXECUTIVO
+   - Síntese do levantamento de desvios (4–6 linhas)
+   - Informar: total de registros analisados, total de ocorrências fora do padrão e taxa geral de conformidade do mês (%)
+   - Destacar o parâmetro/produto com maior frequência de desvios e o de maior magnitude absoluta
+   - Citar ao menos uma referência técnica: Rostagno et al., Embrapa, IN MAPA 07/2011, Leeson & Summers ou NRC`);
         let _si = 2;
 
         if (temComparacao) {
@@ -19885,9 +19949,11 @@ Motivos: ${[...new Set(devMes.map(d=>d.motivo))].join(', ') || 'nenhuma'}`;
         if (_temCQ || _multi) {
             if (_usaProd) {
                 _secsRel.push(`${_si++}. ${_multi?'🔬 CQ — ':''}PRODUTO ACABADO — GRANULOMETRIA E QUALIDADE FÍSICA
-   - DGM e DPG por ração (corte/postura, pré-inicial/inicial/final)
-   - Para cada DGM fora do esperado: citar critério Embrapa Suínos e Aves e/ou Leeson & Summers para a fase (ex: "Leeson & Summers (2005) recomendam DGM entre 600–800 µm para frangos na fase inicial")
-   - Distribuição por peneiras; uniformidade de moagem; desvios físicos vs. Portaria MAPA 269/2019${temComparacao?'\n   - Comparar com mês anterior':''}`);
+   - LEVANTAMENTO REGISTRO A REGISTRO: listar todas as datas com DGM ou DPG fora do limite, com valor, limite e desvio exato (use a SÉRIE TEMPORAL COMPLETA fornecida)
+   - Calcular taxa de conformidade mensal por parâmetro e por ração (X/Y registros conformes = Z%)
+   - Identificar se os desvios são isolados, recorrentes ou concentrados em período/lote específico
+   - Para cada DGM fora do esperado: citar critério Embrapa Suínos e Aves e/ou Leeson & Summers para a fase
+   - Distribuição por peneiras; uniformidade de moagem; desvios físicos vs. Portaria MAPA 269/2019${temComparacao?'\n   - Comparar taxas de conformidade entre os dois meses':''}`);
             }
             if (_usaNC || _usaDev) {
                 _secsRel.push(`${_si++}. ${_multi?'🔬 CQ — ':''}NÃO CONFORMIDADES${_usaDev?' E DEVOLUÇÕES':''}
@@ -19907,17 +19973,20 @@ Motivos: ${[...new Set(devMes.map(d=>d.motivo))].join(', ') || 'nenhuma'}`;
             }
             if (_usaMP) {
                 _secsRel.push(`${_si++}. ${_multi?'🌿 NUTRICIONISTA — ':''}MATÉRIAS-PRIMAS — QUALIDADE NUTRICIONAL
-   - Composição por produto vs. tabelas Embrapa Suínos e Aves e Rostagno et al.
+   - LEVANTAMENTO REGISTRO A REGISTRO: para cada parâmetro nutricional (umidade, proteína, ureática, peróxido, etc.), listar todas as datas/lotes fora do limite, com valor, limite e magnitude do desvio (use a SÉRIE TEMPORAL COMPLETA)
+   - Calcular taxa de conformidade mensal por parâmetro e por produto (X/Y registros conformes = Z%)
+   - Identificar fornecedores ou lotes com maior incidência de desvios
    - Soja extrusada: ureática (ref. 0,05–0,20) e solubilidade proteica (mín. 75%) — citar Embrapa Circular Técnica
-   - Milho: umidade e impacto em energia metabolizável — "conforme Rostagno et al. (edição), cada 1% de umidade acima do padrão reduz EM em aproximadamente..."
-   - Variações entre lotes/fornecedores${temComparacao?'; comparar entre meses':''}
-   - Impacto na formulação: "com base em NRC (1994) / Rostagno et al., essa variação implica..."`);
+   - Milho: quantificar impacto na EM a partir dos desvios de umidade encontrados — referenciar Rostagno et al.
+   - Variações entre lotes/fornecedores${temComparacao?'; comparar taxas de conformidade entre meses':''}`);
             }
             if (_usaClass) {
                 _secsRel.push(`${_si++}. ${_multi?'🌿 NUTRICIONISTA — ':''}CLASSIFICAÇÃO DE GRÃOS — ANÁLISE NUTRICIONAL
-   - Umidade, impurezas e avariados vs. limites Embrapa e Compêndio MAPA
-   - Impacto na energia metabolizável: referenciar Rostagno et al. ou NRC
-   - Grãos ardidos/mofados: perda de valor nutricional; citar Leeson & Summers sobre impacto em digestibilidade${temComparacao?'\n   - Variações entre meses':''}`);
+   - LEVANTAMENTO REGISTRO A REGISTRO: listar todas as datas/lotes com umidade, impurezas ou avariados fora do limite, com valor, limite e desvio exato (use a SÉRIE TEMPORAL COMPLETA)
+   - Calcular taxa de conformidade mensal por parâmetro (X/Y registros conformes = Z%)
+   - Identificar datas ou lotes com maior concentração de desvios
+   - Impacto na energia metabolizável: quantificar com base nos desvios de umidade encontrados — referenciar Rostagno et al. ou NRC
+   - Grãos ardidos/mofados: perda de valor nutricional por data/lote; citar Leeson & Summers sobre digestibilidade${temComparacao?'\n   - Comparar taxas de conformidade entre meses':''}`);
             }
             _secsRel.push(`${_si++}. ${_multi?'🌿 NUTRICIONISTA — ':''}IMPACTO EM DESEMPENHO ANIMAL
    - Frango de corte: FCR esperado, ganho de peso e uniformidade por fase — comparar com metas Rostagno et al.
@@ -19929,16 +19998,20 @@ Motivos: ${[...new Set(devMes.map(d=>d.motivo))].join(', ') || 'nenhuma'}`;
         if (_temVet || _multi) {
             if (_usaClass || _usaMP) {
                 _secsRel.push(`${_si++}. ${_multi?'🩺 VETERINÁRIO — ':''}RISCO DE MICOTOXINAS E CONTAMINAÇÃO
-   - Aflatoxinas, fumonisinas, zearalenona, DON: valor encontrado vs. limite IN MAPA 07/2011 (citar artigo/anexo)
-   - Classificar risco por tipo: Baixo (<50% do limite) / Médio (50–100%) / Alto (>limite) — critério Leeson & Summers
-   - Umidade de grãos: risco fúngico por espécie (Aspergillus >14%, Fusarium >13,5%) — citar Embrapa
-   - Lotes de risco: produto, data, valor, fornecedor`);
+   - LEVANTAMENTO REGISTRO A REGISTRO: listar TODAS as datas/lotes analisados para aflatoxinas, fumonisinas, zearalenona e DON, com valor, limite IN MAPA 07/2011 e % do limite atingido (use a SÉRIE TEMPORAL COMPLETA)
+   - Classificar cada ocorrência: Baixo (<50% do limite) / Médio (50–100%) / Alto (>100% do limite) — critério Leeson & Summers
+   - Calcular taxa de conformidade mensal por micotoxina (X/Y registros conformes = Z%)
+   - Identificar padrão temporal ou de fornecedor nas ocorrências críticas
+   - Umidade de grãos: listar todas as datas com risco fúngico (>14% Aspergillus, >13,5% Fusarium) — citar Embrapa
+   - Lotes de risco: produto | data | valor | fornecedor | classificação de risco`);
             }
             if (_usaMP) {
                 _secsRel.push(`${_si++}. ${_multi?'🩺 VETERINÁRIO — ':''}QUALIDADE SANITÁRIA DAS MATÉRIAS-PRIMAS
-   - Índice de peróxido >20 meq/kg O₂: mecanismo de dano oxidativo — "conforme NRC, oxidação lipídica compromete absorção de vitaminas lipossolúveis A, D, E, K..."
+   - LEVANTAMENTO REGISTRO A REGISTRO: listar todas as datas/lotes com índice de peróxido >20 meq/kg O₂ ou umidade >14%, com valor, data e fornecedor (use a SÉRIE TEMPORAL COMPLETA)
+   - Calcular taxa de conformidade mensal para peróxido e umidade (X/Y registros conformes = Z%)
+   - Índice de peróxido elevado: mecanismo de dano oxidativo embasado em NRC (vitaminas lipossolúveis A, D, E, K)
    - Umidade >14%: risco microbiológico e fúngico — referenciar Embrapa boas práticas de armazenamento
-   - Condições de armazenamento, fornecedores de risco e recomendações de BPF`);
+   - Identificar fornecedores recorrentes nos desvios; condições de armazenamento e recomendações de BPF`);
             }
             _secsRel.push(`${_si++}. ${_multi?'🩺 VETERINÁRIO — ':''}IMPACTO SANITÁRIO E RISCO ANIMAL
    - Por tipo de micotoxina: mecanismo de ação clínico esperado em aves — "Leeson & Summers (2000) relatam que aflatoxinas >X ppb causam..."
@@ -19955,22 +20028,30 @@ Motivos: ${[...new Set(devMes.map(d=>d.motivo))].join(', ') || 'nenhuma'}`;
         }
 
         _secsRel.push(`${_si++}. CONCLUSÃO E AÇÕES PRIORITÁRIAS
-   1) Diagnóstico técnico final (máx. 4 linhas) com referência principal
-   2) Área afetada: Matéria-prima / Produção / Classificação / Todas
-   ${temComparacao?'3) Tendência: Melhorou / Piorou / Estável\n   4) Causa raiz provável (embasada em referência)\n   5) Risco: Baixo / Médio / Alto\n   6) Ações corretivas (máx. 3) — cada uma com responsável e embasamento\n   7) Ações preventivas (máx. 3) — cada uma com referência normativa':'3) Causa raiz provável (embasada em referência)\n   4) Risco: Baixo / Médio / Alto\n   5) Ações corretivas (máx. 3) — cada uma com responsável e embasamento\n   6) Ações preventivas (máx. 3) — cada uma com referência normativa'}`);
+   1) Diagnóstico técnico final embasado no levantamento de desvios (máx. 5 linhas) com referência principal
+   2) Painel consolidado: total de registros analisados | total de desvios encontrados | taxa geral de conformidade do mês (%)
+   3) Top 3 parâmetros/produtos com maior frequência ou magnitude de desvios no período
+   4) Área(s) mais crítica(s): Matéria-prima / Produção / Classificação
+   ${temComparacao?'5) Tendência: Melhorou / Piorou / Estável — baseado nas taxas de conformidade comparadas\n   6) Causa raiz provável dos desvios mais frequentes (embasada em referência)\n   7) Risco global: Baixo / Médio / Alto\n   8) Ações corretivas prioritárias (máx. 3) — direcionadas aos desvios mais críticos identificados, com responsável e embasamento normativo\n   9) Ações preventivas (máx. 3) — cada uma com referência normativa':'5) Causa raiz provável dos desvios mais frequentes (embasada em referência)\n   6) Risco global: Baixo / Médio / Alto\n   7) Ações corretivas prioritárias (máx. 3) — direcionadas às ocorrências mais críticas identificadas no levantamento, com responsável e embasamento normativo\n   8) Ações preventivas (máx. 3) — cada uma com referência normativa'}`);
 
         const blocoSistema = temComparacao ? `
-SISTEMA: Análise Comparativa Mensal
-REGRAS:
+SISTEMA: Análise Comparativa Mensal — Levantamento Crítico de Desvios
+REGRAS OBRIGATÓRIAS:
 - Ignorar totalmente valores "-" ou não informados
 - Comparar mês atual (${nomeMes}) vs mês anterior (${nomeMesAnt}) OBRIGATORIAMENTE
-- Para cada desvio, citar: produto, data, valor, limite e desvio exato
+- NÃO apresentar apenas médias do mês — usar a SÉRIE TEMPORAL COMPLETA para análise REGISTRO A REGISTRO
+- Para cada parâmetro fora do padrão, listar TODAS as ocorrências: data | valor medido | limite | magnitude do desvio | flag (ALTO/BAIXO)
+- Identificar padrões: desvios isolados vs. recorrentes vs. tendência crescente vs. concentrados em período/lote
+- Calcular e informar taxa de conformidade por parâmetro: (nº conformes / total) × 100%
 - Não inferir valores ausentes
 ` : `
-SISTEMA: Análise Técnica Mensal
-REGRAS:
+SISTEMA: Análise Técnica Mensal — Levantamento Crítico de Desvios
+REGRAS OBRIGATÓRIAS:
 - Ignorar totalmente valores "-" ou não informados
-- Para cada desvio, citar: produto, data, valor, limite e desvio exato
+- NÃO apresentar apenas médias do mês — usar a SÉRIE TEMPORAL COMPLETA para análise REGISTRO A REGISTRO
+- Para cada parâmetro fora do padrão, listar TODAS as ocorrências: data | valor medido | limite | magnitude do desvio | flag (ALTO/BAIXO)
+- Identificar padrões: desvios isolados vs. recorrentes vs. tendência crescente vs. concentrados em período/lote
+- Calcular e informar taxa de conformidade por parâmetro: (nº conformes / total) × 100%
 - Não inferir valores ausentes
 `;
 
@@ -19988,6 +20069,14 @@ Cada afirmação técnica relevante DEVE ser acompanhada da referência bibliogr
 - Armazenamento: "a Embrapa (Circular Técnica X) orienta que umidade acima de 13,5% favorece crescimento de Aspergillus..."
 - Energia: "segundo NRC (1994), cada 1% de variação de umidade no milho impacta em aproximadamente X kcal/kg de EM..."
 NÃO apresente nenhum desvio, recomendação ou diagnóstico sem citar a referência que o embasa.
+
+INSTRUÇÃO CRÍTICA DE ANÁLISE:
+Os dados incluem SÉRIE TEMPORAL COMPLETA (registro a registro) para Produção, Matéria Prima e Classificação.
+Você DEVE usar esses dados para:
+• Listar TODAS as datas com desvio em cada parâmetro (não apenas resumo ou média)
+• Calcular a taxa de conformidade: (conformes / total) × 100% por parâmetro
+• Identificar padrões temporais: desvios isolados / recorrentes / tendência crescente / concentrados em lote ou período
+A análise deve substituir inferências por fatos observados na série temporal.
 
 Analise EXCLUSIVAMENTE os módulos fornecidos.
 Estruture o relatório nas seguintes seções (siga a ordem exatamente):
