@@ -17609,10 +17609,10 @@ function matRenderTabela() {
         const bg  = i % 2 === 0 ? '#fff' : '#f9f9f9';
         const qtd = m.qtd_atual !== undefined ? m.qtd_atual : m.qtdAtual;
         return `<tr style="background:${bg};border-bottom:1px solid #f0f0f0;">
-            <td style="padding:9px 12px;font-weight:700;color:#2c3e50;">${m.nome || '—'}</td>
+            <td style="padding:9px 12px;font-weight:700;color:#2c3e50;text-align:left;">${m.nome || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${m.categoria || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;font-family:monospace;">${m.lote || '—'}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;">${m.fornecedor || '—'}</td>
+            <td style="padding:9px 8px;text-align:left;font-size:11px;">${m.fornecedor || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-weight:700;color:${parseFloat(qtd) <= parseFloat(m.minimo||0) ? '#e74c3c' : '#27ae60'};">${qtd} ${m.unidade||''}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;color:#888;">${m.minimo || '—'} ${m.unidade||''}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${m.unidade || '—'}</td>
