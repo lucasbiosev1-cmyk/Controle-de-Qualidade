@@ -2951,6 +2951,7 @@
         <!-- FILTROS -->
         <div style="background:#fff;border-radius:8px;padding:12px 16px;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
             <input id="reagFiltroNome" oninput="reagRenderTabela()" placeholder="🔍 Buscar reagente..." style="border:1px solid #ddd;border-radius:6px;padding:7px 12px;font-size:12px;min-width:180px;">
+            <input id="reagFiltroNF" oninput="reagRenderTabela()" placeholder="🧾 Buscar por N.F..." style="border:1px solid #aed6f1;border-radius:6px;padding:7px 12px;font-size:12px;min-width:160px;background:#eaf3fb;color:#1a5276;font-weight:600;">
             <select id="reagFiltroStatus" onchange="reagRenderTabela()" style="border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:12px;">
                 <option value="">Todos os status</option>
                 <option value="ok">✅ OK</option>
@@ -2963,6 +2964,7 @@
                 <option value="sim">🚔 Controlados PF</option>
                 <option value="nao">Não controlados</option>
             </select>
+            <button id="reagBtnLimparNF" onclick="reagLimparFiltroNF()" style="display:none;background:#eaf3fb;color:#1a5276;border:1px solid #aed6f1;border-radius:6px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;">✕ Limpar N.F</button>
         </div>
 
         <!-- TABELA -->
@@ -16019,6 +16021,12 @@ function _fmtData(d) {
     return p[2]+'/'+p[1]+'/'+p[0];
 }
 
+function reagLimparFiltroNF() {
+    const el = document.getElementById('reagFiltroNF');
+    if (el) { el.value = ''; }
+    reagRenderTabela();
+}
+
 // ── Renderizar tabela principal ───────────────────────────────────
 function reagRenderTabela() {
     const tbody = document.getElementById('reagTbody');
@@ -16026,14 +16034,43 @@ function reagRenderTabela() {
     const filtNome   = (document.getElementById('reagFiltroNome')   || {}).value || '';
     const filtStatus = (document.getElementById('reagFiltroStatus') || {}).value || '';
     const filtPF     = (document.getElementById('reagFiltroPF')     || {}).value || '';
+    const filtNF     = ((document.getElementById('reagFiltroNF')    || {}).value || '').trim().toLowerCase();
+
+    // Mostra/oculta botão de limpar NF
+    const btnLimpar = document.getElementById('reagBtnLimparNF');
+    if (btnLimpar) btnLimpar.style.display = filtNF ? 'inline-block' : 'none';
 
     let lista = _reagentes.filter(r => {
         if (filtNome   && !r.nome.toLowerCase().includes(filtNome.toLowerCase())) return false;
         if (filtStatus && _reagStatus(r) !== filtStatus) return false;
         if (filtPF === 'sim' && !r.controlePF) return false;
         if (filtPF === 'nao' && r.controlePF)  return false;
+        if (filtNF) {
+            const nfNum = _reagNumeroNF(r.nfChave).toLowerCase();
+            const nfChave = (r.nfChave || '').toLowerCase();
+            if (!nfNum.includes(filtNF) && !nfChave.includes(filtNF)) return false;
+        }
         return true;
     });
+
+    // Banner informativo quando filtrando por NF
+    let bannerNF = document.getElementById('reagBannerNF');
+    if (!bannerNF) {
+        bannerNF = document.createElement('div');
+        bannerNF.id = 'reagBannerNF';
+        tbody.parentElement.parentElement.parentElement.insertBefore(bannerNF, tbody.parentElement.parentElement);
+    }
+    if (filtNF && lista.length > 0) {
+        const totalNF = lista.reduce((acc, r) => acc + (r.custoUnit > 0 ? parseFloat(r.custoUnit) : 0), 0);
+        bannerNF.innerHTML = `<div style="background:#eaf3fb;border:1.5px solid #aed6f1;border-radius:8px;padding:10px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <span style="font-size:16px;">🧾</span>
+            <span style="font-weight:700;color:#1a5276;font-size:13px;">Nota Fiscal: <strong>${filtNF.toUpperCase()}</strong></span>
+            <span style="background:#1a2a6e;color:#fff;border-radius:10px;padding:2px 10px;font-size:11px;font-weight:700;">${lista.length} produto${lista.length !== 1 ? 's' : ''}</span>
+            ${totalNF > 0 ? `<span style="background:#edfaf1;color:#1e8449;border:1px solid #a9dfbf;border-radius:10px;padding:2px 10px;font-size:11px;font-weight:700;">💰 Total: R$ ${totalNF.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>` : ''}
+        </div>`;
+    } else {
+        bannerNF.innerHTML = '';
+    }
 
     if (!lista.length) {
         tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;color:#aaa;">Nenhum reagente encontrado.</td></tr>';
