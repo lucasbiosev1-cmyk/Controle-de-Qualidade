@@ -2951,8 +2951,11 @@
 
         <!-- FILTROS -->
         <div style="background:#fff;border-radius:8px;padding:12px 16px;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-            <input id="reagFiltroNome" oninput="reagRenderTabela()" placeholder="🔍 Buscar reagente..." style="border:1px solid #ddd;border-radius:6px;padding:7px 12px;font-size:12px;min-width:180px;">
-            <input id="reagFiltroNF" oninput="reagRenderTabela()" placeholder="🧾 Buscar por N.F..." style="border:1px solid #aed6f1;border-radius:6px;padding:7px 12px;font-size:12px;min-width:160px;background:#eaf3fb;color:#1a5276;font-weight:600;">
+            <!-- Campo único: busca por Reagente OU N.F -->
+            <div style="position:relative;flex:1;min-width:220px;">
+                <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#aaa;pointer-events:none;">🔍</span>
+                <input id="reagFiltroBusca" oninput="reagRenderTabela()" placeholder="Buscar reagente ou N.F..." style="width:100%;border:1px solid #ddd;border-radius:6px;padding:7px 12px 7px 32px;font-size:12px;">
+            </div>
             <select id="reagFiltroStatus" onchange="reagRenderTabela()" style="border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:12px;">
                 <option value="">Todos os status</option>
                 <option value="ok">✅ OK</option>
@@ -2960,15 +2963,20 @@
                 <option value="vencendo">🟠 Vencendo</option>
                 <option value="vencido">🔴 Vencido</option>
             </select>
-            <select id="reagFiltroPF" onchange="reagRenderTabela()" style="border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:12px;">
-                <option value="">Todos os tipos</option>
-                <option value="sim">🚔 Controlados PF</option>
-                <option value="nao">Não controlados</option>
-            </select>
-            <button id="reagBtnLimparNF" onclick="reagLimparFiltroNF()" style="display:none;background:#eaf3fb;color:#1a5276;border:1px solid #aed6f1;border-radius:6px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;">✕ Limpar N.F</button>
+            <!-- Checkbox: Controlados PF -->
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;background:#f5eefa;border:1px solid #d2a8f0;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;color:#6c3483;" title="Exibir apenas produtos controlados pela Polícia Federal">
+                <input type="checkbox" id="reagFiltroControlado" onchange="reagRenderTabela()" style="width:15px;height:15px;accent-color:#8e44ad;cursor:pointer;">
+                🚔 Controlados PF
+            </label>
+            <!-- Checkbox: Agrupar por produto -->
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;background:#eaf7fb;border:1px solid #a8d8ea;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;color:#1a5276;" title="Agrupa todos os lotes/fornecedores do mesmo produto e soma o estoque total">
+                <input type="checkbox" id="reagFiltroAgrupar" onchange="reagRenderTabela()" style="width:15px;height:15px;accent-color:#1a5276;cursor:pointer;">
+                📦 Agrupar por produto
+            </label>
+            <!-- Checkbox: Ocultar zerado -->
             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;background:#fff8e1;border:1px solid #f9ca34;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;color:#7d5a00;" title="Oculta itens com quantidade atual igual a zero">
                 <input type="checkbox" id="reagFiltroOcultarZerado" onchange="reagRenderTabela()" style="width:15px;height:15px;accent-color:#e67e22;cursor:pointer;">
-                🚫 Ocultar estoque zerado
+                🚫 Ocultar zerado
             </label>
         </div>
 
@@ -2976,7 +2984,7 @@
         <div style="background:#fff;border-radius:8px;box-shadow:0 1px 6px rgba(0,0,0,0.07);overflow:hidden;">
             <div style="overflow-x:auto;">
                 <table style="width:100%;border-collapse:collapse;font-size:12px;">
-                    <thead>
+                    <thead id="reagThead">
                         <tr style="background:#1a2a6e;color:#fff;">
                             <th style="padding:10px 12px;text-align:left;font-size:11px;letter-spacing:.5px;">REAGENTE</th>
                             <th style="padding:10px 8px;text-align:center;">LOTE</th>
@@ -16028,7 +16036,7 @@ function _fmtData(d) {
 }
 
 function reagLimparFiltroNF() {
-    const el = document.getElementById('reagFiltroNF');
+    const el = document.getElementById('reagFiltroBusca');
     if (el) { el.value = ''; }
     reagRenderTabela();
 }
@@ -16037,48 +16045,145 @@ function reagLimparFiltroNF() {
 function reagRenderTabela() {
     const tbody = document.getElementById('reagTbody');
     if (!tbody) return;
-    const filtNome        = (document.getElementById('reagFiltroNome')          || {}).value || '';
-    const filtStatus      = (document.getElementById('reagFiltroStatus')         || {}).value || '';
-    const filtPF          = (document.getElementById('reagFiltroPF')             || {}).value || '';
-    const filtNF          = ((document.getElementById('reagFiltroNF')            || {}).value || '').trim().toLowerCase();
-    const filtOcultarZero = (document.getElementById('reagFiltroOcultarZerado')  || {}).checked || false;
 
-    // Mostra/oculta botão de limpar NF
-    const btnLimpar = document.getElementById('reagBtnLimparNF');
-    if (btnLimpar) btnLimpar.style.display = filtNF ? 'inline-block' : 'none';
+    // ── Leitura dos filtros ──────────────────────────────────────
+    const filtBusca       = ((document.getElementById('reagFiltroBusca')         || {}).value || '').trim().toLowerCase();
+    const filtStatus      = (document.getElementById('reagFiltroStatus')          || {}).value || '';
+    const filtControlado  = (document.getElementById('reagFiltroControlado')      || {}).checked || false;
+    const filtAgrupar     = (document.getElementById('reagFiltroAgrupar')         || {}).checked || false;
+    const filtOcultarZero = (document.getElementById('reagFiltroOcultarZerado')   || {}).checked || false;
 
+    // ── Filtro base ──────────────────────────────────────────────
     let lista = _reagentes.filter(r => {
-        if (filtNome   && !r.nome.toLowerCase().includes(filtNome.toLowerCase())) return false;
-        if (filtStatus && _reagStatus(r) !== filtStatus) return false;
-        if (filtPF === 'sim' && !r.controlePF) return false;
-        if (filtPF === 'nao' && r.controlePF)  return false;
-        if (filtNF) {
-            const nfNum = _reagNumeroNF(r.nfChave).toLowerCase();
-            const nfChave = (r.nfChave || '').toLowerCase();
-            if (!nfNum.includes(filtNF) && !nfChave.includes(filtNF)) return false;
+        if (filtControlado && !r.controlePF) return false;
+        if (filtBusca) {
+            const nomeMatch = r.nome.toLowerCase().includes(filtBusca);
+            const nfNum     = _reagNumeroNF(r.nfChave).toLowerCase();
+            const nfChave   = (r.nfChave || '').toLowerCase();
+            if (!nomeMatch && !nfNum.includes(filtBusca) && !nfChave.includes(filtBusca)) return false;
         }
-        if (filtOcultarZero && (parseFloat(r.qtdAtual) || 0) <= 0) return false;
+        if (filtStatus && _reagStatus(r) !== filtStatus) return false;
         return true;
     });
 
-    // Banner informativo quando filtrando por NF
+    // ── Banner NF ────────────────────────────────────────────────
     let bannerNF = document.getElementById('reagBannerNF');
     if (!bannerNF) {
         bannerNF = document.createElement('div');
         bannerNF.id = 'reagBannerNF';
         tbody.parentElement.parentElement.parentElement.insertBefore(bannerNF, tbody.parentElement.parentElement);
     }
-    if (filtNF && lista.length > 0) {
+    // Detecta se a busca bate com uma NF específica
+    const buscaNFMatch = filtBusca && lista.length > 0 && lista.every(r => {
+        const nfNum   = _reagNumeroNF(r.nfChave).toLowerCase();
+        const nfChave = (r.nfChave || '').toLowerCase();
+        return nfNum.includes(filtBusca) || nfChave.includes(filtBusca);
+    });
+    if (buscaNFMatch) {
         const totalNF = lista.reduce((acc, r) => acc + (r.custoUnit > 0 ? parseFloat(r.custoUnit) : 0), 0);
         bannerNF.innerHTML = `<div style="background:#eaf3fb;border:1.5px solid #aed6f1;border-radius:8px;padding:10px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
             <span style="font-size:16px;">🧾</span>
-            <span style="font-weight:700;color:#1a5276;font-size:13px;">Nota Fiscal: <strong>${filtNF.toUpperCase()}</strong></span>
+            <span style="font-weight:700;color:#1a5276;font-size:13px;">Nota Fiscal: <strong>${filtBusca.toUpperCase()}</strong></span>
             <span style="background:#1a2a6e;color:#fff;border-radius:10px;padding:2px 10px;font-size:11px;font-weight:700;">${lista.length} produto${lista.length !== 1 ? 's' : ''}</span>
             ${totalNF > 0 ? `<span style="background:#edfaf1;color:#1e8449;border:1px solid #a9dfbf;border-radius:10px;padding:2px 10px;font-size:11px;font-weight:700;">💰 Total: R$ ${totalNF.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>` : ''}
         </div>`;
     } else {
         bannerNF.innerHTML = '';
     }
+
+    // ══════════════════════════════════════════════════════════════
+    //  MODO AGRUPADO — soma estoque por nome de produto
+    // ══════════════════════════════════════════════════════════════
+    if (filtAgrupar) {
+        // Atualizar cabeçalho
+        const thead = document.getElementById('reagThead');
+        if (thead) thead.innerHTML = `<tr style="background:#1a5276;color:#fff;">
+            <th style="padding:10px 12px;text-align:left;font-size:11px;letter-spacing:.5px;">REAGENTE</th>
+            <th style="padding:10px 8px;text-align:center;">ESTOQUE TOTAL</th>
+            <th style="padding:10px 8px;text-align:center;">UNIDADE</th>
+            <th style="padding:10px 8px;text-align:center;">MÍNIMO</th>
+            <th style="padding:10px 8px;text-align:center;">LOTES</th>
+            <th style="padding:10px 8px;text-align:center;">FORNECEDORES</th>
+            <th style="padding:10px 8px;text-align:center;">STATUS</th>
+        </tr>`;
+
+        // Agrupar por nome (case-insensitive)
+        const grupos = {};
+        lista.forEach(r => {
+            const chave = r.nome.trim().toUpperCase();
+            if (!grupos[chave]) {
+                grupos[chave] = {
+                    nome:       r.nome,
+                    controlePF: r.controlePF,
+                    portaria:   r.portaria,
+                    unidade:    r.unidade,
+                    minimo:     parseFloat(r.minimo) || 0,
+                    qtdTotal:   0,
+                    lotes:      new Set(),
+                    fornecedores: new Set(),
+                    ids:        []
+                };
+            }
+            grupos[chave].qtdTotal += parseFloat(r.qtdAtual) || 0;
+            if (r.lote)      grupos[chave].lotes.add(r.lote);
+            if (r.fornecedor) grupos[chave].fornecedores.add(r.fornecedor);
+            grupos[chave].ids.push(r.id);
+        });
+
+        let listaAgrupada = Object.values(grupos);
+
+        // Ocultar zerado no modo agrupado
+        if (filtOcultarZero) listaAgrupada = listaAgrupada.filter(g => g.qtdTotal > 0);
+
+        if (!listaAgrupada.length) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#aaa;">Nenhum reagente encontrado.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = listaAgrupada.map(g => {
+            const stAtual = g.qtdTotal <= 0 ? 'vencido' : g.qtdTotal <= g.minimo ? 'baixo' : 'ok';
+            const rowBg   = stAtual === 'baixo' ? '#fffdf0' : '#fff';
+            const pfBorder = g.controlePF ? 'border-left:4px solid #8e44ad;' : '';
+            const lotesTxt = g.lotes.size > 0 ? [...g.lotes].join(', ') : '—';
+            const fornTxt  = g.fornecedores.size > 0 ? [...g.fornecedores].join(', ') : '—';
+            return `<tr style="border-bottom:1px solid #f0f0f0;background:${rowBg};${pfBorder}">
+                <td style="padding:9px 12px;text-align:left;">
+                    <div style="font-weight:700;color:#2c3e50;">${g.nome}</div>
+                    ${g.controlePF ? '<div>'+_reagPFBadge(g.controlePF)+'</div>' : ''}
+                    ${g.portaria ? '<div style="font-size:9px;color:#8e44ad;margin-top:1px;">'+g.portaria+'</div>' : ''}
+                </td>
+                <td style="padding:9px 8px;text-align:center;font-size:15px;font-weight:900;color:${stAtual==='baixo'?'#e67e22':'#1a5276'};">${g.qtdTotal.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:3})}</td>
+                <td style="padding:9px 8px;text-align:center;font-size:11px;color:#666;">${g.unidade || '—'}</td>
+                <td style="padding:9px 8px;text-align:center;font-size:11px;color:#888;">${g.minimo > 0 ? g.minimo : '—'} ${g.minimo > 0 ? g.unidade : ''}</td>
+                <td style="padding:9px 8px;text-align:center;font-size:10px;color:#666;max-width:140px;white-space:normal;">${lotesTxt}</td>
+                <td style="padding:9px 8px;text-align:center;font-size:10px;color:#666;max-width:140px;white-space:normal;">${fornTxt}</td>
+                <td style="padding:9px 8px;text-align:center;">${_reagStatusBadge(stAtual)}</td>
+            </tr>`;
+        }).join('');
+        return;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  MODO NORMAL (detalhado por lote/fornecedor)
+    // ══════════════════════════════════════════════════════════════
+
+    // Restaurar cabeçalho normal
+    const thead = document.getElementById('reagThead');
+    if (thead) thead.innerHTML = `<tr style="background:#1a2a6e;color:#fff;">
+        <th style="padding:10px 12px;text-align:left;font-size:11px;letter-spacing:.5px;">REAGENTE</th>
+        <th style="padding:10px 8px;text-align:center;">LOTE</th>
+        <th style="padding:10px 8px;text-align:center;">FORNECEDOR</th>
+        <th style="padding:10px 8px;text-align:center;">QTD ATUAL</th>
+        <th style="padding:10px 8px;text-align:center;">MÍNIMO</th>
+        <th style="padding:10px 8px;text-align:center;">VALIDADE</th>
+        <th style="padding:10px 8px;text-align:center;">ENTRADA</th>
+        <th style="padding:10px 8px;text-align:center;">NOTA FISCAL</th>
+        <th style="padding:10px 8px;text-align:center;">CUSTO UNIT.</th>
+        <th style="padding:10px 8px;text-align:center;">STATUS</th>
+        <th style="padding:10px 8px;text-align:center;">AÇÕES</th>
+    </tr>`;
+
+    if (filtOcultarZero) lista = lista.filter(r => (parseFloat(r.qtdAtual) || 0) > 0);
 
     if (!lista.length) {
         tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;color:#aaa;">Nenhum reagente encontrado.</td></tr>';
