@@ -1297,7 +1297,32 @@
         /* ── Tabela de ranking: scroll horizontal na tela ── */
         #aba-ranking .tabela-container { overflow-x: auto; }
         #aba-ranking .tabela-ranking-detalhada table { min-width: 1100px; }
-    </style>
+    
+        /* =========================================================
+           AUTOCOMPLETE DE FORNECEDOR
+           ========================================================= */
+        .sgq-autocomplete-wrap { position: relative; }
+        .sgq-autocomplete-list {
+            position: absolute; top: 100%; left: 0; right: 0; z-index: 99999;
+            background: #fff; border: 1px solid #3498db; border-top: none;
+            border-radius: 0 0 6px 6px; max-height: 180px; overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none;
+        }
+        .sgq-autocomplete-list.open { display: block; }
+        .sgq-autocomplete-item {
+            padding: 7px 10px; font-size: 12px; cursor: pointer;
+            border-bottom: 1px solid #f0f0f0; color: #333;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .sgq-autocomplete-item:last-child { border-bottom: none; }
+        .sgq-autocomplete-item:hover, .sgq-autocomplete-item.active {
+            background: #eaf4fc; color: #1a2a6e; font-weight: 700;
+        }
+        .sgq-autocomplete-item mark {
+            background: #d6eaf8; color: #1a2a6e; font-weight: 700;
+            border-radius: 2px; padding: 0 1px;
+        }
+</style>
 </head>
 <body>
 
@@ -5226,6 +5251,111 @@ function dataParaDisplay(v) {
 }
 
 // Máscara automática para campo de data: digita 25032026 → 25/03/2026
+
+// =========================================================
+//  AUTOCOMPLETE DE FORNECEDOR
+// =========================================================
+function _getFornecedoresUnicos(modulo) {
+    // Coleta fornecedores únicos dos arrays já carregados
+    let arr = [];
+    if (modulo === 'class' || modulo === 'all') arr = arr.concat(classificacoes.map(r => r.fornecedor));
+    if (modulo === 'mp'    || modulo === 'all') arr = arr.concat(materiasPrimas.map(r => r.fornecedor));
+    // Deduplica e ordena (ignora vazios)
+    return [...new Set(arr.map(f => (f||'').toUpperCase().trim()).filter(Boolean))].sort();
+}
+
+function _highlightMatch(text, query) {
+    if (!query) return text;
+    const idx = text.toUpperCase().indexOf(query.toUpperCase());
+    if (idx === -1) return text;
+    return text.slice(0, idx) + '<mark>' + text.slice(idx, idx + query.length) + '</mark>' + text.slice(idx + query.length);
+}
+
+function initAutocompleteFornecedor(inputId, modulo) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    // Cria wrapper se ainda não existir
+    if (!input.parentElement.classList.contains('sgq-autocomplete-wrap')) {
+        const wrap = document.createElement('div');
+        wrap.className = 'sgq-autocomplete-wrap';
+        input.parentNode.insertBefore(wrap, input);
+        wrap.appendChild(input);
+    }
+
+    // Cria lista dropdown
+    let list = input.parentElement.querySelector('.sgq-autocomplete-list');
+    if (!list) {
+        list = document.createElement('div');
+        list.className = 'sgq-autocomplete-list';
+        input.parentElement.appendChild(list);
+    }
+
+    let activeIdx = -1;
+
+    function showSuggestions(query) {
+        const fornecedores = _getFornecedoresUnicos(modulo);
+        const filtered = query
+            ? fornecedores.filter(f => f.includes(query.toUpperCase()))
+            : fornecedores.slice(0, 30);
+
+        if (!filtered.length) { list.classList.remove('open'); return; }
+
+        list.innerHTML = filtered.map((f, i) =>
+            `<div class="sgq-autocomplete-item" data-value="${f}" data-idx="${i}">${_highlightMatch(f, query)}</div>`
+        ).join('');
+
+        list.classList.add('open');
+        activeIdx = -1;
+
+        list.querySelectorAll('.sgq-autocomplete-item').forEach(item => {
+            item.addEventListener('mousedown', e => {
+                e.preventDefault();
+                input.value = item.dataset.value;
+                list.classList.remove('open');
+                input.dispatchEvent(new Event('change'));
+            });
+        });
+    }
+
+    input.addEventListener('input', () => showSuggestions(input.value.trim()));
+    input.addEventListener('focus', () => showSuggestions(input.value.trim()));
+
+    input.addEventListener('keydown', e => {
+        const items = list.querySelectorAll('.sgq-autocomplete-item');
+        if (!items.length || !list.classList.contains('open')) return;
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeIdx = Math.min(activeIdx + 1, items.length - 1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeIdx = Math.max(activeIdx - 1, 0);
+        } else if (e.key === 'Enter' && activeIdx >= 0) {
+            e.preventDefault();
+            input.value = items[activeIdx].dataset.value;
+            list.classList.remove('open');
+        } else if (e.key === 'Escape') {
+            list.classList.remove('open');
+        }
+        items.forEach((it, i) => it.classList.toggle('active', i === activeIdx));
+        if (activeIdx >= 0) items[activeIdx].scrollIntoView({ block: 'nearest' });
+    });
+
+    document.addEventListener('click', e => {
+        if (!input.parentElement.contains(e.target)) list.classList.remove('open');
+    });
+}
+
+// Inicializa os autocompletes quando os modais forem abertos
+function _initAllAutocompletes() {
+    initAutocompleteFornecedor('cadFornecedorClass', 'all');
+    initAutocompleteFornecedor('cadFornecedorMP', 'all');
+}
+// Aguarda o DOM estar pronto e dados carregados
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(_initAllAutocompletes, 2000);
+});
+
 function mascaraData(el) {
     let v = el.value.replace(/\D/g, '').slice(0, 8);
     if (v.length > 4) v = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
@@ -6493,6 +6623,7 @@ function abrirModalCadastroClass() {
     document.getElementById('formCadastroClass').reset();
     document.getElementById('cadDataClass').value = dataHoje();
     document.getElementById('modalCadastroClass').classList.add('show');
+    initAutocompleteFornecedor('cadFornecedorClass', 'all');
 }
 
 function abrirModalEdicaoClass(id) {
@@ -6720,6 +6851,7 @@ function abrirModalCadastroMP() {
     const btnSalvarNew = document.getElementById('btnSalvarMP');
     if (btnSalvarNew) { btnSalvarNew.textContent = 'Salvar'; btnSalvarNew.style.background = ''; }
     document.getElementById('modalCadastroMP').classList.add('show');
+    initAutocompleteFornecedor('cadFornecedorMP', 'all');
 }
 
 function abrirModalEdicaoMP(id) {
