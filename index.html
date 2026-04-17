@@ -4905,7 +4905,7 @@
                 <div class="form-section">
                     <h3>Dados de Registro</h3>
                     <div class="form-grid form-grid-4">
-                        <div class="form-group required"><label>Data</label><input type="text" id="cadDataProd" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)" onchange="gerarLoteAutomatico()"></div>
+                        <div class="form-group required"><label>Data</label><div style="display:flex;align-items:center;gap:4px;"><input type="text" id="cadDataProd" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)" onchange="gerarLoteAutomatico()" style="flex:1;"><div style="display:flex;flex-direction:column;gap:2px;"><button type="button" title="Avançar um dia" onclick="alterarDataProd(1)" style="width:26px;height:20px;border:1px solid #ccc;border-radius:3px;background:#f0f0f0;cursor:pointer;font-size:11px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;">▲</button><button type="button" title="Recuar um dia" onclick="alterarDataProd(-1)" style="width:26px;height:20px;border:1px solid #ccc;border-radius:3px;background:#f0f0f0;cursor:pointer;font-size:11px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;">▼</button></div></div></div>
                         <div class="form-group"><label>Hora</label><input type="text" id="cadHoraProd" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" oninput="mascaraHora(this)" onchange="gerarLoteAutomatico()"></div>
                         <div class="form-group required">
                             <label>Ração</label>
@@ -5231,6 +5231,25 @@ function mascaraData(el) {
     if (v.length > 4) v = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
     else if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
     el.value = v;
+}
+
+// Incrementa ou decrementa a data do campo cadDataProd em N dias
+function alterarDataProd(dias) {
+    const el = document.getElementById('cadDataProd');
+    let val = el.value.trim();
+    let d;
+    if (val && val.length === 10) {
+        const parts = val.split('/');
+        d = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+    } else {
+        d = new Date();
+    }
+    d.setDate(d.getDate() + dias);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const aaaa = d.getFullYear();
+    el.value = `${dd}/${mm}/${aaaa}`;
+    gerarLoteAutomatico();
 }
 
 // Máscara automática para campo de hora: digita 2303 → 23:03
