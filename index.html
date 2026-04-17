@@ -3307,6 +3307,10 @@
                 <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Sem Calibração</div>
                 <div id="eqCardSemCalib" style="font-size:26px;font-weight:900;color:#95a5a6;">0</div>
             </div>
+            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #8e44ad;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">💰 Total em R$</div>
+                <div id="eqCardValorTotal" style="font-size:20px;font-weight:900;color:#8e44ad;">R$ 0,00</div>
+            </div>
         </div>
 
         <!-- FILTROS -->
@@ -3333,6 +3337,9 @@
                             <th style="padding:10px 8px;text-align:center;">MODELO</th>
                             <th style="padding:10px 8px;text-align:center;">SÉRIE</th>
                             <th style="padding:10px 8px;text-align:center;">QUANTIDADE</th>
+                            <th style="padding:10px 8px;text-align:center;">FORNECEDOR</th>
+                            <th style="padding:10px 8px;text-align:center;">VALOR (R$)</th>
+                            <th style="padding:10px 8px;text-align:center;">ENTRADA</th>
                             <th style="padding:10px 8px;text-align:center;">CALIBRAÇÃO</th>
                             <th style="padding:10px 8px;text-align:center;">ÚLT. CALIBRAÇÃO</th>
                             <th style="padding:10px 8px;text-align:center;">PRÓX. CALIBRAÇÃO</th>
@@ -3341,7 +3348,7 @@
                         </tr>
                     </thead>
                     <tbody id="eqTbody">
-                        <tr><td colspan="11" style="text-align:center;padding:40px;color:#aaa;">Nenhum equipamento cadastrado.</td></tr>
+                        <tr><td colspan="14" style="text-align:center;padding:40px;color:#aaa;">Nenhum equipamento cadastrado.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -3394,6 +3401,36 @@
                         <div>
                             <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Localização</label>
                             <input id="eqLocal" placeholder="Ex: Laboratório 01, Sala de análise..." style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção: Entrada do Equipamento -->
+                <div style="background:#f8f9fa;border:1px solid #e8ecf0;border-radius:8px;padding:16px;margin-bottom:14px;">
+                    <div style="font-size:11px;font-weight:800;color:#fff;background:#8e44ad;display:inline-block;padding:4px 12px;border-radius:4px;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">📦 Entrada do Equipamento</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div style="grid-column:1/-1;">
+                            <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:6px;">Tipo de Entrada</label>
+                            <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;margin-right:20px;">
+                                <input type="radio" name="eqTipoEntrada" id="eqEntradaComNota" value="com_nota" onchange="eqToggleEntrada()" style="width:16px;height:16px;accent-color:#8e44ad;">
+                                <span style="font-size:13px;font-weight:600;color:#8e44ad;">🧾 Entrada com Nota</span>
+                            </label>
+                            <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
+                                <input type="radio" name="eqTipoEntrada" id="eqEntradaSemNota" value="sem_nota" onchange="eqToggleEntrada()" checked style="width:16px;height:16px;accent-color:#e67e22;">
+                                <span style="font-size:13px;font-weight:600;color:#e67e22;">📋 Entrada sem Nota</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Fornecedor</label>
+                            <input id="eqFornecedor" placeholder="Nome do fornecedor" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Valor (R$)</label>
+                            <input id="eqValor" type="number" min="0" step="0.01" placeholder="0,00" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
+                        </div>
+                        <div id="eqCampoNumNota" style="grid-column:1/-1;display:none;">
+                            <label style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;display:block;margin-bottom:4px;">Número da Nota Fiscal</label>
+                            <input id="eqNumNota" placeholder="Ex: NF-001234" style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;box-sizing:border-box;">
                         </div>
                     </div>
                 </div>
@@ -17672,6 +17709,12 @@ function _eqStatusBadge(s) {
     return map[s] || map.sem;
 }
 
+function eqToggleEntrada() {
+    const comNota = document.getElementById('eqEntradaComNota')?.checked;
+    const campoNota = document.getElementById('eqCampoNumNota');
+    if (campoNota) campoNota.style.display = comNota ? 'block' : 'none';
+}
+
 function eqToggleCalib() {
     const sim = document.getElementById('eqCalibSim')?.checked;
     const campos = document.getElementById('eqCalibCampos');
@@ -17719,11 +17762,17 @@ function eqRenderTabela() {
     if (el('eqCardVencida'))  el('eqCardVencida').textContent  = vencida;
     if (el('eqCardSemCalib')) el('eqCardSemCalib').textContent = semCalib;
 
+    // Total em R$
+    const totalValor = _equipamentos.reduce((acc, eq) => acc + (parseFloat(eq.valor) || 0), 0);
+    if (el('eqCardValorTotal')) {
+        el('eqCardValorTotal').textContent = totalValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
     const tbody = el('eqTbody');
     if (!tbody) return;
 
     if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:40px;color:#aaa;">Nenhum equipamento encontrado.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:40px;color:#aaa;">Nenhum equipamento encontrado.</td></tr>';
         return;
     }
 
@@ -17742,6 +17791,9 @@ function eqRenderTabela() {
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${eq.modelo || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;font-family:monospace;">${eq.serie || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-weight:700;">${eq.qtd || 1}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;">${eq.fornecedor || '—'}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;font-weight:700;color:#8e44ad;">${eq.valor ? parseFloat(eq.valor).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) : '—'}</td>
+            <td style="padding:9px 8px;text-align:center;">${eq.tipo_entrada === 'com_nota' ? `<span style="background:#f0e6f8;color:#8e44ad;border:1px solid #d2b4de;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;">🧾 Com Nota${eq.num_nota ? ' #'+eq.num_nota : ''}</span>` : '<span style="background:#fef5e7;color:#ca6f1e;border:1px solid #f8c471;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;">📋 Sem Nota</span>'}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${possuiCalibLabel}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${fmtDate(dataCalib)}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;font-weight:${st==='vencida'?'700':'400'};color:${st==='vencida'?'#e74c3c':st==='vencendo'?'#e67e22':'inherit'};">${fmtDate(proxCalib)}</td>
@@ -17758,12 +17810,15 @@ function eqRenderTabela() {
 function eqAbrirModal() {
     document.getElementById('eqEditId').value = '';
     document.getElementById('eqModalTitulo').textContent = '🔬 Cadastrar Equipamento';
-    ['eqNome','eqTag','eqMarca','eqModelo','eqSerie','eqLocal','eqRespCalib','eqCertificado','eqObs','eqDataCalib','eqProxCalib'].forEach(id => {
+    ['eqNome','eqTag','eqMarca','eqModelo','eqSerie','eqLocal','eqRespCalib','eqCertificado','eqObs','eqDataCalib','eqProxCalib','eqFornecedor','eqNumNota'].forEach(id => {
         const el = document.getElementById(id); if(el) el.value = '';
     });
     document.getElementById('eqQtd').value = '1';
+    document.getElementById('eqValor').value = '';
     document.getElementById('eqCalibNao').checked = true;
+    document.getElementById('eqEntradaSemNota').checked = true;
     eqToggleCalib();
+    eqToggleEntrada();
     document.getElementById('eqAlertaProxCalib').style.display = 'none';
     document.getElementById('modalCadastroEquipamento').style.display = 'flex';
 }
@@ -17797,6 +17852,17 @@ function eqEditar(id) {
     document.getElementById('eqRespCalib').value   = eq.resp_calib || eq.respCalib || '';
     document.getElementById('eqCertificado').value = eq.certificado || '';
     eqVerificarAlertaCalib();
+    // Entrada do equipamento
+    const tipoEntrada = eq.tipo_entrada || 'sem_nota';
+    if (tipoEntrada === 'com_nota') {
+        document.getElementById('eqEntradaComNota').checked = true;
+    } else {
+        document.getElementById('eqEntradaSemNota').checked = true;
+    }
+    eqToggleEntrada();
+    document.getElementById('eqFornecedor').value = eq.fornecedor || '';
+    document.getElementById('eqValor').value      = eq.valor || '';
+    document.getElementById('eqNumNota').value    = eq.num_nota || '';
     document.getElementById('modalCadastroEquipamento').style.display = 'flex';
 }
 
@@ -17830,6 +17896,11 @@ async function eqSalvar() {
         resp_calib:   possuiCalib === 'sim' ? document.getElementById('eqRespCalib').value.trim() : '',
         certificado:  possuiCalib === 'sim' ? document.getElementById('eqCertificado').value.trim() : '',
         obs:          document.getElementById('eqObs').value.trim(),
+        // Entrada do equipamento
+        tipo_entrada: document.getElementById('eqEntradaComNota').checked ? 'com_nota' : 'sem_nota',
+        fornecedor:   document.getElementById('eqFornecedor').value.trim(),
+        valor:        parseFloat(document.getElementById('eqValor').value) || null,
+        num_nota:     document.getElementById('eqEntradaComNota').checked ? document.getElementById('eqNumNota').value.trim() : '',
     };
     if (!eq.id) delete eq.id;
 
