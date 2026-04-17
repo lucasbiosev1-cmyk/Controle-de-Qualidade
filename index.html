@@ -17624,9 +17624,11 @@ function matRenderTabela() {
             </td>
             <td style="padding:9px 8px;text-align:center;">${_matStatusBadge(st)}</td>
             <td style="padding:9px 8px;text-align:center;">
-                <button onclick="matAbrirBaixa('${m.id}')" style="background:#e67e22;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;margin-right:4px;" title="Registrar baixa/consumo">📉 Baixa</button>
-                <button onclick="matEditar('${m.id}')" style="background:#3498db;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;margin-right:4px;">✏️</button>
-                <button onclick="matExcluir('${m.id}')" style="background:#e74c3c;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;">🗑️</button>
+                <div style="display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:nowrap;">
+                    <button onclick="matAbrirBaixa('${m.id}')" style="background:#e67e22;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;white-space:nowrap;" title="Registrar baixa/consumo">📉 Baixa</button>
+                    <button onclick="matEditar('${m.id}')" style="background:#3498db;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;" title="Editar">✏️</button>
+                    <button onclick="matExcluir('${m.id}')" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;" title="Excluir">🗑️</button>
+                </div>
             </td>
         </tr>`;
     }).join('');
