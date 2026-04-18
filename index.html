@@ -208,10 +208,90 @@
             margin-bottom: 14px; display: none; border-left: 3px solid #f43f5e;
         }
         .login-error.show { display: block; }
+
+        /* ===== MOBILE LOGIN ===== */
         @media (max-width: 600px) {
-            .login-wrapper { flex-direction: column; width: 95vw; }
-            .login-panel-left { display: none; }
-            .login-box { padding: 32px 24px; }
+            #loginScreen {
+                background: #0f1623;
+                align-items: flex-start;
+                padding: 0;
+            }
+            .login-wrapper {
+                flex-direction: column;
+                width: 100vw;
+                min-height: 100vh;
+                border-radius: 0;
+                border: none;
+                box-shadow: none;
+            }
+            /* Substitui o painel esquerdo por um header compacto no topo */
+            .login-panel-left {
+                display: flex;
+                width: 100%;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                padding: 16px 24px;
+                min-height: auto;
+                background: #0a1018;
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.07);
+            }
+            .login-panel-left::after {
+                display: none;
+            }
+            .login-panel-left-content {
+                display: none;
+            }
+            .login-panel-left::before {
+                display: none;
+            }
+            /* Mostra o logo SVG mobile */
+            .login-mob-logo {
+                display: block !important;
+            }
+            /* Badge SGQ no canto direito do header */
+            .login-mob-badge {
+                display: flex !important;
+            }
+            .login-box {
+                flex: 1;
+                padding: 36px 24px 48px;
+                background: #0f1623;
+                justify-content: flex-start;
+            }
+            /* Esconde o logo SVG grande (já aparece no header) */
+            .login-logo {
+                margin-bottom: 24px;
+            }
+            .login-logo svg {
+                display: none;
+            }
+            .login-logo h1 {
+                font-size: 20px;
+                font-weight: 800;
+                color: #fff;
+                margin-top: 0;
+                line-height: 1.3;
+            }
+            .login-group {
+                margin-bottom: 14px;
+            }
+            .login-group input {
+                font-size: 16px; /* evita zoom automático no iOS */
+                padding: 14px 16px;
+                border-radius: 10px;
+            }
+            .login-btn {
+                padding: 16px;
+                font-size: 12px;
+                border-radius: 10px;
+                margin-top: 8px;
+            }
+            .login-footer {
+                font-size: 11px;
+                margin-top: 28px;
+            }
         }
 
         /* ========== SISTEMA PRINCIPAL ========== */
@@ -1447,13 +1527,22 @@
 <!-- ========== TELA DE LOGIN ========== -->
 <div id="loginScreen">
     <div class="login-wrapper">
-        <!-- Painel esquerdo: azul sólido, sem ícone, apenas texto de apoio -->
+        <!-- Painel esquerdo: vira header no mobile com logo -->
         <div class="login-panel-left">
+            <!-- Logo visível apenas no mobile (header bar) -->
+            <svg viewBox="0 0 180 50" width="140" xmlns="http://www.w3.org/2000/svg" class="login-mob-logo" style="display:none;">
+                <text x="0" y="32" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="22" fill="#ffffff" letter-spacing="1">AGRONOR</text>
+                <text x="2" y="46" font-family="Montserrat,Arial,sans-serif" font-weight="700" font-size="9" fill="#4ade80" letter-spacing="4">ALIMENTOS</text>
+            </svg>
             <div class="login-panel-left-content">
                 Laboratório<br>de Qualidade<br><br>
                 Sistema de<br>Gestão da<br>Qualidade
             </div>
-            <!-- L·Quality — assinatura discreta no rodapé do painel azul -->
+            <!-- Badge SGQ — visível apenas mobile -->
+            <div class="login-mob-badge" style="display:none;align-items:center;gap:6px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.25);border-radius:20px;padding:4px 12px;">
+                <span style="width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block;"></span>
+                <span style="font-size:10px;font-weight:700;color:#4ade80;letter-spacing:1px;">SGQ</span>
+            </div>
             <div style="position:absolute;bottom:18px;left:0;right:0;text-align:center;z-index:2;">
                 <div style="font-family:'Montserrat',Arial,sans-serif;font-size:9px;font-weight:600;color:rgba(255,255,255,0.22);letter-spacing:4px;text-transform:uppercase;margin-bottom:3px;">Sistema</div>
                 <div style="font-family:'Montserrat',Arial Black,sans-serif;font-size:15px;font-weight:900;color:rgba(255,255,255,0.2);letter-spacing:3px;">L<span style="color:rgba(74,222,128,0.5);">·</span>Quality</div>
@@ -4277,6 +4366,77 @@
                     <button onclick="trocarAba('backup', null)" style="margin-top:10px;background:#e74c3c;color:white;padding:7px 16px;border:none;border-radius:4px;font-size:12px;font-weight:bold;cursor:pointer;text-transform:uppercase;">💾 Ir para Backup agora</button>
                 </div>
 
+            <!-- CARD OPENAI — TOKENS E SALDO -->
+                <div style="background:white;border:1px solid #dce4f5;border-radius:8px;padding:18px;margin-bottom:20px;border-left:4px solid #10a37f;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                        <span style="font-size:22px;">🤖</span>
+                        <div style="flex:1;">
+                            <div style="font-size:13px;font-weight:bold;color:#1a2a3a;text-transform:uppercase;letter-spacing:.5px;">OpenAI — Consumo de Tokens & Saldo</div>
+                            <div style="font-size:11px;color:#777;margin-top:1px;">Registros locais de uso IA + consulta de saldo via API</div>
+                        </div>
+                        <button onclick="memAtualizarOpenAI()" id="memOpenAIBtn" style="background:#e8f7f2;color:#10a37f;border:1px solid #a3d9c9;border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;">🔄 Atualizar</button>
+                    </div>
+
+                    <!-- MODELO USADO -->
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:8px 12px;background:#f0fdf4;border-radius:6px;border:1px solid #bbf7d0;">
+                        <span style="font-size:13px;">⚙️</span>
+                        <span style="font-size:11px;font-weight:700;color:#166534;">Modelo em uso:</span>
+                        <span id="memOpenAIModelo" style="font-size:11px;font-weight:900;color:#10a37f;font-family:monospace;">gpt-4o-mini</span>
+                        <span style="margin-left:auto;font-size:10px;color:#888;" id="memOpenAIChaveStatus">🔑 Chave: <b style="color:#c0392b;">não configurada</b></span>
+                    </div>
+
+                    <!-- CARDS DE CONSUMO LOCAL -->
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+                        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:12px;text-align:center;">
+                            <div style="font-size:9px;font-weight:800;color:#166534;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Tokens Hoje</div>
+                            <div id="memTokensHoje" style="font-size:20px;font-weight:900;color:#10a37f;">0</div>
+                            <div style="font-size:9px;color:#888;margin-top:2px;">prompt + resposta</div>
+                        </div>
+                        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:12px;text-align:center;">
+                            <div style="font-size:9px;font-weight:800;color:#1e40af;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Tokens no Mês</div>
+                            <div id="memTokensMes" style="font-size:20px;font-weight:900;color:#3b82f6;">0</div>
+                            <div style="font-size:9px;color:#888;margin-top:2px;" id="memTokensMesLabel">mês atual</div>
+                        </div>
+                        <div style="background:#fefce8;border:1px solid #fde68a;border-radius:6px;padding:12px;text-align:center;">
+                            <div style="font-size:9px;font-weight:800;color:#854d0e;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Chamadas Hoje</div>
+                            <div id="memChamadasHoje" style="font-size:20px;font-weight:900;color:#d97706;">0</div>
+                            <div style="font-size:9px;color:#888;margin-top:2px;">requisições à IA</div>
+                        </div>
+                        <div style="background:#fdf4ff;border:1px solid #e9d5ff;border-radius:6px;padding:12px;text-align:center;">
+                            <div style="font-size:9px;font-weight:800;color:#6b21a8;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Custo Estimado</div>
+                            <div id="memCustoEstimado" style="font-size:20px;font-weight:900;color:#9333ea;">$0.00</div>
+                            <div style="font-size:9px;color:#888;margin-top:2px;">mês atual (local)</div>
+                        </div>
+                    </div>
+
+                    <!-- SALDO VIA API (só com chave configurada) -->
+                    <div id="memOpenAISaldoArea" style="border:1px solid #e5e7eb;border-radius:6px;padding:14px;background:#f9fafb;">
+                        <div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">💳 Saldo de Créditos (API OpenAI)</div>
+                        <div id="memOpenAISaldoConteudo" style="font-size:12px;color:#9ca3af;font-style:italic;text-align:center;padding:8px;">
+                            Configure a chave API para consultar saldo em tempo real.
+                        </div>
+                    </div>
+
+                    <!-- BARRA DE USO DO MÊS -->
+                    <div style="margin-top:14px;" id="memOpenAIBarraArea">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                            <span style="font-size:11px;font-weight:700;color:#374151;">Tokens consumidos este mês</span>
+                            <span id="memTokensBarLabel" style="font-size:11px;font-weight:700;color:#6b7280;">0 / 1.000.000</span>
+                        </div>
+                        <div style="background:#e5e7eb;border-radius:6px;height:10px;overflow:hidden;">
+                            <div id="memTokensBarra" style="height:100%;width:0%;background:linear-gradient(to right,#10a37f,#3b82f6,#9333ea);border-radius:6px;transition:width .7s ease;"></div>
+                        </div>
+                        <div style="font-size:10px;color:#9ca3af;margin-top:3px;">Limite de referência: 1.000.000 tokens/mês (ajustável ao seu plano)</div>
+                    </div>
+
+                    <!-- BOTÃO CONFIG CHAVE -->
+                    <div style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                        <button onclick="_iaConfigurarChave();memAtualizarOpenAI();" style="background:#10a37f;color:white;border:none;border-radius:6px;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer;">🔑 Configurar Chave API</button>
+                        <button onclick="memLimparHistoricoTokens()" style="background:#f3f4f6;color:#6b7280;border:1px solid #d1d5db;border-radius:6px;padding:8px 14px;font-size:11px;font-weight:700;cursor:pointer;">🗑️ Limpar histórico local</button>
+                        <span style="font-size:10px;color:#9ca3af;flex:1;">O histórico de tokens é salvo localmente neste navegador.</span>
+                    </div>
+                </div>
+
                 <!-- CARD SUPABASE DB -->
                 <div style="background:white;border:1px solid #dce4f5;border-radius:8px;padding:18px;margin-bottom:20px;border-left:4px solid #3ecf8e;">
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
@@ -6094,7 +6254,7 @@ function trocarSubCfg(subAba, btn) {
     // Inicializar a sub-aba conforme necessário
     if (subAba === 'parametros')     setTimeout(renderizarTabelasParametros, 0);
     if (subAba === 'backup')         inicializarBackup();
-    if (subAba === 'memoria')        atualizarMemoria();
+    if (subAba === 'memoria')        { atualizarMemoria(); memAtualizarOpenAI(); }
     if (subAba === 'alertaWhatsApp') inicializarAbaWhatsApp();
     if (subAba === 'usuarios')       { renderizarListaUsuarios(); sgqCarregarHistoricoAcessos(); _sgqRenderizarPresenca(); }
     if (subAba === 'aparencia')      aplicarTema(localStorage.getItem('tema') || 'azul');
@@ -19300,8 +19460,175 @@ async function _iaCall(systemPrompt, messages, maxTokens = 1500) {
         throw new Error('Erro na API IA (' + resp.status + '): ' + err.slice(0, 300));
     }
     const data = await resp.json();
+
+    // ── Registra consumo de tokens localmente ──
+    try {
+        const uso = data.usage || {};
+        const totalTokens = (uso.prompt_tokens || 0) + (uso.completion_tokens || 0);
+        if (totalTokens > 0) _memRegistrarTokens(totalTokens, _IA_MODEL);
+    } catch(e) {}
+
     // OpenAI retorna choices[0].message.content
     return data.choices?.[0]?.message?.content || '';
+}
+
+// ================================================================
+// MONITORAMENTO DE TOKENS OPENAI — histórico local (localStorage)
+// ================================================================
+function _memRegistrarTokens(qtd, modelo) {
+    try {
+        const hoje = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        const mes  = hoje.slice(0, 7);                      // YYYY-MM
+        const raw  = localStorage.getItem('_ia_uso') || '{}';
+        const uso  = JSON.parse(raw);
+        if (!uso[hoje]) uso[hoje] = { tokens: 0, chamadas: 0, modelo };
+        uso[hoje].tokens   += qtd;
+        uso[hoje].chamadas += 1;
+        uso[hoje].modelo    = modelo;
+        // Mantém apenas últimos 90 dias
+        const dias = Object.keys(uso).sort().reverse();
+        if (dias.length > 90) dias.slice(90).forEach(d => delete uso[d]);
+        localStorage.setItem('_ia_uso', JSON.stringify(uso));
+    } catch(e) {}
+}
+
+function memLimparHistoricoTokens() {
+    if (!confirm('Apagar todo o histórico local de tokens? Esta ação não afeta o uso real na OpenAI.')) return;
+    localStorage.removeItem('_ia_uso');
+    memAtualizarOpenAI();
+    sgqToast('🗑️ Histórico de tokens apagado.', 'info');
+}
+
+// Tabela de preço por 1.000 tokens (entrada+saída estimados) — mai/2025
+const _MEM_PRECOS = {
+    'gpt-4o':         { input: 0.005,   output: 0.015   },
+    'gpt-4o-mini':    { input: 0.00015, output: 0.0006  },
+    'gpt-4-turbo':    { input: 0.01,    output: 0.03    },
+    'gpt-4':          { input: 0.03,    output: 0.06    },
+    'gpt-3.5-turbo':  { input: 0.0005,  output: 0.0015  },
+};
+function _memCustoEstimado(tokens, modelo) {
+    const m = modelo || _IA_MODEL;
+    const p = _MEM_PRECOS[m] || _MEM_PRECOS['gpt-4o-mini'];
+    // Estimativa: 60% prompt / 40% completion
+    return ((tokens * 0.6 / 1000) * p.input + (tokens * 0.4 / 1000) * p.output);
+}
+
+async function memAtualizarOpenAI() {
+    const btn = document.getElementById('memOpenAIBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Carregando...'; }
+
+    try {
+        // ── Modelo e chave ──
+        const chave = _iaGetChave();
+        const el = id => document.getElementById(id);
+        if (el('memOpenAIModelo')) el('memOpenAIModelo').textContent = _IA_MODEL;
+        if (el('memOpenAIChaveStatus')) {
+            el('memOpenAIChaveStatus').innerHTML = chave
+                ? `🔑 Chave: <b style="color:#10a37f;">${chave.slice(0,8)}...${chave.slice(-4)}</b>`
+                : `🔑 Chave: <b style="color:#c0392b;">não configurada</b>`;
+        }
+
+        // ── Dados locais de consumo ──
+        const hoje = new Date().toISOString().slice(0, 10);
+        const mes  = hoje.slice(0, 7);
+        const uso  = JSON.parse(localStorage.getItem('_ia_uso') || '{}');
+
+        let tokensHoje = 0, chamadasHoje = 0;
+        let tokensMes  = 0, custoMes = 0;
+
+        Object.entries(uso).forEach(([dia, v]) => {
+            if (dia === hoje) { tokensHoje += v.tokens; chamadasHoje += v.chamadas; }
+            if (dia.startsWith(mes)) { tokensMes += v.tokens; }
+        });
+        custoMes = _memCustoEstimado(tokensMes, _IA_MODEL);
+
+        // Meses em pt-BR
+        const nomeMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+        const nomeMes   = nomeMeses[new Date().getMonth()];
+
+        if (el('memTokensHoje'))     el('memTokensHoje').textContent     = tokensHoje.toLocaleString('pt-BR');
+        if (el('memTokensMes'))      el('memTokensMes').textContent      = tokensMes.toLocaleString('pt-BR');
+        if (el('memTokensMesLabel')) el('memTokensMesLabel').textContent  = nomeMes;
+        if (el('memChamadasHoje'))   el('memChamadasHoje').textContent   = chamadasHoje.toLocaleString('pt-BR');
+        if (el('memCustoEstimado'))  el('memCustoEstimado').textContent  = '$' + custoMes.toFixed(4);
+
+        // Barra de progresso (referência: 1M tokens/mês)
+        const limite = 1_000_000;
+        const pct    = Math.min((tokensMes / limite) * 100, 100);
+        if (el('memTokensBarra'))    el('memTokensBarra').style.width    = pct.toFixed(1) + '%';
+        if (el('memTokensBarLabel')) el('memTokensBarLabel').textContent  = `${tokensMes.toLocaleString('pt-BR')} / 1.000.000`;
+
+        // ── Saldo via API (requer chave) ──
+        const saldoDiv = el('memOpenAISaldoConteudo');
+        if (!chave) {
+            if (saldoDiv) saldoDiv.innerHTML = '<span style="color:#9ca3af;font-style:italic;">Configure a chave API para consultar saldo em tempo real.</span>';
+        } else {
+            if (saldoDiv) saldoDiv.innerHTML = '<span style="color:#9ca3af;">🔄 Consultando saldo na OpenAI...</span>';
+            try {
+                const r = await fetch('https://api.openai.com/v1/dashboard/billing/subscription', {
+                    headers: { 'Authorization': 'Bearer ' + chave }
+                });
+                if (r.ok) {
+                    const sub = await r.json();
+                    const hardLimit   = (sub.hard_limit_usd   || 0);
+                    const softLimit   = (sub.soft_limit_usd   || 0);
+                    const plan        = sub.plan?.title || 'Desconhecido';
+
+                    // Busca uso do mês atual
+                    const hoje2 = new Date();
+                    const startDate = `${hoje2.getFullYear()}-${String(hoje2.getMonth()+1).padStart(2,'0')}-01`;
+                    const endDate   = hoje.replace(/-/g, '-');
+                    let usado = 0;
+                    try {
+                        const ru = await fetch(`https://api.openai.com/v1/dashboard/billing/usage?start_date=${startDate}&end_date=${endDate}`, {
+                            headers: { 'Authorization': 'Bearer ' + chave }
+                        });
+                        if (ru.ok) { const ud = await ru.json(); usado = (ud.total_usage || 0) / 100; }
+                    } catch(e) {}
+
+                    const disponivel = hardLimit - usado;
+                    const pctUsado   = hardLimit > 0 ? Math.min((usado / hardLimit) * 100, 100) : 0;
+                    const corBarra   = pctUsado > 80 ? '#e74c3c' : pctUsado > 50 ? '#f39c12' : '#10a37f';
+
+                    if (saldoDiv) saldoDiv.innerHTML = `
+                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;">
+                            <div style="text-align:center;padding:10px;background:#f0fdf4;border-radius:6px;border:1px solid #bbf7d0;">
+                                <div style="font-size:9px;font-weight:800;color:#166534;text-transform:uppercase;margin-bottom:3px;">Disponível</div>
+                                <div style="font-size:18px;font-weight:900;color:#10a37f;">$${disponivel.toFixed(2)}</div>
+                            </div>
+                            <div style="text-align:center;padding:10px;background:#fef2f2;border-radius:6px;border:1px solid #fecaca;">
+                                <div style="font-size:9px;font-weight:800;color:#991b1b;text-transform:uppercase;margin-bottom:3px;">Usado no Mês</div>
+                                <div style="font-size:18px;font-weight:900;color:#e74c3c;">$${usado.toFixed(4)}</div>
+                            </div>
+                            <div style="text-align:center;padding:10px;background:#f5f3ff;border-radius:6px;border:1px solid #ddd6fe;">
+                                <div style="font-size:9px;font-weight:800;color:#5b21b6;text-transform:uppercase;margin-bottom:3px;">Limite</div>
+                                <div style="font-size:18px;font-weight:900;color:#7c3aed;">$${hardLimit.toFixed(2)}</div>
+                            </div>
+                        </div>
+                        <div style="margin-bottom:6px;">
+                            <div style="display:flex;justify-content:space-between;font-size:10px;color:#6b7280;margin-bottom:4px;">
+                                <span>Plano: <b>${plan}</b></span>
+                                <span>${pctUsado.toFixed(1)}% utilizado</span>
+                            </div>
+                            <div style="background:#e5e7eb;border-radius:4px;height:8px;overflow:hidden;">
+                                <div style="height:100%;width:${pctUsado.toFixed(1)}%;background:${corBarra};border-radius:4px;transition:width .6s;"></div>
+                            </div>
+                        </div>
+                        ${pctUsado > 80 ? '<div style="font-size:11px;color:#dc2626;font-weight:700;">⚠️ Atenção: mais de 80% do saldo utilizado!</div>' : ''}
+                        <div style="font-size:10px;color:#9ca3af;margin-top:4px;">Limite suave: $${softLimit.toFixed(2)} &nbsp;|&nbsp; Dados atualizados agora.</div>`;
+                } else if (r.status === 401) {
+                    if (saldoDiv) saldoDiv.innerHTML = '<span style="color:#e74c3c;">❌ Chave inválida ou sem permissão para consultar billing. Verifique a chave API.</span>';
+                } else {
+                    if (saldoDiv) saldoDiv.innerHTML = `<span style="color:#f59e0b;">⚠️ Não foi possível consultar saldo (status ${r.status}). Pode ser limitação CORS na sua rede.</span>`;
+                }
+            } catch(e) {
+                if (saldoDiv) saldoDiv.innerHTML = '<span style="color:#f59e0b;">⚠️ Erro ao consultar saldo: verifique sua conexão e a chave API.</span>';
+            }
+        }
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '🔄 Atualizar'; }
+    }
 }
 
 // ============================================================
