@@ -22558,7 +22558,11 @@ function sgqAutocompleteFechar(campoId) {
     // ── Helpers de data ─────────────────────────────────────────────
     function _hoje() {
         const d = new Date();
-        return d.toISOString().split('T')[0]; // YYYY-MM-DD
+        // Usa data LOCAL (não UTC) — corrige bug de fuso horário Brasil (UTC-3)
+        const y   = d.getFullYear();
+        const mo  = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${mo}-${day}`;
     }
 
     function _formatarData(iso) {
