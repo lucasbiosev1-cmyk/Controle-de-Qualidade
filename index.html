@@ -22550,262 +22550,216 @@ function sgqAutocompleteFechar(campoId) {
 (function() {
     'use strict';
 
-    // ── Estado interno ──────────────────────────────────────────────
-    let _compromissos   = [];
-    let _filtroAtual    = 'todos';
-    const TABELA        = 'agenda_compromissos';
+    // ── Estado ──────────────────────────────────────────────────────
+    let _compromissos     = [];
+    let _filtroAtual      = 'todos';
+    let _popupItensAtuais = [];
+    let _popupVisivel     = false;
+    let _agendaInterval   = null;
+    let _inicializado     = false;
+    const TABELA          = 'agenda_compromissos';
 
-    // ── Helpers de data ─────────────────────────────────────────────
+    // ── Data LOCAL (sem bug de fuso horário UTC) ─────────────────────
     function _hoje() {
         const d = new Date();
-        // Usa data LOCAL (não UTC) — corrige bug de fuso horário Brasil (UTC-3)
-        const y   = d.getFullYear();
-        const mo  = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${y}-${mo}-${day}`;
+        return d.getFullYear() + '-' +
+               String(d.getMonth()+1).padStart(2,'0') + '-' +
+               String(d.getDate()).padStart(2,'0');
     }
 
     function _formatarData(iso) {
         if (!iso) return '';
-        const [y, m, d] = iso.split('-');
-        return `${d}/${m}/${y}`;
+        const [y,m,d] = iso.split('-');
+        return d+'/'+m+'/'+y;
     }
 
-    function _isHoje(iso) {
-        return iso === _hoje();
-    }
+    function _isHoje(iso) { return iso === _hoje(); }
 
     function _isRecorrenteHoje(c) {
         if (!c.recorrente || !c.recorrencia) return false;
-        const dataBase = new Date(c.data + 'T00:00:00');
-        const agora    = new Date();
-        agora.setHours(0,0,0,0);
-        if (dataBase > agora) return false; // ainda não chegou a data base
-
-        if (c.recorrencia === 'diario') return true;
-
-        if (c.recorrencia === 'semanal') {
-            return dataBase.getDay() === agora.getDay();
-        }
-        if (c.recorrencia === 'mensal') {
-            return dataBase.getDate() === agora.getDate();
-        }
+        const base  = new Date(c.data + 'T00:00:00');
+        const hoje  = new Date(); hoje.setHours(0,0,0,0);
+        if (base > hoje) return false;
+        if (c.recorrencia === 'diario')  return true;
+        if (c.recorrencia === 'semanal') return base.getDay()  === hoje.getDay();
+        if (c.recorrencia === 'mensal')  return base.getDate() === hoje.getDate();
         return false;
     }
 
-    function _compromissoEHoje(c) {
-        return _isHoje(c.data) || _isRecorrenteHoje(c);
+    function _eHoje(c) { return _isHoje(c.data) || _isRecorrenteHoje(c); }
+
+    // ── Hora já passou ou chegou ─────────────────────────────────────
+    function _horaPassou(c) {
+        if (!c.hora) return true;
+        const [hh,mm] = c.hora.substring(0,5).split(':').map(Number);
+        const agora   = new Date();
+        return agora.getHours()*60 + agora.getMinutes() >= hh*60+mm;
     }
 
-    // ── Supabase CRUD ────────────────────────────────────────────────
-    async function _carregarCompromissos() {
+    // ── Dismiss (não mostrar novamente) ──────────────────────────────
+    function _chave(c) { return c.id + '_' + _hoje(); }
+    function _getDisp() { try { return JSON.parse(sessionStorage.getItem('agDisp')||'{}'); } catch(e){return{};} }
+    function _setDisp(c) { const d=_getDisp(); d[_chave(c)]=1; sessionStorage.setItem('agDisp',JSON.stringify(d)); }
+    function _dispensado(c) { return !!_getDisp()[_chave(c)]; }
+
+    // ── Supabase ─────────────────────────────────────────────────────
+    async function _carregar() {
         try {
-            const { data, error } = await _sbClient
-                .from(TABELA)
-                .select('*')
-                .order('data', { ascending: true });
+            const { data, error } = await _sbClient.from(TABELA).select('*').order('hora',{ascending:true});
             if (error) throw error;
             _compromissos = data || [];
-        } catch(e) {
-            // Tabela pode não existir ainda
-            _compromissos = [];
-        }
+        } catch(e) { _compromissos = []; }
     }
 
-    async function _salvarCompromisso(obj) {
-        const { data, error } = await _sbClient.from(TABELA).upsert([obj], { onConflict: 'id' }).select();
+    async function _salvar(obj) {
+        const { data, error } = await _sbClient.from(TABELA).upsert([obj],{onConflict:'id'}).select();
         if (error) throw error;
         return data[0];
     }
 
-    async function _excluirCompromisso(id) {
-        const { error } = await _sbClient.from(TABELA).delete().eq('id', id);
+    async function _excluir(id) {
+        const { error } = await _sbClient.from(TABELA).delete().eq('id',id);
         if (error) throw error;
     }
 
-    // ── Popup ao abrir o sistema ─────────────────────────────────────
-    // ── IDs dos compromissos atualmente visíveis no popup ───────────
-    let _popupItensAtuais = [];
-
-    // ── Dispensados definitivamente hoje (não mostrar novamente) ────
-    // Persiste em sessionStorage: { chave: true }
-    function _getDispensados() {
-        try { return JSON.parse(sessionStorage.getItem('agendaDismiss') || '{}'); } catch(e) { return {}; }
-    }
-    function _setDispensado(chave) {
-        const d = _getDispensados();
-        d[chave] = true;
-        sessionStorage.setItem('agendaDismiss', JSON.stringify(d));
-    }
-    function _estaDispensado(c) {
-        return !!_getDispensados()[_chaveDisparo(c)];
-    }
-
-    // ── Controla se o popup está visível agora ───────────────────────
-    let _popupVisivel = false;
-
-    // ── Chave única por compromisso + data ──────────────────────────
-    function _chaveDisparo(c) {
-        return `${c.id}_${_hoje()}`;
-    }
-
-    // ── Verifica se a hora do compromisso já passou ou é agora ──────
-    function _horaJaPassouOuEAgora(c) {
-        if (!c.hora) return true; // sem hora → exibe sempre que for o dia
-        const agora  = new Date();
-        const [hh, mm] = c.hora.substring(0,5).split(':').map(Number);
-        const compMin  = hh * 60 + mm;
-        const agoraMin = agora.getHours() * 60 + agora.getMinutes();
-        return agoraMin >= compMin;
-    }
-
-    // ── Monta e exibe o popup ────────────────────────────────────────
-    function _exibirPopup(itens) {
+    // ── Exibir popup ─────────────────────────────────────────────────
+    function _mostrarPopup(itens) {
         _popupItensAtuais = itens;
         const dataEl = document.getElementById('popupAgendaData');
         if (dataEl) {
-            const agora = new Date();
-            dataEl.textContent = 'Data: ' + agora.toLocaleDateString('pt-BR') +
-                ' — ' + agora.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+            const n = new Date();
+            dataEl.textContent = 'Data: ' + n.toLocaleDateString('pt-BR') +
+                ' — ' + n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
         }
         const lista = document.getElementById('popupAgendaLista');
         if (lista) {
             lista.innerHTML = itens.map(c => {
                 const rec  = c.recorrente && c.recorrencia
-                    ? `<span>🔁 ${c.recorrencia.charAt(0).toUpperCase()+c.recorrencia.slice(1)}</span>` : '';
-                const hora = c.hora ? `<span>🕐 ${c.hora.substring(0,5)}</span>` : '';
-                return `<div class="popup-agenda-item">
-                    <div class="popup-agenda-item-titulo">${c.titulo}</div>
-                    ${c.descricao ? `<div style="font-size:11px;color:#888;margin-bottom:6px;">${c.descricao}</div>` : ''}
-                    <div class="popup-agenda-item-meta">${hora}${rec}</div>
-                </div>`;
+                    ? '<span>🔁 '+c.recorrencia.charAt(0).toUpperCase()+c.recorrencia.slice(1)+'</span>' : '';
+                const hora = c.hora ? '<span>🕐 '+c.hora.substring(0,5)+'</span>' : '';
+                return '<div class="popup-agenda-item">' +
+                    '<div class="popup-agenda-item-titulo">'+c.titulo+'</div>' +
+                    (c.descricao ? '<div style="font-size:11px;color:#888;margin-bottom:6px;">'+c.descricao+'</div>' : '') +
+                    '<div class="popup-agenda-item-meta">'+hora+rec+'</div></div>';
             }).join('');
         }
         const popup = document.getElementById('popupAgenda');
         if (popup) { popup.classList.add('show'); _popupVisivel = true; }
     }
 
-    // ── Fechar (snooze 30 min) ───────────────────────────────────────
+    // ── Fechar (snooze — reaparece no próximo tick de 30 min) ────────
     window.fecharPopupAgenda = function() {
         const p = document.getElementById('popupAgenda');
         if (p) p.classList.remove('show');
         _popupVisivel = false;
-        // NÃO marca como dispensado → vai reaparecer no próximo tick de 30 min
     };
 
-    // ── "Não mostrar novamente" — dispensa todos os itens atuais ────
+    // ── Não mostrar novamente hoje ────────────────────────────────────
     window.agendaDismissDefinitivo = function() {
-        _popupItensAtuais.forEach(c => _setDispensado(_chaveDisparo(c)));
+        _popupItensAtuais.forEach(c => _setDisp(c));
         _popupItensAtuais = [];
         const p = document.getElementById('popupAgenda');
         if (p) p.classList.remove('show');
         _popupVisivel = false;
-        sgqToast('Compromissos dispensados para hoje.', 'info');
+        sgqToast('Compromissos dispensados para hoje.','info');
     };
 
-    // ── Verificação principal ────────────────────────────────────────
-    async function _agendaTickVerificar() {
+    // ── Tick principal ───────────────────────────────────────────────
+    async function _tick() {
+        // Aguarda perfilAtual estar disponível
         if (typeof perfilAtual === 'undefined' || perfilAtual !== 'admin') return;
 
-        await _carregarCompromissos();
+        await _carregar();
         agendaRenderizarLista();
 
-        // Se popup já está visível, não sobrepõe
-        if (_popupVisivel) return;
+        if (_popupVisivel) return; // popup já aberto, não empilha
 
-        const candidatos = _compromissos.filter(c => {
-            if (c.ativo === false) return false;
-            if (!_compromissoEHoje(c)) return false;
-            if (_estaDispensado(c)) return false;       // usuário clicou "Não mostrar novamente"
-            if (!_horaJaPassouOuEAgora(c)) return false; // horário ainda não chegou
-            return true;
-        });
+        const candidatos = _compromissos.filter(c =>
+            c.ativo !== false &&
+            _eHoje(c) &&
+            !_dispensado(c) &&
+            _horaPassou(c)
+        );
 
-        if (candidatos.length > 0) _exibirPopup(candidatos);
+        if (candidatos.length > 0) _mostrarPopup(candidatos);
     }
 
-    let _agendaInterval = null;
+    // ── Inicialização: chama imediatamente + a cada 30 min ───────────
+    async function _iniciar() {
+        if (_inicializado) return;
+        _inicializado = true;
+        await _tick();
+        if (_agendaInterval) clearInterval(_agendaInterval);
+        _agendaInterval = setInterval(_tick, 30 * 60 * 1000);
+    }
 
-    // ── Inicialização ────────────────────────────────────────────────
-    async function agendaVerificarPopup() {
+    // ── Expõe funções públicas ────────────────────────────────────────
+    window._agendaInicializar     = _iniciar;
+    window._agendaCarregarEExibir = async function() {
         if (typeof perfilAtual === 'undefined' || perfilAtual !== 'admin') return;
-        // Primeiro disparo imediato
-        await _agendaTickVerificar();
-        // Reexibe a cada 30 minutos se não dispensado
-        _agendaInterval = setInterval(_agendaTickVerificar, 30 * 60 * 1000);
-    }
+        await _carregar();
+        agendaRenderizarLista();
+    };
 
-    // ── Renderização da lista na aba ─────────────────────────────────
+    // ── Renderização da lista ─────────────────────────────────────────
     window.agendaFiltrar = function(filtro) {
         _filtroAtual = filtro;
-        // atualiza botões
         ['Todos','Hoje','Ativos','Rec'].forEach(f => {
-            const btn = document.getElementById('agFiltro' + f);
-            if (btn) btn.classList.remove('active');
+            const b = document.getElementById('agFiltro'+f);
+            if (b) b.classList.remove('active');
         });
-        const mapa = { todos:'Todos', hoje:'Hoje', ativos:'Ativos', recorrentes:'Rec' };
-        const btnAtivo = document.getElementById('agFiltro' + mapa[filtro]);
-        if (btnAtivo) btnAtivo.classList.add('active');
+        const mapa = {todos:'Todos',hoje:'Hoje',ativos:'Ativos',recorrentes:'Rec'};
+        const ba = document.getElementById('agFiltro'+mapa[filtro]);
+        if (ba) ba.classList.add('active');
         agendaRenderizarLista();
     };
 
     function agendaRenderizarLista() {
         const lista = document.getElementById('agendaLista');
         if (!lista) return;
-
         let dados = [..._compromissos];
-        if (_filtroAtual === 'hoje')       dados = dados.filter(c => _compromissoEHoje(c));
-        if (_filtroAtual === 'ativos')     dados = dados.filter(c => c.ativo !== false);
+        if (_filtroAtual === 'hoje')        dados = dados.filter(c => _eHoje(c));
+        if (_filtroAtual === 'ativos')      dados = dados.filter(c => c.ativo !== false);
         if (_filtroAtual === 'recorrentes') dados = dados.filter(c => c.recorrente);
-
         if (dados.length === 0) {
-            lista.innerHTML = `<div class="agenda-empty"><div class="agenda-empty-icon">📅</div><div>Nenhum compromisso encontrado.</div></div>`;
+            lista.innerHTML = '<div class="agenda-empty"><div class="agenda-empty-icon">📅</div><div>Nenhum compromisso encontrado.</div></div>';
             return;
         }
-
         lista.innerHTML = dados.map(c => {
-            const eHoje   = _compromissoEHoje(c);
+            const hoje   = _eHoje(c);
             const inativo = c.ativo === false;
-            let classes   = 'agenda-card';
-            if (inativo) classes += ' inativo';
-            else if (c.recorrente) classes += ' recorrente';
-            else if (eHoje) classes += ' hoje';
-
+            let cls = 'agenda-card' + (inativo ? ' inativo' : c.recorrente ? ' recorrente' : hoje ? ' hoje' : '');
             const recLabel = c.recorrente && c.recorrencia
-                ? { diario:'Diário', semanal:'Semanal', mensal:'Mensal' }[c.recorrencia] || c.recorrencia
-                : null;
-
-            return `<div class="${classes}" id="agCard_${c.id}">
-                <div class="agenda-card-info">
-                    <div class="agenda-card-titulo">${c.titulo}</div>
-                    ${c.descricao ? `<div class="agenda-card-desc">${c.descricao}</div>` : ''}
-                    <div class="agenda-card-meta">
-                        <span class="agenda-badge agenda-badge-data">📅 ${_formatarData(c.data)}</span>
-                        ${c.hora ? `<span class="agenda-badge agenda-badge-hora">🕐 ${c.hora.substring(0,5)}</span>` : ''}
-                        ${recLabel ? `<span class="agenda-badge agenda-badge-rec">🔁 ${recLabel}</span>` : ''}
-                        ${eHoje && !inativo ? `<span class="agenda-badge agenda-badge-hoje">📌 Hoje</span>` : ''}
-                        ${inativo ? `<span class="agenda-badge agenda-badge-inativo">Inativo</span>` : ''}
-                    </div>
-                </div>
-                <div class="agenda-card-acoes">
-                    <button class="agenda-btn-acao agenda-btn-editar"  title="Editar"  onclick="agendaEditar('${c.id}')">✏️</button>
-                    <button class="agenda-btn-acao agenda-btn-toggle"  title="${c.ativo!==false?'Desativar':'Ativar'}" onclick="agendaToggleAtivo('${c.id}')">${c.ativo!==false?'⏸️':'▶️'}</button>
-                    <button class="agenda-btn-acao agenda-btn-excluir" title="Excluir" onclick="agendaExcluir('${c.id}')">🗑️</button>
-                </div>
-            </div>`;
+                ? ({diario:'Diário',semanal:'Semanal',mensal:'Mensal'}[c.recorrencia]||c.recorrencia) : null;
+            return '<div class="'+cls+'" id="agCard_'+c.id+'">' +
+                '<div class="agenda-card-info">' +
+                '<div class="agenda-card-titulo">'+c.titulo+'</div>' +
+                (c.descricao?'<div class="agenda-card-desc">'+c.descricao+'</div>':'') +
+                '<div class="agenda-card-meta">' +
+                '<span class="agenda-badge agenda-badge-data">📅 '+_formatarData(c.data)+'</span>' +
+                (c.hora?'<span class="agenda-badge agenda-badge-hora">🕐 '+c.hora.substring(0,5)+'</span>':'') +
+                (recLabel?'<span class="agenda-badge agenda-badge-rec">🔁 '+recLabel+'</span>':'') +
+                (hoje&&!inativo?'<span class="agenda-badge agenda-badge-hoje">📌 Hoje</span>':'') +
+                (inativo?'<span class="agenda-badge agenda-badge-inativo">Inativo</span>':'') +
+                '</div></div>' +
+                '<div class="agenda-card-acoes">' +
+                '<button class="agenda-btn-acao agenda-btn-editar" title="Editar" onclick="agendaEditar(\''+c.id+'\')">✏️</button>' +
+                '<button class="agenda-btn-acao agenda-btn-toggle" title="'+(c.ativo!==false?'Desativar':'Ativar')+'" onclick="agendaToggleAtivo(\''+c.id+'\')">'+(c.ativo!==false?'⏸️':'▶️')+'</button>' +
+                '<button class="agenda-btn-acao agenda-btn-excluir" title="Excluir" onclick="agendaExcluir(\''+c.id+'\')">🗑️</button>' +
+                '</div></div>';
         }).join('');
     }
 
-    // ── Modal Cadastro ───────────────────────────────────────────────
-    window.abrirModalAgenda = function(id) {
-        document.getElementById('agendaEditId').value      = '';
-        document.getElementById('agendaTitulo').value      = '';
-        document.getElementById('agendaDescricao').value   = '';
-        document.getElementById('agendaData').value        = _hoje();
-        document.getElementById('agendaHora').value        = '';
+    // ── Modal ─────────────────────────────────────────────────────────
+    window.abrirModalAgenda = function() {
+        document.getElementById('agendaEditId').value       = '';
+        document.getElementById('agendaTitulo').value       = '';
+        document.getElementById('agendaDescricao').value    = '';
+        document.getElementById('agendaData').value         = _hoje();
+        document.getElementById('agendaHora').value         = '';
         document.getElementById('agendaRecorrente').checked = false;
-        document.getElementById('agendaAtivo').checked     = true;
-        document.getElementById('agendaTipoRec').value     = 'diario';
+        document.getElementById('agendaAtivo').checked      = true;
+        document.getElementById('agendaTipoRec').value      = 'diario';
         document.getElementById('agendaGrupoRec').style.display = 'none';
         document.getElementById('modalAgendaTitulo').textContent = 'Novo Compromisso';
         document.getElementById('modalAgenda').classList.add('show');
@@ -22816,22 +22770,21 @@ function sgqAutocompleteFechar(campoId) {
     };
 
     window.agendaToggleRecorrencia = function() {
-        const rec = document.getElementById('agendaRecorrente').checked;
-        document.getElementById('agendaGrupoRec').style.display = rec ? 'flex' : 'none';
+        document.getElementById('agendaGrupoRec').style.display =
+            document.getElementById('agendaRecorrente').checked ? 'flex' : 'none';
     };
 
     window.agendaEditar = function(id) {
-        const c = _compromissos.find(x => x.id === id);
-        if (!c) return;
-        document.getElementById('agendaEditId').value         = c.id;
-        document.getElementById('agendaTitulo').value         = c.titulo || '';
-        document.getElementById('agendaDescricao').value      = c.descricao || '';
-        document.getElementById('agendaData').value           = c.data || _hoje();
-        document.getElementById('agendaHora').value           = c.hora ? c.hora.substring(0,5) : '';
-        document.getElementById('agendaRecorrente').checked   = !!c.recorrente;
-        document.getElementById('agendaAtivo').checked        = c.ativo !== false;
-        document.getElementById('agendaTipoRec').value        = c.recorrencia || 'diario';
-        document.getElementById('agendaGrupoRec').style.display = c.recorrente ? 'flex' : 'none';
+        const c = _compromissos.find(x => x.id===id); if (!c) return;
+        document.getElementById('agendaEditId').value        = c.id;
+        document.getElementById('agendaTitulo').value        = c.titulo||'';
+        document.getElementById('agendaDescricao').value     = c.descricao||'';
+        document.getElementById('agendaData').value          = c.data||_hoje();
+        document.getElementById('agendaHora').value          = c.hora?c.hora.substring(0,5):'';
+        document.getElementById('agendaRecorrente').checked  = !!c.recorrente;
+        document.getElementById('agendaAtivo').checked       = c.ativo!==false;
+        document.getElementById('agendaTipoRec').value       = c.recorrencia||'diario';
+        document.getElementById('agendaGrupoRec').style.display = c.recorrente?'flex':'none';
         document.getElementById('modalAgendaTitulo').textContent = 'Editar Compromisso';
         document.getElementById('modalAgenda').classList.add('show');
     };
@@ -22839,72 +22792,63 @@ function sgqAutocompleteFechar(campoId) {
     window.salvarAgendaCompromisso = async function() {
         const titulo = document.getElementById('agendaTitulo').value.trim();
         const data   = document.getElementById('agendaData').value;
-        if (!titulo) { sgqToast('Informe o título do compromisso.', 'warning'); return; }
-        if (!data)   { sgqToast('Informe a data do compromisso.', 'warning');   return; }
-
-        const id         = document.getElementById('agendaEditId').value;
-        const recorrente = document.getElementById('agendaRecorrente').checked;
+        if (!titulo) { sgqToast('Informe o título.','warning'); return; }
+        if (!data)   { sgqToast('Informe a data.','warning');   return; }
+        const id  = document.getElementById('agendaEditId').value;
+        const rec = document.getElementById('agendaRecorrente').checked;
         const obj = {
-            titulo,
-            descricao:   document.getElementById('agendaDescricao').value.trim() || null,
-            data,
-            hora:        document.getElementById('agendaHora').value || null,
-            recorrente,
-            recorrencia: recorrente ? document.getElementById('agendaTipoRec').value : null,
+            titulo, data,
+            descricao:   document.getElementById('agendaDescricao').value.trim()||null,
+            hora:        document.getElementById('agendaHora').value||null,
+            recorrente:  rec,
+            recorrencia: rec ? document.getElementById('agendaTipoRec').value : null,
             ativo:       document.getElementById('agendaAtivo').checked,
         };
         if (id) obj.id = id;
-
         try {
-            const salvo = await _salvarCompromisso(obj);
-            if (id) {
-                const idx = _compromissos.findIndex(x => x.id === id);
-                if (idx >= 0) _compromissos[idx] = salvo; else _compromissos.push(salvo);
-            } else {
-                _compromissos.push(salvo);
-            }
+            const salvo = await _salvar(obj);
+            if (id) { const i=_compromissos.findIndex(x=>x.id===id); if(i>=0)_compromissos[i]=salvo; else _compromissos.push(salvo); }
+            else _compromissos.push(salvo);
             fecharModalAgenda();
             agendaRenderizarLista();
-            sgqToast('Compromisso salvo com sucesso!', 'success');
-        } catch(e) {
-            sgqToast('Erro ao salvar: ' + e.message, 'error');
-        }
+            sgqToast('Compromisso salvo!','success');
+        } catch(e) { sgqToast('Erro ao salvar: '+e.message,'error'); }
     };
 
     window.agendaToggleAtivo = async function(id) {
-        const c = _compromissos.find(x => x.id === id);
-        if (!c) return;
+        const c=_compromissos.find(x=>x.id===id); if(!c)return;
         try {
-            const atualizado = { ...c, ativo: !c.ativo };
-            const salvo = await _salvarCompromisso(atualizado);
-            const idx = _compromissos.findIndex(x => x.id === id);
-            if (idx >= 0) _compromissos[idx] = salvo;
+            const s=await _salvar({...c,ativo:!c.ativo});
+            const i=_compromissos.findIndex(x=>x.id===id); if(i>=0)_compromissos[i]=s;
             agendaRenderizarLista();
-            sgqToast(`Compromisso ${salvo.ativo ? 'ativado' : 'desativado'}.`, 'info');
-        } catch(e) {
-            sgqToast('Erro: ' + e.message, 'error');
-        }
+            sgqToast('Compromisso '+(s.ativo?'ativado':'desativado')+'.','info');
+        } catch(e) { sgqToast('Erro: '+e.message,'error'); }
     };
 
     window.agendaExcluir = async function(id) {
         if (!confirm('Deseja excluir este compromisso?')) return;
         try {
-            await _excluirCompromisso(id);
-            _compromissos = _compromissos.filter(x => x.id !== id);
+            await _excluir(id);
+            _compromissos=_compromissos.filter(x=>x.id!==id);
             agendaRenderizarLista();
-            sgqToast('Compromisso excluído.', 'success');
-        } catch(e) {
-            sgqToast('Erro ao excluir: ' + e.message, 'error');
-        }
+            sgqToast('Compromisso excluído.','success');
+        } catch(e) { sgqToast('Erro ao excluir: '+e.message,'error'); }
     };
 
-    // ── Inicialização: aguarda login e chama popup ─────────────────
-    window._agendaInicializar      = agendaVerificarPopup;
-    window._agendaCarregarEExibir  = async function() {
-        if (typeof perfilAtual === 'undefined' || perfilAtual !== 'admin') return;
-        await _carregarCompromissos();
-        agendaRenderizarLista();
-    };
+    // ── Dispara ao carregar a página — funciona com login automático ──
+    // Fica tentando até perfilAtual estar disponível (max 30 tentativas)
+    let _tentativas = 0;
+    function _aguardarEIniciar() {
+        if (typeof perfilAtual !== 'undefined' && perfilAtual !== null) {
+            _iniciar();
+        } else if (_tentativas < 30) {
+            _tentativas++;
+            setTimeout(_aguardarEIniciar, 1000); // tenta a cada 1 segundo
+        }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(_aguardarEIniciar, 2000); // aguarda 2s após DOM pronto
+    });
 
 })(); /* fim módulo agenda */
 </script>
