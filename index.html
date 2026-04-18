@@ -8847,7 +8847,7 @@ function renderRCTabelaDetalhe(dados) {
         const tdDefeito = (campo) => {
             const v = parseFloat(r[campo]) || 0;
             const st = estiloFora(v, 'class', r.produto, campo, r.data);
-            const cls = st ? ' style="padding:4px;text-align:center;background:#fde8e8;color:#c0392b;font-weight:bold;"'
+            const cls = st ? ' class="td-fora" style="padding:4px;text-align:center;"'
                            : ' style="padding:4px;text-align:center;"';
             return `<td${cls}>${v.toFixed(2)}</td>`;
         };
@@ -9272,7 +9272,7 @@ function aplicarFiltrosRanking() {
             const tdC = (campo, val) => {
                 const fora = s.campoFora && s.campoFora[campo];
                 const st = fora
-                    ? ' style="padding:8px;text-align:center;background:#fde8e8;color:#c0392b;font-weight:bold;"'
+                    ? ' class="td-fora" style="padding:8px;text-align:center;"'
                     : ' style="padding:8px;text-align:center;"';
                 return `<td${st}>${f(val)}</td>`;
             };
