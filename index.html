@@ -455,7 +455,7 @@
         /* FILTROS */
         .filtros { background: rgba(88,166,255,0.03); padding: 15px; border-radius: 6px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; align-items: flex-end; border: 1px solid #30363d; }
         .filtros label { display: block; font-weight: bold; font-size: 12px; margin-bottom: 5px; color: rgba(255,255,255,0.55); }
-        .filtros input, .filtros select { width: 100%; padding: 8px; border: 1px solid #30363d; border-radius: 6px; font-size: 12px; background: rgba(88,166,255,0.04); color: #e6edf3; }
+        .filtros input, .filtros select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; background: #fff; color: #222; }
         .btn-filtrar { background: #3498db; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-filtrar:hover { background: #2980b9; }
         .btn-limpar { background: #95a5a6; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 5px; }
@@ -541,7 +541,7 @@
         .form-grid-4 { grid-template-columns: repeat(4, 1fr); }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-weight: bold; font-size: 10px; margin-bottom: 3px; color: rgba(255,255,255,0.5); text-transform: uppercase; }
-        .form-group input, .form-group select { padding: 5px; border: 1px solid #30363d; border-radius: 4px; font-size: 10px; font-family: Arial, sans-serif; text-transform: uppercase; background: rgba(88,166,255,0.04); color: #e6edf3; }
+        .form-group input, .form-group select { padding: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 10px; font-family: Arial, sans-serif; text-transform: uppercase; background: #fff; color: #222; }
         .form-group input:focus, .form-group select:focus { outline: none; border-color: #58a6ff; box-shadow: 0 0 5px rgba(88,166,255,0.2); }
         .form-group.required label::after { content: " *"; color: #e74c3c; }
         .form-buttons { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-start; padding-top: 10px; border-top: 1px solid rgba(48,54,61,0.8); }
@@ -1468,6 +1468,18 @@
         [data-theme="dark"] .rel-filtros input,
         [data-theme="dark"] .rel-filtros select {
             background: #0d1117 !important;
+            color: #e6edf3 !important;
+            border-color: #30363d !important;
+        }
+        [data-theme="dark"] .filtros input,
+        [data-theme="dark"] .filtros select {
+            background: rgba(88,166,255,0.04) !important;
+            color: #e6edf3 !important;
+            border-color: #30363d !important;
+        }
+        [data-theme="dark"] .form-group input,
+        [data-theme="dark"] .form-group select {
+            background: rgba(88,166,255,0.04) !important;
             color: #e6edf3 !important;
             border-color: #30363d !important;
         }
