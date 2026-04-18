@@ -2957,9 +2957,11 @@
                     <!-- CAIXAS DE SELEÇÃO DE PRODUTOS -->
                     <div id="rcGraficoFiltros" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 4px 14px;border-bottom:1px solid #eee;margin-bottom:12px;">
                         <span style="font-size:11px;font-weight:bold;color:#555;text-transform:uppercase;margin-right:4px;">Exibir:</span>
-                        <label id="rcChkTodosLabel" style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;background:#0a1e7f;color:white;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:bold;user-select:none;transition:opacity 0.2s;">
-                            <input type="checkbox" id="rcChkTodos" checked onchange="rcToggleTodos(this)" style="display:none;">
-                            ☑ Todos
+                        <label id="rcChkTodosLabel" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;font-weight:600;color:#444;user-select:none;padding:3px 6px;border-radius:4px;transition:background 0.15s;"
+                            onmouseover="this.style.background='rgba(0,0,0,0.05)'"
+                            onmouseout="this.style.background='transparent'">
+                            <input type="checkbox" id="rcChkTodos" onchange="rcToggleTodos(this)" style="width:14px;height:14px;cursor:pointer;">
+                            Todos
                         </label>
                         <div id="rcChksProdutos" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
                     </div>
@@ -8532,34 +8534,29 @@ function rcConstruirCheckboxes(prods) {
     if (!wrap) return;
     wrap.innerHTML = prods.map((p, i) => {
         const cor = RC_PRODUTOS[p]?.cor || PALETA[i % PALETA.length];
-        return `<label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;
-                    background:white;border:2px solid ${cor};color:${cor};
-                    padding:4px 12px;border-radius:20px;font-size:11px;font-weight:bold;
-                    user-select:none;transition:all 0.2s;" id="rcChkLbl_${i}"
-                    onmouseover="this.style.background='${cor}22'"
-                    onmouseout="this.style.background=this.querySelector('input').checked?'${cor}':'white'">
-                <input type="checkbox" checked data-idx="${i}" data-cor="${cor}"
-                    onchange="rcFiltrarGrafico()" style="display:none;">
+        // Por padrão: só MILHO vem marcado
+        const isMilho = p.trim().toUpperCase() === 'MILHO';
+        const checked = isMilho ? 'checked' : '';
+        return `<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+                    font-size:11px;font-weight:600;color:#444;user-select:none;padding:3px 6px;
+                    border-radius:4px;transition:background 0.15s;" id="rcChkLbl_${i}"
+                    onmouseover="this.style.background='rgba(0,0,0,0.05)'"
+                    onmouseout="this.style.background='transparent'">
+                <input type="checkbox" ${checked} data-idx="${i}" data-cor="${cor}"
+                    onchange="rcFiltrarGrafico()" style="width:14px;height:14px;cursor:pointer;accent-color:${cor};">
                 <span style="width:10px;height:10px;border-radius:50%;background:${cor};display:inline-block;flex-shrink:0;"></span>
                 ${p}
             </label>`;
     }).join('');
-    // Aplica fundo inicial nos selecionados
-    wrap.querySelectorAll('input[type=checkbox]').forEach(chk => {
-        const lbl = chk.parentElement;
-        lbl.style.background = chk.checked ? chk.dataset.cor + '22' : 'white';
-    });
     // Sincroniza o "Todos"
     _rcSincTodos();
+    // Dispara filtro inicial com apenas MILHO selecionado
+    rcFiltrarGrafico();
 }
 
 function rcToggleTodos(chk) {
     const checks = document.querySelectorAll('#rcChksProdutos input[type=checkbox]');
-    checks.forEach(c => {
-        c.checked = chk.checked;
-        const lbl = c.parentElement;
-        lbl.style.background = c.checked ? c.dataset.cor + '22' : 'white';
-    });
+    checks.forEach(c => { c.checked = chk.checked; });
     const todosLabel = document.getElementById('rcChkTodosLabel');
     if (todosLabel) todosLabel.style.background = chk.checked ? '#0a1e7f' : '#bdc3c7';
     rcFiltrarGrafico();
@@ -8577,10 +8574,6 @@ function _rcSincTodos() {
 
 function rcFiltrarGrafico() {
     const checks = document.querySelectorAll('#rcChksProdutos input[type=checkbox]');
-    // Atualiza cor do fundo de cada label
-    checks.forEach(c => {
-        c.parentElement.style.background = c.checked ? c.dataset.cor + '22' : 'white';
-    });
     _rcSincTodos();
     const selecionados = [...checks].filter(c => c.checked).map((c, i) => {
         return _rcGrafProds[parseInt(c.dataset.idx)];
