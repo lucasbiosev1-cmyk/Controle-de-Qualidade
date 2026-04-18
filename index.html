@@ -7942,8 +7942,8 @@ function renderGraficoLinha(di, df, dados, analise, analNome, cor, racoesAlvo) {
                 }
             },
             scales: {
-                y: { beginAtZero:false, ticks:{font:{size:10}}, grid:{color:'#f0f0f0'} },
-                x: { ticks:{font:{size:9}, maxRotation:45}, grid:{color:'#f0f0f0'} }
+                y: { beginAtZero:false, ticks:{font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} },
+                x: { ticks:{font:{size:9}, maxRotation:45, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} }
             }
         }
     });
@@ -7998,10 +7998,10 @@ function renderGraficoBar(base, subFases, analise, analNome) {
         },
         options: {
             responsive:true, maintainAspectRatio:true,
-            plugins: { legend:{ display:true, labels:{font:{size:11}, padding:12} } },
+            plugins: { legend:{ display:true, labels:{font:{size:11}, padding:12, color:'#e6edf3'} } },
             scales: {
-                y:  { beginAtZero:false, ticks:{font:{size:10}}, title:{display:true, text:analNome,    font:{size:10}} },
-                y2: { position:'right',  ticks:{font:{size:10}}, title:{display:true, text:'C.V (%)',   font:{size:10}}, grid:{drawOnChartArea:false} }
+                y:  { beginAtZero:false, ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true, text:analNome,    font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} },
+                y2: { position:'right',  ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true, text:'C.V (%)',   font:{size:10}, color:'#e6edf3'}, grid:{drawOnChartArea:false} }
             }
         }
     });
@@ -8774,10 +8774,10 @@ function renderRCGraficoBar(base, prods) {
     window._rcGraficoBarInst = new Chart(ctx, {
         type:'bar', data:{ labels, datasets },
         options:{ responsive:true, maintainAspectRatio:true,
-            plugins:{ legend:{ display:true, labels:{ font:{size:10}, padding:8 } } },
+            plugins:{ legend:{ display:true, labels:{ font:{size:10}, padding:8, color:'#e6edf3' } } },
             scales:{
-                x:{ ticks:{font:{size:10}} },
-                y:{ beginAtZero:true, ticks:{font:{size:10}}, title:{display:true, text:'Média (%)', font:{size:10}} }
+                x:{ ticks:{font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} },
+                y:{ beginAtZero:true, ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true, text:'Média (%)', font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} }
             }
         }
     });
@@ -13372,11 +13372,11 @@ function renderRCMicotoxinas(dados, di, df) {
             },
             options: {
                 responsive:true, maintainAspectRatio:true,
-                plugins:{ legend:{ labels:{font:{size:10},padding:8} } },
+                plugins:{ legend:{ labels:{font:{size:10},padding:8, color:'#e6edf3'} } },
                 scales:{
-                    yA:{ type:'linear', position:'left',  beginAtZero:true, ticks:{font:{size:10}}, title:{display:true,text:'Aflatoxina (ppb)',font:{size:10}} },
-                    yF:{ type:'linear', position:'right', beginAtZero:true, ticks:{font:{size:10}}, title:{display:true,text:'Fumonisina (ppb÷1000)',font:{size:10}}, grid:{drawOnChartArea:false} },
-                    x: { ticks:{font:{size:9}, maxRotation:45} }
+                    yA:{ type:'linear', position:'left',  beginAtZero:true, ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true,text:'Aflatoxina (ppb)',font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} },
+                    yF:{ type:'linear', position:'right', beginAtZero:true, ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true,text:'Fumonisina (ppb÷1000)',font:{size:10}, color:'#e6edf3'}, grid:{drawOnChartArea:false} },
+                    x: { ticks:{font:{size:9}, maxRotation:45, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} }
                 }
             }
         });
