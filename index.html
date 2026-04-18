@@ -40,6 +40,17 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif; background: var(--gh-bg); color: var(--gh-fg-default); }
 
+
+        /* ── Classes tema-responsivas para linhas de tabela (usadas via JS) ── */
+        .tr-row-even { background: #ffffff; color: #333333; }
+        .tr-row-odd  { background: #f5f7fa; color: #333333; }
+        html[data-theme="dark"] .tr-row-even { background: #161b22; color: #e6edf3; }
+        html[data-theme="dark"] .tr-row-odd  { background: #0d1117; color: #e6edf3; }
+        @media print {
+            .tr-row-even, html[data-theme="dark"] .tr-row-even { background: #ffffff !important; color: #222 !important; }
+            .tr-row-odd,  html[data-theme="dark"] .tr-row-odd  { background: #f5f7fa !important; color: #222 !important; }
+        }
+
         /* =========================================================
            ✅ MELHORIA: LOADING OVERLAY GLOBAL
            ========================================================= */
@@ -994,6 +1005,84 @@
             color: #aab;
         }
 
+
+        /* ══════════════════════════════════════════════════════
+           RESET COMPLETO PARA IMPRESSÃO — FORÇAR TEMA CLARO
+           Sobrescreve qualquer tema dark ativo na tela
+           ══════════════════════════════════════════════════════ */
+        @media print {
+            /* Reset geral: fundo branco, texto preto */
+            html, body,
+            html[data-theme="dark"], html[data-theme="dark"] body {
+                background: #fff !important;
+                color: #222 !important;
+            }
+            /* Containers de relatório */
+            html[data-theme="dark"] .tab-content,
+            html[data-theme="dark"] #relClassConteudo,
+            html[data-theme="dark"] #rankingConteudo,
+            html[data-theme="dark"] #boletimConteudo,
+            html[data-theme="dark"] #relatorioConteudo,
+            html[data-theme="dark"] .relatorio-container,
+            html[data-theme="dark"] .grafico-container,
+            html[data-theme="dark"] .tabela-container,
+            html[data-theme="dark"] #rcMicoSecao {
+                background: #fff !important;
+                color: #222 !important;
+                border-color: #ddd !important;
+                box-shadow: none !important;
+            }
+            /* Títulos e seções */
+            html[data-theme="dark"] .secao-title,
+            html[data-theme="dark"] .grafico-title,
+            html[data-theme="dark"] .relatorio-title {
+                color: #333 !important;
+                border-bottom-color: #ddd !important;
+            }
+            /* Cabeçalhos de tabela: manter cor original (não dark) */
+            html[data-theme="dark"] table th {
+                background: #1a2a6e !important;
+                color: #fff !important;
+            }
+            /* Cabeçalho roxo das tabelas de micotoxinas */
+            html[data-theme="dark"] #rcMicoSecao table thead th {
+                background: #6c3483 !important;
+                color: #fff !important;
+            }
+            /* Linhas de tabela: fundo branco/cinza claro alternado */
+            html[data-theme="dark"] table tr {
+                background: #fff !important;
+                color: #222 !important;
+            }
+            html[data-theme="dark"] table tr:nth-child(even) {
+                background: #f5f7fa !important;
+                color: #222 !important;
+            }
+            html[data-theme="dark"] table td {
+                color: #222 !important;
+                border-color: #dce3ef !important;
+            }
+            /* Linhas geradas via JS nas tabelas de micotoxinas */
+            html[data-theme="dark"] #rcMicoSecao table tbody tr {
+                background: #fff !important;
+                color: #222 !important;
+            }
+            html[data-theme="dark"] #rcMicoSecao table tbody tr:nth-child(even) {
+                background: #f5f7fa !important;
+            }
+            /* Cards de KPI */
+            html[data-theme="dark"] .fase-card,
+            html[data-theme="dark"] .stat-item,
+            html[data-theme="dark"] .bol-resumo-card {
+                background: #f9f9f9 !important;
+                border-color: #ddd !important;
+                color: #222 !important;
+            }
+            html[data-theme="dark"] .fase-value,
+            html[data-theme="dark"] .stat-value { color: #333 !important; }
+            html[data-theme="dark"] .fase-label,
+            html[data-theme="dark"] .stat-label { color: #666 !important; }
+        }
         @media print {
             .rel-capa-wrap { display: block !important; }
             .rel-capa-wrap-rc  { display: block !important; }
@@ -9323,7 +9412,7 @@ function aplicarFiltrosRanking() {
                     : ' style="padding:8px;text-align:center;"';
                 return `<td${st}>${f(val)}</td>`;
             };
-            return `<tr style="background:${bg};color:${_tFg()};">
+            return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
                 <td style="padding:8px;text-align:center;font-size:16px;font-weight:bold;color:${posColor};">${pos}</td>
                 <td style="padding:8px 10px;font-weight:bold;text-transform:uppercase;border-left:4px solid ${posColor};">${s.fornecedor}</td>
                 <td style="padding:8px;text-align:center;">${s.n}</td>
@@ -11550,7 +11639,7 @@ function tabelaParamHTML(modulo, racaKey, campos, dataVig) {
     return campos.map((c,i) => {
         const cfg = getParam(modulo, racaKey, c.key, dataVig||null);
         const labelExtra = c.calculado ? ' <span style="font-size:9px;background:#e67e22;color:white;padding:1px 5px;border-radius:3px;vertical-align:middle;">CALCULADO</span>' : '';
-        return `<tr style="background:${_tBg(i)};">
+        return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
             <td style="padding:7px 12px;font-size:11px;color:#222;font-weight:600;">${c.label}${labelExtra}</td>
             <td style="padding:5px 8px;text-align:center;">
                 <input type="number" step="any" value="${cfg.min}"
@@ -13462,7 +13551,7 @@ function renderRCMicotoxinas(dados, di, df) {
         const bg = i%2===0 ? _micoBgEven() : _micoBgOdd();
         const fg = _micoFg(); const fgMut = _micoFgMut();
         const rankLabel = i < 3 ? medalha[i] : '#'+(i+1);
-        return `<tr style="background:${bg};color:${fg};">
+        return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
             <td style="padding:7px 8px;text-align:center;font-weight:bold;font-size:14px;">${rankLabel}</td>
             <td style="padding:7px 10px;text-align:center;font-weight:bold;border-left:4px solid #8e44ad;">${d.forn}</td>
             <td style="padding:7px 10px;text-align:center;font-size:10px;color:${fgMut};">${d.loc}</td>
@@ -13487,7 +13576,7 @@ function renderRCMicotoxinas(dados, di, df) {
         const aflaClass = getMicoClass(getMicoNivel(afla, 'afla'));
         const fumoClass = getMicoClass(getMicoNivel(fumo, 'fumo'));
         const bg = i%2===0 ? _micoBgEven() : _micoBgOdd();
-        return `<tr style="background:${bg};color:${_micoFg()};">
+        return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
             <td style="padding:4px 6px;white-space:nowrap;text-align:center;">${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td>
             <td style="padding:4px;text-align:center;">${r.hora||''}</td>
             <td style="padding:4px 6px;font-weight:bold;white-space:nowrap;text-align:center;">${r.produto||''}</td>
@@ -13971,7 +14060,7 @@ function aplicarFiltrosRelMP() {
     document.getElementById('rmpTbodyDetalhe').innerHTML = sorted.map((r,i) => {
         const bg = _tBg(i);
         const dataFmt = r.data ? new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR') : '-';
-        return `<tr style="background:${bg};border-bottom:1px solid #eee;">
+        return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}" style="border-bottom:1px solid #eee;">
             <td style="padding:5px 7px;text-align:center;white-space:nowrap;">${dataFmt}</td>
             <td style="padding:5px 4px;text-align:center;">${r.hora||'-'}</td>
             <td style="padding:5px 7px;text-align:left;font-weight:bold;">${r.produto||'-'}</td>
@@ -14108,7 +14197,7 @@ async function analisarCorrecaoDefeitos() {
         const bg = _tBg(i);
         const dataFmt = r.data ? new Date(r.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
         const queimadoCorr = +(parseFloat(r.queimado || 0) * 100).toFixed(4);
-        html += `<tr style="background:${bg};color:${_tFg()};">
+        html += `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
             <td style="padding:4px 8px;white-space:nowrap;">${dataFmt}</td>
             <td style="padding:4px 8px;">${r.produto || '-'}</td>
             <td style="padding:4px 8px;">${r.fornecedor || '-'}</td>
@@ -16299,7 +16388,7 @@ function visualizarDev(id) {
             <tbody>${classif.map((c, i) => {
                 const r = parseFloat(c.resultado||0), p = parseFloat(c.parametro||0);
                 const nc2 = r > p;
-                return `<tr style="background:${_tBg(i)};">
+                return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
                     <td style="padding:5px 10px;font-weight:600;">${c.defeito||'-'}</td>
                     <td style="text-align:center;color:${nc2?'#e74c3c':'#27ae60'};font-weight:bold;">${r.toFixed(2)}%</td>
                     <td style="text-align:center;color:#7f8c8d;">${p.toFixed(2)}%</td>
@@ -16370,7 +16459,7 @@ function imprimirVisualizacao() {
         const classifRows = classif.map((c, i) => {
             const r = parseFloat(c.resultado || 0), p = parseFloat(c.parametro || 0);
             const nc2 = r > p;
-            return `<tr style="background:${_tBg(i)};">
+            return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
                 <td style="padding:6px 10px;font-weight:600;border-bottom:1px solid #f0d9c0;">${c.defeito || '-'}</td>
                 <td style="text-align:center;color:${nc2 ? '#c0392b' : '#27ae60'};font-weight:bold;border-bottom:1px solid #f0d9c0;">${r.toFixed(2)}%</td>
                 <td style="text-align:center;color:#7f8c8d;border-bottom:1px solid #f0d9c0;">${p.toFixed(2)}%</td>
@@ -18558,7 +18647,7 @@ function matRenderTabela() {
         const st  = _matStatus(m);
         const bg  = _tBg(i);
         const qtd = m.qtd_atual !== undefined ? m.qtd_atual : m.qtdAtual;
-        return `<tr style="background:${bg};border-bottom:1px solid #f0f0f0;">
+        return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}" style="border-bottom:1px solid #f0f0f0;">
             <td style="padding:9px 12px;font-weight:700;color:#2c3e50;text-align:left;">${m.nome || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${m.categoria || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;font-family:monospace;">${m.lote || '—'}</td>
@@ -18921,7 +19010,7 @@ function eqRenderTabela() {
         const possuiCalibLabel = (eq.possui_calib || eq.possuiCalib) === 'sim' ? '✅ Sim' : '⚪ Não';
         const proxCalib = eq.prox_calib || eq.proxCalib || '';
         const dataCalib = eq.data_calib || eq.dataCalib || '';
-        return `<tr style="background:${bg};border-bottom:1px solid #f0f0f0;">
+        return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}" style="border-bottom:1px solid #f0f0f0;">
             <td style="padding:9px 12px;font-weight:700;color:#2c3e50;">${eq.nome || '—'}</td>
             <td style="padding:9px 8px;text-align:center;"><span style="background:#1a2a6e;color:#fff;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;font-family:monospace;">${eq.tag || '—'}</span></td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${eq.marca || '—'}</td>
