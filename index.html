@@ -8411,6 +8411,7 @@ function inicializarRelClass() {
     const mes      = String(hoje.getMonth() + 1).padStart(2, '0');
     document.getElementById('rcDataInicio').value = ano + '-' + mes + '-01';
     document.getElementById('rcDataFim').value    = dataHojeISO();
+    document.getElementById('rcProduto').value    = 'MILHO';
     aplicarFiltrosRelClass();
 }
 
@@ -8575,7 +8576,7 @@ function _rcSincTodos() {
 function rcFiltrarGrafico() {
     const checks = document.querySelectorAll('#rcChksProdutos input[type=checkbox]');
     _rcSincTodos();
-    const selecionados = [...checks].filter(c => c.checked).map((c, i) => {
+    const selecionados = [...checks].filter(c => c.checked).map(c => {
         return _rcGrafProds[parseInt(c.dataset.idx)];
     }).filter(Boolean);
     if (!selecionados.length || !_rcGrafDi) return;
