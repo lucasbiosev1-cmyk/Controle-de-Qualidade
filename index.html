@@ -2255,11 +2255,7 @@
             </div>
             <div style="margin-bottom:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                 <button class="btn btn-primary" id="btnCadastroProd" onclick="abrirModalCadastroProd()">+ CADASTRO</button>
-                <span style="font-weight:bold;">Total de registros: <span id="totalRegistrosProd">0</span></span>
-                <span style="margin-left:auto;display:flex;gap:6px;align-items:center;">
-                    <button class="btn-scroll-tabela" onclick="rolarTabela('tabelaProdContainer',-1)" title="Rolar para esquerda">&#8592;</button>
-                    <button class="btn-scroll-tabela" onclick="rolarTabela('tabelaProdContainer', 1)" title="Rolar para direita">&#8594;</button>
-                </span>
+                <span style="font-weight:bold;color:#333;">Total de registros: <span id="totalRegistrosProd">0</span></span>
             </div>
             <div class="tabela-container" id="tabelaProdContainer">
                 <table>
@@ -2271,10 +2267,10 @@
                             <th>Cálcio %</th><th>Fósforo %</th>
                             <th>Granulo 1 (4mm)</th><th>Granulo 2 (2mm)</th>
                             <th>Granulo 3 (0,60mm)</th><th>Fundo</th>
-                            <th>Status</th><th id="thAcaoProd">Ação</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
-                    <tbody id="tabelaProducoes"><tr><td colspan="21" style="text-align:center;color:#999;">Nenhum registro encontrado</td></tr></tbody>
+                    <tbody id="tabelaProducoes"><tr><td colspan="20" style="text-align:center;color:#999;">Nenhum registro encontrado</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -2304,11 +2300,7 @@
             </div>
             <div style="margin-bottom:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                 <button class="btn btn-primary" id="btnCadastroClass" onclick="abrirModalCadastroClass()">+ CADASTRO</button>
-                <span style="font-weight:bold;">Total de registros: <span id="totalRegistrosClass">0</span></span>
-                <span style="margin-left:auto;display:flex;gap:6px;align-items:center;">
-                    <button class="btn-scroll-tabela" onclick="rolarTabela('tabelaClassContainer',-1)" title="Rolar para esquerda">&#8592;</button>
-                    <button class="btn-scroll-tabela" onclick="rolarTabela('tabelaClassContainer', 1)" title="Rolar para direita">&#8594;</button>
-                </span>
+                <span style="font-weight:bold;color:#333;">Total de registros: <span id="totalRegistrosClass">0</span></span>
             </div>
             <div id="diagClassBox" style="display:none;background:#1e1e2e;color:#cdd6f4;font-family:monospace;font-size:11px;padding:14px;border-radius:6px;margin-bottom:12px;overflow-x:auto;white-space:pre;max-height:320px;overflow-y:auto;"></div>
             <div class="tabela-container" id="tabelaClassContainer">
@@ -2359,11 +2351,7 @@
             </div>
             <div style="margin-bottom:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                 <button class="btn btn-primary" id="btnCadastroMP" onclick="abrirModalCadastroMP()">+ CADASTRO</button>
-                <span style="font-weight:bold;text-transform:uppercase;">Total de registros: <span id="totalRegistrosMP">0</span></span>
-                <span style="margin-left:auto;display:flex;gap:6px;align-items:center;">
-                    <button class="btn-scroll-tabela" onclick="rolarTabela('tabelaMPContainer',-1)" title="Rolar para esquerda">&#8592;</button>
-                    <button class="btn-scroll-tabela" onclick="rolarTabela('tabelaMPContainer', 1)" title="Rolar para direita">&#8594;</button>
-                </span>
+                <span style="font-weight:bold;text-transform:uppercase;color:#333;">Total de registros: <span id="totalRegistrosMP">0</span></span>
             </div>
             <div class="tabela-container" id="tabelaMPContainer">
                 <table>
@@ -2744,7 +2732,7 @@
                     <div class="tabela-container">
                     <table style="width:100%;border-collapse:collapse;font-size:11px;">
                         <thead>
-                            <tr style="background:#1e3a5f;color:#e6edf3;">
+                            <tr class="tr-thead-dark">
                                 <th style="padding:7px 10px;text-align:left;">PRODUTO</th>
                                 <th style="padding:7px;text-align:center;">REG.</th>
                                 <th style="padding:7px;text-align:center;">PROTEÍNA<br>MÉD.%</th>
@@ -2770,7 +2758,7 @@
                 <div class="tabela-container">
                 <table style="width:100%;border-collapse:collapse;font-size:10px;">
                     <thead>
-                        <tr style="background:#1e3a5f;color:#e6edf3;">
+                        <tr class="tr-thead-dark">
                             <th style="padding:5px 7px;text-align:center;white-space:nowrap;">DATA</th>
                             <th style="padding:5px 4px;text-align:center;white-space:nowrap;">HORA</th>
                             <th style="padding:5px 7px;text-align:left;white-space:nowrap;">PRODUTO</th>
@@ -2930,7 +2918,7 @@
                     <div class="tabela-container">
                     <table style="width:100%;border-collapse:collapse;font-size:11px;">
                         <thead>
-                            <tr style="background:#1e3a5f;color:#e6edf3;">
+                            <tr class="tr-thead-dark">
                                 <th style="padding:7px 10px;text-align:left;">PRODUTO</th>
                                 <th style="padding:7px;">REG.</th>
                                 <th style="padding:7px;">QUEIMADO<br>MÉD.%</th>
@@ -2962,7 +2950,7 @@
                 <div class="tabela-container" id="rcTabelaDetalheContainer">
                     <table style="width:100%;border-collapse:collapse;font-size:10px;">
                         <thead>
-                            <tr style="background:#1e3a5f;color:#e6edf3;">
+                            <tr class="tr-thead-dark">
                                 <th style="padding:5px 7px;white-space:nowrap;">DATA</th>
                                 <th style="padding:5px 4px;white-space:nowrap;">HORA</th>
                                 <th style="padding:5px 7px;text-align:left;white-space:nowrap;">PRODUTO</th>
@@ -3199,7 +3187,7 @@
                     <div class="tabela-container">
                         <table style="width:100%;border-collapse:collapse;font-size:11px;">
                             <thead>
-                                <tr style="background:#1e3a5f;color:#e6edf3;">
+                                <tr class="tr-thead-dark">
                                     <th style="padding:8px 6px;text-align:center;width:50px;">POS.</th>
                                     <th style="padding:8px 10px;text-align:left;">FORNECEDOR</th>
                                     <th style="padding:8px;">REG.</th>
@@ -3294,7 +3282,7 @@
                 <div style="overflow-x:auto;border:1px solid #ddd;border-radius:4px;">
                     <table id="tabelaNC" style="width:100%;border-collapse:collapse;font-size:11px;">
                         <thead>
-                            <tr style="background:#1e3a5f;color:#e6edf3;">
+                            <tr class="tr-thead-dark">
                                 <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Nº NC</th>
                                 <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Data</th>
                                 <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Tipo</th>
@@ -3376,7 +3364,7 @@
                 <div style="overflow-x:auto;border:1px solid #ddd;border-radius:4px;">
                     <table id="tabelaDev" style="width:100%;border-collapse:collapse;font-size:11px;">
                         <thead>
-                            <tr style="background:#1e3a5f;color:#e6edf3;">
+                            <tr class="tr-thead-dark">
                                 <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Nº Dev</th>
                                 <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Data</th>
                                 <th style="padding:9px 8px;text-align:center;font-size:10px;white-space:nowrap;">Produto</th>
@@ -5141,11 +5129,7 @@
             <div style="margin-bottom:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                 <button class="btn btn-primary" id="btnCadastroEMP" onclick="abrirModalEMP()">+ REGISTRAR ENTRADA</button>
                 <button onclick="atualizarStatusEMP(this)" style="background:#2980b9;color:white;border:none;border-radius:4px;padding:10px 18px;font-size:13px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:6px;" title="Recarrega os status do banco de dados">🔄 Atualizar Status</button>
-                <span style="font-weight:bold;text-transform:uppercase;">Total de registros: <span id="totalRegistrosEMP">0</span></span>
-                <span style="margin-left:auto;display:flex;gap:6px;align-items:center;">
-                    <button class="btn-scroll-tabela" onclick="rolarTabela('tabelaEMPContainer',-1)">&#8592;</button>
-                    <button class="btn-scroll-tabela" onclick="rolarTabela('tabelaEMPContainer', 1)">&#8594;</button>
-                </span>
+                <span style="font-weight:bold;text-transform:uppercase;color:#333;">Total de registros: <span id="totalRegistrosEMP">0</span></span>
             </div>
             <div class="tabela-container" id="tabelaEMPContainer">
                 <table>
@@ -5586,6 +5570,7 @@
                     <button type="button" class="btn-salvar" onclick="salvarProducao(event)">Salvar</button>
                     <button type="button" class="btn-limpar-form" onclick="limparFormularioProd()">Limpar</button>
                     <button type="button" class="btn-cancelar" onclick="fecharModalCadastroProd()">Cancelar</button>
+                    <button type="button" id="btnExcluirProd" class="btn-delete btn-action" style="margin-left:auto;padding:8px 18px;font-size:11px;font-weight:bold;display:none;" onclick="excluirProdDoModal()">🗑️ Excluir</button>
                 </div>
             </form>
         </div>
@@ -6259,7 +6244,7 @@ function aplicarPermissoes() {
     document.getElementById('btnCadastroProd').style.display  = podeCadastro ? 'inline-block' : 'none';
     document.getElementById('btnCadastroClass').style.display = podeCadastro ? 'inline-block' : 'none';
     document.getElementById('btnCadastroMP').style.display    = podeCadastro ? 'inline-block' : 'none';
-    document.getElementById('thAcaoProd').style.display  = podeCadastro ? 'table-cell' : 'none';
+    document.getElementById('thAcaoProd') && (document.getElementById('thAcaoProd').style.display = 'none');
     document.getElementById('thAcaoClass').style.display = podeCadastro ? 'table-cell' : 'none';
     document.getElementById('thAcaoMP').style.display    = podeCadastro ? 'table-cell' : 'none';
 
@@ -6871,6 +6856,8 @@ function abrirModalCadastroProd() {
     document.getElementById('modalTituloProd').textContent = 'Cadastro de Produção';
     document.getElementById('formCadastroProd').reset();
     document.getElementById('cadDataProd').value = dataHoje();
+    const btnExcluir = document.getElementById('btnExcluirProd');
+    if (btnExcluir) btnExcluir.style.display = 'none';
     document.getElementById('modalCadastroProd').classList.add('show');
 }
 
@@ -6930,6 +6917,18 @@ function abrirModalEdicaoProd(id) {
     if (r.obs) { obsToggleProd.classList.add('open'); obsProd.closest('.obs-body').classList.add('open'); }
     else { obsToggleProd.classList.remove('open'); obsProd.closest('.obs-body').classList.remove('open'); }
     document.getElementById('modalCadastroProd').classList.add('show');
+    const btnExcluir = document.getElementById('btnExcluirProd');
+    if (btnExcluir) btnExcluir.style.display = perfilAtual === 'admin' ? 'inline-block' : 'none';
+}
+
+function excluirProdDoModal() {
+    const id = document.getElementById('cadIdProd').value;
+    if (!id) return;
+    if (perfilAtual !== 'admin') return;
+    if (confirm('Tem certeza que deseja excluir este registro?')) {
+        fecharModalCadastroProd();
+        deletarProd(id);
+    }
 }
 
 function fecharModalCadastroProd() {
@@ -7050,7 +7049,7 @@ function exibirTabelaProd() {
     const filtrados = filtrarDadosProd();
     document.getElementById('totalRegistrosProd').textContent = filtrados.length;
     if (filtrados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="21" style="text-align:center;color:#999;">Nenhum registro encontrado</td></tr>'; return;
+        tbody.innerHTML = '<tr><td colspan="20" style="text-align:center;color:#999;">Nenhum registro encontrado</td></tr>'; return;
     }
     const isAdmin = perfilAtual === 'admin';
     const _uExib = USUARIOS[usuarioAtual] || {};
@@ -7059,9 +7058,7 @@ function exibirTabelaProd() {
     const podeCadastroProd = isAdmin || _prExib.cadastro === true || _prExib.cadastro === 'true' || _prExib.cadastro === 1;
     tbody.innerHTML = filtrados.map(r => {
         const status = statusPorParametros(r, 'prod', r.racao, CAMPOS_PROD, r.data);
-        const acaoTd = podeCadastroProd
-            ? `<td><button class="btn-action btn-edit" onclick="abrirModalEdicaoProd(${r.id})" title="Editar">✏️</button>${isAdmin ? `<button class="btn-action btn-delete" onclick="deletarProd(${r.id})">Del</button>` : ''}</td>`
-            : '';
+        const acaoTd = '';
         const racaoCell = r.obs
             ? `<td style="white-space:normal;text-align:left;min-width:150px;text-transform:uppercase;"><span class="obs-tooltip-wrap">${r.racao}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span></td>`
             : `<td style="white-space:normal;text-align:left;min-width:150px;text-transform:uppercase;">${r.racao}</td>`;
@@ -11447,7 +11444,7 @@ function historicoHTML(modulo, racaKey) {
             '</tr>';
     }).join('');
     return '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:11px;">'+
-        '<thead><tr style="background:#1e3a5f;color:#e6edf3;">'+
+        '<thead><tr class="tr-thead-dark">'+
         '<th style="padding:8px 10px;text-align:left;white-space:nowrap;">Vigência</th>'+
         '<th style="padding:8px 10px;text-align:left;white-space:nowrap;">Data/Hora Registro</th>'+
         '<th style="padding:8px 10px;text-align:left;">Motivo da Atualização</th>'+
@@ -21232,7 +21229,7 @@ async function sgqCarregarHistoricoAcessos() {
         el.innerHTML = `
         <table style="width:100%;border-collapse:collapse;font-size:11px;">
             <thead>
-                <tr style="background:#1e3a5f;color:#e6edf3;">
+                <tr class="tr-thead-dark">
                     <th style="padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Usuário</th>
                     <th style="padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Perfil</th>
                     <th style="padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Ação</th>
