@@ -292,18 +292,9 @@
                 border: none;
                 box-shadow: none;
             }
-            /* Substitui o painel esquerdo por um header compacto no topo */
+            /* Esconde o painel esquerdo no mobile — logo aparece no formulário */
             .login-panel-left {
-                display: flex;
-                width: 100%;
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-                padding: 14px 20px;
-                min-height: auto;
-                background: #010409;
-                border-right: none;
-                border-bottom: 1px solid #30363d;
+                display: none;
             }
             .login-panel-left::after {
                 display: none;
@@ -1778,11 +1769,6 @@
     <div class="login-wrapper">
         <!-- Painel esquerdo: vira header no mobile com logo -->
         <div class="login-panel-left">
-            <!-- Logo visível apenas no mobile (header bar) -->
-            <svg viewBox="0 0 180 56" width="150" xmlns="http://www.w3.org/2000/svg" class="login-mob-logo" style="display:none;">
-                <text x="0" y="28" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="24" fill="#e6edf3" letter-spacing="1">AGRONOR</text>
-                <text x="2" y="46" font-family="Montserrat,Arial,sans-serif" font-weight="700" font-size="10" fill="#58a6ff" letter-spacing="5">ALIMENTOS</text>
-            </svg>
             <div class="login-panel-left-content">
                 <div class="login-panel-brand">
                     <div class="login-panel-brand-name">AGRONOR</div>
