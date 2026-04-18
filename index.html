@@ -1527,50 +1527,6 @@
             color: #e6edf3 !important;
         }
 
-        /* ========== IMPRESSÃO: TEMA LIMPO ========== */
-        /* O JS remove data-theme="dark" antes de imprimir (beforeprint).
-           Este bloco garante que qualquer resíduo dark não interfira. */
-        @media print {
-            /* Garante fundo branco e texto escuro globalmente */
-            html, body { background: #fff !important; color: #222 !important; }
-
-            /* Capa — restaura cores originais */
-            .rel-capa { background: #fff !important; }
-            .rel-capa-corpo { background: #fff !important; }
-            .rel-capa-ficha { background: #f4f6fb !important; border-color: #dce4f5 !important; border-left-color: #0a1e7f !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            .rel-capa-ficha .rc-rot { color: #8899bb !important; }
-            .rel-capa-ficha .rc-val { color: #1a1a2e !important; }
-            .rel-capa-eyebrow { color: #c0392b !important; }
-            .rel-capa-titulo { color: #0a1e7f !important; }
-            .rel-capa-subtitulo { color: #34495e !important; }
-            .rel-capa-rodape { background: #fafbfe !important; border-color: #e5e9f2 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            .rel-capa-rodape .rd-left, .rel-capa-rodape .rd-right { color: #aab !important; }
-            .rel-capa-topo, .rel-capa-acento, .rel-capa-linha { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-
-            /* Containers de relatório */
-            #relatorioConteudo, #relMPConteudo, #relClassConteudo,
-            #rankingConteudo, #boletimConteudo {
-                background: #fff !important; color: #222 !important; box-shadow: none !important;
-            }
-
-            /* Títulos */
-            .relatorio-title { color: #1a1a2e !important; border-color: #34495e !important; }
-            .relatorio-periodo { color: #555 !important; }
-            .secao-title { color: #333 !important; }
-            .grafico-container { background: #fff !important; border-color: #ddd !important; }
-            .grafico-title { color: #333 !important; }
-
-            /* Tabelas */
-            table th { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            table td { color: #222 !important; border-color: #e0e0e0 !important; }
-            table tr { color: #222 !important; background: transparent !important; }
-            table tr:nth-child(even) td { background: #f8f8f8 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-
-            /* Badges */
-            .badge-conforme { background: #d5f4e6 !important; color: #27ae60 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            .badge-nao-conforme { background: #fadbd8 !important; color: #e74c3c !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-        }
-
         /* ========== DARK THEME — MOBILE MENU OVERRIDES ========== */
         [data-theme="dark"] #mobileNavBar {
             background: #161b22 !important;
@@ -21537,34 +21493,6 @@ function imprimirRelMensalIA() {
     w.document.close();
     setTimeout(() => { w.focus(); w.print(); }, 400);
 }
-</script>
-
-<script>
-// ══════════════════════════════════════════════════════════════
-//  IMPRESSÃO: REMOVE TEMA DARK TEMPORARIAMENTE
-//  Garante que a impressão sempre saia com cores claras
-// ══════════════════════════════════════════════════════════════
-(function() {
-    let _temaAntes = null;
-
-    function removerTemaParaImpressao() {
-        const html = document.documentElement;
-        _temaAntes = html.getAttribute('data-theme');
-        if (_temaAntes === 'dark') {
-            html.setAttribute('data-theme', '_print_');
-        }
-    }
-
-    function restaurarTema() {
-        if (_temaAntes === 'dark') {
-            document.documentElement.setAttribute('data-theme', 'dark');
-        }
-        _temaAntes = null;
-    }
-
-    window.addEventListener('beforeprint', removerTemaParaImpressao);
-    window.addEventListener('afterprint', restaurarTema);
-})();
 </script>
 
 </body>
