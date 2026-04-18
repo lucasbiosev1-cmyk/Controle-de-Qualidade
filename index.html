@@ -5958,10 +5958,33 @@ document.addEventListener('mouseover', function(e) {
 // TEMAS DE COR
 // ===================================================
 const TEMAS = ['azul','verde','cinza','vinho','dark'];
+// ── Chart.js: atualiza cores globais conforme tema ──────────────
+function _aplicarChartTema(tema) {
+    if (typeof Chart === 'undefined') return;
+    const isDark    = tema === 'dark';
+    const textColor = isDark ? '#e6edf3' : '#444444';
+    const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
+    Chart.defaults.color       = textColor;
+    Chart.defaults.borderColor = gridColor;
+    Object.values(Chart.instances || {}).forEach(chart => {
+        try {
+            Object.values(chart.options.scales || {}).forEach(scale => {
+                if (scale.ticks) scale.ticks.color = textColor;
+                if (scale.title) scale.title.color = textColor;
+                if (scale.grid && scale.grid.drawOnChartArea !== false) scale.grid.color = gridColor;
+            });
+            if (chart.options.plugins && chart.options.plugins.legend && chart.options.plugins.legend.labels)
+                chart.options.plugins.legend.labels.color = textColor;
+            chart.update('none');
+        } catch(e) {}
+    });
+}
+
 function aplicarTema(tema) {
     if (!TEMAS.includes(tema)) tema = 'azul';
     document.documentElement.setAttribute('data-theme', tema);
     localStorage.setItem('tema', tema);
+    _aplicarChartTema(tema);
     // Atualiza botões do header (caso ainda existam)
     TEMAS.forEach(t => {
         const btn = document.getElementById('tb' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -5990,7 +6013,7 @@ function aplicarTema(tema) {
     const saved = localStorage.getItem('tema') || 'azul';
     document.documentElement.setAttribute('data-theme', saved);
     // Atualiza botões após DOM estar pronto
-    document.addEventListener('DOMContentLoaded', () => aplicarTema(saved));
+    document.addEventListener('DOMContentLoaded', () => { aplicarTema(saved); _aplicarChartTema(saved); });
 })();
 
 // ===================================================
