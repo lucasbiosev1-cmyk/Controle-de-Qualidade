@@ -21262,8 +21262,8 @@ function imprimirConferenciaQuimicos() {
         const unidade  = r.unidade || '';
         const lote     = r.lote || '—';
         const fornecedor = r.fornecedor || '—';
-        const bg = i % 2 === 0 ? '#161b22' : '#0d1117';
-        return `<tr style="background:${bg};color:#e6edf3;">
+        const bg = i % 2 === 0 ? '#ffffff' : '#f7f9ff';
+        return `<tr style="background:${bg};color:#222;">
             <td style="padding:7px 8px;border:1px solid #dce4f5;font-weight:600;color:#1a2a6e;">${r.nome || '—'}</td>
             <td style="padding:7px 8px;border:1px solid #dce4f5;text-align:center;color:#555;">${lote}</td>
             <td style="padding:7px 8px;border:1px solid #dce4f5;text-align:center;color:#555;">${fornecedor}</td>
@@ -21380,8 +21380,8 @@ function imprimirConferenciaMateriais() {
         const categoria  = m.categoria  || '—';
         const lote       = m.lote       || '—';
         const fornecedor = m.fornecedor || '—';
-        const bg = i % 2 === 0 ? '#161b22' : '#0d1117';
-        return `<tr style="background:${bg};color:#e6edf3;">
+        const bg = i % 2 === 0 ? '#ffffff' : '#f7f9ff';
+        return `<tr style="background:${bg};color:#222;">
             <td style="padding:7px 8px;border:1px solid #dce4f5;font-weight:600;color:#1a2a6e;">${m.nome || '—'}</td>
             <td style="padding:7px 8px;border:1px solid #dce4f5;text-align:center;color:#555;">${categoria}</td>
             <td style="padding:7px 8px;border:1px solid #dce4f5;text-align:center;color:#555;">${lote}</td>
