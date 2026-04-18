@@ -1527,6 +1527,50 @@
             color: #e6edf3 !important;
         }
 
+        /* ========== IMPRESSÃO: TEMA LIMPO ========== */
+        /* O JS remove data-theme="dark" antes de imprimir (beforeprint).
+           Este bloco garante que qualquer resíduo dark não interfira. */
+        @media print {
+            /* Garante fundo branco e texto escuro globalmente */
+            html, body { background: #fff !important; color: #222 !important; }
+
+            /* Capa — restaura cores originais */
+            .rel-capa { background: #fff !important; }
+            .rel-capa-corpo { background: #fff !important; }
+            .rel-capa-ficha { background: #f4f6fb !important; border-color: #dce4f5 !important; border-left-color: #0a1e7f !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .rel-capa-ficha .rc-rot { color: #8899bb !important; }
+            .rel-capa-ficha .rc-val { color: #1a1a2e !important; }
+            .rel-capa-eyebrow { color: #c0392b !important; }
+            .rel-capa-titulo { color: #0a1e7f !important; }
+            .rel-capa-subtitulo { color: #34495e !important; }
+            .rel-capa-rodape { background: #fafbfe !important; border-color: #e5e9f2 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .rel-capa-rodape .rd-left, .rel-capa-rodape .rd-right { color: #aab !important; }
+            .rel-capa-topo, .rel-capa-acento, .rel-capa-linha { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+            /* Containers de relatório */
+            #relatorioConteudo, #relMPConteudo, #relClassConteudo,
+            #rankingConteudo, #boletimConteudo {
+                background: #fff !important; color: #222 !important; box-shadow: none !important;
+            }
+
+            /* Títulos */
+            .relatorio-title { color: #1a1a2e !important; border-color: #34495e !important; }
+            .relatorio-periodo { color: #555 !important; }
+            .secao-title { color: #333 !important; }
+            .grafico-container { background: #fff !important; border-color: #ddd !important; }
+            .grafico-title { color: #333 !important; }
+
+            /* Tabelas */
+            table th { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            table td { color: #222 !important; border-color: #e0e0e0 !important; }
+            table tr { color: #222 !important; background: transparent !important; }
+            table tr:nth-child(even) td { background: #f8f8f8 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+            /* Badges */
+            .badge-conforme { background: #d5f4e6 !important; color: #27ae60 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .badge-nao-conforme { background: #fadbd8 !important; color: #e74c3c !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+
         /* ========== DARK THEME — MOBILE MENU OVERRIDES ========== */
         [data-theme="dark"] #mobileNavBar {
             background: #161b22 !important;
@@ -2546,7 +2590,7 @@
                 <!-- CORPO CENTRAL -->
                 <div class="rel-capa-corpo">
                   <div class="rel-capa-eyebrow">Relatório Gerencial</div>
-                  <div class="rel-capa-titulo">QUALIDADE</div>
+                  <div class="rel-capa-titulo" id="relCapaTituloTexto">PRODUÇÃO</div>
                   <div class="rel-capa-subtitulo">Análise &amp; Resultados</div>
                   <div class="rel-capa-linha"></div>
 
@@ -2850,8 +2894,8 @@
                 <div class="rel-capa-acento"></div>
                 <div class="rel-capa-corpo">
                   <div class="rel-capa-eyebrow">Relatório Gerencial</div>
-                  <div class="rel-capa-subtitulo" style="font-size:21px;">Análise &amp; Resultados</div>
-                  <div class="rel-capa-subtitulo" style="font-size:21px;">Análise &amp; Resultados</div>
+                  <div class="rel-capa-titulo" id="rcCapaTituloTexto">CLASSIFICAÇÃO</div>
+                  <div class="rel-capa-subtitulo">Análise &amp; Resultados</div>
                   <div class="rel-capa-linha"></div>
                   <div class="rel-capa-ficha">
                     <span class="rc-rot">Unidade</span>
@@ -7680,6 +7724,12 @@ function aplicarFiltrosRel() {
     if (document.getElementById('relCapaPeriodo')) {
         document.getElementById('relCapaPeriodo').textContent = `${diStr} a ${dfStr}`;
     }
+    if (document.getElementById('relCapaDataEmissao')) {
+        document.getElementById('relCapaDataEmissao').textContent = new Date().toLocaleDateString('pt-BR');
+    }
+    if (document.getElementById('relCapaTituloTexto')) {
+        document.getElementById('relCapaTituloTexto').textContent = tituloSel || 'PRODUÇÃO';
+    }
 
     // ---- CARDS ----
     const vals    = dados.map(r => getValor(r, analise));
@@ -8358,6 +8408,10 @@ function aplicarFiltrosRelClass() {
     const _rdi = document.getElementById('rcDataInicio')?.value;
     const _rdf = document.getElementById('rcDataFim')?.value;
     if(_rcp && _rdi && _rdf) _rcp.textContent = new Date(_rdi+'T12:00').toLocaleDateString('pt-BR')+' a '+new Date(_rdf+'T12:00').toLocaleDateString('pt-BR');
+    const _rcde = document.getElementById('rcCapaDataEmissao');
+    if(_rcde) _rcde.textContent = new Date().toLocaleDateString('pt-BR');
+    const _rcTit = document.getElementById('rcCapaTituloTexto');
+    if(_rcTit) _rcTit.textContent = tituloSel || 'CLASSIFICAÇÃO';
     document.getElementById('rcPeriodo').textContent = 'PERÍODO: ' + diStr + ' ATÉ ' + dfStr + '  |  ' + dados.length + ' registro(s)';
 
     // Cards resumo
@@ -11843,6 +11897,12 @@ function gerarBoletim() {
     const mp_f    = filtrar(materiasPrimas);
 
     const periodoStr = di||df ? `${di?fmtDate(di):'início'} a ${df?fmtDate(df):'hoje'}` : 'Todo o período';
+
+    // Atualiza capa do boletim
+    const _bolDE = document.getElementById('bolCapaDataEmissao');
+    if(_bolDE) _bolDE.textContent = new Date().toLocaleDateString('pt-BR');
+    const _bolP = document.getElementById('bolCapaPeriodo');
+    if(_bolP) _bolP.textContent = periodoStr;
 
     // Contadores — critério página inicial
     const temValBol = (r, campo) => {
@@ -21477,6 +21537,34 @@ function imprimirRelMensalIA() {
     w.document.close();
     setTimeout(() => { w.focus(); w.print(); }, 400);
 }
+</script>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  IMPRESSÃO: REMOVE TEMA DARK TEMPORARIAMENTE
+//  Garante que a impressão sempre saia com cores claras
+// ══════════════════════════════════════════════════════════════
+(function() {
+    let _temaAntes = null;
+
+    function removerTemaParaImpressao() {
+        const html = document.documentElement;
+        _temaAntes = html.getAttribute('data-theme');
+        if (_temaAntes === 'dark') {
+            html.setAttribute('data-theme', '_print_');
+        }
+    }
+
+    function restaurarTema() {
+        if (_temaAntes === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+        _temaAntes = null;
+    }
+
+    window.addEventListener('beforeprint', removerTemaParaImpressao);
+    window.addEventListener('afterprint', restaurarTema);
+})();
 </script>
 
 </body>
