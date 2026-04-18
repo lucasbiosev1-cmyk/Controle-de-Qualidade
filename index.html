@@ -1717,8 +1717,117 @@
         }
 
         /* NC e devolucoes */
-        html[data-theme="dark"] .nc-classif-table tr:nth-child(even) td { background: #161b22 !important; }
+
+        /* ── DARK: Modal de Visualização NC/Dev (ncv-*) ── */
+        html[data-theme="dark"] .ncv-modal-content { background: #161b22 !important; color: #e6edf3 !important; }
+        html[data-theme="dark"] .ncv-modal-body { background: #161b22 !important; color: #e6edf3 !important; }
+        html[data-theme="dark"] .ncv-modal-footer { background: #0d1117 !important; border-top-color: #30363d !important; }
+
+        html[data-theme="dark"] .ncv-header-bar { background: #0d1117 !important; border-color: #30363d !important; color: #e6edf3 !important; }
+        html[data-theme="dark"] .ncv-section-title { background: #1c2333 !important; color: #58a6ff !important; }
+
+        html[data-theme="dark"] .ncv-field { background: #0d1117 !important; border-color: #30363d !important; }
+        html[data-theme="dark"] .ncv-label { color: #8b949e !important; }
+        html[data-theme="dark"] .ncv-value { color: #e6edf3 !important; }
+
+        html[data-theme="dark"] .ncv-text-block { background: #0d1117 !important; border-color: #30363d !important; color: #e6edf3 !important; }
+
+        /* Tabela de parâmetros dentro do modal de visualização */
+        html[data-theme="dark"] .ncv-modal-body table td { background: #161b22 !important; color: #e6edf3 !important; border-color: #21262d !important; }
+        html[data-theme="dark"] .ncv-modal-body table tr:nth-child(even) td { background: #0d1117 !important; }
+        html[data-theme="dark"] .ncv-modal-body table thead tr { background: #1a2a6e !important; }
+        html[data-theme="dark"] .ncv-modal-body table thead th { background: #1a2a6e !important; color: #fff !important; border-color: #0d1f5e !important; }
+
+        /* ── DARK: Modal de Preenchimento NC/Dev (nc-modal) ── */
+        html[data-theme="dark"] .nc-modal-content { background: #161b22 !important; color: #e6edf3 !important; }
+        html[data-theme="dark"] .nc-modal-body { background: #161b22 !important; color: #e6edf3 !important; }
+        html[data-theme="dark"] .nc-modal-body::-webkit-scrollbar-track { background: #0d1117 !important; }
+        html[data-theme="dark"] .nc-modal-body::-webkit-scrollbar-thumb { background: #30363d !important; }
+        html[data-theme="dark"] .nc-modal-footer { background: #0d1117 !important; border-top-color: #30363d !important; color: #e6edf3 !important; }
+
+        /* Seções do formulário */
+        html[data-theme="dark"] .nc-form-section { background: #0d1117 !important; border-color: #30363d !important; }
+        html[data-theme="dark"] .nc-form-group label { color: #8b949e !important; }
+        html[data-theme="dark"] .nc-form-group input,
+        html[data-theme="dark"] .nc-form-group select,
+        html[data-theme="dark"] .nc-form-group textarea { background: #161b22 !important; border-color: #30363d !important; color: #e6edf3 !important; }
+        html[data-theme="dark"] .nc-form-group input:focus,
+        html[data-theme="dark"] .nc-form-group select:focus,
+        html[data-theme="dark"] .nc-form-group textarea:focus { border-color: #58a6ff !important; box-shadow: 0 0 0 3px rgba(88,166,255,0.12) !important; }
+        html[data-theme="dark"] .nc-form-group input[readonly] { background: #0a0e14 !important; color: #6e7681 !important; }
+
+        /* Tabela de parâmetros/classificação dentro do modal */
+        html[data-theme="dark"] .nc-classif-table td { background: #161b22 !important; color: #e6edf3 !important; border-bottom-color: #21262d !important; }
+        html[data-theme="dark"] .nc-classif-table tr:nth-child(even) td { background: #0d1117 !important; }
+        html[data-theme="dark"] .nc-classif-table tr:hover td { background: #1c2333 !important; }
+
+        /* Inputs dentro da tabela de parâmetros */
+        html[data-theme="dark"] .nc-classif-input { background: #0d1117 !important; border-color: #30363d !important; color: #e6edf3 !important; }
+        html[data-theme="dark"] .nc-classif-input:focus { border-color: #e67e22 !important; background: #161b22 !important; }
+
+        /* Seção de evidências fotográficas */
+        html[data-theme="dark"] .nc-evidencias-section { background: #0d1117 !important; border-color: #30363d !important; }
+        html[data-theme="dark"] .nc-evidencias-section h4 { color: #58a6ff !important; }
         html[data-theme="dark"] [style*="border-bottom:1px solid #ecf0f1"] { border-color: #21262d !important; }
+
+        /* ── DARK: Relatório de Devolução / NC ── */
+        html[data-theme="dark"] .nc-print-report,
+        html[data-theme="dark"] #ncPrintArea,
+        html[data-theme="dark"] #devPrintArea { background: #0d1117 !important; color: #e6edf3 !important; }
+
+        html[data-theme="dark"] .nc-report-section-title {
+            background: #1c2333 !important;
+            color: #58a6ff !important;
+            border-left-color: #388bfd !important;
+        }
+        html[data-theme="dark"] .nc-report-field-item {
+            background: #161b22 !important;
+            border-color: #30363d !important;
+        }
+        html[data-theme="dark"] .nc-report-field-item label { color: #8b949e !important; }
+        html[data-theme="dark"] .nc-report-field-item span  { color: #e6edf3 !important; }
+
+        html[data-theme="dark"] .nc-report-id-bar {
+            background: #161b22 !important;
+            border-color: #30363d !important;
+        }
+        html[data-theme="dark"] .nc-id-num  { color: #58a6ff !important; }
+        html[data-theme="dark"] .nc-report-meta { color: #8b949e !important; }
+
+        /* Tabela de parâmetros avaliados dentro do relatório */
+        html[data-theme="dark"] #ncPrintArea table,
+        html[data-theme="dark"] #devPrintArea table {
+            border-color: #30363d !important;
+        }
+        html[data-theme="dark"] #ncPrintArea table td,
+        html[data-theme="dark"] #devPrintArea table td {
+            background: #161b22 !important;
+            color: #e6edf3 !important;
+            border-color: #21262d !important;
+        }
+        html[data-theme="dark"] #ncPrintArea table tr:nth-child(even) td,
+        html[data-theme="dark"] #devPrintArea table tr:nth-child(even) td {
+            background: #0d1117 !important;
+        }
+        /* Mantém cabeçalho azul escuro como no modo light */
+        html[data-theme="dark"] #ncPrintArea table thead tr,
+        html[data-theme="dark"] #devPrintArea table thead tr {
+            background: #1a2a6e !important;
+        }
+        html[data-theme="dark"] #ncPrintArea table thead th,
+        html[data-theme="dark"] #devPrintArea table thead th {
+            background: #1a2a6e !important;
+            color: #fff !important;
+            border-color: #0d1f5e !important;
+        }
+
+        /* Caixas de texto (nc-text-box, obs) */
+        html[data-theme="dark"] #ncPrintArea .nc-text-box,
+        html[data-theme="dark"] #devPrintArea .nc-text-box {
+            background: #161b22 !important;
+            border-color: #30363d !important;
+            color: #e6edf3 !important;
+        }
 
         /* Containers gerais de secoes de reagentes/materiais */
         html[data-theme="dark"] [style*="box-shadow:0 1px 6px rgba(0,0,0,0.07)"] {
