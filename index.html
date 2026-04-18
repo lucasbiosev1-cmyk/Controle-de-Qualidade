@@ -6821,8 +6821,8 @@ function atualizarKpisCapa() {
         (classificacoes||[]).filter(isMesAtual).forEach(r => { analisesMes += contarClass(r); });
 
         // ── Helpers de status ──
-        const _isConf   = s => s.includes('CONFORME') && !s.includes('NÃO');
-        const _isNConf  = s => s.includes('NÃO');
+        const _isConf   = s => (s.includes('CONFORME') && !s.includes('NÃO')) || (s.includes('>C<') && !s.includes('NC'));
+        const _isNConf  = s => s.includes('NÃO') || s.includes('>NC<');
         const _temParam = s => !s.includes('S/ PARÂM');
         const _semParam = s => s.includes('S/ PARÂM');
 
@@ -8614,7 +8614,7 @@ function aplicarFiltrosRelClass() {
     const denVals = dados.map(r => r.densidade||0);
     const afVals  = dados.filter(r=>(r.aflatoxinas||0)>0).map(r=>r.aflatoxinas);
     const fuVals  = dados.filter(r=>(r.fumonisinas||0)>0).map(r=>r.fumonisinas);
-    const conformes   = dados.filter(r=>!statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data).includes('NÃO')).length;
+    const conformes   = dados.filter(r=>{ const s=statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data); return !s.includes('NÃO') && !s.includes('>NC<'); }).length;
     const naoConformes= dados.length - conformes;
 
     // Cor do card avariados baseada no parâmetro — usa o menor limite máximo entre os produtos presentes
@@ -9183,7 +9183,7 @@ function aplicarFiltrosRanking() {
     function calcStats(dd, forn) {
         const vals = dd.map(r => getRkValor(r, criterio));
         const media = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
-        const conformes = dd.filter(r => !statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data).includes('NÃO')).length;
+        const conformes = dd.filter(r => { const s=statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data); return !s.includes('NÃO') && !s.includes('>NC<'); }).length;
 
         // ── Verifica avariados fora do limite registro a registro por produto ──
         const avVals = dd.map(r => getAvariados(r));
@@ -9261,7 +9261,7 @@ function aplicarFiltrosRanking() {
     const melhor = stats[0];
     const pior   = stats[stats.length - 1];
     const totalReg = base.length;
-    const totalConf = base.filter(r => !statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data).includes('NÃO')).length;
+    const totalConf = base.filter(r => { const s=statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data); return !s.includes('NÃO') && !s.includes('>NC<'); }).length;
 
     // Só mostra "FORNECEDOR NÃO ATENDE" se houver mais de 1 fornecedor E o pior for diferente do melhor
     const mostrarPior = stats.length > 1 && pior && melhor && pior.fornecedor !== melhor.fornecedor;
@@ -12479,7 +12479,7 @@ function gerarGrupoClass(prod, rows, resumo, destNC) {
         <div class="bol-tabela-wrap">` + gerarTabelaClass(rows, true, destNC) + `</div>`;
 
     if (resumo && rows.length > 1) {
-        const conformes = rows.filter(r=>statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data).includes('CONFORME')&&!statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data).includes('NÃO')).length;
+        const conformes = rows.filter(r=>{ const s=statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data); return (!s.includes('NÃO') && !s.includes('>NC<')) && (s.includes('CONFORME') || s.includes('>C<')); }).length;
         html += `<div class="bol-resumo-grid">
             <div class="bol-resumo-card"><div class="rv">${aMedia(avars).toFixed(2)}%</div><div class="rl">Avariados médio</div></div>
             <div class="bol-resumo-card"><div class="rv">${Math.min(...avars).toFixed(2)}% – ${Math.max(...avars).toFixed(2)}%</div><div class="rl">Avariados min – max</div></div>
