@@ -765,7 +765,7 @@
         .obs-body textarea:focus { outline: none; border-color: #58a6ff; box-shadow: 0 0 4px rgba(88,166,255,0.2); background: rgba(48,54,61,0.8); }
 
         /* ===== DESTAQUE FORA DOS LIMITES ===== */
-        .td-fora { background-color: rgba(192,57,43,0.25) !important; color: #f87171 !important; font-weight: bold; }
+        .td-fora { background-color: rgba(192,57,43,0.55) !important; color: #c0392b !important; font-weight: bold; }
         .td-fora-leve { background-color: rgba(192,57,43,0.08) !important; }
         /* ===== PARÂMETROS ===== */
         .param-input { width:110px;padding:5px 7px;border:1px solid rgba(255,255,255,0.15);border-radius:4px;font-size:11px;text-align:center;background:rgba(255,255,255,0.06);color:#e2e8f0; }
@@ -1495,12 +1495,16 @@
             color: #e6edf3 !important;
             border-color: #21262d !important;
         }
-        html[data-theme="dark"] #relatorioConteudo table td.td-fora,
-        html[data-theme="dark"] #relMPConteudo table td.td-fora,
-        html[data-theme="dark"] #relClassConteudo table td.td-fora,
-        html[data-theme="dark"] #rankingConteudo table td.td-fora {
-            background-color: rgba(220,50,50,0.35) !important;
-            color: #ff8080 !important;
+        html[data-theme="dark"] #relatorioConteudo table tr td.td-fora,
+        html[data-theme="dark"] #relMPConteudo table tr td.td-fora,
+        html[data-theme="dark"] #relClassConteudo table tr td.td-fora,
+        html[data-theme="dark"] #rankingConteudo table tr td.td-fora,
+        html[data-theme="dark"] #relatorioConteudo table tr:nth-child(even) td.td-fora,
+        html[data-theme="dark"] #relMPConteudo table tr:nth-child(even) td.td-fora,
+        html[data-theme="dark"] #relClassConteudo table tr:nth-child(even) td.td-fora,
+        html[data-theme="dark"] #rankingConteudo table tr:nth-child(even) td.td-fora {
+            background: rgba(180,30,30,0.55) !important;
+            color: #ff6b6b !important;
             font-weight: bold !important;
         }
 
@@ -8579,9 +8583,15 @@ function rcConstruirCheckboxes(prods, produtosMarcados) {
 
 function rcToggleTodos(chk) {
     const checks = document.querySelectorAll('#rcChksProdutos input[type=checkbox]');
-    checks.forEach(c => { c.checked = chk.checked; });
+    // Se está marcando todos, marca todos. Se está desmarcando, ignora (não apaga tudo).
+    if (chk.checked) {
+        checks.forEach(c => { c.checked = true; });
+    } else {
+        // Reverte o proprio checkbox para marcado (nao permite desmarcar todos)
+        chk.checked = true;
+    }
     const todosLabel = document.getElementById('rcChkTodosLabel');
-    if (todosLabel) todosLabel.style.background = chk.checked ? '#0a1e7f' : '#bdc3c7';
+    if (todosLabel) todosLabel.style.background = '#0a1e7f';
     rcFiltrarGrafico();
 }
 
@@ -8601,9 +8611,19 @@ function rcFiltrarGrafico() {
     const selecionados = [...checks].filter(c => c.checked).map(c => {
         return _rcGrafProds[parseInt(c.dataset.idx)];
     }).filter(Boolean);
-    if (!selecionados.length || !_rcGrafDi) return;
+    // Se nenhum marcado, mantém pelo menos o primeiro
+    if (!selecionados.length) {
+        if (checks.length > 0) { checks[0].checked = true; }
+        _rcSincTodos();
+        const fallback = _rcGrafProds[0] ? [_rcGrafProds[0]] : [];
+        if (!fallback.length || !_rcGrafDi) return;
+        const dadosFiltrados = _rcGrafDados.filter(r => fallback.includes(r.produto));
+        renderRCGraficoLinha(_rcGrafDi, _rcGrafDf, dadosFiltrados, fallback, true);
+        return;
+    }
+    if (!_rcGrafDi) return;
     const dadosFiltrados = _rcGrafDados.filter(r => selecionados.includes(r.produto));
-    renderRCGraficoLinha(_rcGrafDi, _rcGrafDf, dadosFiltrados, selecionados);
+    renderRCGraficoLinha(_rcGrafDi, _rcGrafDf, dadosFiltrados, selecionados, true);
 }
 // ────────────────────────────────────────────────────────────────
 
