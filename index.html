@@ -6042,6 +6042,11 @@ function _aplicarChartTema(tema) {
     const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
     Chart.defaults.color       = textColor;
     Chart.defaults.borderColor = gridColor;
+    // Re-renderizar checkboxes de módulos/analistas do Relatório IA
+    try {
+        if (typeof _rmlEstado !== 'undefined') Object.keys(_rmlEstado).forEach(m => { if(typeof _rmlRenderizar==='function') _rmlRenderizar(m); });
+        if (typeof _rmlAnalistas !== 'undefined') Object.keys(_rmlAnalistas).forEach(a => { if(typeof _rmlRenderizarAnalista==='function') _rmlRenderizarAnalista(a); });
+    } catch(e) {}
     Object.values(Chart.instances || {}).forEach(chart => {
         try {
             Object.values(chart.options.scales || {}).forEach(scale => {
@@ -8123,11 +8128,11 @@ function renderDetalhe(dados, analise, analNome) {
         const val  = getValor(r, analise);
         const racKey = (r.racao || '').replace(/ /g, '_');
         const cfg = getParam('prod', racKey, analise, r.data);
-        let status = '<span class="badge badge-conforme">OK</span>';
+        let status = '<span class="badge badge-conforme">C</span>';
         if (cfg && cfg.ativo) {
             const foraMin = cfg.min > 0 && val < cfg.min;
             const foraMax = cfg.max < 9999 && val > cfg.max;
-            if (foraMin || foraMax) status = '<span class="badge badge-nao-conforme">FORA</span>';
+            if (foraMin || foraMax) status = '<span class="badge badge-nao-conforme">NC</span>';
         }
         return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
             <td style="padding:5px 8px;">${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td>
@@ -9378,8 +9383,8 @@ function aplicarFiltrosRanking() {
 
             const confColor = s.pctConf>=80?'#27ae60': s.pctConf>=50?'#e67e22':'#e74c3c';
             const status = s.pctConf>=80
-                ? '<span class="badge badge-conforme">CONFORME</span>'
-                : '<span class="badge badge-nao-conforme">ATENÇÃO</span>';
+                ? '<span class="badge badge-conforme">C</span>'
+                : '<span class="badge badge-nao-conforme">NC</span>';
             const f = (v,d=2) => v.toFixed(d);
             const tdC = (campo, val) => {
                 const fora = s.campoFora && s.campoFora[campo];
@@ -11866,7 +11871,7 @@ function getMicoRiscoGeral(aflaMedia, fumoMedia) {
     const nivelFumo = getMicoNivel(fumoMedia, 'fumo');
     const ordem = [null, 'leve', 'moderado', 'critico'];
     const pior = ordem[Math.max(ordem.indexOf(nivelAfla), ordem.indexOf(nivelFumo))];
-    if (!pior) return '<span style="background:#27ae60;color:white;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;">OK</span>';
+    if (!pior) return '<span style="background:#27ae60;color:white;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;">C</span>';
     return getMicoBadge(pior);
 }
 
@@ -12021,8 +12026,8 @@ function statusPorParametros(registro, modulo, racaoOuProduto, campos, dataRegis
     // S/ PARÂM. só se nenhum campo ativo tiver valor lançado
     if (!algumAtivoComValor) return '<span class="badge" style="background:#ecf0f1;color:#95a5a6;">S/ PARÂM.</span>';
     return algumFora
-        ? '<span class="badge badge-nao-conforme">NÃO CONFORME</span>'
-        : '<span class="badge badge-conforme">CONFORME</span>';
+        ? '<span class="badge badge-nao-conforme">NC</span>'
+        : '<span class="badge badge-conforme">C</span>';
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -20690,16 +20695,19 @@ function _rmlRenderizarAnalista(an) {
     const cor = _rmlAnalistaCores[an];
     const bg  = _rmlAnalistaBgs[an];
     if (!chk || !lbl) return;
+    const isDarkAn = document.documentElement.getAttribute('data-theme') === 'dark';
     if (_rmlAnalistas[an]) {
         chk.textContent = '✅';
         lbl.style.border = '2px solid ' + cor;
-        lbl.style.background = bg;
+        lbl.style.background = isDarkAn ? 'rgba(255,255,255,0.07)' : bg;
+        lbl.style.color = isDarkAn ? '#e6edf3' : cor;
         lbl.style.opacity = '1';
     } else {
         chk.textContent = '☐';
-        lbl.style.border = '2px solid #ccc';
-        lbl.style.background = '#161b22';
-        lbl.style.opacity = '0.5';
+        lbl.style.border = '2px solid ' + (isDarkAn ? '#444' : '#ccc');
+        lbl.style.background = isDarkAn ? 'rgba(255,255,255,0.03)' : '#f5f5f5';
+        lbl.style.color = isDarkAn ? '#8b949e' : '#999';
+        lbl.style.opacity = '0.6';
     }
     // Mostrar/ocultar área do prompt livre
     if (an === 'prompt') {
@@ -20728,17 +20736,20 @@ function _rmlRenderizar(mod) {
     const lbl = document.getElementById('lbl_rml_' + mod);
     const cor  = _rmlCores[mod];
     const bg   = _rmlBgs[mod];
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     if (!chk || !lbl) return;
     if (_rmlEstado[mod]) {
         chk.textContent = '✅';
         lbl.style.border = '2px solid ' + cor;
-        lbl.style.background = bg;
+        lbl.style.background = isDark ? 'rgba(255,255,255,0.07)' : bg;
+        lbl.style.color = isDark ? '#e6edf3' : cor;
         lbl.style.opacity = '1';
     } else {
         chk.textContent = '☐';
-        lbl.style.border = '2px solid #ccc';
-        lbl.style.background = '#161b22';
-        lbl.style.opacity = '0.5';
+        lbl.style.border = '2px solid ' + (isDark ? '#444' : '#ccc');
+        lbl.style.background = isDark ? 'rgba(255,255,255,0.03)' : '#f5f5f5';
+        lbl.style.color = isDark ? '#8b949e' : '#999';
+        lbl.style.opacity = '0.6';
     }
     // aviso se nenhum selecionado
     const nenhum = Object.values(_rmlEstado).every(v => !v);
