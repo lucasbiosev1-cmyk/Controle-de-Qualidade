@@ -766,6 +766,10 @@
 
         /* ===== DESTAQUE FORA DOS LIMITES ===== */
         .td-fora { background-color: rgba(192,57,43,0.55) !important; color: #c0392b !important; font-weight: bold; }
+        /* Micotoxinas */
+        .mico-leve     { background:#d5f5e3 !important; color:#1e8449 !important; font-weight:bold; }
+        .mico-moderado { background:#fdebd0 !important; color:#ca6f1e !important; font-weight:bold; }
+        .mico-critico  { background:#fde8e8 !important; color:#c0392b !important; font-weight:bold; }
         .td-fora-leve { background-color: rgba(192,57,43,0.08) !important; }
         /* ===== PARÂMETROS ===== */
         .param-input { width:110px;padding:5px 7px;border:1px solid rgba(255,255,255,0.15);border-radius:4px;font-size:11px;text-align:center;background:rgba(255,255,255,0.06);color:#e2e8f0; }
@@ -1347,6 +1351,9 @@
             color: #ff6b6b !important;
             font-weight: bold !important;
         }
+        html[data-theme="dark"] .mico-leve     { background:#0d3320 !important; color:#2ecc71 !important; }
+        html[data-theme="dark"] .mico-moderado { background:#3d2800 !important; color:#f39c12 !important; }
+        html[data-theme="dark"] .mico-critico  { background:#5c1010 !important; color:#ff6b6b !important; }
 
         /* ── Linhas de tabela sensíveis ao tema ── */
         .tr-thead-dark { background: #1a2a6e; color: #fff; }
@@ -7367,8 +7374,8 @@ function exibirTabelaClass() {
             <td${estiloFora(avariado,'class',r.produto,'avariados',r.data)} style="font-weight:bold;white-space:nowrap;">${fmtN(avariado,2)}</td>
             <td${estiloFora(r.umidade,'class',r.produto,'umidade',r.data)}>${fmtN(r.umidade,2)}</td>
             <td${estiloFora(r.densidade,'class',r.produto,'densidade',r.data)}>${fmtN(r.densidade,2)}</td>
-            <td style="padding:4px;text-align:center;${getMicoStyle(getMicoNivel(r.aflatoxinas??0,'afla'))}">${r.aflatoxinas!=null&&r.aflatoxinas>0?r.aflatoxinas.toFixed(2):'-'}</td>
-            <td style="padding:4px;text-align:center;${getMicoStyle(getMicoNivel(r.fumonisinas??0,'fumo'))}">${r.fumonisinas!=null&&r.fumonisinas>0?r.fumonisinas.toFixed(2):'-'}</td>
+            <td class="${getMicoClass(getMicoNivel(r.aflatoxinas??0,'afla'))}" style="padding:4px;text-align:center;">${r.aflatoxinas!=null&&r.aflatoxinas>0?r.aflatoxinas.toFixed(2):'-'}</td>
+            <td class="${getMicoClass(getMicoNivel(r.fumonisinas??0,'fumo'))}" style="padding:4px;text-align:center;">${r.fumonisinas!=null&&r.fumonisinas>0?r.fumonisinas.toFixed(2):'-'}</td>
             <td${estiloFora(r.zearalenona??0,'class',r.produto,'zearalenona',r.data)}>${fmtN(r.zearalenona,2)}</td>
             <td${estiloFora(r.don??0,'class',r.produto,'don',r.data)}>${fmtN(r.don,2)}</td>
             <td style="text-transform:uppercase;">${r.local}</td><td>${status}</td>${acaoTd}
@@ -11735,10 +11742,16 @@ function getMicoBadge(nivel) {
 function getMicoStyle(nivel) {
     if (!nivel) return '';
     const map = {
-        leve:     'background:#d5f5e3;color:#1e8449;font-weight:bold;',
-        moderado: 'background:#fdebd0;color:#ca6f1e;font-weight:bold;',
-        critico:  'background:#fde8e8;color:#c0392b;font-weight:bold;',
+        leve:     'mico-leve',
+        moderado: 'mico-moderado',
+        critico:  'mico-critico',
     };
+    // Retorna atributo class para uso em template string: style="${getMicoStyle(...)}" → agora é classe
+    return map[nivel] || '';
+}
+function getMicoClass(nivel) {
+    if (!nivel) return '';
+    const map = { leve:'mico-leve', moderado:'mico-moderado', critico:'mico-critico' };
     return map[nivel] || '';
 }
 
@@ -13426,8 +13439,8 @@ function renderRCMicotoxinas(dados, di, df) {
     document.getElementById('rcMicoTbodyDetalhe').innerHTML = sorted.length ? sorted.map((r,i) => {
         const afla = r.aflatoxinas||0;
         const fumo = r.fumonisinas||0;
-        const aflaCol = getMicoStyle(getMicoNivel(afla, 'afla'));
-        const fumoCol = getMicoStyle(getMicoNivel(fumo, 'fumo'));
+        const aflaClass = getMicoClass(getMicoNivel(afla, 'afla'));
+        const fumoClass = getMicoClass(getMicoNivel(fumo, 'fumo'));
         const bg = i%2===0?'#161b22':'#0d1117';
         return `<tr style="background:${bg};color:#e6edf3;">
             <td style="padding:4px 6px;white-space:nowrap;text-align:center;">${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td>
@@ -13436,8 +13449,8 @@ function renderRCMicotoxinas(dados, di, df) {
             <td style="padding:4px 6px;white-space:nowrap;text-align:center;">${r.fornecedor||''}</td>
             <td style="padding:4px;text-align:center;">${r.nf||''}</td>
             <td style="padding:4px 6px;text-transform:uppercase;text-align:center;">${r.local||'—'}</td>
-            <td style="padding:4px;text-align:center;${aflaCol}">${afla>0?afla.toFixed(2):'-'}</td>
-            <td style="padding:4px;text-align:center;${fumoCol}">${fumo>0?fumo.toFixed(0):'-'}</td>
+            <td class="${aflaClass}" style="padding:4px;text-align:center;">${afla>0?afla.toFixed(2):'-'}</td>
+            <td class="${fumoClass}" style="padding:4px;text-align:center;">${fumo>0?fumo.toFixed(0):'-'}</td>
             <td style="padding:4px;text-align:center;">${(r.zearalenona||0)>0?(r.zearalenona).toFixed(2):'-'}</td>
             <td style="padding:4px;text-align:center;">${(r.don||0)>0?(r.don).toFixed(2):'-'}</td>
             <td style="padding:4px;text-align:center;">${getRisco(afla,fumo, r.produto)}</td>
