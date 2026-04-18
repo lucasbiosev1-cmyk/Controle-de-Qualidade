@@ -412,8 +412,8 @@
         .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; transition: all 0.2s; }
         .btn-primary { background: #238636; color: #ffffff; }
         .btn-primary:hover { background: #388bfd; }
-        .btn-logout { background: rgba(248,113,113,0.15); color: #f87171; padding: 7px 16px; font-size: 11px; border: 1px solid rgba(248,113,113,0.3); border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; font-family: 'Montserrat', Arial, sans-serif; }
-        .btn-logout:hover { background: rgba(248,113,113,0.25); }
+        .btn-logout { background: transparent; color: rgba(255,255,255,0.3); padding: 5px 10px; font-size: 10px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; cursor: pointer; font-weight: 700; transition: all 0.2s; font-family: 'Montserrat', Arial, sans-serif; letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
+        .btn-logout:hover { background: rgba(248,113,113,0.15); color: #f87171; border-color: rgba(248,113,113,0.35); }
 
         /* ===== MODAL WHATSAPP ALERTA ===== */
         #modalWhatsApp { display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); align-items:center; justify-content:center; }
@@ -1227,6 +1227,46 @@
         [data-theme="dark"] .nav-dropdown-item:hover{background:rgba(88,166,255,0.1)!important;color:#58a6ff!important;}
         [data-theme="dark"] .nav-dropdown-btn.active{color:#58a6ff!important;border-bottom-color:#58a6ff!important;}
         [data-theme="dark"] .tab-content{background:#0d1117!important;}
+        /* Dados da capa — light default */
+        .rel-dados-capa { background:#eaf0fb; border:1px solid #c5d5f0; }
+        .rel-dados-capa-label { color:#0a1e7f; }
+        .rel-dados-capa-field-label { color:#444; }
+        .rel-dados-capa-input { border:1px solid #bcd; background:#fff; color:#222; }
+        /* Dados da capa — dark override */
+        [data-theme="dark"] .rel-dados-capa{background:rgba(88,166,255,0.05)!important;border-color:rgba(88,166,255,0.15)!important;}
+        [data-theme="dark"] .rel-dados-capa-label{color:rgba(88,166,255,0.8)!important;}
+        [data-theme="dark"] .rel-dados-capa-field-label{color:rgba(255,255,255,0.45)!important;}
+        [data-theme="dark"] .rel-dados-capa-input{background:#161b22!important;border-color:#30363d!important;color:#e6edf3!important;}
+        /* Reduz espaço no topo da aba relatório em dark */
+        [data-theme="dark"] #aba-relatorio{padding-top:12px!important;}
+        [data-theme="dark"] .rel-filtros{background:#161b22!important;border:1px solid #30363d!important;}
+        [data-theme="dark"] .rel-filtros label{color:rgba(255,255,255,0.45)!important;}
+        [data-theme="dark"] .rel-topo-controles .btn-print{background:#238636!important;color:#fff!important;}
+        [data-theme="dark"] .rel-topo-controles .btn-pdf{background:#c0392b!important;color:#fff!important;}
+        [data-theme="dark"] #relatorioConteudo{background:#161b22!important;box-shadow:none!important;}
+        [data-theme="dark"] #relMPConteudo{background:#161b22!important;box-shadow:none!important;}
+        [data-theme="dark"] #relClassConteudo{background:#161b22!important;box-shadow:none!important;}
+        [data-theme="dark"] #rankingConteudo{background:#161b22!important;box-shadow:none!important;}
+        [data-theme="dark"] #boletimConteudo{background:#161b22!important;box-shadow:none!important;}
+        [data-theme="dark"] .relatorio-title{color:#e6edf3!important;border-bottom-color:#30363d!important;}
+        [data-theme="dark"] .relatorio-periodo{color:rgba(255,255,255,0.4)!important;}
+        [data-theme="dark"] .grafico-container{background:#161b22!important;border-color:#30363d!important;}
+        [data-theme="dark"] .grafico-title{color:#e6edf3!important;}
+        [data-theme="dark"] .fase-card{background:#0d1117!important;border-color:#30363d!important;}
+        [data-theme="dark"] .fase-title{color:#58a6ff!important;}
+        [data-theme="dark"] .fase-label{color:rgba(255,255,255,0.4)!important;}
+        [data-theme="dark"] .fase-value{color:#e6edf3!important;}
+        [data-theme="dark"] .racao-section{background:#0d1117!important;border-color:#30363d!important;}
+        [data-theme="dark"] .racao-title{color:#58a6ff!important;}
+        [data-theme="dark"] .stat-item{background:#161b22!important;}
+        [data-theme="dark"] .stat-label{color:rgba(255,255,255,0.4)!important;}
+        [data-theme="dark"] .stat-value{color:#e6edf3!important;}
+        [data-theme="dark"] .secao-title{color:#e6edf3!important;border-bottom-color:#30363d!important;}
+        [data-theme="dark"] .msg-info-rel{background:rgba(88,166,255,0.08)!important;color:#58a6ff!important;border-left-color:#388bfd!important;}
+        [data-theme="dark"] .bol-resumo-card{background:#161b22!important;border-color:#30363d!important;color:#e6edf3!important;}
+        [data-theme="dark"] .bol-secao-header{background:#161b22!important;border-color:#30363d!important;color:#e6edf3!important;}
+        [data-theme="dark"] .bol-grupo-header{background:#0d1117!important;border-color:#30363d!important;color:#e6edf3!important;}
+        [data-theme="dark"] .bol-tabela-wrap{background:#161b22!important;border-color:#30363d!important;}
         [data-theme="dark"] #abaCapa{background:#0d1117!important;}
         [data-theme="dark"] .capa-kpi{background:#161b22!important;border-color:rgba(48,54,61,1)!important;}
         [data-theme="dark"] .capa-kpi-label{color:rgba(255,255,255,0.35)!important;}
@@ -1268,7 +1308,7 @@
         [data-theme="dark"] .pill-ok{background:rgba(74,222,128,0.12)!important;color:#58a6ff!important;}
         [data-theme="dark"] .pill-att{background:rgba(251,191,36,0.12)!important;color:#fbbf24!important;}
         [data-theme="dark"] .pill-er{background:rgba(248,113,113,0.12)!important;color:#f87171!important;}
-        [data-theme="dark"] .btn-logout{background:rgba(248,113,113,0.15)!important;color:#f87171!important;border:1px solid rgba(248,113,113,0.3)!important;}
+        [data-theme="dark"] .btn-logout{background:transparent!important;color:rgba(255,255,255,0.3)!important;border:1px solid rgba(255,255,255,0.1)!important;}
         [data-theme="dark"] .btn-primary{background:#58a6ff!important;color:#0d1117!important;}
         [data-theme="dark"] .btn-primary:hover{background:#388bfd!important;}
         [data-theme="dark"] .container,.cfg-sub-panels,[data-theme="dark"] .container,[data-theme="dark"] .cfg-sub-panels{background:#161b22!important;border-color:#30363d!important;}
@@ -1354,7 +1394,7 @@
         :not([data-theme="dark"]) .pill-ok{background:#edfaf4!important;color:#27ae60!important;}
         :not([data-theme="dark"]) .pill-att{background:#fef9ee!important;color:#e5a000!important;}
         :not([data-theme="dark"]) .pill-er{background:#fef0ee!important;color:#c0392b!important;}
-        :not([data-theme="dark"]) .btn-logout{background:#e74c3c!important;color:#fff!important;border:none!important;}
+        :not([data-theme="dark"]) .btn-logout{background:transparent!important;color:rgba(255,255,255,0.5)!important;border:1px solid rgba(255,255,255,0.2)!important;}
         :not([data-theme="dark"]) .btn-primary{background:var(--cor-acento)!important;color:#fff!important;}
         :not([data-theme="dark"]) .btn-primary:hover{background:var(--cor-acento-hover)!important;}
         :not([data-theme="dark"]) table th{background:var(--cor-secundaria)!important;}
@@ -1900,6 +1940,11 @@
                 <text x="1" y="40" font-family="Montserrat,Arial,sans-serif" font-weight="700" font-size="7" fill="#58a6ff" letter-spacing="3.5">ALIMENTOS</text>
             </svg>
             <div id="headerDivider" style="width:1px;height:24px;background:rgba(255,255,255,0.1);"></div>
+            <button class="btn-logout" onclick="fazerLogout()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Sair
+            </button>
+            <div id="headerDivider2" style="width:1px;height:24px;background:rgba(255,255,255,0.1);"></div>
             <div id="headerSubtitle" style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:1.5px;text-transform:uppercase;font-family:'Montserrat',Arial,sans-serif;">Gestão da Qualidade</div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;">
@@ -1908,7 +1953,6 @@
                 <span id="nomeUsuario" style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.9);line-height:1;white-space:nowrap;"></span>
                 <span id="perfilBadge" style="line-height:1;"></span>
             </div>
-            <button class="btn-logout" onclick="fazerLogout()">Sair</button>
         </div>
     </div>
 
@@ -2372,23 +2416,25 @@
     <div id="aba-relatorio" class="tab-content">
         <div class="relatorio-container">
 
-            <div style="display:flex;gap:10px;justify-content:flex-end;margin-bottom:15px;">
+            <div class="rel-topo-controles" style="display:flex;gap:10px;justify-content:flex-end;margin-bottom:10px;">
                 <button class="btn-print" onclick="imprimirRelatorio()">🖨️ IMPRIMIR</button>
                 <button class="btn-pdf"   onclick="gerarPDF()">📄 GERAR PDF</button>
             </div>
             <!-- Dados da capa -->
-            <div style="background:#eaf0fb;border:1px solid #c5d5f0;border-radius:6px;padding:10px 14px;margin-bottom:12px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
-                <span style="font-size:11px;font-weight:bold;color:#0a1e7f;text-transform:uppercase;white-space:nowrap;">📄 Dados da Capa:</span>
+            <div class="rel-dados-capa" style="border-radius:6px;padding:10px 14px;margin-bottom:10px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+                <span class="rel-dados-capa-label" style="font-size:11px;font-weight:bold;text-transform:uppercase;white-space:nowrap;">📄 Dados da Capa:</span>
                 <div style="display:flex;align-items:center;gap:6px;">
-                    <label style="font-size:11px;font-weight:bold;color:#444;">Unidade:</label>
+                    <label class="rel-dados-capa-field-label" style="font-size:11px;font-weight:bold;">Unidade:</label>
                     <input id="relCapaUnidadeInput" type="text" value="Fábrica de Ração BR 316, Auto do Bode"
-                        style="font-size:11px;padding:4px 8px;border:1px solid #bcd;border-radius:4px;width:260px;"
+                        class="rel-dados-capa-input"
+                        style="font-size:11px;padding:4px 8px;border-radius:4px;width:260px;"
                         oninput="document.getElementById('relCapaUnidade').textContent=this.value">
                 </div>
                 <div style="display:flex;align-items:center;gap:6px;">
-                    <label style="font-size:11px;font-weight:bold;color:#444;">Responsável:</label>
+                    <label class="rel-dados-capa-field-label" style="font-size:11px;font-weight:bold;">Responsável:</label>
                     <input id="relCapaRespInput" type="text" value="Lucas Lima"
-                        style="font-size:11px;padding:4px 8px;border:1px solid #bcd;border-radius:4px;width:160px;"
+                        class="rel-dados-capa-input"
+                        style="font-size:11px;padding:4px 8px;border-radius:4px;width:160px;"
                         oninput="document.getElementById('relCapaResponsavel').textContent=this.value">
                 </div>
             </div>
@@ -2824,18 +2870,20 @@
 
 
             <!-- DADOS DA CAPA -->
-            <div style="background:#eaf0fb;border:1px solid #c5d5f0;border-radius:6px;padding:10px 14px;margin-bottom:12px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
-                <span style="font-size:11px;font-weight:bold;color:#0a1e7f;text-transform:uppercase;white-space:nowrap;">📄 Dados da Capa:</span>
+            <div class="rel-dados-capa" style="border-radius:6px;padding:10px 14px;margin-bottom:10px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+                <span class="rel-dados-capa-label" style="font-size:11px;font-weight:bold;text-transform:uppercase;white-space:nowrap;">📄 Dados da Capa:</span>
                 <div style="display:flex;align-items:center;gap:6px;">
-                    <label style="font-size:11px;font-weight:bold;color:#444;">Unidade:</label>
+                    <label class="rel-dados-capa-field-label" style="font-size:11px;font-weight:bold;">Unidade:</label>
                     <input id="rcCapaUnidadeInput" type="text" value="Fábrica de Ração BR 316, Auto do Bode"
-                        style="font-size:11px;padding:4px 8px;border:1px solid #bcd;border-radius:4px;width:260px;"
+                        class="rel-dados-capa-input"
+                        style="font-size:11px;padding:4px 8px;border-radius:4px;width:260px;"
                         oninput="document.getElementById('rcCapaUnidade').textContent=this.value">
                 </div>
                 <div style="display:flex;align-items:center;gap:6px;">
-                    <label style="font-size:11px;font-weight:bold;color:#444;">Responsável:</label>
+                    <label class="rel-dados-capa-field-label" style="font-size:11px;font-weight:bold;">Responsável:</label>
                     <input id="rcCapaRespInput" type="text" value="Lucas Lima"
-                        style="font-size:11px;padding:4px 8px;border:1px solid #bcd;border-radius:4px;width:160px;"
+                        class="rel-dados-capa-input"
+                        style="font-size:11px;padding:4px 8px;border-radius:4px;width:160px;"
                         oninput="document.getElementById('rcCapaResponsavel').textContent=this.value">
                 </div>
             </div>
@@ -3103,18 +3151,20 @@
 
 
             <!-- DADOS DA CAPA -->
-            <div style="background:#eaf0fb;border:1px solid #c5d5f0;border-radius:6px;padding:10px 14px;margin-bottom:12px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
-                <span style="font-size:11px;font-weight:bold;color:#0a1e7f;text-transform:uppercase;white-space:nowrap;">📄 Dados da Capa:</span>
+            <div class="rel-dados-capa" style="border-radius:6px;padding:10px 14px;margin-bottom:10px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+                <span class="rel-dados-capa-label" style="font-size:11px;font-weight:bold;text-transform:uppercase;white-space:nowrap;">📄 Dados da Capa:</span>
                 <div style="display:flex;align-items:center;gap:6px;">
-                    <label style="font-size:11px;font-weight:bold;color:#444;">Unidade:</label>
+                    <label class="rel-dados-capa-field-label" style="font-size:11px;font-weight:bold;">Unidade:</label>
                     <input id="rkCapaUnidadeInput" type="text" value="Fábrica de Ração BR 316, Auto do Bode"
-                        style="font-size:11px;padding:4px 8px;border:1px solid #bcd;border-radius:4px;width:260px;"
+                        class="rel-dados-capa-input"
+                        style="font-size:11px;padding:4px 8px;border-radius:4px;width:260px;"
                         oninput="document.getElementById('rkCapaUnidade').textContent=this.value">
                 </div>
                 <div style="display:flex;align-items:center;gap:6px;">
-                    <label style="font-size:11px;font-weight:bold;color:#444;">Responsável:</label>
+                    <label class="rel-dados-capa-field-label" style="font-size:11px;font-weight:bold;">Responsável:</label>
                     <input id="rkCapaRespInput" type="text" value="Lucas Lima"
-                        style="font-size:11px;padding:4px 8px;border:1px solid #bcd;border-radius:4px;width:160px;"
+                        class="rel-dados-capa-input"
+                        style="font-size:11px;padding:4px 8px;border-radius:4px;width:160px;"
                         oninput="document.getElementById('rkCapaResponsavel').textContent=this.value">
                 </div>
             </div>
@@ -5407,18 +5457,20 @@
 
 
             <!-- DADOS DA CAPA -->
-            <div style="background:#eaf0fb;border:1px solid #c5d5f0;border-radius:6px;padding:10px 14px;margin-bottom:12px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
-                <span style="font-size:11px;font-weight:bold;color:#0a1e7f;text-transform:uppercase;white-space:nowrap;">📄 Dados da Capa:</span>
+            <div class="rel-dados-capa" style="border-radius:6px;padding:10px 14px;margin-bottom:10px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+                <span class="rel-dados-capa-label" style="font-size:11px;font-weight:bold;text-transform:uppercase;white-space:nowrap;">📄 Dados da Capa:</span>
                 <div style="display:flex;align-items:center;gap:6px;">
-                    <label style="font-size:11px;font-weight:bold;color:#444;">Unidade:</label>
+                    <label class="rel-dados-capa-field-label" style="font-size:11px;font-weight:bold;">Unidade:</label>
                     <input id="bolCapaUnidadeInput" type="text" value="Fábrica de Ração BR 316, Auto do Bode"
-                        style="font-size:11px;padding:4px 8px;border:1px solid #bcd;border-radius:4px;width:260px;"
+                        class="rel-dados-capa-input"
+                        style="font-size:11px;padding:4px 8px;border-radius:4px;width:260px;"
                         oninput="document.getElementById('bolCapaUnidade').textContent=this.value">
                 </div>
                 <div style="display:flex;align-items:center;gap:6px;">
-                    <label style="font-size:11px;font-weight:bold;color:#444;">Responsável:</label>
+                    <label class="rel-dados-capa-field-label" style="font-size:11px;font-weight:bold;">Responsável:</label>
                     <input id="bolCapaRespInput" type="text" value="Lucas Lima"
-                        style="font-size:11px;padding:4px 8px;border:1px solid #bcd;border-radius:4px;width:160px;"
+                        class="rel-dados-capa-input"
+                        style="font-size:11px;padding:4px 8px;border-radius:4px;width:160px;"
                         oninput="document.getElementById('bolCapaResponsavel').textContent=this.value">
                 </div>
             </div>
