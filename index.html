@@ -1281,6 +1281,15 @@
         [data-theme="dark"] table tr{color:#e6edf3!important;}
         [data-theme="dark"] table tr:nth-child(even){background:rgba(255,255,255,0.04)!important;color:#e6edf3!important;}
         [data-theme="dark"] table tr:hover{background:rgba(88,166,255,0.08)!important;}
+
+        /* ── Linhas de tabela sensíveis ao tema ── */
+        .tr-thead-dark { background: #1a2a6e; color: #fff; }
+        [data-theme="dark"] .tr-thead-dark { background: #1e3a5f !important; color: #e6edf3 !important; }
+
+        .tr-row-even { background: #ffffff; color: #222; }
+        .tr-row-odd  { background: #f5f7fa; color: #222; }
+        [data-theme="dark"] .tr-row-even { background: #161b22 !important; color: #e6edf3 !important; }
+        [data-theme="dark"] .tr-row-odd  { background: #0d1117 !important; color: #e6edf3 !important; }
         [data-theme="dark"] .modal-header{background:#161b22!important;border-bottom:1px solid rgba(255,255,255,0.1)!important;}
         [data-theme="dark"] .form-section h3{background:#161b22!important;color:rgba(255,255,255,0.6)!important;}
         [data-theme="dark"] .btn-salvar{background:#58a6ff!important;color:#0d1117!important;}
@@ -2595,7 +2604,7 @@
                     <div class="secao-title" style="margin-bottom:12px;">COMPARATIVO ENTRE FASES</div>
                     <table style="width:100%;border-collapse:collapse;font-size:11px;">
                         <thead>
-                            <tr style="background:#1e3a5f;color:#e6edf3;">
+                            <tr class="tr-thead-dark">
                                 <th style="padding:8px;text-align:left;">FASE</th>
                                 <th style="padding:8px;">REGISTROS</th>
                                 <th style="padding:8px;" id="thAnalise">MÉDIA DGM</th>
@@ -2621,7 +2630,7 @@
                     <div class="tabela-container">
                         <table style="width:100%;border-collapse:collapse;font-size:11px;">
                             <thead>
-                                <tr style="background:#1e3a5f;color:#e6edf3;">
+                                <tr class="tr-thead-dark">
                                     <th style="padding:6px;">DATA</th>
                                     <th style="padding:6px;">HORA</th>
                                     <th style="padding:6px;text-align:left;">RAÇÃO</th>
@@ -7842,8 +7851,7 @@ function renderTabelaFases(base, subFases, analise, analNome) {
         const vals = dd.map(r => getValor(r, analise));
         const e    = calcEstat(vals);
         const cvCor= e.cv<=10?'#27ae60':e.cv<=15?'#e67e22':'#e74c3c';
-        const bg   = i%2===0?'#161b22':'#0d1117';
-        return `<tr style="background:${bg};color:#e6edf3;">
+        return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
             <td style="padding:7px 10px;font-weight:bold;color:${f.cor};border-left:4px solid ${f.cor};">${f.label}</td>
             <td style="padding:7px;text-align:center;">${e.n}</td>
             <td style="padding:7px;text-align:center;font-weight:bold;">${e.media.toFixed(2)}</td>
@@ -7910,13 +7918,12 @@ function renderDetalhe(dados, analise, analNome) {
             const foraMax = cfg.max < 9999 && val > cfg.max;
             if (foraMin || foraMax) status = '<span class="badge badge-nao-conforme">FORA</span>';
         }
-        const bg = i%2===0?'#161b22':'#0d1117';
-        return `<tr style="background:${bg};color:#e6edf3;">
-            <td style="padding:5px 8px;color:#e6edf3;">${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td>
-            <td style="padding:5px 8px;color:#e6edf3;">${r.hora||''}</td>
-            <td style="padding:5px 8px;text-align:left;color:#e6edf3;">${r.racao}</td>
-            <td style="padding:5px 8px;color:#e6edf3;">${r.lote||''}</td>
-            <td style="padding:5px 8px;font-weight:bold;color:#e6edf3;">${val.toFixed(2)}</td>
+        return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
+            <td style="padding:5px 8px;">${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td>
+            <td style="padding:5px 8px;">${r.hora||''}</td>
+            <td style="padding:5px 8px;text-align:left;">${r.racao}</td>
+            <td style="padding:5px 8px;">${r.lote||''}</td>
+            <td style="padding:5px 8px;font-weight:bold;">${val.toFixed(2)}</td>
             <td style="padding:5px 8px;">${status}</td>
         </tr>`;
     }).join('');
