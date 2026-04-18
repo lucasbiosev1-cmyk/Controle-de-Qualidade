@@ -5390,6 +5390,7 @@
                         <button type="button" class="btn-salvar" onclick="salvarEntradaMP(event)">Salvar</button>
                         <button type="button" class="btn-limpar-form" onclick="limparFormularioEMP()">Limpar</button>
                         <button type="button" class="btn-cancelar" onclick="fecharModalEMP()">Cancelar</button>
+                        <button type="button" id="btnExcluirEMP" class="btn-delete btn-action" style="margin-left:auto;padding:8px 18px;font-size:11px;font-weight:bold;display:none;" onclick="excluirEMPDoModal()">🗑️ Excluir</button>
                     </div>
                 </form>
             </div>
@@ -10194,9 +10195,7 @@ function exibirTabelaEMP(lista) {
             if (podeAprovar && (r.status === 'EM ANÁLISE'))
                 acoes += `<button class="btn-action" style="background:#27ae60;color:white;" onclick="abrirModalAprovarEMP(${r.id})">✅ Apr/Rep</button> `;
             if (podeEditar && r.status !== 'CONCLUÍDA')
-                acoes += `<button class="btn-action btn-edit" onclick="editarEntradaMP(${r.id})">✏️</button> `;
-            if (podeExcluir)
-                acoes += `<button class="btn-action btn-delete" onclick="excluirEntradaMP(${r.id})">🗑️</button>`;
+                acoes += `<button class="btn-action btn-edit" onclick="editarEntradaMP(${r.id})" title="Editar">✏️</button>`;
         }
         return `<tr>
             <td>${dataFmt}</td>
@@ -10258,6 +10257,8 @@ function abrirModalEMP() {
     _empEditandoId = null;
     document.getElementById('modalTituloEMP').textContent = '📥 Registrar Entrada de Matéria Prima';
     document.getElementById('cadIdEMP').value = '';
+    const btnExcEMP = document.getElementById('btnExcluirEMP');
+    if (btnExcEMP) btnExcEMP.style.display = 'none';
     document.getElementById('cadDataEMP').value = dataHoje();
     const agora = new Date();
     document.getElementById('cadHoraEMP').value = String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0');
@@ -10289,6 +10290,8 @@ function editarEntradaMP(id) {
     if (entrada.obs) { obsToggleEMP.classList.add('open'); obsEMP.closest('.obs-body').classList.add('open'); }
     else { obsToggleEMP.classList.remove('open'); obsEMP.closest('.obs-body').classList.remove('open'); }
     document.getElementById('modalCadastroEMP').classList.add('show');
+    const btnExcEMP2 = document.getElementById('btnExcluirEMP');
+    if (btnExcEMP2) btnExcEMP2.style.display = podeExcluir ? 'inline-block' : 'none';
 }
 
 function fecharModalEMP() {
@@ -10366,6 +10369,14 @@ async function excluirEntradaMP(id) {
     try { await dbDeleteOne('entradas_mp', id); } catch(e){}
     exibirTabelaEMP();
     mostrarMsgEMP('sucesso','✅ Entrada excluída.');
+}
+
+async function excluirEMPDoModal() {
+    const id = document.getElementById('cadIdEMP').value;
+    if (!id) return;
+    if (!confirm('Tem certeza que deseja excluir este registro de entrada?')) return;
+    fecharModalEMP();
+    await excluirEntradaMP(id);
 }
 
 function abrirModalAprovarEMP(id) {
