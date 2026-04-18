@@ -405,7 +405,7 @@
         .cfg-sub-panel.cfg-sub-panel-active { display:block; }
 
         /* CONTEÚDO DAS ABAS */
-        .tab-content { display: none; padding: 20px; background: #0d1117; min-height: calc(100vh - 96px); }
+        .tab-content { display: none; padding: 20px; background: #f5f5f5; min-height: calc(100vh - 96px); }
         .tab-content.active { display: block; }
 
         /* BOTÕES GERAIS */
@@ -450,11 +450,11 @@
 
 
         /* CONTAINER */
-        .container { background: #161b22; border-radius: 8px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.3); border: 1px solid #30363d; }
+        .container { background: #ffffff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: 1px solid #dce3ef; }
 
         /* FILTROS */
-        .filtros { background: rgba(88,166,255,0.03); padding: 15px; border-radius: 6px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; align-items: flex-end; border: 1px solid #30363d; }
-        .filtros label { display: block; font-weight: bold; font-size: 12px; margin-bottom: 5px; color: rgba(255,255,255,0.55); }
+        .filtros { background: #f0f3f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; align-items: flex-end; border: 1px solid #dce3ef; }
+        .filtros label { display: block; font-weight: bold; font-size: 12px; margin-bottom: 5px; color: #34495e; }
         .filtros input, .filtros select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; background: #fff; color: #222; }
         .btn-filtrar { background: #3498db; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-filtrar:hover { background: #2980b9; }
@@ -462,7 +462,7 @@
         .btn-limpar:hover { background: #7f8c8d; }
 
         /* TABELA */
-        .tabela-container { overflow-x: auto; margin-bottom: 20px; border: 1px solid #21262d; border-radius: 8px; width: 100%; background: #010409; }
+        .tabela-container { overflow-x: auto; margin-bottom: 20px; border: 1px solid #dce3ef; border-radius: 8px; width: 100%; background: #fff; }
         /* Classificação: tabela com scroll interno para caber em uma página */
         #tabelaClassContainer { overflow-y: auto; max-height: calc(100vh - 280px); margin-bottom: 0; }
         #aba-classificacao { height: calc(100vh - 95px); overflow: hidden; display: none; flex-direction: column; padding: 10px 20px; }
@@ -490,12 +490,12 @@
         .btn-scroll-tabela { background: #34495e; color: white; border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; font-size: 14px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; transition: background 0.2s; user-select: none; }
         .btn-scroll-tabela:hover { background: #1a3a9f; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: auto; }
-        table th { background: #1e3a5f; color: #e6edf3; padding: 8px 6px; text-align: center; font-weight: bold; white-space: nowrap; font-size: 10px; border-bottom: 2px solid #58a6ff; }
-        table td { padding: 6px 5px; border-bottom: 1px solid rgba(255,255,255,0.06); text-align: center; font-size: 11px; color: #e6edf3; }
-        table tr { color: #e6edf3; }
-        table tr:hover { background: rgba(88,166,255,0.07); color: #ffffff; }
-        table tr:nth-child(even) { background: rgba(255,255,255,0.04); color: #e6edf3; }
-        table tr:nth-child(odd) { color: #e6edf3; }
+        table th { background: #1a2a6e; color: #fff; padding: 8px 6px; text-align: center; font-weight: bold; white-space: nowrap; font-size: 10px; border-bottom: 2px solid #3498db; }
+        table td { padding: 6px 5px; border-bottom: 1px solid #eaecf0; text-align: center; font-size: 11px; color: #222; }
+        table tr { color: #222; }
+        table tr:hover { background: rgba(26,42,110,0.06); }
+        table tr:nth-child(even) { background: #f5f7fa; color: #222; }
+        table tr:nth-child(odd) { color: #222; }
 
         /* BADGES */
         .badge { display: inline-block; padding: 3px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; }
@@ -508,7 +508,7 @@
         /* MODAL */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow-y: auto; padding: 20px; }
         .modal.show { display: flex; align-items: center; justify-content: center; }
-        .modal-content { background-color: #161b22; padding: 0; border-radius: 10px; max-width: 1000px; width: 95%; height: auto; max-height: 95vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid #21262d; }
+        .modal-content { background-color: #ffffff; padding: 0; border-radius: 10px; max-width: 1000px; width: 95%; height: auto; max-height: 95vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.18); border: 1px solid #dce3ef; }
         /* Modal Matéria Prima reduzido proporcionalmente */
         #modalCadastroMP { display: none; align-items: flex-start; justify-content: center; }
         #modalCadastroMP.show { display: flex; }
@@ -534,13 +534,13 @@
         /* FORMULÁRIO */
         .form-wrapper { padding: 12px; }
         .form-section { margin-bottom: 10px; }
-        .form-section h3 { background: #1e3a5f; color: #7dd3fc; padding: 6px 8px; margin: 0 0 8px 0; border-radius: 4px; font-size: 11px; text-transform: uppercase; border-left: 3px solid #58a6ff; }
+        .form-section h3 { background: #1a2a6e; color: #fff; padding: 6px 8px; margin: 0 0 8px 0; border-radius: 4px; font-size: 11px; text-transform: uppercase; border-left: 3px solid #3498db; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 8px; }
         .form-grid-2 { grid-template-columns: repeat(2, 1fr); }
         .form-grid-3 { grid-template-columns: repeat(3, 1fr); }
         .form-grid-4 { grid-template-columns: repeat(4, 1fr); }
         .form-group { display: flex; flex-direction: column; }
-        .form-group label { font-weight: bold; font-size: 10px; margin-bottom: 3px; color: rgba(255,255,255,0.5); text-transform: uppercase; }
+        .form-group label { font-weight: bold; font-size: 10px; margin-bottom: 3px; color: #555; text-transform: uppercase; }
         .form-group input, .form-group select { padding: 5px; border: 1px solid #ccc; border-radius: 4px; font-size: 10px; font-family: Arial, sans-serif; text-transform: uppercase; background: #fff; color: #222; }
         .form-group input:focus, .form-group select:focus { outline: none; border-color: #58a6ff; box-shadow: 0 0 5px rgba(88,166,255,0.2); }
         .form-group.required label::after { content: " *"; color: #e74c3c; }
@@ -1271,7 +1271,12 @@
         [data-theme="dark"] .btn-logout{background:rgba(248,113,113,0.15)!important;color:#f87171!important;border:1px solid rgba(248,113,113,0.3)!important;}
         [data-theme="dark"] .btn-primary{background:#58a6ff!important;color:#0d1117!important;}
         [data-theme="dark"] .btn-primary:hover{background:#388bfd!important;}
-        [data-theme="dark"] .container,.cfg-sub-panels,[data-theme="dark"] .container,[data-theme="dark"] .cfg-sub-panels{background:#161b22!important;}
+        [data-theme="dark"] .container,.cfg-sub-panels,[data-theme="dark"] .container,[data-theme="dark"] .cfg-sub-panels{background:#161b22!important;border-color:#30363d!important;}
+        [data-theme="dark"] .tabela-container{background:#010409!important;border-color:#21262d!important;}
+        [data-theme="dark"] .filtros{background:rgba(88,166,255,0.03)!important;border-color:#30363d!important;}
+        [data-theme="dark"] .filtros label{color:rgba(255,255,255,0.55)!important;}
+        [data-theme="dark"] .modal-content{background:#161b22!important;border-color:#21262d!important;}
+        [data-theme="dark"] .form-group label{color:rgba(255,255,255,0.5)!important;}
         [data-theme="dark"] .cfg-sub-tabs{background:#0d1117!important;border-bottom-color:rgba(48,54,61,1)!important;}
         [data-theme="dark"] .cfg-sub-tab{background:rgba(255,255,255,0.04)!important;color:rgba(255,255,255,0.4)!important;}
         [data-theme="dark"] .cfg-sub-tab:hover{background:rgba(48,54,61,0.8)!important;color:rgba(255,255,255,0.8)!important;}
@@ -8236,6 +8241,11 @@ function _gerarJanelaImpressao(titulo, capaHTML, conteudoHTML) {
             table td { padding:4px 3px; border-bottom:1px solid #ecf0f1; text-align:center; font-size:10px; }
             table tr:nth-child(even) { background:#f9f9f9; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 
+            /* ── Classes de linha sensíveis ao tema (forçar claro na impressão) ── */
+            .tr-row-even { background:#ffffff !important; color:#222 !important; }
+            .tr-row-odd  { background:#f9f9f9 !important; color:#222 !important; }
+            .tr-thead-dark { background:#34495e !important; color:#fff !important; }
+
             /* ── Badges ── */
             .badge { display:inline-block; padding:2px 6px; border-radius:3px; font-size:10px; font-weight:bold; }
             .badge-conforme     { background:#d5f4e6; color:#27ae60; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
@@ -8668,7 +8678,7 @@ function renderRCTabelaProd(dados) {
     document.getElementById('rcTbodyProd').innerHTML = prods.map((p,i) => {
         const dd  = dados.filter(r=>r.produto===p);
         const cor = RC_PRODUTOS[p]?.cor || '#7f8c8d';
-        const bg  = i%2===0?'#161b22':'#0d1117';
+        const bg  = i%2===0?'#ffffff':'#f5f7fa';
         // Monta um registro sintético com as médias para avaliar conformidade
         const registroMedio = {
             produto: p, data: dd[dd.length-1]?.data || null,
@@ -8693,7 +8703,7 @@ function renderRCTabelaProd(dados) {
         };
         const status = statusPorParametros(registroMedio,'class',p,CAMPOS_CLASS,registroMedio.data);
         const f = (v,d=2) => med(dd.map(r=>r[v]||0)).toFixed(d);
-        return `<tr style="background:${bg};color:#e6edf3;">
+        return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
             <td style="padding:7px 10px;font-weight:bold;color:${cor};border-left:4px solid ${cor};white-space:nowrap;">${p}</td>
             <td style="padding:7px;text-align:center;">${dd.length}</td>
             <td style="padding:7px;text-align:center;">${f('queimado')}</td>
@@ -8724,7 +8734,7 @@ function renderRCTabelaDetalhe(dados) {
     }
     const sorted = [...dados].sort((a,b)=>a.data.localeCompare(b.data)||a.hora.localeCompare(b.hora));
     document.getElementById('rcTbodyDetalhe').innerHTML = sorted.map((r,i) => {
-        const bg   = i%2===0?'#161b22':'#0d1117';
+        const bg   = i%2===0?'#ffffff':'#f5f7fa';
         const cor  = RC_PRODUTOS[r.produto]?.cor || '#333';
 
         const status = statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data);
@@ -8739,7 +8749,7 @@ function renderRCTabelaDetalhe(dados) {
         };
 
         const n = (v,d=2) => (r[v]||0).toFixed(d);
-        return `<tr style="background:${bg};color:#e6edf3;">
+        return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
             <td style="padding:4px 6px;white-space:nowrap;">${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td>
             <td style="padding:4px;">${r.hora||''}</td>
             <td style="padding:4px 6px;font-weight:bold;color:${cor};white-space:nowrap;">${r.produto}</td>
