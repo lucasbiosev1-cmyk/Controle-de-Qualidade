@@ -1495,6 +1495,14 @@
             color: #e6edf3 !important;
             border-color: #21262d !important;
         }
+        html[data-theme="dark"] #relatorioConteudo table td.td-fora,
+        html[data-theme="dark"] #relMPConteudo table td.td-fora,
+        html[data-theme="dark"] #relClassConteudo table td.td-fora,
+        html[data-theme="dark"] #rankingConteudo table td.td-fora {
+            background-color: rgba(220,50,50,0.35) !important;
+            color: #ff8080 !important;
+            font-weight: bold !important;
+        }
 
         /* Componentes do relatório */
         html[data-theme="dark"] .relatorio-title { color: #e6edf3 !important; border-color: #30363d !important; }
@@ -8405,6 +8413,12 @@ const RC_PRODUTOS = {
     'SOJA ESTOQUE 01': { cor:'#16a085' },
 };
 
+// Grupos de produtos para exibição dos checkboxes
+const RC_GRUPOS = [
+    ['MILHO','MILHO ESTOQUE 01','MILHO ESTOQUE 02'],
+    ['SOJA','SOJA ESTOQUE 01'],
+];
+
 function inicializarRelClass() {
     const hoje     = new Date();
     const ano      = hoje.getFullYear();
@@ -8498,7 +8512,15 @@ function aplicarFiltrosRelClass() {
         </div>`).join('');
 
     // Gráfico evolução avariados diários
-    renderRCGraficoLinha(di, df, dados, produtosAlvo);
+    // Se produto individual pertence a um grupo, passa o grupo todo para os checkboxes
+    let produtosParaGrafico = produtosAlvo;
+    if (produtosAlvo && produtosAlvo.length === 1) {
+        const grupo = RC_GRUPOS.find(g => g.includes(produtosAlvo[0]));
+        if (grupo && grupo.length > 1) {
+            produtosParaGrafico = grupo;
+        }
+    }
+    renderRCGraficoLinha(di, df, base, produtosParaGrafico, false, produtosAlvo);
 
     // Gráfico comparativo barras (só com múltiplos produtos)
     const prods = produtosAlvo && produtosAlvo.length > 1
@@ -8529,15 +8551,15 @@ function aplicarFiltrosRelClass() {
 // ── Checkboxes do gráfico de evolução ──────────────────────────
 let _rcGrafDi = '', _rcGrafDf = '', _rcGrafDados = [], _rcGrafProds = [];
 
-function rcConstruirCheckboxes(prods) {
+function rcConstruirCheckboxes(prods, produtosMarcados) {
     const PALETA = ['#f39c12','#e67e22','#d35400','#27ae60','#16a085','#3498db','#9b59b6','#e74c3c'];
     const wrap = document.getElementById('rcChksProdutos');
     if (!wrap) return;
+    // Se produtosMarcados foi passado, marca apenas eles; senão marca só MILHO
+    const marcados = produtosMarcados ? produtosMarcados : ['MILHO'];
     wrap.innerHTML = prods.map((p, i) => {
         const cor = RC_PRODUTOS[p]?.cor || PALETA[i % PALETA.length];
-        // Por padrão: só MILHO vem marcado
-        const isMilho = p.trim().toUpperCase() === 'MILHO';
-        const checked = isMilho ? 'checked' : '';
+        const checked = marcados.includes(p) ? 'checked' : '';
         return `<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;
                     font-size:11px;font-weight:600;color:#444;user-select:none;padding:3px 6px;
                     border-radius:4px;transition:background 0.15s;" id="rcChkLbl_${i}"
@@ -8585,7 +8607,7 @@ function rcFiltrarGrafico() {
 }
 // ────────────────────────────────────────────────────────────────
 
-function renderRCGraficoLinha(di, df, dados, produtosAlvo, _semRebuildarChk) {
+function renderRCGraficoLinha(di, df, dados, produtosAlvo, _semRebuildarChk, produtosMarcados) {
     // Salva estado para o filtro dos checkboxes
     if (!_semRebuildarChk) {
         _rcGrafDi    = di;
@@ -8606,7 +8628,7 @@ function renderRCGraficoLinha(di, df, dados, produtosAlvo, _semRebuildarChk) {
     // Constrói os checkboxes na primeira chamada (não quando filtro já chamou de volta)
     if (!_semRebuildarChk && prods && prods.length > 1) {
         _rcGrafProds = prods;
-        rcConstruirCheckboxes(prods);
+        rcConstruirCheckboxes(prods, produtosMarcados);
         document.getElementById('rcGraficoFiltros').style.display = 'flex';
     } else if (!_semRebuildarChk) {
         document.getElementById('rcGraficoFiltros').style.display = 'none';
