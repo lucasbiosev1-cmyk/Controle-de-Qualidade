@@ -149,6 +149,216 @@
         }
         #sgq-session-banner.show { display: block; }
 
+        /* ========== AGENDA DE COMPROMISSOS ========== */
+        #aba-agenda { padding: 20px; }
+        .agenda-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 20px; padding-bottom: 14px;
+            border-bottom: 2px solid #e0e0e0; flex-wrap: wrap; gap: 10px;
+        }
+        .agenda-header-left { display: flex; align-items: center; gap: 12px; }
+        .agenda-header-left h2 { font-size: 18px; font-weight: 800; color: #2c3e50; text-transform: uppercase; margin: 0; }
+        html[data-theme="dark"] .agenda-header-left h2 { color: #e6edf3; }
+        html[data-theme="dark"] .agenda-header { border-bottom-color: #30363d; }
+        .agenda-btn-novo {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white; border: none; border-radius: 6px;
+            padding: 10px 20px; font-size: 12px; font-weight: 700;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;
+            display: flex; align-items: center; gap: 6px;
+            box-shadow: 0 2px 8px rgba(39,174,96,0.3); transition: all 0.2s;
+        }
+        .agenda-btn-novo:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(39,174,96,0.4); }
+        .agenda-filtros {
+            display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: center;
+        }
+        .agenda-filtro-btn {
+            padding: 6px 14px; border-radius: 20px; border: 2px solid #ddd;
+            background: white; color: #555; font-size: 11px; font-weight: 700;
+            cursor: pointer; transition: all 0.2s; text-transform: uppercase;
+        }
+        html[data-theme="dark"] .agenda-filtro-btn { background: #161b22; color: #8b949e; border-color: #30363d; }
+        .agenda-filtro-btn.active { background: #2980b9; color: white; border-color: #2980b9; }
+        .agenda-lista { display: flex; flex-direction: column; gap: 10px; }
+        .agenda-card {
+            background: white; border-radius: 10px; padding: 16px 20px;
+            border-left: 5px solid #2980b9; box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            display: flex; align-items: flex-start; justify-content: space-between;
+            gap: 12px; transition: box-shadow 0.2s;
+        }
+        html[data-theme="dark"] .agenda-card { background: #161b22; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+        .agenda-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+        .agenda-card.hoje { border-left-color: #e74c3c; }
+        .agenda-card.recorrente { border-left-color: #9b59b6; }
+        .agenda-card.inativo { opacity: 0.5; border-left-color: #95a5a6; }
+        .agenda-card-info { flex: 1; }
+        .agenda-card-titulo { font-size: 14px; font-weight: 800; color: #2c3e50; margin-bottom: 4px; }
+        html[data-theme="dark"] .agenda-card-titulo { color: #e6edf3; }
+        .agenda-card-desc { font-size: 12px; color: #666; margin-bottom: 8px; line-height: 1.4; }
+        html[data-theme="dark"] .agenda-card-desc { color: #8b949e; }
+        .agenda-card-meta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .agenda-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 10px; font-weight: 700; padding: 3px 8px;
+            border-radius: 12px; text-transform: uppercase;
+        }
+        .agenda-badge-data { background: #ebf5fb; color: #2980b9; }
+        .agenda-badge-hora { background: #eafaf1; color: #27ae60; }
+        .agenda-badge-rec  { background: #f5eef8; color: #9b59b6; }
+        .agenda-badge-hoje { background: #fdecea; color: #e74c3c; font-weight: 900; }
+        .agenda-badge-inativo { background: #f2f3f4; color: #95a5a6; }
+        html[data-theme="dark"] .agenda-badge-data  { background: #0d2137; color: #58a6ff; }
+        html[data-theme="dark"] .agenda-badge-hora  { background: #0a2a1a; color: #3fb950; }
+        html[data-theme="dark"] .agenda-badge-rec   { background: #1e0f2e; color: #bc8cff; }
+        html[data-theme="dark"] .agenda-badge-hoje  { background: #2e0d0d; color: #f85149; }
+        html[data-theme="dark"] .agenda-badge-inativo { background: #21262d; color: #6e7681; }
+        .agenda-card-acoes { display: flex; gap: 6px; flex-shrink: 0; }
+        .agenda-btn-acao {
+            width: 32px; height: 32px; border-radius: 6px; border: none;
+            cursor: pointer; font-size: 14px; display: flex; align-items: center;
+            justify-content: center; transition: all 0.2s;
+        }
+        .agenda-btn-editar  { background: #ebf5fb; color: #2980b9; }
+        .agenda-btn-toggle  { background: #eafaf1; color: #27ae60; }
+        .agenda-btn-excluir { background: #fdecea; color: #e74c3c; }
+        .agenda-btn-acao:hover { transform: scale(1.1); }
+        html[data-theme="dark"] .agenda-btn-editar  { background: #0d2137; color: #58a6ff; }
+        html[data-theme="dark"] .agenda-btn-toggle  { background: #0a2a1a; color: #3fb950; }
+        html[data-theme="dark"] .agenda-btn-excluir { background: #2e0d0d; color: #f85149; }
+        .agenda-empty {
+            text-align: center; padding: 60px 20px; color: #aaa;
+            font-size: 13px; font-weight: 600;
+        }
+        .agenda-empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+        /* Modal Cadastro Agenda */
+        #modalAgenda {
+            display: none; position: fixed; inset: 0; z-index: 9500;
+            background: rgba(0,0,0,0.55); align-items: center; justify-content: center;
+        }
+        #modalAgenda.show { display: flex; }
+        .agenda-modal-box {
+            background: white; border-radius: 12px; width: 520px; max-width: 95vw;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.25); overflow: hidden;
+        }
+        html[data-theme="dark"] .agenda-modal-box { background: #161b22; border: 1px solid #30363d; }
+        .agenda-modal-header {
+            background: linear-gradient(135deg, #1a252f, #2c3e50);
+            color: white; padding: 18px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .agenda-modal-header h3 { font-size: 15px; font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 0.5px; }
+        .agenda-modal-close {
+            background: rgba(255,255,255,0.15); border: none; color: white;
+            width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+            font-size: 16px; display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        .agenda-modal-close:hover { background: rgba(255,255,255,0.3); }
+        .agenda-modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+        .agenda-form-row { display: flex; gap: 14px; }
+        .agenda-form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+        .agenda-form-group label { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+        html[data-theme="dark"] .agenda-form-group label { color: #8b949e; }
+        .agenda-form-group input,
+        .agenda-form-group select,
+        .agenda-form-group textarea {
+            border: 1.5px solid #ddd; border-radius: 6px; padding: 9px 12px;
+            font-size: 13px; color: #333; background: #fafafa;
+            transition: border-color 0.2s; outline: none; width: 100%;
+        }
+        html[data-theme="dark"] .agenda-form-group input,
+        html[data-theme="dark"] .agenda-form-group select,
+        html[data-theme="dark"] .agenda-form-group textarea {
+            background: #0d1117; color: #e6edf3; border-color: #30363d;
+        }
+        .agenda-form-group input:focus,
+        .agenda-form-group select:focus,
+        .agenda-form-group textarea:focus { border-color: #2980b9; }
+        .agenda-form-group textarea { resize: vertical; min-height: 70px; font-family: inherit; }
+        .agenda-switch-row { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+        .agenda-switch-item { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .agenda-switch-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: #2980b9; }
+        .agenda-switch-item span { font-size: 12px; font-weight: 600; color: #444; }
+        html[data-theme="dark"] .agenda-switch-item span { color: #8b949e; }
+        .agenda-modal-footer {
+            padding: 16px 24px; border-top: 1px solid #eee;
+            display: flex; justify-content: flex-end; gap: 10px;
+        }
+        html[data-theme="dark"] .agenda-modal-footer { border-top-color: #30363d; }
+        .agenda-btn-cancelar {
+            background: #ecf0f1; color: #555; border: none; border-radius: 6px;
+            padding: 10px 20px; font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase;
+        }
+        html[data-theme="dark"] .agenda-btn-cancelar { background: #21262d; color: #8b949e; }
+        .agenda-btn-salvar {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white; border: none; border-radius: 6px;
+            padding: 10px 24px; font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(39,174,96,0.3);
+        }
+        .agenda-btn-salvar:hover { opacity: 0.9; }
+
+        /* Popup Agenda (exibido ao abrir sistema) */
+        #popupAgenda {
+            display: none; position: fixed; inset: 0; z-index: 10000;
+            background: rgba(0,0,0,0.65); align-items: center; justify-content: center;
+        }
+        #popupAgenda.show { display: flex; }
+        .popup-agenda-box {
+            background: white; border-radius: 12px; width: 480px; max-width: 95vw;
+            box-shadow: 0 24px 70px rgba(0,0,0,0.4); overflow: hidden;
+            animation: agendaPopIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes agendaPopIn {
+            from { transform: scale(0.85); opacity: 0; }
+            to   { transform: scale(1);    opacity: 1; }
+        }
+        html[data-theme="dark"] .popup-agenda-box { background: #161b22; border: 1px solid #30363d; }
+        .popup-agenda-header {
+            background: linear-gradient(135deg, #1a1a1a, #2c2c2c);
+            padding: 18px 22px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .popup-agenda-header-left { display: flex; align-items: center; gap: 12px; }
+        .popup-agenda-header-title { color: white; font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+        .popup-agenda-header-sub   { color: rgba(255,255,255,0.55); font-size: 11px; margin-top: 2px; }
+        .popup-agenda-red-bar { width: 100%; height: 4px; background: linear-gradient(90deg, #e74c3c, #c0392b); }
+        .popup-agenda-date  {
+            padding: 10px 22px; font-size: 12px; font-weight: 600; color: #555;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        html[data-theme="dark"] .popup-agenda-date { color: #8b949e; border-bottom-color: #21262d; }
+        .popup-agenda-body { padding: 18px 22px; max-height: 55vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .popup-agenda-item {
+            background: #fff8f8; border-left: 4px solid #e74c3c;
+            border-radius: 8px; padding: 12px 16px;
+        }
+        html[data-theme="dark"] .popup-agenda-item { background: #1f0e0e; border-left-color: #f85149; }
+        .popup-agenda-item-titulo { font-size: 13px; font-weight: 800; color: #c0392b; text-transform: uppercase; margin-bottom: 4px; }
+        html[data-theme="dark"] .popup-agenda-item-titulo { color: #f85149; }
+        .popup-agenda-item-meta { font-size: 11px; color: #888; display: flex; gap: 10px; flex-wrap: wrap; }
+        html[data-theme="dark"] .popup-agenda-item-meta { color: #6e7681; }
+        .popup-agenda-footer {
+            padding: 14px 22px; border-top: 1px solid #eee;
+            display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+        }
+        html[data-theme="dark"] .popup-agenda-footer { border-top-color: #30363d; }
+        .popup-agenda-btn-abrir {
+            background: #2c2c2c; color: white; border: none; border-radius: 6px;
+            padding: 9px 20px; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .popup-agenda-btn-abrir:hover { background: #1a1a1a; }
+        .popup-agenda-btn-fechar {
+            background: transparent; color: #aaa; border: 1.5px solid #ddd;
+            border-radius: 6px; padding: 9px 18px; font-size: 11px; font-weight: 700;
+            cursor: pointer; text-transform: uppercase;
+        }
+        html[data-theme="dark"] .popup-agenda-btn-fechar { border-color: #30363d; color: #6e7681; }
+        .popup-agenda-btn-fechar:hover { color: #555; }
+        /* ========== FIM AGENDA ========== */
+
         /* ========== TELA DE LOGIN — CLEAN ========== */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
         #loginScreen {
@@ -1835,6 +2045,37 @@
             color: #e6edf3 !important;
         }
 
+        /* ── DARK: Aba Estoque Reagentes / Materiais ── */
+        /* Inputs e selects dentro dos filtros inline */
+        html[data-theme="dark"] #aba-estoqueReagentes input,
+        html[data-theme="dark"] #aba-estoqueReagentes select,
+        html[data-theme="dark"] #aba-estoqueMateriais input,
+        html[data-theme="dark"] #aba-estoqueMateriais select {
+            background: #0d1117 !important;
+            border-color: #30363d !important;
+            color: #e6edf3 !important;
+        }
+        html[data-theme="dark"] #aba-estoqueReagentes input::placeholder,
+        html[data-theme="dark"] #aba-estoqueMateriais input::placeholder { color: #8b949e !important; }
+
+        /* Títulos inline (#1a2a6e hardcoded) dentro da aba */
+        html[data-theme="dark"] #aba-estoqueReagentes [style*="color:#1a2a6e"],
+        html[data-theme="dark"] #aba-estoqueMateriais [style*="color:#1a2a6e"] { color: #58a6ff !important; }
+
+        /* Wrapper da tabela (background:#fff inline) */
+        html[data-theme="dark"] #aba-estoqueReagentes [style*="background:#fff"],
+        html[data-theme="dark"] #aba-estoqueMateriais [style*="background:#fff"] {
+            background: #161b22 !important;
+        }
+
+        /* Texto muted (#888, #666, #555) dentro das abas */
+        html[data-theme="dark"] #aba-estoqueReagentes [style*="color:#888"],
+        html[data-theme="dark"] #aba-estoqueReagentes [style*="color:#666"],
+        html[data-theme="dark"] #aba-estoqueReagentes [style*="color:#555"],
+        html[data-theme="dark"] #aba-estoqueMateriais [style*="color:#888"],
+        html[data-theme="dark"] #aba-estoqueMateriais [style*="color:#666"],
+        html[data-theme="dark"] #aba-estoqueMateriais [style*="color:#555"] { color: #8b949e !important; }
+
         /* ========== DARK THEME — MOBILE MENU OVERRIDES ========== */
         html[data-theme="dark"] #mobileNavBar {
             background: #161b22 !important;
@@ -2266,6 +2507,9 @@
             <button class="mob-item" onclick="mobNav('equipamentos','Equipamentos')">🔬 Equipamentos</button>
         </div>
         <div class="mob-section">
+            <button class="mob-item" onclick="mobNav('agenda','Agenda')">📅 Agenda</button>
+        </div>
+        <div class="mob-section">
             <button class="mob-item" id="mobBtnConfiguracoes" onclick="mobNav('configuracoes','Configurações')">⚙️ Configurações</button>
         </div>
     </div>
@@ -2322,6 +2566,8 @@
         </div>
         <!-- EQUIPAMENTOS -->
         <button class="nav-tab" id="tabEquipamentos" onclick="trocarAba('equipamentos', this)">🔬 Equipamentos</button>
+        <!-- AGENDA -->
+        <button class="nav-tab" id="tabAgenda" onclick="trocarAba('agenda', this)">📅 Agenda</button>
         <!-- CONFIGURAÇÕES -->
         <button class="nav-tab" id="tabConfiguracoes" onclick="trocarAba('configuracoes', this)">⚙️ Configurações</button>
     </div>
@@ -4635,6 +4881,112 @@
     </div>
 
     <!-- ===== ABA PARÂMETROS ===== -->
+    <!-- ===== ABA AGENDA ===== -->
+    <div id="aba-agenda" class="tab-content">
+        <div class="agenda-header">
+            <div class="agenda-header-left">
+                <span style="font-size:28px;">📅</span>
+                <div>
+                    <h2>Agenda de Compromissos</h2>
+                    <div style="font-size:11px;color:#888;margin-top:2px;">Gerencie seus compromissos e tarefas recorrentes</div>
+                </div>
+            </div>
+            <button class="agenda-btn-novo" onclick="abrirModalAgenda()">➕ Novo Compromisso</button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="agenda-filtros">
+            <button class="agenda-filtro-btn active" id="agFiltroTodos"   onclick="agendaFiltrar('todos')">📋 Todos</button>
+            <button class="agenda-filtro-btn"         id="agFiltroHoje"   onclick="agendaFiltrar('hoje')">📌 Hoje</button>
+            <button class="agenda-filtro-btn"         id="agFiltroAtivos" onclick="agendaFiltrar('ativos')">✅ Ativos</button>
+            <button class="agenda-filtro-btn"         id="agFiltroRec"    onclick="agendaFiltrar('recorrentes')">🔁 Recorrentes</button>
+        </div>
+
+        <!-- Lista -->
+        <div class="agenda-lista" id="agendaLista">
+            <div class="agenda-empty">
+                <div class="agenda-empty-icon">📅</div>
+                <div>Nenhum compromisso cadastrado.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL CADASTRO / EDIÇÃO AGENDA ===== -->
+    <div id="modalAgenda">
+        <div class="agenda-modal-box">
+            <div class="agenda-modal-header">
+                <h3 id="modalAgendaTitulo">Novo Compromisso</h3>
+                <button class="agenda-modal-close" onclick="fecharModalAgenda()">✕</button>
+            </div>
+            <div class="agenda-modal-body">
+                <input type="hidden" id="agendaEditId">
+                <div class="agenda-form-group">
+                    <label>Título *</label>
+                    <input type="text" id="agendaTitulo" placeholder="Ex: Enviar relatório mensal" maxlength="120">
+                </div>
+                <div class="agenda-form-group">
+                    <label>Descrição</label>
+                    <textarea id="agendaDescricao" placeholder="Detalhes do compromisso..."></textarea>
+                </div>
+                <div class="agenda-form-row">
+                    <div class="agenda-form-group">
+                        <label>Data *</label>
+                        <input type="date" id="agendaData">
+                    </div>
+                    <div class="agenda-form-group">
+                        <label>Hora</label>
+                        <input type="time" id="agendaHora">
+                    </div>
+                </div>
+                <div class="agenda-switch-row">
+                    <label class="agenda-switch-item">
+                        <input type="checkbox" id="agendaRecorrente" onchange="agendaToggleRecorrencia()">
+                        <span>🔁 Recorrente</span>
+                    </label>
+                    <label class="agenda-switch-item">
+                        <input type="checkbox" id="agendaAtivo" checked>
+                        <span>✅ Ativo</span>
+                    </label>
+                </div>
+                <div class="agenda-form-group" id="agendaGrupoRec" style="display:none;">
+                    <label>Tipo de Recorrência</label>
+                    <select id="agendaTipoRec">
+                        <option value="diario">Diário</option>
+                        <option value="semanal">Semanal</option>
+                        <option value="mensal">Mensal</option>
+                    </select>
+                </div>
+            </div>
+            <div class="agenda-modal-footer">
+                <button class="agenda-btn-cancelar" onclick="fecharModalAgenda()">Cancelar</button>
+                <button class="agenda-btn-salvar"   onclick="salvarAgendaCompromisso()">💾 Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== POPUP AGENDA (exibido ao entrar no sistema) ===== -->
+    <div id="popupAgenda">
+        <div class="popup-agenda-box">
+            <div class="popup-agenda-header">
+                <div class="popup-agenda-header-left">
+                    <span style="font-size:26px;">📅</span>
+                    <div>
+                        <div class="popup-agenda-header-title">Agenda de Tarefas</div>
+                        <div class="popup-agenda-header-sub">Compromissos para hoje</div>
+                    </div>
+                </div>
+                <button onclick="fecharPopupAgenda()" style="background:rgba(255,255,255,0.15);border:none;color:white;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;">✕</button>
+            </div>
+            <div class="popup-agenda-red-bar"></div>
+            <div class="popup-agenda-date" id="popupAgendaData">Data: --/--/----</div>
+            <div class="popup-agenda-body" id="popupAgendaLista"></div>
+            <div class="popup-agenda-footer">
+                <button class="popup-agenda-btn-abrir" onclick="fecharPopupAgenda();trocarAba('agenda',document.getElementById('tabAgenda'))">Abrir Agenda</button>
+                <button class="popup-agenda-btn-fechar" onclick="fecharPopupAgenda()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== ABA CONFIGURAÇÕES (agrupa: Parâmetros, Backup, Memória, Usuários, Alerta WhatsApp) ===== -->
     <div id="aba-configuracoes" class="tab-content">
         <div style="width:100%;padding:10px 0;">
@@ -6601,6 +6953,10 @@ async function fazerLogin() {
             if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
             atualizarKpisCapa();
             if (typeof _iaAtualizarMenuAdmin === 'function') _iaAtualizarMenuAdmin();
+            // ── Agenda: verifica compromissos do dia e exibe popup ──
+            if (typeof _agendaInicializar === 'function') {
+                setTimeout(_agendaInicializar, 800);
+            }
         }).catch(() => sgqOcultarLoading());
 
     } catch(e) {
@@ -6695,12 +7051,17 @@ function aplicarPermissoes() {
     const tabEqp = document.getElementById('tabEquipamentos');
     if (tabEqp) tabEqp.style.display = podeEquipamentos ? 'inline-block' : 'none';
 
+    // ── Agenda — somente Admin ──
+    const tabAgenda = document.getElementById('tabAgenda');
+    if (tabAgenda) tabAgenda.style.display = isAdmin ? 'inline-block' : 'none';
+
     // ── Mobile: mostrar/ocultar itens de menu ──
     document.querySelectorAll('.mob-item').forEach(btn => {
         const onclick = btn.getAttribute('onclick') || '';
         if (onclick.includes("'estoqueReagentes'"))  btn.style.display = podeQuimicos     ? 'block' : 'none';
         if (onclick.includes("'estoqueMateriais'"))   btn.style.display = podeMateriais   ? 'block' : 'none';
         if (onclick.includes("'equipamentos'"))       btn.style.display = podeEquipamentos ? 'block' : 'none';
+        if (onclick.includes("'agenda'"))             btn.style.display = isAdmin          ? 'block' : 'none';
     });
 
     // Carrega entradas ao logar
@@ -6870,6 +7231,7 @@ function trocarAba(aba, btn) {
     if (aba === 'estoqueReagentes') { try { reagCarregarDados(); setTimeout(_reagInjetarCampoEmail, 500); } catch(e){} }
     if (aba === 'estoqueMateriais') { try { matCarregarDados(); } catch(e){} }
     if (aba === 'equipamentos') { try { eqCarregarDados(); } catch(e){} }
+    if (aba === 'agenda') { try { _agendaCarregarEExibir(); } catch(e){} }
 }
 
 // ── Preenche os filtros de data do mês atual (início e fim) para cada relatório ──
@@ -17250,21 +17612,25 @@ function reagRenderTabela() {
 
         tbody.innerHTML = listaAgrupada.map(g => {
             const stAtual = g.qtdTotal <= 0 ? 'vencido' : g.qtdTotal <= g.minimo ? 'baixo' : 'ok';
-            const rowBg   = stAtual === 'baixo' ? '#fffdf0' : '#fff';
+            const rowBg   = _isDark
+                ? (stAtual === 'baixo' ? '#1f2010' : '#161b22')
+                : (stAtual === 'baixo' ? '#fffdf0' : '#fff');
+            const textColor = _isDark ? '#e6edf3' : '#2c3e50';
+            const mutedColor = _isDark ? '#8b949e' : '#666';
             const pfBorder = g.controlePF ? 'border-left:4px solid #8e44ad;' : '';
             const lotesTxt = g.lotes.size > 0 ? [...g.lotes].join(', ') : '—';
             const fornTxt  = g.fornecedores.size > 0 ? [...g.fornecedores].join(', ') : '—';
-            return `<tr style="border-bottom:1px solid #f0f0f0;background:${rowBg};${pfBorder}">
+            return `<tr style="border-bottom:1px solid ${_isDark?'#21262d':'#f0f0f0'};background:${rowBg};${pfBorder}">
                 <td style="padding:9px 12px;text-align:left;">
-                    <div style="font-weight:700;color:#2c3e50;">${g.nome}</div>
+                    <div style="font-weight:700;color:${textColor};">${g.nome}</div>
                     ${g.controlePF ? '<div>'+_reagPFBadge(g.controlePF)+'</div>' : ''}
                     ${g.portaria ? '<div style="font-size:9px;color:#8e44ad;margin-top:1px;">'+g.portaria+'</div>' : ''}
                 </td>
-                <td style="padding:9px 8px;text-align:center;font-size:15px;font-weight:900;color:${stAtual==='baixo'?'#e67e22':'#1a5276'};">${g.qtdTotal.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:3})}</td>
-                <td style="padding:9px 8px;text-align:center;font-size:11px;color:#666;">${g.unidade || '—'}</td>
-                <td style="padding:9px 8px;text-align:center;font-size:11px;color:#888;">${g.minimo > 0 ? g.minimo : '—'} ${g.minimo > 0 ? g.unidade : ''}</td>
-                <td style="padding:9px 8px;text-align:center;font-size:10px;color:#666;max-width:140px;white-space:normal;">${lotesTxt}</td>
-                <td style="padding:9px 8px;text-align:center;font-size:10px;color:#666;max-width:140px;white-space:normal;">${fornTxt}</td>
+                <td style="padding:9px 8px;text-align:center;font-size:15px;font-weight:900;color:${stAtual==='baixo'?'#e67e22':(_isDark?'#58a6ff':'#1a5276')};">${g.qtdTotal.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:3})}</td>
+                <td style="padding:9px 8px;text-align:center;font-size:11px;color:${mutedColor};">${g.unidade || '—'}</td>
+                <td style="padding:9px 8px;text-align:center;font-size:11px;color:${mutedColor};">${g.minimo > 0 ? g.minimo : '—'} ${g.minimo > 0 ? g.unidade : ''}</td>
+                <td style="padding:9px 8px;text-align:center;font-size:10px;color:${mutedColor};max-width:140px;white-space:normal;">${lotesTxt}</td>
+                <td style="padding:9px 8px;text-align:center;font-size:10px;color:${mutedColor};max-width:140px;white-space:normal;">${fornTxt}</td>
                 <td style="padding:9px 8px;text-align:center;">${_reagStatusBadge(stAtual)}</td>
             </tr>`;
         }).join('');
@@ -17298,35 +17664,40 @@ function reagRenderTabela() {
         return;
     }
 
+    const _isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     tbody.innerHTML = lista.map(r => {
         const st   = _reagStatus(r);
         const dias = _reagDiasParaVencer(r.validade);
-        const rowBg = st === 'vencido' ? '#fff5f5' : st === 'vencendo' ? '#fff9f0' : st === 'baixo' ? '#fffdf0' : '#fff';
+        const rowBg = _isDark
+            ? (st === 'vencido' ? '#2a1a1a' : st === 'vencendo' ? '#2a1f0f' : st === 'baixo' ? '#1f2010' : '#161b22')
+            : (st === 'vencido' ? '#fff5f5' : st === 'vencendo' ? '#fff9f0' : st === 'baixo' ? '#fffdf0' : '#fff');
+        const textColor = _isDark ? '#e6edf3' : '#2c3e50';
+        const mutedColor = _isDark ? '#8b949e' : '#666';
         const pfBorder = r.controlePF ? 'border-left:4px solid #8e44ad;' : '';
-        return `<tr style="border-bottom:1px solid #f0f0f0;background:${rowBg};${pfBorder}">
+        return `<tr style="border-bottom:1px solid ${_isDark?'#21262d':'#f0f0f0'};background:${rowBg};${pfBorder}">
             <td style="padding:9px 12px;text-align:left;">
-                <div style="font-weight:700;color:#2c3e50;">${r.nome}</div>
+                <div style="font-weight:700;color:${textColor};">${r.nome}</div>
                 ${r.controlePF ? '<div>'+_reagPFBadge(r.controlePF)+'</div>' : ''}
                 ${r.portaria ? '<div style="font-size:9px;color:#8e44ad;margin-top:1px;">'+r.portaria+'</div>' : ''}
             </td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;color:#666;">${r.lote || '—'}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;color:#666;">${r.fornecedor || '—'}</td>
-            <td style="padding:9px 8px;text-align:center;font-weight:800;color:${st==='baixo'?'#e67e22':'#2c3e50'};">${r.qtdAtual} ${r.unidade}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;color:#888;">${r.minimo} ${r.unidade}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;color:${st==='vencido'?'#e74c3c':st==='vencendo'?'#e67e22':'#555'};">
+            <td style="padding:9px 8px;text-align:center;font-size:11px;color:${mutedColor};">${r.lote || '—'}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;color:${mutedColor};">${r.fornecedor || '—'}</td>
+            <td style="padding:9px 8px;text-align:center;font-weight:800;color:${st==='baixo'?'#e67e22':textColor};">${r.qtdAtual} ${r.unidade}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;color:${_isDark?'#8b949e':'#888'};">${r.minimo} ${r.unidade}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;color:${st==='vencido'?'#e74c3c':st==='vencendo'?'#e67e22':(_isDark?'#adbac7':'#555')};">
                 ${_fmtData(r.validade)}
                 ${dias !== null ? '<div style="font-size:9px;color:'+(dias<0?'#e74c3c':dias<=60?'#e67e22':'#aaa')+';">'+(dias<0?'Vencido há '+Math.abs(dias)+'d':dias===0?'Vence hoje':'Vence em '+dias+'d')+'</div>' : ''}
             </td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;color:#666;">${_fmtData(r.dataEntrada)}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;color:${mutedColor};">${_fmtData(r.dataEntrada)}</td>
             <td style="padding:9px 8px;text-align:center;">
                 ${r.nfChave
                     ? `<span onclick="navigator.clipboard&&navigator.clipboard.writeText('${r.nfChave}').then(()=>sgqToast('✅ Chave copiada!','success'))" title="Clique para copiar a chave completa&#10;${r.nfChave}" style="display:inline-block;background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.3);border-radius:4px;padding:2px 7px;cursor:pointer;font-size:11px;color:#58a6ff;font-weight:700;white-space:nowrap;">${_reagNumeroNF(r.nfChave)}</span>`
-                    : '<span style="display:inline-block;background:#f5f5f5;border:1px solid #ddd;border-radius:4px;padding:2px 7px;font-size:10px;color:#aaa;font-weight:600;">Sem N.F</span>'}
+                    : `<span style="display:inline-block;background:${_isDark?'#21262d':'#f5f5f5'};border:1px solid ${_isDark?'#30363d':'#ddd'};border-radius:4px;padding:2px 7px;font-size:10px;color:${_isDark?'#8b949e':'#aaa'};font-weight:600;">Sem N.F</span>`}
             </td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;font-weight:700;color:#27ae60;">
                 ${r.custoUnit != null && r.custoUnit !== '' && r.custoUnit !== 0
                     ? 'R$ ' + parseFloat(r.custoUnit).toLocaleString('pt-BR', {minimumFractionDigits:2,maximumFractionDigits:2})
-                    : '<span style="color:#ccc;font-weight:400;">—</span>'}
+                    : `<span style="color:${_isDark?'#8b949e':'#ccc'};font-weight:400;">—</span>`}
             </td>
             <td style="padding:9px 8px;text-align:center;">${_reagStatusBadge(st)}</td>
             <td style="padding:9px 8px;text-align:center;white-space:nowrap;">
@@ -18825,23 +19196,26 @@ function matRenderTabela() {
 
     const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
 
+    const _isDarkMat = document.documentElement.getAttribute('data-theme') === 'dark';
     tbody.innerHTML = lista.map((m, i) => {
         const st  = _matStatus(m);
         const bg  = _tBg(i);
         const qtd = m.qtd_atual !== undefined ? m.qtd_atual : m.qtdAtual;
-        return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}" style="border-bottom:1px solid #f0f0f0;">
-            <td style="padding:9px 12px;font-weight:700;color:#2c3e50;text-align:left;">${m.nome || '—'}</td>
+        const matTextColor  = _isDarkMat ? '#e6edf3' : '#2c3e50';
+        const matMutedColor = _isDarkMat ? '#8b949e' : '#888';
+        return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}" style="border-bottom:1px solid ${_isDarkMat?'#21262d':'#f0f0f0'};">
+            <td style="padding:9px 12px;font-weight:700;color:${matTextColor};text-align:left;">${m.nome || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${m.categoria || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;font-family:monospace;">${m.lote || '—'}</td>
             <td style="padding:9px 8px;text-align:left;font-size:11px;">${m.fornecedor || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-weight:700;color:${parseFloat(qtd) <= parseFloat(m.minimo||0) ? '#e74c3c' : '#27ae60'};">${qtd} ${m.unidade||''}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;color:#888;">${m.minimo || '—'} ${m.unidade||''}</td>
+            <td style="padding:9px 8px;text-align:center;font-size:11px;color:${matMutedColor};">${m.minimo || '—'} ${m.unidade||''}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${m.unidade || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;">${fmtDate(m.validade)}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;font-weight:700;color:#27ae60;">
                 ${m.custo_unit != null && m.custo_unit > 0
                     ? 'R$ ' + parseFloat(m.custo_unit).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})
-                    : '<span style="color:#ccc;font-weight:400;">—</span>'}
+                    : `<span style="color:${_isDarkMat?'#8b949e':'#ccc'};font-weight:400;">—</span>`}
             </td>
             <td style="padding:9px 8px;text-align:center;">${_matStatusBadge(st)}</td>
             <td style="padding:9px 8px;text-align:center;">
@@ -22160,6 +22534,303 @@ function sgqAutocompleteFechar(campoId) {
     const lista = document.getElementById(campoId + '_list');
     if (lista) lista.innerHTML = '';
 }
+
+/* =====================================================================
+   MÓDULO AGENDA DE COMPROMISSOS
+   ===================================================================== */
+(function() {
+    'use strict';
+
+    // ── Estado interno ──────────────────────────────────────────────
+    let _compromissos   = [];
+    let _filtroAtual    = 'todos';
+    const TABELA        = 'agenda_compromissos';
+
+    // ── Helpers de data ─────────────────────────────────────────────
+    function _hoje() {
+        const d = new Date();
+        return d.toISOString().split('T')[0]; // YYYY-MM-DD
+    }
+
+    function _formatarData(iso) {
+        if (!iso) return '';
+        const [y, m, d] = iso.split('-');
+        return `${d}/${m}/${y}`;
+    }
+
+    function _isHoje(iso) {
+        return iso === _hoje();
+    }
+
+    function _isRecorrenteHoje(c) {
+        if (!c.recorrente || !c.recorrencia) return false;
+        const dataBase = new Date(c.data + 'T00:00:00');
+        const agora    = new Date();
+        agora.setHours(0,0,0,0);
+        if (dataBase > agora) return false; // ainda não chegou a data base
+
+        if (c.recorrencia === 'diario') return true;
+
+        if (c.recorrencia === 'semanal') {
+            return dataBase.getDay() === agora.getDay();
+        }
+        if (c.recorrencia === 'mensal') {
+            return dataBase.getDate() === agora.getDate();
+        }
+        return false;
+    }
+
+    function _compromissoEHoje(c) {
+        return _isHoje(c.data) || _isRecorrenteHoje(c);
+    }
+
+    // ── Supabase CRUD ────────────────────────────────────────────────
+    async function _carregarCompromissos() {
+        try {
+            const { data, error } = await _sbClient
+                .from(TABELA)
+                .select('*')
+                .order('data', { ascending: true });
+            if (error) throw error;
+            _compromissos = data || [];
+        } catch(e) {
+            // Tabela pode não existir ainda
+            _compromissos = [];
+        }
+    }
+
+    async function _salvarCompromisso(obj) {
+        const { data, error } = await _sbClient.from(TABELA).upsert([obj], { onConflict: 'id' }).select();
+        if (error) throw error;
+        return data[0];
+    }
+
+    async function _excluirCompromisso(id) {
+        const { error } = await _sbClient.from(TABELA).delete().eq('id', id);
+        if (error) throw error;
+    }
+
+    // ── Popup ao abrir o sistema ─────────────────────────────────────
+    async function agendaVerificarPopup() {
+        // Somente admin vê a agenda
+        if (typeof perfilAtual === 'undefined' || perfilAtual !== 'admin') return;
+        // Só exibe uma vez por sessão
+        if (sessionStorage.getItem('agendaPopupExibido')) return;
+        sessionStorage.setItem('agendaPopupExibido', '1');
+
+        await _carregarCompromissos();
+
+        const ativos = _compromissos.filter(c => c.ativo !== false && _compromissoEHoje(c));
+        if (ativos.length === 0) {
+            // Nada para hoje — renderiza a lista mesmo assim para ter dados frescos
+            agendaRenderizarLista();
+            return;
+        }
+
+        // Monta o popup
+        const dataEl = document.getElementById('popupAgendaData');
+        if (dataEl) {
+            const agora = new Date();
+            dataEl.textContent = 'Data: ' + agora.toLocaleDateString('pt-BR');
+        }
+
+        const lista = document.getElementById('popupAgendaLista');
+        if (lista) {
+            lista.innerHTML = ativos.map(c => {
+                const rec = c.recorrente && c.recorrencia
+                    ? `<span>🔁 ${c.recorrencia.charAt(0).toUpperCase()+c.recorrencia.slice(1)}</span>`
+                    : '';
+                const hora = c.hora ? `<span>🕐 ${c.hora.substring(0,5)}</span>` : '';
+                return `<div class="popup-agenda-item">
+                    <div class="popup-agenda-item-titulo">${c.titulo}</div>
+                    ${c.descricao ? `<div style="font-size:11px;color:#888;margin-bottom:6px;">${c.descricao}</div>` : ''}
+                    <div class="popup-agenda-item-meta">${hora}${rec}</div>
+                </div>`;
+            }).join('');
+        }
+
+        const popup = document.getElementById('popupAgenda');
+        if (popup) popup.classList.add('show');
+        agendaRenderizarLista();
+    }
+
+    window.fecharPopupAgenda = function() {
+        const p = document.getElementById('popupAgenda');
+        if (p) p.classList.remove('show');
+    };
+
+    // ── Renderização da lista na aba ─────────────────────────────────
+    window.agendaFiltrar = function(filtro) {
+        _filtroAtual = filtro;
+        // atualiza botões
+        ['Todos','Hoje','Ativos','Rec'].forEach(f => {
+            const btn = document.getElementById('agFiltro' + f);
+            if (btn) btn.classList.remove('active');
+        });
+        const mapa = { todos:'Todos', hoje:'Hoje', ativos:'Ativos', recorrentes:'Rec' };
+        const btnAtivo = document.getElementById('agFiltro' + mapa[filtro]);
+        if (btnAtivo) btnAtivo.classList.add('active');
+        agendaRenderizarLista();
+    };
+
+    function agendaRenderizarLista() {
+        const lista = document.getElementById('agendaLista');
+        if (!lista) return;
+
+        let dados = [..._compromissos];
+        if (_filtroAtual === 'hoje')       dados = dados.filter(c => _compromissoEHoje(c));
+        if (_filtroAtual === 'ativos')     dados = dados.filter(c => c.ativo !== false);
+        if (_filtroAtual === 'recorrentes') dados = dados.filter(c => c.recorrente);
+
+        if (dados.length === 0) {
+            lista.innerHTML = `<div class="agenda-empty"><div class="agenda-empty-icon">📅</div><div>Nenhum compromisso encontrado.</div></div>`;
+            return;
+        }
+
+        lista.innerHTML = dados.map(c => {
+            const eHoje   = _compromissoEHoje(c);
+            const inativo = c.ativo === false;
+            let classes   = 'agenda-card';
+            if (inativo) classes += ' inativo';
+            else if (c.recorrente) classes += ' recorrente';
+            else if (eHoje) classes += ' hoje';
+
+            const recLabel = c.recorrente && c.recorrencia
+                ? { diario:'Diário', semanal:'Semanal', mensal:'Mensal' }[c.recorrencia] || c.recorrencia
+                : null;
+
+            return `<div class="${classes}" id="agCard_${c.id}">
+                <div class="agenda-card-info">
+                    <div class="agenda-card-titulo">${c.titulo}</div>
+                    ${c.descricao ? `<div class="agenda-card-desc">${c.descricao}</div>` : ''}
+                    <div class="agenda-card-meta">
+                        <span class="agenda-badge agenda-badge-data">📅 ${_formatarData(c.data)}</span>
+                        ${c.hora ? `<span class="agenda-badge agenda-badge-hora">🕐 ${c.hora.substring(0,5)}</span>` : ''}
+                        ${recLabel ? `<span class="agenda-badge agenda-badge-rec">🔁 ${recLabel}</span>` : ''}
+                        ${eHoje && !inativo ? `<span class="agenda-badge agenda-badge-hoje">📌 Hoje</span>` : ''}
+                        ${inativo ? `<span class="agenda-badge agenda-badge-inativo">Inativo</span>` : ''}
+                    </div>
+                </div>
+                <div class="agenda-card-acoes">
+                    <button class="agenda-btn-acao agenda-btn-editar"  title="Editar"  onclick="agendaEditar('${c.id}')">✏️</button>
+                    <button class="agenda-btn-acao agenda-btn-toggle"  title="${c.ativo!==false?'Desativar':'Ativar'}" onclick="agendaToggleAtivo('${c.id}')">${c.ativo!==false?'⏸️':'▶️'}</button>
+                    <button class="agenda-btn-acao agenda-btn-excluir" title="Excluir" onclick="agendaExcluir('${c.id}')">🗑️</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ── Modal Cadastro ───────────────────────────────────────────────
+    window.abrirModalAgenda = function(id) {
+        document.getElementById('agendaEditId').value      = '';
+        document.getElementById('agendaTitulo').value      = '';
+        document.getElementById('agendaDescricao').value   = '';
+        document.getElementById('agendaData').value        = _hoje();
+        document.getElementById('agendaHora').value        = '';
+        document.getElementById('agendaRecorrente').checked = false;
+        document.getElementById('agendaAtivo').checked     = true;
+        document.getElementById('agendaTipoRec').value     = 'diario';
+        document.getElementById('agendaGrupoRec').style.display = 'none';
+        document.getElementById('modalAgendaTitulo').textContent = 'Novo Compromisso';
+        document.getElementById('modalAgenda').classList.add('show');
+    };
+
+    window.fecharModalAgenda = function() {
+        document.getElementById('modalAgenda').classList.remove('show');
+    };
+
+    window.agendaToggleRecorrencia = function() {
+        const rec = document.getElementById('agendaRecorrente').checked;
+        document.getElementById('agendaGrupoRec').style.display = rec ? 'flex' : 'none';
+    };
+
+    window.agendaEditar = function(id) {
+        const c = _compromissos.find(x => x.id === id);
+        if (!c) return;
+        document.getElementById('agendaEditId').value         = c.id;
+        document.getElementById('agendaTitulo').value         = c.titulo || '';
+        document.getElementById('agendaDescricao').value      = c.descricao || '';
+        document.getElementById('agendaData').value           = c.data || _hoje();
+        document.getElementById('agendaHora').value           = c.hora ? c.hora.substring(0,5) : '';
+        document.getElementById('agendaRecorrente').checked   = !!c.recorrente;
+        document.getElementById('agendaAtivo').checked        = c.ativo !== false;
+        document.getElementById('agendaTipoRec').value        = c.recorrencia || 'diario';
+        document.getElementById('agendaGrupoRec').style.display = c.recorrente ? 'flex' : 'none';
+        document.getElementById('modalAgendaTitulo').textContent = 'Editar Compromisso';
+        document.getElementById('modalAgenda').classList.add('show');
+    };
+
+    window.salvarAgendaCompromisso = async function() {
+        const titulo = document.getElementById('agendaTitulo').value.trim();
+        const data   = document.getElementById('agendaData').value;
+        if (!titulo) { sgqToast('Informe o título do compromisso.', 'warning'); return; }
+        if (!data)   { sgqToast('Informe a data do compromisso.', 'warning');   return; }
+
+        const id         = document.getElementById('agendaEditId').value;
+        const recorrente = document.getElementById('agendaRecorrente').checked;
+        const obj = {
+            titulo,
+            descricao:   document.getElementById('agendaDescricao').value.trim() || null,
+            data,
+            hora:        document.getElementById('agendaHora').value || null,
+            recorrente,
+            recorrencia: recorrente ? document.getElementById('agendaTipoRec').value : null,
+            ativo:       document.getElementById('agendaAtivo').checked,
+        };
+        if (id) obj.id = id;
+
+        try {
+            const salvo = await _salvarCompromisso(obj);
+            if (id) {
+                const idx = _compromissos.findIndex(x => x.id === id);
+                if (idx >= 0) _compromissos[idx] = salvo; else _compromissos.push(salvo);
+            } else {
+                _compromissos.push(salvo);
+            }
+            fecharModalAgenda();
+            agendaRenderizarLista();
+            sgqToast('Compromisso salvo com sucesso!', 'success');
+        } catch(e) {
+            sgqToast('Erro ao salvar: ' + e.message, 'error');
+        }
+    };
+
+    window.agendaToggleAtivo = async function(id) {
+        const c = _compromissos.find(x => x.id === id);
+        if (!c) return;
+        try {
+            const atualizado = { ...c, ativo: !c.ativo };
+            const salvo = await _salvarCompromisso(atualizado);
+            const idx = _compromissos.findIndex(x => x.id === id);
+            if (idx >= 0) _compromissos[idx] = salvo;
+            agendaRenderizarLista();
+            sgqToast(`Compromisso ${salvo.ativo ? 'ativado' : 'desativado'}.`, 'info');
+        } catch(e) {
+            sgqToast('Erro: ' + e.message, 'error');
+        }
+    };
+
+    window.agendaExcluir = async function(id) {
+        if (!confirm('Deseja excluir este compromisso?')) return;
+        try {
+            await _excluirCompromisso(id);
+            _compromissos = _compromissos.filter(x => x.id !== id);
+            agendaRenderizarLista();
+            sgqToast('Compromisso excluído.', 'success');
+        } catch(e) {
+            sgqToast('Erro ao excluir: ' + e.message, 'error');
+        }
+    };
+
+    // ── Inicialização: aguarda login e chama popup ─────────────────
+    window._agendaInicializar      = agendaVerificarPopup;
+    window._agendaCarregarEExibir  = async function() {
+        if (typeof perfilAtual === 'undefined' || perfilAtual !== 'admin') return;
+        await _carregarCompromissos();
+        agendaRenderizarLista();
+    };
+
+})(); /* fim módulo agenda */
 </script>
 
 </body>
