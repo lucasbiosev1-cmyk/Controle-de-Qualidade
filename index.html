@@ -24,7 +24,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        body { font-family: 'Montserrat', Arial, sans-serif; background: #0f1623; }
 
         /* =========================================================
            ✅ MELHORIA: LOADING OVERLAY GLOBAL
@@ -32,7 +32,7 @@
         #sgq-loading-overlay {
             display: none;
             position: fixed; inset: 0; z-index: 99999;
-            background: #f0f0ee;
+            background: #0f1623;
             align-items: center; justify-content: center;
             flex-direction: column; gap: 20px;
         }
@@ -43,32 +43,31 @@
         .sgq-loading-logo-agronor {
             font-family: 'Montserrat', Arial Black, sans-serif;
             font-weight: 900; font-size: 36px;
-            color: #1a2a6e; letter-spacing: 2px;
+            color: #ffffff; letter-spacing: 2px;
         }
         .sgq-loading-logo-sub {
             font-family: 'Montserrat', Arial, sans-serif;
             font-weight: 700; font-size: 11px;
-            color: #c0392b; letter-spacing: 6px;
+            color: #4ade80; letter-spacing: 6px;
             text-transform: uppercase;
         }
         .sgq-loading-divider {
-            width: 60px; height: 3px;
-            background: linear-gradient(to right, #1a2a6e, #c0392b);
+            width: 60px; height: 2px;
+            background: linear-gradient(to right, #4ade80, #22c55e);
             border-radius: 4px;
         }
         .sgq-spinner {
             width: 36px; height: 36px;
-            border: 3px solid rgba(26, 42, 110, 0.15);
-            border-top-color: #1a2a6e;
+            border: 2px solid rgba(74,222,128,0.15);
+            border-top-color: #4ade80;
             border-radius: 50%;
             animation: sgq-spin 0.8s linear infinite;
         }
         @keyframes sgq-spin { to { transform: rotate(360deg); } }
         .sgq-loading-text {
-            color: #1a2a6e; font-size: 13px; font-weight: 700;
+            color: rgba(255,255,255,0.4); font-size: 11px; font-weight: 600;
             letter-spacing: 2px; text-transform: uppercase;
             font-family: 'Montserrat', Arial, sans-serif;
-            opacity: 0.7;
         }
 
         /* =========================================================
@@ -121,7 +120,7 @@
         #loginScreen {
             display: none; align-items: center; justify-content: center;
             min-height: 100vh;
-            background: #f0f0ee;
+            background: #0f1623;
             position: relative; overflow: hidden;
             font-family: 'Montserrat', Arial, sans-serif;
         }
@@ -130,37 +129,38 @@
         #loginScreen::after  { content: none; }
         .login-wrapper {
             display: flex; border-radius: 18px; overflow: hidden;
-            box-shadow: 0 4px 40px rgba(0,0,0,0.10);
+            box-shadow: 0 24px 80px rgba(0,0,0,0.6);
             width: 740px; max-width: 96vw; position: relative; z-index: 1;
             min-height: 460px;
-            border: 0.5px solid #e2e2e0;
+            border: 1px solid rgba(255,255,255,0.08);
         }
-        /* PAINEL ESQUERDO — azul sólido, SEM ícone SVG */
+        /* PAINEL ESQUERDO */
         .login-panel-left {
             width: 220px; flex-shrink: 0;
-            background: #1a2a6e;
+            background: linear-gradient(160deg, #111c2e 0%, #0f1623 100%);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 40px 24px; position: relative; overflow: hidden;
+            border-right: 1px solid rgba(255,255,255,0.07);
         }
         .login-panel-left::before {
             content: '';
             position: absolute; inset: 0;
-            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 1px, transparent 0, transparent 50%);
+            background-image: repeating-linear-gradient(45deg, rgba(74,222,128,0.02) 0, rgba(74,222,128,0.02) 1px, transparent 0, transparent 50%);
             background-size: 18px 18px;
         }
         .login-panel-left::after {
             content: '';
-            position: absolute; bottom: 0; left: 0; right: 0; height: 4px;
-            background: #c0392b;
+            position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+            background: #4ade80;
         }
         .login-panel-left-content {
-            position: relative; z-index: 1; text-align: center; color: rgba(255,255,255,0.45);
+            position: relative; z-index: 1; text-align: center; color: rgba(255,255,255,0.3);
             font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
             line-height: 2;
         }
         /* CAIXA DIREITA */
         .login-box {
-            flex: 1; background: #ffffff;
+            flex: 1; background: #1a2235;
             padding: 48px 44px; display: flex; flex-direction: column; justify-content: center;
         }
         /* Logo SVG dentro do login-box */
@@ -169,7 +169,7 @@
         .login-logo .agronor-name  { display: none; }
         .login-logo .agronor-sub   { display: none; }
         .login-logo h1 {
-            font-size: 14px; font-weight: 700; color: #1a2a6e;
+            font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.7);
             margin-top: 16px; line-height: 1.5; letter-spacing: 0.3px;
         }
         .login-logo p { display: none; }
@@ -178,33 +178,34 @@
         .login-group { margin-bottom: 16px; position: relative; }
         .login-group label {
             display: block; font-size: 10px; font-weight: 700;
-            letter-spacing: 1.8px; text-transform: uppercase; color: #bbb; margin-bottom: 7px;
+            letter-spacing: 1.8px; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 7px;
         }
         .login-group .input-wrap { position: relative; }
         .login-group .input-icon { display: none; }
         .login-group input {
             width: 100%; padding: 12px 14px;
-            border: 1px solid #e5e5e3; border-radius: 9px;
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 9px;
             font-size: 13px; font-family: 'Montserrat', Arial, sans-serif;
-            font-weight: 500; color: #222; background: #fafaf9;
+            font-weight: 500; color: #fff; background: rgba(255,255,255,0.06);
             transition: border-color 0.15s, box-shadow 0.15s;
             box-sizing: border-box;
         }
-        .login-group input:focus { outline: none; border-color: #1a2a6e; box-shadow: 0 0 0 3px rgba(26,42,110,0.08); background: #fff; }
+        .login-group input::placeholder { color: rgba(255,255,255,0.2); }
+        .login-group input:focus { outline: none; border-color: #4ade80; box-shadow: 0 0 0 3px rgba(74,222,128,0.1); background: rgba(255,255,255,0.08); }
         .login-btn {
-            width: 100%; padding: 13px; background: #c0392b; color: white;
+            width: 100%; padding: 13px; background: #4ade80; color: #052e16;
             border: none; border-radius: 9px; font-size: 11px; font-weight: 800;
             cursor: pointer; margin-top: 4px; text-transform: uppercase; letter-spacing: 1.5px;
             transition: background 0.15s, transform 0.1s;
             font-family: 'Montserrat', Arial, sans-serif;
             box-shadow: none;
         }
-        .login-btn:hover { background: #a93226!important; transform: translateY(-1px); box-shadow: none; }
-        .login-footer { text-align: center; margin-top: 22px; font-size: 10px; color: #ccc; font-weight: 500; }
+        .login-btn:hover { background: #22c55e!important; transform: translateY(-1px); box-shadow: none; }
+        .login-footer { text-align: center; margin-top: 22px; font-size: 10px; color: rgba(255,255,255,0.2); font-weight: 500; }
         .login-error {
-            background: #fdf1f0; color: #c0392b; padding: 9px 12px;
+            background: rgba(239,68,68,0.1); color: #f87171; padding: 9px 12px;
             border-radius: 6px; font-size: 11px; font-weight: 600;
-            margin-bottom: 14px; display: none; border-left: 3px solid #c0392b;
+            margin-bottom: 14px; display: none; border-left: 3px solid #f43f5e;
         }
         .login-error.show { display: block; }
         @media (max-width: 600px) {
@@ -217,35 +218,36 @@
         #mainSystem { display: none; }
 
         /* HEADER */
-        .header { background: linear-gradient(to right, #0a1e7f, #1a3a9f); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header { background: #0f1623; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.07); }
         .header-left { display: flex; align-items: center; gap: 20px; }
         .header h1 { font-size: 22px; font-weight: bold; }
         .header-user { font-size: 12px; opacity: 0.85; }
         .header-user span { font-weight: bold; }
 
         /* NAVEGAÇÃO */
-        .nav-tabs { background: #1a3a9f; display: flex; gap: 2px; padding: 0 20px; border-bottom: 3px solid #0a1e7f; }
-        .nav-tab { padding: 10px 22px; color: rgba(255,255,255,0.7); cursor: pointer; font-size: 13px; font-weight: bold; border: none; background: none; border-bottom: 3px solid transparent; margin-bottom: -3px; transition: all 0.2s; text-transform: uppercase; }
-        .nav-tab:hover { color: white; background: rgba(255,255,255,0.08); }
-        .nav-tab.active { color: white; border-bottom: 3px solid #27ae60; background: rgba(255,255,255,0.1); }
+        .nav-tabs { background: #0f1623; display: flex; gap: 2px; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+        .nav-tab { padding: 10px 22px; color: rgba(255,255,255,0.45); cursor: pointer; font-size: 12px; font-weight: 700; border: none; background: none; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-tab:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.05); border-radius: 6px 6px 0 0; }
+        .nav-tab.active { color: #4ade80; border-bottom: 2px solid #4ade80; background: rgba(74,222,128,0.06); }
         /* ===== MENU DROPDOWN ===== */
         .nav-dropdown { position:relative; display:inline-flex; align-items:stretch; }
         .nav-dropdown-btn { display:flex; align-items:center; gap:4px; white-space:nowrap; }
         .nav-dropdown-menu {
             display:none; position:absolute; top:100%; left:0; z-index:2000;
-            background:#1a3a9f; min-width:200px; border-radius:0 0 6px 6px;
-            box-shadow:0 6px 16px rgba(0,0,0,0.35); border-top:2px solid #27ae60;
+            background:#1a2235; min-width:200px; border-radius:0 0 10px 10px;
+            box-shadow:0 16px 40px rgba(0,0,0,0.5); border-top:2px solid #4ade80;
+            border: 1px solid rgba(255,255,255,0.08); border-top:2px solid #4ade80;
         }
         .nav-dropdown.open .nav-dropdown-menu { display:block; }
         .nav-dropdown-item {
             display:block; width:100%; padding:10px 18px; background:none; border:none;
-            color:rgba(255,255,255,0.85); font-size:12px; font-weight:bold; cursor:pointer;
+            color:rgba(255,255,255,0.65); font-size:12px; font-weight:700; cursor:pointer;
             text-align:left; text-transform:uppercase; letter-spacing:0.3px;
-            transition:background 0.15s; border-bottom:1px solid rgba(255,255,255,0.08);
+            transition:background 0.15s; border-bottom:1px solid rgba(255,255,255,0.06);
         }
-        .nav-dropdown-item:hover { background:rgba(255,255,255,0.12); color:white; }
-        .nav-dropdown-item.active { background:rgba(39,174,96,0.2); color:#27ae60; }
-        .nav-dropdown-btn.active { border-bottom:3px solid #27ae60 !important; background:rgba(255,255,255,0.1) !important; color:white !important; }
+        .nav-dropdown-item:hover { background:rgba(74,222,128,0.08); color:#4ade80; }
+        .nav-dropdown-item.active { background:rgba(74,222,128,0.1); color:#4ade80; }
+        .nav-dropdown-btn.active { border-bottom:2px solid #4ade80 !important; background:rgba(74,222,128,0.06) !important; color:#4ade80 !important; }
 
         /* ===== CAPA PADRÃO IMPRESSÃO ===== */
         .rel-capa-wrap { display:none; }
@@ -253,24 +255,24 @@
         .rel-capa-wrap-rk { display:none; width:100%; overflow-x:auto; }
         .rel-capa-wrap-bol { display:none; width:100%; overflow-x:auto; }
         /* ===== SUB-ABAS DE CONFIGURAÇÕES ===== */
-        .cfg-sub-tabs { display:flex; flex-wrap:wrap; gap:4px; padding:14px 20px 0; background:#f0f3f8; border-bottom:2px solid #bdc3c7; }
-        .cfg-sub-tab { padding:9px 20px; border:none; border-radius:6px 6px 0 0; background:#dce3ef; color:#34495e; font-size:12px; font-weight:bold; cursor:pointer; text-transform:uppercase; letter-spacing:0.3px; transition:all 0.2s; border-bottom:3px solid transparent; margin-bottom:-2px; }
-        .cfg-sub-tab:hover { background:#c8d3e8; color:#1a2a6c; }
-        .cfg-sub-tab.cfg-sub-tab-active { background:white; color:#0a1e7f; border-bottom:3px solid #27ae60; box-shadow:0 -2px 6px rgba(0,0,0,0.08); }
-        .cfg-sub-panels { background:white; }
+        .cfg-sub-tabs { display:flex; flex-wrap:wrap; gap:4px; padding:14px 20px 0; background:#0f1623; border-bottom:1px solid rgba(255,255,255,0.07); }
+        .cfg-sub-tab { padding:9px 20px; border:none; border-radius:6px 6px 0 0; background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.45); font-size:12px; font-weight:bold; cursor:pointer; text-transform:uppercase; letter-spacing:0.3px; transition:all 0.2s; border-bottom:2px solid transparent; margin-bottom:-1px; }
+        .cfg-sub-tab:hover { background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.8); }
+        .cfg-sub-tab.cfg-sub-tab-active { background:#1a2235; color:#4ade80; border-bottom:2px solid #4ade80; }
+        .cfg-sub-panels { background:#1a2235; }
         .cfg-sub-panel { display:none; }
         .cfg-sub-panel.cfg-sub-panel-active { display:block; }
 
         /* CONTEÚDO DAS ABAS */
-        .tab-content { display: none; padding: 20px; }
+        .tab-content { display: none; padding: 20px; background: #0f1623; min-height: calc(100vh - 96px); }
         .tab-content.active { display: block; }
 
         /* BOTÕES GERAIS */
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.3s; }
-        .btn-primary { background: #27ae60; color: white; }
-        .btn-primary:hover { background: #229954; }
-        .btn-logout { background: #e74c3c; color: white; padding: 7px 16px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
-        .btn-logout:hover { background: #c0392b; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; transition: all 0.2s; }
+        .btn-primary { background: #4ade80; color: #052e16; }
+        .btn-primary:hover { background: #22c55e; }
+        .btn-logout { background: rgba(248,113,113,0.15); color: #f87171; padding: 7px 16px; font-size: 11px; border: 1px solid rgba(248,113,113,0.3); border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; font-family: 'Montserrat', Arial, sans-serif; }
+        .btn-logout:hover { background: rgba(248,113,113,0.25); }
 
         /* ===== MODAL WHATSAPP ALERTA ===== */
         #modalWhatsApp { display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); align-items:center; justify-content:center; }
@@ -1058,30 +1060,152 @@
         [data-theme="verde"]{--cor-primaria:#145a32;--cor-primaria-hover:#1e8449;--cor-secundaria:#1d4a2a;--cor-acento:#f39c12;--cor-acento-hover:#d68910;--cor-filtrar:#27ae60;--cor-filtrar-hover:#1e8449;--cor-login-bg1:#145a32;--cor-login-bg2:#1e8449;--cor-login-bg3:#0e4024;}
         [data-theme="cinza"]{--cor-primaria:#2c3e50;--cor-primaria-hover:#34495e;--cor-secundaria:#1a252f;--cor-acento:#e67e22;--cor-acento-hover:#ca6f1e;--cor-filtrar:#7f8c8d;--cor-filtrar-hover:#616a6b;--cor-login-bg1:#2c3e50;--cor-login-bg2:#34495e;--cor-login-bg3:#1a252f;}
         [data-theme="vinho"]{--cor-primaria:#6d1a36;--cor-primaria-hover:#922b47;--cor-secundaria:#4a1228;--cor-acento:#c0392b;--cor-acento-hover:#a93226;--cor-filtrar:#8e44ad;--cor-filtrar-hover:#7d3c98;--cor-login-bg1:#6d1a36;--cor-login-bg2:#922b47;--cor-login-bg3:#4a1228;}
+        [data-theme="dark"]{--cor-primaria:#0f1623;--cor-primaria-hover:#1a2235;--cor-secundaria:#1a2235;--cor-acento:#4ade80;--cor-acento-hover:#22c55e;--cor-filtrar:#60a5fa;--cor-filtrar-hover:#3b82f6;--cor-login-bg1:#0f1623;--cor-login-bg2:#1a2235;--cor-login-bg3:#0a1018;}
 
-        #loginScreen{background:#f0f0ee!important;}
-        .login-btn{background:#c0392b!important;}
-        .login-btn:hover{background:#a93226!important;}
-        .header{background:linear-gradient(to right,var(--cor-primaria),var(--cor-primaria-hover))!important;}
-        .nav-tabs{background:var(--cor-primaria-hover)!important;border-bottom-color:var(--cor-primaria)!important;}
-        .nav-tab.active{border-bottom-color:var(--cor-acento)!important;}
-        .btn-primary{background:var(--cor-acento)!important;}
-        .btn-primary:hover{background:var(--cor-acento-hover)!important;}
-        .btn-filtrar{background:var(--cor-filtrar)!important;}
-        .btn-filtrar:hover{background:var(--cor-filtrar-hover)!important;}
-        .btn-scroll-tabela{background:var(--cor-secundaria)!important;}
-        .btn-scroll-tabela:hover{background:var(--cor-primaria-hover)!important;}
-        table th{background:var(--cor-secundaria)!important;}
-        .modal-header{background:linear-gradient(to right,var(--cor-primaria),var(--cor-primaria-hover))!important;}
-        .form-section h3{background:var(--cor-secundaria)!important;}
-        .btn-salvar{background:var(--cor-acento)!important;}
-        .btn-salvar:hover{background:var(--cor-acento-hover)!important;}
-        .btn-edit{background:var(--cor-filtrar)!important;}
-        .btn-print{background:var(--cor-acento)!important;}
-        .btn-print:hover{background:var(--cor-acento-hover)!important;}
-        .secao-title{border-bottom-color:var(--cor-filtrar)!important;}
-        .msg-info-rel{border-left-color:var(--cor-filtrar)!important;}
-        .relatorio-title{border-bottom-color:var(--cor-secundaria)!important;}
+        /* Overrides globais para tema dark */
+        [data-theme="dark"] body{background:#0f1623!important;color:#fff!important;}
+        [data-theme="dark"] #loginScreen{background:#0f1623!important;}
+        [data-theme="dark"] .login-box{background:#1a2235!important;}
+        [data-theme="dark"] .login-group input{background:rgba(255,255,255,0.06)!important;border-color:rgba(255,255,255,0.1)!important;color:#fff!important;}
+        [data-theme="dark"] .login-group input:focus{border-color:#4ade80!important;background:rgba(255,255,255,0.09)!important;}
+        [data-theme="dark"] .login-group input::placeholder{color:rgba(255,255,255,0.2)!important;}
+        [data-theme="dark"] .login-group label{color:rgba(255,255,255,0.35)!important;}
+        [data-theme="dark"] .login-logo h1{color:rgba(255,255,255,0.7)!important;}
+        [data-theme="dark"] .login-footer{color:rgba(255,255,255,0.2)!important;}
+        [data-theme="dark"] .login-btn{background:#4ade80!important;color:#052e16!important;}
+        [data-theme="dark"] .login-btn:hover{background:#22c55e!important;}
+        [data-theme="dark"] .header{background:#0f1623!important;border-bottom:1px solid rgba(255,255,255,0.07)!important;}
+        [data-theme="dark"] .nav-tabs{background:#0f1623!important;border-bottom:1px solid rgba(255,255,255,0.07)!important;}
+        [data-theme="dark"] .nav-tab{color:rgba(255,255,255,0.45)!important;}
+        [data-theme="dark"] .nav-tab:hover{color:rgba(255,255,255,0.85)!important;background:rgba(255,255,255,0.05)!important;}
+        [data-theme="dark"] .nav-tab.active{color:#4ade80!important;border-bottom-color:#4ade80!important;background:rgba(74,222,128,0.06)!important;}
+        [data-theme="dark"] .nav-dropdown-menu{background:#1a2235!important;border:1px solid rgba(255,255,255,0.08)!important;border-top:2px solid #4ade80!important;}
+        [data-theme="dark"] .nav-dropdown-item{color:rgba(255,255,255,0.65)!important;border-bottom:1px solid rgba(255,255,255,0.06)!important;}
+        [data-theme="dark"] .nav-dropdown-item:hover{background:rgba(74,222,128,0.08)!important;color:#4ade80!important;}
+        [data-theme="dark"] .nav-dropdown-btn.active{color:#4ade80!important;border-bottom-color:#4ade80!important;}
+        [data-theme="dark"] .tab-content{background:#0f1623!important;}
+        [data-theme="dark"] #abaCapa{background:#0f1623!important;}
+        [data-theme="dark"] .capa-kpi{background:#1a2235!important;border-color:rgba(255,255,255,0.07)!important;}
+        [data-theme="dark"] .capa-kpi-label{color:rgba(255,255,255,0.35)!important;}
+        [data-theme="dark"] .capa-kpi-sub{color:rgba(255,255,255,0.35)!important;}
+        [data-theme="dark"] .capa-kpi-bar{background:rgba(255,255,255,0.08)!important;}
+        [data-theme="dark"] .capa-kpi-icon{background:rgba(255,255,255,0.06)!important;}
+        [data-theme="dark"] .capa-welcome-left h2{color:#fff!important;}
+        [data-theme="dark"] .capa-welcome-left p{color:rgba(255,255,255,0.4)!important;}
+        [data-theme="dark"] .capa-welcome-date{color:rgba(255,255,255,0.3)!important;}
+        [data-theme="dark"] .capa-sec-title{color:rgba(255,255,255,0.25)!important;}
+        [data-theme="dark"] .capa-card{background:#1a2235!important;border-color:rgba(255,255,255,0.07)!important;}
+        [data-theme="dark"] .capa-card:hover{border-color:rgba(74,222,128,0.4)!important;background:rgba(74,222,128,0.05)!important;}
+        [data-theme="dark"] .capa-card-label{color:#fff!important;}
+        [data-theme="dark"] .capa-card-desc{color:rgba(255,255,255,0.35)!important;}
+        [data-theme="dark"] .capa-card-arrow{color:rgba(255,255,255,0.2)!important;}
+        [data-theme="dark"] .capa-card:hover .capa-card-arrow{color:#4ade80!important;}
+        [data-theme="dark"] .capa-panel{background:#1a2235!important;border-color:rgba(255,255,255,0.07)!important;}
+        [data-theme="dark"] .capa-panel-head h3{color:rgba(255,255,255,0.6)!important;}
+        [data-theme="dark"] .capa-panel-see{color:#4ade80!important;}
+        [data-theme="dark"] .capa-act-row{border-bottom-color:rgba(255,255,255,0.05)!important;}
+        [data-theme="dark"] .capa-act-text{color:rgba(255,255,255,0.5)!important;}
+        [data-theme="dark"] .capa-act-time{color:rgba(255,255,255,0.2)!important;}
+        [data-theme="dark"] .capa-st-name{color:rgba(255,255,255,0.5)!important;}
+        [data-theme="dark"] .capa-st-val{color:rgba(255,255,255,0.8)!important;}
+        [data-theme="dark"] .capa-st-row{border-bottom-color:rgba(255,255,255,0.05)!important;}
+        [data-theme="dark"] .capa-rodape{color:rgba(255,255,255,0.2)!important;}
+        [data-theme="dark"] .capa-rodape strong{color:rgba(255,255,255,0.3)!important;}
+        [data-theme="dark"] .kpi-mod{background:#1a2235!important;border-color:rgba(255,255,255,0.07)!important;}
+        [data-theme="dark"] .kpi-mod-label{color:rgba(255,255,255,0.3)!important;}
+        [data-theme="dark"] .kpi-mod-bar{background:rgba(255,255,255,0.08)!important;}
+        [data-theme="dark"] .kpi-mod-sub{color:rgba(255,255,255,0.3)!important;}
+        [data-theme="dark"] .capa-alertas-titulo{color:rgba(255,255,255,0.3)!important;}
+        [data-theme="dark"] .alerta-item{background:#1a2235!important;border-color:rgba(255,255,255,0.07)!important;}
+        [data-theme="dark"] .alerta-titulo{color:#fff!important;}
+        [data-theme="dark"] .alerta-desc{color:rgba(255,255,255,0.4)!important;}
+        [data-theme="dark"] .sem-alertas{background:#1a2235!important;color:rgba(255,255,255,0.3)!important;border-color:rgba(255,255,255,0.1)!important;}
+        [data-theme="dark"] .trend-up{color:#4ade80!important;}
+        [data-theme="dark"] .trend-down{color:#f87171!important;}
+        [data-theme="dark"] .pill-ok{background:rgba(74,222,128,0.12)!important;color:#4ade80!important;}
+        [data-theme="dark"] .pill-att{background:rgba(251,191,36,0.12)!important;color:#fbbf24!important;}
+        [data-theme="dark"] .pill-er{background:rgba(248,113,113,0.12)!important;color:#f87171!important;}
+        [data-theme="dark"] .btn-logout{background:rgba(248,113,113,0.15)!important;color:#f87171!important;border:1px solid rgba(248,113,113,0.3)!important;}
+        [data-theme="dark"] .btn-primary{background:#4ade80!important;color:#052e16!important;}
+        [data-theme="dark"] .btn-primary:hover{background:#22c55e!important;}
+        [data-theme="dark"] .container,.cfg-sub-panels,[data-theme="dark"] .container,[data-theme="dark"] .cfg-sub-panels{background:#1a2235!important;}
+        [data-theme="dark"] .cfg-sub-tabs{background:#0f1623!important;border-bottom-color:rgba(255,255,255,0.07)!important;}
+        [data-theme="dark"] .cfg-sub-tab{background:rgba(255,255,255,0.04)!important;color:rgba(255,255,255,0.4)!important;}
+        [data-theme="dark"] .cfg-sub-tab:hover{background:rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.8)!important;}
+        [data-theme="dark"] .cfg-sub-tab.cfg-sub-tab-active{background:#1a2235!important;color:#4ade80!important;border-bottom-color:#4ade80!important;}
+        [data-theme="dark"] table th{background:#1a2235!important;color:#fff!important;}
+        [data-theme="dark"] table td{border-color:rgba(255,255,255,0.06)!important;}
+        [data-theme="dark"] table tr:nth-child(even){background:rgba(255,255,255,0.02)!important;}
+        [data-theme="dark"] table tr:hover{background:rgba(255,255,255,0.04)!important;}
+        [data-theme="dark"] .modal-header{background:#1a2235!important;border-bottom:1px solid rgba(255,255,255,0.1)!important;}
+        [data-theme="dark"] .form-section h3{background:#1a2235!important;color:rgba(255,255,255,0.6)!important;}
+        [data-theme="dark"] .btn-salvar{background:#4ade80!important;color:#052e16!important;}
+        [data-theme="dark"] .btn-salvar:hover{background:#22c55e!important;}
+        [data-theme="dark"] .btn-edit{background:#60a5fa!important;}
+        [data-theme="dark"] .btn-print{background:#4ade80!important;color:#052e16!important;}
+        [data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:#0f1623!important;color:#fff!important;border-color:rgba(255,255,255,0.12)!important;}
+        [data-theme="dark"] input:focus,[data-theme="dark"] select:focus,[data-theme="dark"] textarea:focus{border-color:#4ade80!important;box-shadow:0 0 0 3px rgba(74,222,128,0.1)!important;}
+        [data-theme="dark"] label{color:rgba(255,255,255,0.6)!important;}
+        [data-theme="dark"] .sgq-loading-overlay,[data-theme="dark"] #sgq-loading-overlay{background:#0f1623!important;}
+
+        /* Regras para temas CLARO (padrão) */
+        :not([data-theme="dark"]) #loginScreen{background:#f0f0ee!important;}
+        :not([data-theme="dark"]) .login-btn{background:#c0392b!important;}
+        :not([data-theme="dark"]) .login-btn:hover{background:#a93226!important;}
+        :not([data-theme="dark"]) .login-box{background:#fff!important;}
+        :not([data-theme="dark"]) .login-group input{background:#fafaf9!important;color:#222!important;border-color:#e5e5e3!important;}
+        :not([data-theme="dark"]) .login-logo h1{color:#1a2a6e!important;}
+        :not([data-theme="dark"]) .header{background:linear-gradient(to right,var(--cor-primaria),var(--cor-primaria-hover))!important;}
+        :not([data-theme="dark"]) .nav-tabs{background:var(--cor-primaria-hover)!important;border-bottom-color:var(--cor-primaria)!important;}
+        :not([data-theme="dark"]) .nav-tab{color:rgba(255,255,255,0.7)!important;}
+        :not([data-theme="dark"]) .nav-tab:hover{color:#fff!important;background:rgba(255,255,255,0.08)!important;}
+        :not([data-theme="dark"]) .nav-tab.active{color:#fff!important;border-bottom-color:var(--cor-acento)!important;background:rgba(255,255,255,0.1)!important;}
+        :not([data-theme="dark"]) .nav-dropdown-menu{background:var(--cor-primaria-hover)!important;border-top:2px solid var(--cor-acento)!important;}
+        :not([data-theme="dark"]) .nav-dropdown-item{color:rgba(255,255,255,0.85)!important;}
+        :not([data-theme="dark"]) .nav-dropdown-item:hover{background:rgba(255,255,255,0.12)!important;color:#fff!important;}
+        :not([data-theme="dark"]) .tab-content{background:#f5f5f5!important;}
+        :not([data-theme="dark"]) #abaCapa{background:#f2f2f0!important;}
+        :not([data-theme="dark"]) .capa-kpi{background:#fff!important;border-color:#e8e8e6!important;}
+        :not([data-theme="dark"]) .capa-kpi-label{color:#b0b0ae!important;}
+        :not([data-theme="dark"]) .capa-welcome-left h2{color:#1a2a6e!important;}
+        :not([data-theme="dark"]) .capa-welcome-left p{color:#aaa!important;}
+        :not([data-theme="dark"]) .capa-sec-title{color:#c0c0be!important;}
+        :not([data-theme="dark"]) .capa-card{background:#fff!important;border-color:#e8e8e6!important;}
+        :not([data-theme="dark"]) .capa-card:hover{border-color:#1a2a6e!important;}
+        :not([data-theme="dark"]) .capa-card-label{color:#1a2a6e!important;}
+        :not([data-theme="dark"]) .capa-card-desc{color:#bbb!important;}
+        :not([data-theme="dark"]) .capa-panel{background:#fff!important;border-color:#e8e8e6!important;}
+        :not([data-theme="dark"]) .capa-panel-head h3{color:#1a2a6e!important;}
+        :not([data-theme="dark"]) .capa-panel-see{color:#c0392b!important;}
+        :not([data-theme="dark"]) .alerta-item{background:#fff!important;border-color:#e8e8e6!important;}
+        :not([data-theme="dark"]) .alerta-titulo{color:#2c3e50!important;}
+        :not([data-theme="dark"]) .alerta-desc{color:#888!important;}
+        :not([data-theme="dark"]) .sem-alertas{background:#f8f8f7!important;color:#bbb!important;}
+        :not([data-theme="dark"]) .kpi-mod{background:#f8f8f7!important;}
+        :not([data-theme="dark"]) .kpi-mod-label{color:#aaa!important;}
+        :not([data-theme="dark"]) .trend-up{color:#27ae60!important;}
+        :not([data-theme="dark"]) .trend-down{color:#c0392b!important;}
+        :not([data-theme="dark"]) .pill-ok{background:#edfaf4!important;color:#27ae60!important;}
+        :not([data-theme="dark"]) .pill-att{background:#fef9ee!important;color:#e5a000!important;}
+        :not([data-theme="dark"]) .pill-er{background:#fef0ee!important;color:#c0392b!important;}
+        :not([data-theme="dark"]) .btn-logout{background:#e74c3c!important;color:#fff!important;border:none!important;}
+        :not([data-theme="dark"]) .btn-primary{background:var(--cor-acento)!important;color:#fff!important;}
+        :not([data-theme="dark"]) .btn-primary:hover{background:var(--cor-acento-hover)!important;}
+        :not([data-theme="dark"]) table th{background:var(--cor-secundaria)!important;}
+        :not([data-theme="dark"]) .modal-header{background:linear-gradient(to right,var(--cor-primaria),var(--cor-primaria-hover))!important;}
+        :not([data-theme="dark"]) .form-section h3{background:var(--cor-secundaria)!important;}
+        :not([data-theme="dark"]) .btn-salvar{background:var(--cor-acento)!important;}
+        :not([data-theme="dark"]) .btn-print{background:var(--cor-acento)!important;color:#fff!important;}
+        :not([data-theme="dark"]) .btn-filtrar{background:var(--cor-filtrar)!important;}
+        :not([data-theme="dark"]) .btn-filtrar:hover{background:var(--cor-filtrar-hover)!important;}
+        :not([data-theme="dark"]) .btn-scroll-tabela{background:var(--cor-secundaria)!important;}
+        :not([data-theme="dark"]) .secao-title{border-bottom-color:var(--cor-filtrar)!important;}
+        :not([data-theme="dark"]) .msg-info-rel{border-left-color:var(--cor-filtrar)!important;}
+        :not([data-theme="dark"]) .relatorio-title{border-bottom-color:var(--cor-secundaria)!important;}
+        :not([data-theme="dark"]) .cfg-sub-tabs{background:#f0f3f8!important;border-bottom:2px solid #bdc3c7!important;}
+        :not([data-theme="dark"]) .cfg-sub-tab{background:#dce3ef!important;color:#34495e!important;}
+        :not([data-theme="dark"]) .cfg-sub-tab.cfg-sub-tab-active{background:#fff!important;color:#0a1e7f!important;border-bottom-color:#27ae60!important;}
+        :not([data-theme="dark"]) .cfg-sub-panels{background:#fff!important;}
 
         .theme-switcher{display:flex;align-items:center;gap:6px;}
         .theme-switcher-label{font-size:11px;color:rgba(255,255,255,0.75);font-weight:bold;text-transform:uppercase;white-space:nowrap;}
@@ -1166,10 +1290,10 @@
         .badge-perm-on  { background: #d5f4e6; color: #1a7a45; border: 1px solid #a8d8a8; }
         .badge-perm-off { background: #f5f5f5; color: #aaa; border: 1px solid #e0e0e0; text-decoration: line-through; }
 
-        /* ========== TELA DE CAPA — CLEAN DASHBOARD ========== */
+        /* ========== TELA DE CAPA — DARK DASHBOARD ========== */
         #abaCapa {
             min-height: calc(100vh - 96px);
-            background: #f2f2f0;
+            background: #0f1623;
             display: flex; flex-direction: column;
             position: relative; overflow: hidden; padding: 28px 28px 20px;
         }
@@ -1177,107 +1301,107 @@
         #abaCapa::after  { content: none; }
         /* Saudação */
         .capa-welcome { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
-        .capa-welcome-left h2 { font-size: 17px; font-weight: 800; color: #1a2a6e; font-family: 'Montserrat', Arial, sans-serif; }
-        .capa-welcome-left p  { font-size: 11px; color: #aaa; font-weight: 500; margin-top: 3px; font-family: 'Montserrat', Arial, sans-serif; }
-        .capa-welcome-date { font-size: 10px; font-weight: 600; color: #bbb; letter-spacing: .5px; text-transform: uppercase; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-welcome-left h2 { font-size: 20px; font-weight: 800; color: #ffffff; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-welcome-left p  { font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 500; margin-top: 4px; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-welcome-date { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3); letter-spacing: .5px; text-transform: uppercase; font-family: 'Montserrat', Arial, sans-serif; }
         /* KPIs */
-        .capa-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+        .capa-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
         .capa-kpi {
-            background: #fff; border-radius: 14px;
-            border: 0.5px solid #e8e8e6;
-            padding: 20px 22px 16px;
+            background: #1a2235; border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.07);
+            padding: 20px 20px 16px;
             display: flex; flex-direction: column; gap: 0;
             position: relative; overflow: hidden;
-            transition: box-shadow .18s, transform .18s;
+            transition: border-color .18s, transform .18s;
         }
-        .capa-kpi:hover { box-shadow: 0 6px 24px rgba(26,42,110,0.10); transform: translateY(-2px); }
-        .capa-kpi-accent { position: absolute; top: 0; left: 0; right: 0; height: 4px; border-radius: 14px 14px 0 0; }
-        .capa-kpi-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
-        .capa-kpi-label { font-size: 9px; font-weight: 800; letter-spacing: 1.8px; text-transform: uppercase; color: #b0b0ae; font-family: 'Montserrat', Arial, sans-serif; }
-        .capa-kpi-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
-        .capa-kpi-value { font-size: 38px; font-weight: 900; line-height: 1; font-family: 'Montserrat', Arial, sans-serif; letter-spacing: -1px; margin-bottom: 6px; }
+        .capa-kpi:hover { border-color: rgba(255,255,255,0.15); transform: translateY(-2px); }
+        .capa-kpi-accent { position: absolute; top: 0; left: 0; right: 0; height: 2px; border-radius: 0; }
+        .capa-kpi-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+        .capa-kpi-label { font-size: 9px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.35); font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-kpi-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; background: rgba(255,255,255,0.06); }
+        .capa-kpi-value { font-size: 36px; font-weight: 900; line-height: 1; font-family: 'Montserrat', Arial, sans-serif; letter-spacing: -1px; margin-bottom: 6px; }
         .capa-kpi-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-        .capa-kpi-sub { font-size: 10px; font-weight: 600; font-family: 'Montserrat', Arial, sans-serif; flex-shrink: 0; }
+        .capa-kpi-sub { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.35); font-family: 'Montserrat', Arial, sans-serif; flex-shrink: 0; }
         .capa-kpi-badge { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 20px; font-family: 'Montserrat', Arial, sans-serif; letter-spacing: .3px; white-space: nowrap; flex-shrink: 0; }
-        .capa-kpi-up   { color: #27ae60; }
-        .capa-kpi-down { color: #c0392b; }
-        .capa-kpi-bar  { height: 6px; background: #f0f0ee; border-radius: 6px; overflow: hidden; }
-        .capa-kpi-bar-fill { height: 100%; border-radius: 6px; transition: width .6s ease; }
+        .capa-kpi-up   { color: #4ade80; }
+        .capa-kpi-down { color: #f87171; }
+        .capa-kpi-bar  { height: 3px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+        .capa-kpi-bar-fill { height: 100%; border-radius: 3px; transition: width .6s ease; }
         /* Seção título */
-        .capa-sec-title { font-size: 9.5px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #c0c0be; margin-bottom: 14px; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-sec-title { font-size: 9.5px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.25); margin-bottom: 14px; font-family: 'Montserrat', Arial, sans-serif; }
         /* Módulos */
         .capa-inner { position: relative; z-index: 1; width: 100%; }
         .capa-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; }
-        .capa-card { background: #fff; border-radius: 10px; border: 0.5px solid #e8e8e6; padding: 16px 18px; cursor: pointer; transition: all .18s; display: flex; align-items: center; gap: 14px; }
-        .capa-card:hover { border-color: #1a2a6e; box-shadow: 0 4px 16px rgba(26,42,110,0.08); transform: translateY(-1px); }
-        .capa-card-icon { width: 40px; height: 40px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; background: #eef2ff; }
+        .capa-card { background: #1a2235; border-radius: 12px; border: 1px solid rgba(255,255,255,0.07); padding: 16px 18px; cursor: pointer; transition: all .18s; display: flex; align-items: center; gap: 14px; }
+        .capa-card:hover { border-color: rgba(74,222,128,0.4); background: rgba(74,222,128,0.05); transform: translateY(-2px); }
+        .capa-card-icon { width: 40px; height: 40px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; background: rgba(255,255,255,0.06); }
         .capa-card-info { flex: 1; }
-        .capa-card-label { font-size: 12px; font-weight: 700; color: #1a2a6e; font-family: 'Montserrat', Arial, sans-serif; }
-        .capa-card-desc  { font-size: 10px; color: #bbb; font-weight: 500; margin-top: 2px; font-family: 'Montserrat', Arial, sans-serif; }
-        .capa-card-arrow { font-size: 14px; color: #ddd; }
-        .capa-card:hover .capa-card-arrow { color: #1a2a6e; }
+        .capa-card-label { font-size: 12px; font-weight: 700; color: #fff; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-card-desc  { font-size: 10px; color: rgba(255,255,255,0.35); font-weight: 500; margin-top: 2px; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-card-arrow { font-size: 16px; color: rgba(255,255,255,0.2); }
+        .capa-card:hover .capa-card-arrow { color: #4ade80; }
         /* Painéis inferiores */
         .capa-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-        .capa-panel { background: #fff; border-radius: 10px; border: 0.5px solid #e8e8e6; padding: 18px 20px; }
+        .capa-panel { background: #1a2235; border-radius: 14px; border: 1px solid rgba(255,255,255,0.07); padding: 18px 20px; }
         .capa-panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-        .capa-panel-head h3 { font-size: 11px; font-weight: 700; color: #1a2a6e; font-family: 'Montserrat', Arial, sans-serif; }
-        .capa-panel-see { font-size: 10px; font-weight: 700; color: #c0392b; background: none; border: none; cursor: pointer; font-family: 'Montserrat', Arial, sans-serif; }
-        .capa-act-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 0.5px solid #f4f4f2; }
+        .capa-panel-head h3 { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.6); font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-panel-see { font-size: 10px; font-weight: 700; color: #4ade80; background: none; border: none; cursor: pointer; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-act-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .capa-act-row:last-child { border-bottom: none; }
         .capa-act-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-        .dot-g { background: #27ae60; } .dot-b { background: #3498db; } .dot-a { background: #f39c12; } .dot-r { background: #e74c3c; }
-        .capa-act-text { flex: 1; font-size: 11px; color: #555; font-weight: 500; font-family: 'Montserrat', Arial, sans-serif; }
-        .capa-act-time { font-size: 10px; color: #ccc; font-weight: 500; white-space: nowrap; font-family: 'Montserrat', Arial, sans-serif; }
-        .capa-st-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 0.5px solid #f4f4f2; }
+        .dot-g { background: #4ade80; } .dot-b { background: #60a5fa; } .dot-a { background: #fbbf24; } .dot-r { background: #f87171; }
+        .capa-act-text { flex: 1; font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 500; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-act-time { font-size: 10px; color: rgba(255,255,255,0.2); font-weight: 500; white-space: nowrap; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-st-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .capa-st-row:last-child { border-bottom: none; }
-        .capa-st-name { font-size: 11px; font-weight: 600; color: #555; font-family: 'Montserrat', Arial, sans-serif; }
+        .capa-st-name { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); font-family: 'Montserrat', Arial, sans-serif; }
         .capa-st-pill { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 20px; letter-spacing: .5px; }
-        .pill-ok  { background: #edfaf4; color: #27ae60; }
-        .pill-att { background: #fef9ee; color: #e5a000; }
-        .pill-er  { background: #fef0ee; color: #c0392b; }
-        .capa-st-val { font-size: 11px; font-weight: 700; color: #1a2a6e; font-family: 'Montserrat', Arial, sans-serif; }
+        .pill-ok  { background: rgba(74,222,128,0.12); color: #4ade80; }
+        .pill-att { background: rgba(251,191,36,0.12); color: #fbbf24; }
+        .pill-er  { background: rgba(248,113,113,0.12); color: #f87171; }
+        .capa-st-val { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.8); font-family: 'Montserrat', Arial, sans-serif; }
         /* Rodapé capa */
-        .capa-rodape { font-size: 9px; color: #ccc; letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', Arial, sans-serif; margin-top: 14px; display: flex; justify-content: space-between; }
-        .capa-rodape strong { color: #bbb; font-weight: 600; }
+        .capa-rodape { font-size: 9px; color: rgba(255,255,255,0.2); letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', Arial, sans-serif; margin-top: 14px; display: flex; justify-content: space-between; }
+        .capa-rodape strong { color: rgba(255,255,255,0.3); font-weight: 600; }
         /* ocultar elementos antigos */
         .capa-badge, .capa-logo-circle, .capa-title, .capa-sub, .capa-divider { display: none !important; }
 
         /* ── KPI cards — linha de módulos ── */
         .capa-kpi-modulos { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 8px; }
-        .kpi-mod { background:#f8f8f7; border-radius:9px; padding:10px 14px; border-left:3px solid #ddd; }
-        .kpi-mod-label { font-size:9px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:#aaa; font-family:'Montserrat',Arial,sans-serif; margin-bottom:4px; }
+        .kpi-mod { background:#1a2235; border-radius:9px; padding:12px 16px; border-left:2px solid rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.07); border-left:2px solid rgba(255,255,255,0.15); }
+        .kpi-mod-label { font-size:9px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:rgba(255,255,255,0.3); font-family:'Montserrat',Arial,sans-serif; margin-bottom:4px; }
         .kpi-mod-row { display:flex; align-items:baseline; gap:6px; }
-        .kpi-mod-val { font-size:20px; font-weight:900; font-family:'Montserrat',Arial,sans-serif; line-height:1; }
+        .kpi-mod-val { font-size:22px; font-weight:900; font-family:'Montserrat',Arial,sans-serif; line-height:1; }
         .kpi-mod-pct { font-size:11px; font-weight:700; font-family:'Montserrat',Arial,sans-serif; }
-        .kpi-mod-bar { height:4px; background:#eee; border-radius:4px; margin-top:6px; overflow:hidden; }
-        .kpi-mod-bar-fill { height:100%; border-radius:4px; transition:width .6s ease; }
-        .kpi-mod-sub { font-size:9px; color:#bbb; font-weight:600; font-family:'Montserrat',Arial,sans-serif; margin-top:3px; }
+        .kpi-mod-bar { height:3px; background:rgba(255,255,255,0.08); border-radius:3px; margin-top:8px; overflow:hidden; }
+        .kpi-mod-bar-fill { height:100%; border-radius:3px; transition:width .6s ease; }
+        .kpi-mod-sub { font-size:9px; color:rgba(255,255,255,0.3); font-weight:600; font-family:'Montserrat',Arial,sans-serif; margin-top:4px; }
 
         /* ── Seta de tendência ── */
         .kpi-trend { font-size:11px; font-weight:800; margin-left:6px; font-family:'Montserrat',Arial,sans-serif; }
-        .trend-up   { color:#27ae60; }
-        .trend-down { color:#c0392b; }
-        .trend-eq   { color:#aaa; }
+        .trend-up   { color:#4ade80; }
+        .trend-down { color:#f87171; }
+        .trend-eq   { color:rgba(255,255,255,0.3); }
 
         /* ── Painel de alertas ── */
         .capa-alertas { margin-bottom:18px; }
-        .capa-alertas-titulo { font-size:9.5px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:#c0c0be; margin-bottom:10px; font-family:'Montserrat',Arial,sans-serif; display:flex; align-items:center; gap:8px; }
-        .alerta-badge-count { background:#c0392b; color:#fff; border-radius:20px; padding:1px 7px; font-size:9px; }
-        .alerta-item { display:flex; align-items:flex-start; gap:10px; background:#fff; border:0.5px solid #e8e8e6; border-left:3px solid #ccc; border-radius:8px; padding:10px 14px; margin-bottom:7px; cursor:pointer; transition:box-shadow .15s; }
-        .alerta-item:hover { box-shadow:0 2px 10px rgba(0,0,0,0.07); }
-        .alerta-item.critico { border-left-color:#c0392b; }
-        .alerta-item.alto    { border-left-color:#e67e22; }
-        .alerta-item.medio   { border-left-color:#f39c12; }
+        .capa-alertas-titulo { font-size:9.5px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,0.3); margin-bottom:10px; font-family:'Montserrat',Arial,sans-serif; display:flex; align-items:center; gap:8px; }
+        .alerta-badge-count { background:#f43f5e; color:#fff; border-radius:20px; padding:1px 7px; font-size:9px; }
+        .alerta-item { display:flex; align-items:flex-start; gap:10px; background:#1a2235; border:1px solid rgba(255,255,255,0.07); border-left:2px solid rgba(255,255,255,0.2); border-radius:10px; padding:12px 14px; margin-bottom:8px; cursor:pointer; transition:border-color .15s; }
+        .alerta-item:hover { border-color:rgba(255,255,255,0.2); }
+        .alerta-item.critico { border-left-color:#f43f5e; }
+        .alerta-item.alto    { border-left-color:#f59e0b; }
+        .alerta-item.medio   { border-left-color:#fbbf24; }
         .alerta-icone { font-size:15px; flex-shrink:0; margin-top:1px; }
         .alerta-corpo { flex:1; min-width:0; }
-        .alerta-titulo { font-size:11px; font-weight:700; color:#2c3e50; font-family:'Montserrat',Arial,sans-serif; margin-bottom:2px; }
-        .alerta-desc   { font-size:10px; color:#888; font-weight:500; font-family:'Montserrat',Arial,sans-serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .alerta-titulo { font-size:11px; font-weight:700; color:#fff; font-family:'Montserrat',Arial,sans-serif; margin-bottom:2px; }
+        .alerta-desc   { font-size:10px; color:rgba(255,255,255,0.4); font-weight:500; font-family:'Montserrat',Arial,sans-serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .alerta-tag { font-size:9px; font-weight:800; padding:2px 7px; border-radius:10px; white-space:nowrap; flex-shrink:0; align-self:center; font-family:'Montserrat',Arial,sans-serif; }
-        .tag-nc-critico { background:#fef0ee; color:#c0392b; }
-        .tag-nc-alto    { background:#fff3e0; color:#e67e22; }
-        .tag-param      { background:#fef9ee; color:#e5a000; }
-        .tag-vencido    { background:#fef0ee; color:#c0392b; }
-        .sem-alertas { text-align:center; padding:18px; color:#bbb; font-size:11px; font-family:'Montserrat',Arial,sans-serif; background:#f8f8f7; border-radius:8px; border:0.5px dashed #ddd; }
+        .tag-nc-critico { background:rgba(244,63,94,0.15); color:#f43f5e; }
+        .tag-nc-alto    { background:rgba(245,158,11,0.15); color:#f59e0b; }
+        .tag-param      { background:rgba(251,191,36,0.12); color:#fbbf24; }
+        .tag-vencido    { background:rgba(244,63,94,0.15); color:#f43f5e; }
+        .sem-alertas { text-align:center; padding:18px; color:rgba(255,255,255,0.3); font-size:11px; font-family:'Montserrat',Arial,sans-serif; background:#1a2235; border-radius:10px; border:1px dashed rgba(255,255,255,0.1); }
         @media (max-width:900px) { .capa-kpi-modulos { grid-template-columns:1fr 1fr 1fr; } }
         @media (max-width:600px) { .capa-kpi-modulos { grid-template-columns:1fr; } }
         @media (max-width: 900px) { .capa-kpis { grid-template-columns: repeat(2,1fr); } .capa-cards { grid-template-columns: repeat(2,1fr); } }
@@ -1297,35 +1421,7 @@
         /* ── Tabela de ranking: scroll horizontal na tela ── */
         #aba-ranking .tabela-container { overflow-x: auto; }
         #aba-ranking .tabela-ranking-detalhada table { min-width: 1100px; }
-    
-        /* =========================================================
-           AUTOCOMPLETE DE FORNECEDOR
-           ========================================================= */
-        .sgq-autocomplete-wrap { position: relative; width: 100%; display: block; }
-        .sgq-autocomplete-wrap input[type="text"] { width: 100% !important; box-sizing: border-box !important; }
-        .sgq-autocomplete-list {
-            position: absolute; top: 100%; left: 0; right: 0; z-index: 99999;
-            background: #fff; border: 1px solid #3498db; border-top: none;
-            border-radius: 0 0 6px 6px; max-height: 180px; overflow-y: auto;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none;
-        }
-        .sgq-autocomplete-list.open { display: block; }
-        .sgq-autocomplete-item {
-            padding: 7px 10px; font-size: 12px; cursor: pointer;
-            border-bottom: 1px solid #f0f0f0; color: #333;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            pointer-events: auto;
-        }
-        .sgq-autocomplete-item[title] { pointer-events: auto; }
-        .sgq-autocomplete-item:last-child { border-bottom: none; }
-        .sgq-autocomplete-item:hover, .sgq-autocomplete-item.active {
-            background: #eaf4fc; color: #1a2a6e; font-weight: 700;
-        }
-        .sgq-autocomplete-item mark {
-            background: #d6eaf8; color: #1a2a6e; font-weight: 700;
-            border-radius: 2px; padding: 0 1px;
-        }
-</style>
+    </style>
 </head>
 <body>
 
@@ -1360,7 +1456,7 @@
             <!-- L·Quality — assinatura discreta no rodapé do painel azul -->
             <div style="position:absolute;bottom:18px;left:0;right:0;text-align:center;z-index:2;">
                 <div style="font-family:'Montserrat',Arial,sans-serif;font-size:9px;font-weight:600;color:rgba(255,255,255,0.22);letter-spacing:4px;text-transform:uppercase;margin-bottom:3px;">Sistema</div>
-                <div style="font-family:'Montserrat',Arial Black,sans-serif;font-size:15px;font-weight:900;color:rgba(255,255,255,0.28);letter-spacing:3px;">L<span style="color:rgba(192,57,43,0.55);">·</span>Quality</div>
+                <div style="font-family:'Montserrat',Arial Black,sans-serif;font-size:15px;font-weight:900;color:rgba(255,255,255,0.2);letter-spacing:3px;">L<span style="color:rgba(74,222,128,0.5);">·</span>Quality</div>
             </div>
         </div>
         <!-- Painel direito: logo + formulário -->
@@ -1368,8 +1464,8 @@
             <div class="login-logo">
                 <!-- Logo AGRONOR ALIMENTOS — SVG fiel ao original -->
                 <svg viewBox="0 0 200 68" width="180" xmlns="http://www.w3.org/2000/svg" style="display:block;">
-                    <text x="0" y="44" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="34" fill="#1a2a6e" letter-spacing="1">AGRONOR</text>
-                    <text x="2" y="62" font-family="Montserrat,Arial,sans-serif" font-weight="700" font-size="11" fill="#c0392b" letter-spacing="5">ALIMENTOS</text>
+                    <text x="0" y="44" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="34" fill="#ffffff" letter-spacing="1">AGRONOR</text>
+                    <text x="2" y="62" font-family="Montserrat,Arial,sans-serif" font-weight="700" font-size="11" fill="#4ade80" letter-spacing="5">ALIMENTOS</text>
                 </svg>
                 <h1>Acesso ao Portal de Laboratório</h1>
             </div>
@@ -1397,21 +1493,21 @@
 <!-- ========== SISTEMA PRINCIPAL ========== -->
 <div id="mainSystem">
 
-    <div class="header" id="mainHeader" style="padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;">
+    <div class="header" id="mainHeader" style="padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;">
         <div class="header-left" style="display:flex;align-items:center;gap:16px;">
             <!-- Logo somente texto -->
             <svg viewBox="0 0 160 44" width="140" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0;">
                 <text x="0" y="28" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="19" fill="#ffffff" letter-spacing=".5">AGRONOR</text>
-                <text x="1" y="40" font-family="Montserrat,Arial,sans-serif" font-weight="700" font-size="7" fill="#c0392b" letter-spacing="3.5">ALIMENTOS</text>
+                <text x="1" y="40" font-family="Montserrat,Arial,sans-serif" font-weight="700" font-size="7" fill="#4ade80" letter-spacing="3.5">ALIMENTOS</text>
             </svg>
-            <div id="headerDivider" style="width:1px;height:24px;background:rgba(255,255,255,0.15);"></div>
-            <div id="headerSubtitle" style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.55);letter-spacing:1.5px;text-transform:uppercase;font-family:'Montserrat',Arial,sans-serif;">Gestão da Qualidade</div>
+            <div id="headerDivider" style="width:1px;height:24px;background:rgba(255,255,255,0.1);"></div>
+            <div id="headerSubtitle" style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:1.5px;text-transform:uppercase;font-family:'Montserrat',Arial,sans-serif;">Gestão da Qualidade</div>
         </div>
         <div style="display:flex;align-items:center;gap:14px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-                <div style="width:28px;height:28px;border-radius:50%;background:#c0392b;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;" id="headerAvatar">U</div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#4ade80,#22c55e);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#052e16;flex-shrink:0;" id="headerAvatar">U</div>
                 <div id="headerUserInfo">
-                    <div class="header-user" style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">
+                    <div class="header-user" style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);">
                         <span id="nomeUsuario"></span>
                     </div>
                     <span id="perfilBadge" style="font-size:9px;"></span>
@@ -4477,6 +4573,19 @@
                                 </div>
                             </div>
 
+                            <!-- Dark -->
+                            <div id="temaCard-dark" onclick="aplicarTema('dark')" style="cursor:pointer;border:2px solid #ddd;border-radius:10px;overflow:hidden;transition:all 0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.07);">
+                                <div style="height:70px;background:linear-gradient(135deg,#0f1623 40%,#1a2235 70%,#4ade80 150%);display:flex;align-items:center;justify-content:center;position:relative;">
+                                    <span style="font-size:28px;">🌑</span>
+                                    <span style="position:absolute;top:7px;right:9px;font-size:9px;font-weight:800;letter-spacing:1px;background:#4ade80;color:#052e16;padding:2px 7px;border-radius:20px;text-transform:uppercase;">NOVO</span>
+                                </div>
+                                <div style="padding:12px 14px;background:#111827;">
+                                    <div style="font-size:13px;font-weight:bold;color:#fff;">Dark Mode</div>
+                                    <div style="font-size:11px;color:#6b7280;margin-top:3px;">Interface escura moderna</div>
+                                    <div id="temaCheck-dark" style="margin-top:8px;font-size:11px;font-weight:bold;color:#4ade80;display:none;">✔ Ativo</div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -4933,7 +5042,7 @@
                 <div class="form-section">
                     <h3>Dados de Registro</h3>
                     <div class="form-grid form-grid-4">
-                        <div class="form-group required"><label>Data</label><div style="display:flex;align-items:center;gap:4px;"><input type="text" id="cadDataProd" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)" onchange="gerarLoteAutomatico()" style="flex:1;"><div style="display:flex;flex-direction:column;gap:2px;"><button type="button" title="Avançar um dia" onclick="alterarDataProd(1)" style="width:26px;height:20px;border:1px solid #ccc;border-radius:3px;background:#f0f0f0;cursor:pointer;font-size:11px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;">▲</button><button type="button" title="Recuar um dia" onclick="alterarDataProd(-1)" style="width:26px;height:20px;border:1px solid #ccc;border-radius:3px;background:#f0f0f0;cursor:pointer;font-size:11px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;">▼</button></div></div></div>
+                        <div class="form-group required"><label>Data</label><input type="text" id="cadDataProd" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)" onchange="gerarLoteAutomatico()"></div>
                         <div class="form-group"><label>Hora</label><input type="text" id="cadHoraProd" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" oninput="mascaraHora(this)" onchange="gerarLoteAutomatico()"></div>
                         <div class="form-group required">
                             <label>Ração</label>
@@ -5142,10 +5251,10 @@
                                 <button type="button" style="padding:4px 7px;background:#3498db;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:10px;" onclick="abrirModalNovaMateria()" title="Adicionar nova matéria prima">+</button>
                             </div>
                         </div>
-                        <div class="form-group"><label>Nota Fiscal</label><input type="text" id="cadNFMP"></div>
+                        <div class="form-group required"><label>Fornecedor</label><input type="text" id="cadFornecedorMP" required></div>
                     </div>
                     <div class="form-grid" style="grid-template-columns:1fr 1fr;">
-                        <div class="form-group required"><label>Fornecedor</label><input type="text" id="cadFornecedorMP" required></div>
+                        <div class="form-group"><label>Nota Fiscal</label><input type="text" id="cadNFMP"></div>
                     </div>
                 </div>
 
@@ -5254,135 +5363,11 @@ function dataParaDisplay(v) {
 }
 
 // Máscara automática para campo de data: digita 25032026 → 25/03/2026
-
-// =========================================================
-//  AUTOCOMPLETE DE FORNECEDOR
-// =========================================================
-function _getFornecedoresUnicos(modulo) {
-    // Coleta fornecedores únicos dos arrays já carregados
-    let arr = [];
-    if (modulo === 'class' || modulo === 'all') arr = arr.concat(classificacoes.map(r => r.fornecedor));
-    if (modulo === 'mp'    || modulo === 'all') arr = arr.concat(materiasPrimas.map(r => r.fornecedor));
-    // Deduplica e ordena (ignora vazios)
-    return [...new Set(arr.map(f => (f||'').toUpperCase().trim()).filter(Boolean))].sort();
-}
-
-function _highlightMatch(text, query) {
-    if (!query) return text;
-    const idx = text.toUpperCase().indexOf(query.toUpperCase());
-    if (idx === -1) return text;
-    return text.slice(0, idx) + '<mark>' + text.slice(idx, idx + query.length) + '</mark>' + text.slice(idx + query.length);
-}
-
-function initAutocompleteFornecedor(inputId, modulo) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-
-    // Cria wrapper se ainda não existir
-    if (!input.parentElement.classList.contains('sgq-autocomplete-wrap')) {
-        const wrap = document.createElement('div');
-        wrap.className = 'sgq-autocomplete-wrap';
-        input.parentNode.insertBefore(wrap, input);
-        wrap.appendChild(input);
-    }
-
-    // Cria lista dropdown
-    let list = input.parentElement.querySelector('.sgq-autocomplete-list');
-    if (!list) {
-        list = document.createElement('div');
-        list.className = 'sgq-autocomplete-list';
-        input.parentElement.appendChild(list);
-    }
-
-    let activeIdx = -1;
-
-    function showSuggestions(query) {
-        const fornecedores = _getFornecedoresUnicos(modulo);
-        const filtered = query
-            ? fornecedores.filter(f => f.includes(query.toUpperCase()))
-            : fornecedores.slice(0, 30);
-
-        if (!filtered.length) { list.classList.remove('open'); return; }
-
-        list.innerHTML = filtered.map((f, i) =>
-            `<div class="sgq-autocomplete-item" data-value="${f}" data-idx="${i}" title="">${_highlightMatch(f, query)}</div>`
-        ).join('');
-
-        list.classList.add('open');
-        activeIdx = -1;
-
-        list.querySelectorAll('.sgq-autocomplete-item').forEach(item => {
-            item.addEventListener('mousedown', e => {
-                e.preventDefault();
-                input.value = item.dataset.value;
-                list.classList.remove('open');
-                input.dispatchEvent(new Event('change'));
-            });
-        });
-    }
-
-    input.addEventListener('input', () => showSuggestions(input.value.trim()));
-    input.addEventListener('focus', () => showSuggestions(input.value.trim()));
-
-    input.addEventListener('keydown', e => {
-        const items = list.querySelectorAll('.sgq-autocomplete-item');
-        if (!items.length || !list.classList.contains('open')) return;
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            activeIdx = Math.min(activeIdx + 1, items.length - 1);
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            activeIdx = Math.max(activeIdx - 1, 0);
-        } else if (e.key === 'Enter' && activeIdx >= 0) {
-            e.preventDefault();
-            input.value = items[activeIdx].dataset.value;
-            list.classList.remove('open');
-        } else if (e.key === 'Escape') {
-            list.classList.remove('open');
-        }
-        items.forEach((it, i) => it.classList.toggle('active', i === activeIdx));
-        if (activeIdx >= 0) items[activeIdx].scrollIntoView({ block: 'nearest' });
-    });
-
-    document.addEventListener('click', e => {
-        if (!input.parentElement.contains(e.target)) list.classList.remove('open');
-    });
-}
-
-// Inicializa os autocompletes quando os modais forem abertos
-function _initAllAutocompletes() {
-    initAutocompleteFornecedor('cadFornecedorClass', 'class');
-    initAutocompleteFornecedor('cadFornecedorMP', 'mp');
-}
-// Aguarda o DOM estar pronto e dados carregados
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(_initAllAutocompletes, 2000);
-});
-
 function mascaraData(el) {
     let v = el.value.replace(/\D/g, '').slice(0, 8);
     if (v.length > 4) v = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
     else if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
     el.value = v;
-}
-
-// Incrementa ou decrementa a data do campo cadDataProd em N dias
-function alterarDataProd(dias) {
-    const el = document.getElementById('cadDataProd');
-    let val = el.value.trim();
-    let d;
-    if (val && val.length === 10) {
-        const parts = val.split('/');
-        d = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-    } else {
-        d = new Date();
-    }
-    d.setDate(d.getDate() + dias);
-    const dd = String(d.getDate()).padStart(2, '0');
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const aaaa = d.getFullYear();
-    el.value = `${dd}/${mm}/${aaaa}`;
-    gerarLoteAutomatico();
 }
 
 // Máscara automática para campo de hora: digita 2303 → 23:03
@@ -5428,7 +5413,7 @@ document.addEventListener('mouseover', function(e) {
 // ===================================================
 // TEMAS DE COR
 // ===================================================
-const TEMAS = ['azul','verde','cinza','vinho'];
+const TEMAS = ['azul','verde','cinza','vinho','dark'];
 function aplicarTema(tema) {
     if (!TEMAS.includes(tema)) tema = 'azul';
     document.documentElement.setAttribute('data-theme', tema);
@@ -5444,8 +5429,10 @@ function aplicarTema(tema) {
         const check = document.getElementById('temaCheck-' + t);
         if (card) {
             if (t === tema) {
-                card.style.border = '2px solid #27ae60';
-                card.style.boxShadow = '0 0 0 3px rgba(39,174,96,0.18)';
+                const corBorda = tema === 'dark' ? '#4ade80' : '#27ae60';
+                const corShadow = tema === 'dark' ? 'rgba(74,222,128,0.18)' : 'rgba(39,174,96,0.18)';
+                card.style.border = `2px solid ${corBorda}`;
+                card.style.boxShadow = `0 0 0 3px ${corShadow}`;
             } else {
                 card.style.border = '2px solid #ddd';
                 card.style.boxShadow = '0 2px 6px rgba(0,0,0,0.07)';
@@ -6038,6 +6025,10 @@ function trocarAba(aba, btn) {
         const parentBtn = parentDropdown.querySelector('.nav-dropdown-btn');
         if (parentBtn) parentBtn.classList.add('active');
     }
+    // ── Preenche filtros de data com o mês atual ao abrir relatórios ──
+    const abasRelatorio = ['relatorio','relClass','relMP','ranking','boletim','naoConformidade','entradaMP'];
+    if (abasRelatorio.includes(aba)) preencherFiltrosMesAtual(aba);
+
     if (aba === 'relatorio') inicializarRelatorio();
     if (aba === 'relClass')  inicializarRelClass();
     if (aba === 'ranking')   inicializarRanking();
@@ -6046,6 +6037,52 @@ function trocarAba(aba, btn) {
     if (aba === 'estoqueReagentes') { try { reagCarregarDados(); setTimeout(_reagInjetarCampoEmail, 500); } catch(e){} }
     if (aba === 'estoqueMateriais') { try { matCarregarDados(); } catch(e){} }
     if (aba === 'equipamentos') { try { eqCarregarDados(); } catch(e){} }
+}
+
+// ── Preenche os filtros de data do mês atual (início e fim) para cada relatório ──
+function preencherFiltrosMesAtual(aba) {
+    const hoje   = new Date();
+    const ano    = hoje.getFullYear();
+    const mes    = String(hoje.getMonth() + 1).padStart(2, '0');
+    const inicio = `${ano}-${mes}-01`;
+    // último dia do mês atual
+    const ultimoDia = new Date(ano, hoje.getMonth() + 1, 0).getDate();
+    const fim = `${ano}-${mes}-${String(ultimoDia).padStart(2, '0')}`;
+    const mesStr = `${ano}-${mes}`; // para inputs type="month"
+
+    const pares = {
+        relatorio:       ['relDataInicio',           'relDataFim'],
+        relClass:        ['rcDataInicio',             'rcDataFim'],
+        relMP:           ['rmpDataInicio',            'rmpDataFim'],
+        ranking:         ['rkDataInicio',             'rkDataFim'],
+        boletim:         ['bolDataInicio',            'bolDataFim'],
+        naoConformidade: ['nc-fi',                    'nc-ff'],
+        entradaMP:       ['filterDataInicioEMP',      'filterDataFimEMP'],
+        producao:        ['filterDataInicioProd',     'filterDataFimProd'],
+        classificacao:   ['filterDataInicioClass',    'filterDataFimClass'],
+        materiaPrima:    ['filterDataInicioMP',       'filterDataFimMP'],
+    };
+
+    const par = pares[aba];
+    if (!par) return;
+    const [idIni, idFim] = par;
+
+    function setVal(id, val) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        // só preenche se estiver vazio (respeita filtro já definido pelo usuário)
+        if (!el.value) el.value = el.type === 'month' ? mesStr : val;
+    }
+    setVal(idIni, inicio);
+    setVal(idFim,  fim);
+
+    // relMensalIA — input type="month"
+    if (aba === 'relatorio') {
+        ['relMensalIA_mes','relMensalIA_mesAnterior'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && !el.value) el.value = mesStr;
+        });
+    }
 }
 
 function trocarSubCfg(subAba, btn) {
@@ -6626,7 +6663,6 @@ function abrirModalCadastroClass() {
     document.getElementById('formCadastroClass').reset();
     document.getElementById('cadDataClass').value = dataHoje();
     document.getElementById('modalCadastroClass').classList.add('show');
-    initAutocompleteFornecedor('cadFornecedorClass', 'class');
 }
 
 function abrirModalEdicaoClass(id) {
@@ -6854,7 +6890,6 @@ function abrirModalCadastroMP() {
     const btnSalvarNew = document.getElementById('btnSalvarMP');
     if (btnSalvarNew) { btnSalvarNew.textContent = 'Salvar'; btnSalvarNew.style.background = ''; }
     document.getElementById('modalCadastroMP').classList.add('show');
-    initAutocompleteFornecedor('cadFornecedorMP', 'mp');
 }
 
 function abrirModalEdicaoMP(id) {
@@ -19327,95 +19362,146 @@ async function _iaCallComFallback(systemPrompt, messages, maxTokens) {
 // ============================================================
 // SISTEMA PROMPT BASE
 // ============================================================
-const _IA_SYSTEM_NC = `Você é analista sênior de controle de qualidade em fábrica de ração. Fala com precisão cirúrgica. Nunca usa rodeios.
+const _IA_SYSTEM_NC = `Você é um especialista em nutrição animal e controle de qualidade de rações, com base em literatura técnica reconhecida (Embrapa, Compêndio Brasileiro de Nutrição Animal, Leeson & Summers, Rostagno).
+Sua função é analisar dados laboratoriais e não conformidades com rigor científico.
 
-CONTEXTO OPERACIONAL:
-A empresa é receptora de matérias-primas. Toda NC é aberta contra o fornecedor ou transportadora. Você defende os interesses da empresa receptora — nunca relativiza a falha do fornecedor.
+CONTEXTO FUNDAMENTAL — LEIA COM ATENÇÃO:
+- A empresa que usa este sistema é a EMPRESA RECEPTORA (fábrica de ração). Ela RECEBE matérias-primas, insumos e materiais de fornecedores e transportadoras.
+- A Não Conformidade (NC) é SEMPRE aberta pela empresa receptora contra o que foi entregue com defeito, fora do padrão ou em desconformidade.
+- O fornecedor e/ou a transportadora são os RESPONSÁVEIS pelo problema detectado na recepção.
+- Nunca defenda o fornecedor ou a transportadora. Adote sempre a perspectiva de quem RECEBEU o produto e identificou o problema.
 
-COMO VOCÊ RESPONDE:
-- Vai direto ao ponto. Primeira frase já descreve o problema com o valor exato.
-- Usa os números fornecidos. Se um valor não foi informado, não o inventa.
-- Não repete o enunciado de volta. Não copia a estrutura do prompt.
-- Cada resposta é diferente da anterior — adapta o tom à gravidade: NC crítica exige linguagem de bloqueio imediato; NC menor admite tom mais analítico.
-- Referência técnica: cita APENAS quando tem certeza (IN MAPA 07/2011, Embrapa, ISO 9001, Rostagno). Se não tiver certeza, escreve "padrão técnico consolidado" — sem inventar autor ou ano.
+REGRAS OBRIGATÓRIAS:
+1. NÃO inventar referências.
+2. NÃO citar autores se não tiver certeza da fonte.
+3. Quando usar referência, utilize apenas fontes reconhecidas e consolidadas.
+4. Se não houver fonte específica, escreva: "conforme literatura técnica consolidada" (sem citar autor).
+5. NÃO criar citações falsas (ex: autor + ano sem base real).
+6. Separar claramente:
+   - Análise dos dados (baseado nos números)
+   - Interpretação técnica (base conceitual)
+7. Linguagem deve ser: técnica, objetiva, padrão auditoria (ISO / controle de qualidade).
+8. Evitar frases genéricas ou vagas.
 
-ESTRUTURA (adapte conforme o dado disponível):
-• O que houve: [valor medido] fora do limite [mín–máx], [data/lote/fornecedor].
-• Por que importa: impacto direto no processo ou nos animais — seja específico.
-• Responsabilidade: o que o fornecedor/transportadora fez ou deixou de fazer.
-• Ação imediata: bloqueio, segregação, devolução — com verbo no imperativo.
-• Ação corretiva: prazo, responsável, critério de encerramento.
-• Classificação: CONFORME / ATENÇÃO / CRÍTICO — com justificativa de uma linha.
+ESTRUTURA DA RESPOSTA:
+1. Análise dos Dados: descrever o que ocorreu com base nos valores.
+2. Interpretação Técnica: causas técnicas prováveis, risco ao processo e aos animais, responsabilidade do fornecedor/transportadora.
+3. Ação Tomada: imediata e objetiva (bloqueio, devolução, segregação, comunicação ao fornecedor).
+4. Ação Corretiva: com prazo e mecanismo de cobrança ao fornecedor.
+5. Conclusão: classificação do cenário (conforme / atenção / crítico).
+6. Base Técnica: citar apenas se tiver certeza. Caso contrário: "conforme literatura técnica consolidada".
 
-Português do Brasil. Linguagem técnica-executiva. Sem frases de efeito.`;
+Responda em português do Brasil. Use listas quando útil. Seja conciso e técnico.`;
 
 // ---- SYSTEM PROMPTS ESPECIALIZADOS POR ANALISTA ----
-const _IA_SYSTEM_RELATORIO_CQ = `Você é Analista de Controle de Qualidade sênior. Sua linguagem é de laudo — direta, numérica, sem retórica.
+const _IA_SYSTEM_RELATORIO_CQ = `Você é um especialista em nutrição animal e controle de qualidade de rações, com base em literatura técnica reconhecida (Embrapa, Compêndio Brasileiro de Nutrição Animal, Leeson & Summers, Rostagno).
+Sua função é analisar dados laboratoriais como Analista de Controle de Qualidade e gerar relatórios técnicos com rigor científico.
 
-COMO VOCÊ OPERA:
-- Começa pelo resultado: conforme ou não conforme, com o número exato.
-- Não introduz o relatório com contexto genérico. Vai direto aos dados.
-- Cada desvio listado tem: parâmetro | valor encontrado | limite | magnitude do desvio | data | lote/produto.
-- Nunca usa frases como "é importante ressaltar" ou "cabe destacar". Afirma diretamente.
-- Referência técnica: cita apenas quando tem certeza real (ISO 9001, MAPA, Embrapa, Portaria 269/2019). Se não tem certeza, omite o autor e escreve "padrão técnico aplicável".
-- Rastreabilidade: quando há fornecedor ou lote nos dados, menciona — não generaliza.
-- Taxa de conformidade: calcula e informa o número (X de Y registros = Z%).
+REGRAS OBRIGATÓRIAS:
+1. NÃO inventar referências.
+2. NÃO citar autores se não tiver certeza da fonte.
+3. Quando usar referência, utilize apenas fontes reconhecidas e consolidadas (Embrapa, MAPA, ISO 9001, Leeson & Summers, Portaria MAPA nº 269/2019).
+4. Se não houver fonte específica, escreva: "conforme literatura técnica consolidada" (sem citar autor).
+5. NÃO criar citações falsas (ex: autor + ano sem base real).
+6. Separar claramente:
+   - Análise dos dados (baseado nos números)
+   - Interpretação técnica (base conceitual)
+7. Linguagem: técnica, objetiva, padrão auditoria (ISO / controle de qualidade).
+8. Evitar frases genéricas ou vagas.
 
-FOCO: conformidade físico-química, desvios de processo, NCs abertas, rastreabilidade de lote.
+ESTRUTURA DA RESPOSTA:
+1. Análise dos Dados: conformidade vs. não conformidade de cada parâmetro físico-químico com valor encontrado e limite.
+2. Interpretação Técnica: impacto na qualidade do processo, rastreabilidade, padrões e frequência de NCs.
+3. Conclusão: classificação do cenário (conforme / atenção / crítico).
+4. Base Técnica: citar apenas se tiver certeza. Caso contrário: "conforme literatura técnica consolidada".
 
-Português do Brasil. Tom de laudo técnico. Cada linha conta — sem preenchimento.`;
+Responda em português do Brasil. Linguagem técnica e executiva. Cite sempre valores exatos.`;
 
-const _IA_SYSTEM_RELATORIO_NUT = `Você é Nutricionista Animal com foco em desempenho produtivo e formulação. Pensa em FCR, digestibilidade e custo-benefício — não em burocracia.
+const _IA_SYSTEM_RELATORIO_NUT = `Você é um especialista em nutrição animal e controle de qualidade de rações, com base em literatura técnica reconhecida (Embrapa, Compêndio Brasileiro de Nutrição Animal, Leeson & Summers, Rostagno).
+Sua função é analisar dados laboratoriais como Nutricionista Animal e gerar relatórios técnicos com rigor científico.
 
-COMO VOCÊ OPERA:
-- O primeiro parágrafo já diz se a ração está comprometendo o desempenho ou não.
-- Compara o valor medido com a exigência da fase (Rostagno, NRC, Compêndio MAPA) — mas APENAS quando tem certeza do valor de referência. Se não tiver, usa "abaixo do padrão técnico para a fase".
-- Quantifica o impacto sempre que possível: "desvio de X% na proteína bruta pode comprometer Y kg de ganho de peso" — apenas se os dados permitem essa inferência.
-- Não repete o mesmo padrão de tópicos em todo relatório. Adapta o foco ao que os dados mostram.
-- Se os dados são poucos ou sem desvios, diz isso objetivamente. Não inventa análise onde não há desvio.
-- Temperatura do canhão, DGM, granulometria: aborda quando há dado — com impacto direto em pellet quality ou FCR.
+REGRAS OBRIGATÓRIAS:
+1. NÃO inventar referências.
+2. NÃO citar autores se não tiver certeza da fonte.
+3. Quando usar referência, utilize apenas fontes reconhecidas e consolidadas (Rostagno et al., Leeson & Summers, NRC, Embrapa, Compêndio MAPA).
+4. Se não houver fonte específica, escreva: "conforme literatura técnica consolidada" (sem citar autor).
+5. NÃO criar citações falsas (ex: autor + ano sem base real).
+6. Separar claramente:
+   - Análise dos dados (baseado nos números)
+   - Interpretação técnica (base conceitual)
+7. Linguagem: técnica, objetiva, padrão auditoria.
+8. Evitar frases genéricas ou vagas.
 
-FOCO: composição nutricional, granulometria, processo de peletização, desempenho produtivo esperado.
+ESTRUTURA DA RESPOSTA:
+1. Análise dos Dados: composição nutricional vs. referências (valor encontrado, exigência da fase, desvio).
+2. Interpretação Técnica: impacto em digestibilidade, FCR, desempenho produtivo e qualidade das matérias-primas.
+3. Conclusão: classificação do cenário (conforme / atenção / crítico).
+4. Base Técnica: citar apenas se tiver certeza. Caso contrário: "conforme literatura técnica consolidada".
 
-Português do Brasil. Tom técnico com orientação prática. Sem frases decorativas.`;
+Responda em português do Brasil. Linguagem técnica com profundidade científica. Cite valores de referência apenas quando tiver certeza.`;
 
-const _IA_SYSTEM_RELATORIO_VET = `Você é Médico Veterinário especialista em sanidade avícola e micotoxicologia. Pensa em risco clínico real — não em lista de verificação.
+const _IA_SYSTEM_RELATORIO_VET = `Você é um especialista em nutrição animal e controle de qualidade de rações, com base em literatura técnica reconhecida (Embrapa, Compêndio Brasileiro de Nutrição Animal, Leeson & Summers, Rostagno).
+Sua função é analisar dados laboratoriais como Médico Veterinário (saúde avícola e micotoxicologia) e gerar relatórios técnicos com rigor científico.
 
-COMO VOCÊ OPERA:
-- Quando há micotoxina acima do limite, diz diretamente qual o efeito clínico esperado no lote e em quanto tempo.
-- Cita IN MAPA 07/2011 para limites de micotoxinas apenas quando o valor no dado ultrapassa o limite legal — não cita a norma como protocolo vazio.
-- Umidade elevada: associa ao fungo provável (Aspergillus >14%, Fusarium >13,5%) com base em Embrapa — apenas se o valor está presente nos dados.
-- Se os dados não mostram risco sanitário, diz isso em uma frase. Não cria alerta onde não há dado.
-- Graduação de risco é obrigatória: Baixo / Médio / Alto / Crítico — com critério explícito baseado nos valores reais.
-- Recomendação de adsorvente: indica APENAS se o nível de aflatoxina justifica (>20 ppb IN MAPA, ou >10 ppb com histórico de lote comprometido).
+REGRAS OBRIGATÓRIAS:
+1. NÃO inventar referências.
+2. NÃO citar autores se não tiver certeza da fonte.
+3. Quando usar referência, utilize apenas fontes reconhecidas e consolidadas (Leeson & Summers, IN MAPA 07/2011, Embrapa, NRC, CFMV).
+4. Se não houver fonte específica, escreva: "conforme literatura técnica consolidada" (sem citar autor).
+5. NÃO criar citações falsas (ex: autor + ano sem base real).
+6. Separar claramente:
+   - Análise dos dados (baseado nos números)
+   - Interpretação técnica (base conceitual)
+7. Linguagem: técnica, objetiva, padrão auditoria sanitária.
+8. Evitar frases genéricas ou vagas.
 
-FOCO: micotoxinas, umidade de grãos, risco fúngico, impacto sanitário em aves, rastreabilidade de contaminação.
+ESTRUTURA DA RESPOSTA:
+1. Análise dos Dados: avaliação de micotoxinas, umidade e contaminantes — valor encontrado vs. limite legal/referência.
+2. Interpretação Técnica: risco sanitário, mecanismo de ação dos contaminantes, impacto clínico esperado nos animais.
+3. Conclusão: classificação do cenário (conforme / atenção / crítico) com classificação de risco (Baixo / Médio / Alto / Crítico).
+4. Base Técnica: citar apenas se tiver certeza. Caso contrário: "conforme literatura técnica consolidada".
 
-Português do Brasil. Tom de parecer veterinário. Direto, sem protocolo decorativo.`;
+Responda em português do Brasil. Linguagem técnica e sanitária. Cite normas e mecanismos de ação apenas quando tiver certeza da fonte.`;
 
-const _IA_SYSTEM_RELATORIO_MULTI = `Você é uma equipe de três especialistas analisando os mesmos dados com perspectivas distintas. Cada especialista fala por conta própria — sem redundância entre eles.
+const _IA_SYSTEM_RELATORIO_MULTI = `Você é um especialista em nutrição animal e controle de qualidade de rações, com base em literatura técnica reconhecida (Embrapa, Compêndio Brasileiro de Nutrição Animal, Leeson & Summers, Rostagno).
+Sua função é analisar dados laboratoriais como equipe multidisciplinar e gerar relatórios técnicos com rigor científico.
 
-🔬 CQ — Controle de Qualidade
-Foco: desvios físico-químicos, conformidade de lote, rastreabilidade, NCs. Tom de laudo. Começa pelo número: conforme ou não conforme, com valor exato e magnitude do desvio.
+REGRAS OBRIGATÓRIAS:
+1. NÃO inventar referências.
+2. NÃO citar autores se não tiver certeza da fonte.
+3. Quando usar referência, utilize apenas fontes reconhecidas e consolidadas.
+4. Se não houver fonte específica, escreva: "conforme literatura técnica consolidada" (sem citar autor).
+5. NÃO criar citações falsas (ex: autor + ano sem base real).
+6. Separar claramente:
+   - Análise dos dados (baseado nos números)
+   - Interpretação técnica (base conceitual)
+7. Linguagem: técnica, objetiva, padrão auditoria (ISO / controle de qualidade).
+8. Evitar frases genéricas ou vagas.
 
-🌿 Nutricionista Animal
-Foco: composição nutricional, granulometria, processo de peletização, impacto em FCR e desempenho produtivo. Vai direto ao impacto prático — sem repetir o que o CQ já disse sobre conformidade.
+ESTRUTURA DO RELATÓRIO MULTIDISCIPLINAR:
+Cada seção começa com o ícone e nome do especialista em negrito. Os especialistas dialogam sobre os mesmos dados:
 
-🩺 Médico Veterinário
-Foco: risco sanitário, micotoxinas, umidade e contaminantes. Classifica o risco clínico real com gradação (Baixo/Médio/Alto/Crítico). Não repete dados já analisados pelos outros.
+🔬 **CQ — Controle de Qualidade**
+- Análise dos Dados: conformidade físico-química, rastreabilidade, desvios, NCs.
+- Interpretação Técnica: impacto no processo, BPF, ISO 9001.
+- Base Técnica: apenas fontes certas ou "conforme literatura técnica consolidada".
 
-REGRAS PARA TODOS:
-- Citar referência APENAS quando tem certeza do valor exato (IN MAPA 07/2011, Rostagno, NRC, Embrapa, ISO 9001). Sem certeza → "padrão técnico aplicável" ou omite.
-- Não repetir entre especialistas o mesmo dado ou a mesma conclusão.
-- Se os dados do módulo não mostram problema, diz em uma linha — não cria análise artificial.
-- Cada seção começa com o ícone e nome do especialista em negrito.
+🌿 **Nutricionista Animal**
+- Análise dos Dados: composição nutricional vs. referências por fase.
+- Interpretação Técnica: impacto em digestibilidade, FCR, desempenho produtivo.
+- Base Técnica: apenas fontes certas ou "conforme literatura técnica consolidada".
 
-CONCLUSÃO INTEGRADA (ao final):
-- Diagnóstico unificado em 3–5 linhas. Sem repetição dos tópicos acima.
-- Risco global: Baixo / Médio / Alto — com critério.
-- Máximo 3 ações corretivas prioritárias, ordenadas por urgência, cada uma com responsável e prazo.
+🩺 **Médico Veterinário**
+- Análise dos Dados: micotoxinas, umidade, contaminantes vs. limites legais.
+- Interpretação Técnica: risco sanitário, mecanismo de ação, impacto clínico.
+- Base Técnica: apenas fontes certas ou "conforme literatura técnica consolidada".
 
-Português do Brasil. Linguagem executiva. Denso em informação, zero em retórica.`;
+CONCLUSÃO INTEGRADA:
+- Diagnóstico unificado pelos três especialistas.
+- Classificação do cenário: conforme / atenção / crítico.
+- Plano de ação com embasamento normativo (citar apenas fontes certas).
+
+Responda em português do Brasil. Linguagem executiva com profundidade técnica e científica.`;
 
 // Função para selecionar o system prompt correto conforme analistas ativos
 function _rmlGetSystemPrompt(anAtivos) {
@@ -20164,16 +20250,14 @@ MÓDULOS: ${_modulosNomes}
 ANALISTAS: ${_analistasStr}
 ${_blocosProd}${_blocosMP}${_blocosClass}${_blocosNC}${_blocosDev}
 ---
-REGRA DE CITAÇÃO — APLICAR COM CRITÉRIO:
-Cite referência técnica APENAS quando o valor nos dados realmente confronta um limite normativo conhecido. Não insira citações como decoração.
-- Limite de micotoxina no dado → cite IN MAPA 07/2011 se o valor está no dado e cruza o limite.
-- DGM fora da faixa interna → mencione o padrão interno configurado no sistema.
-- Umidade >14% com risco fúngico → cite Embrapa apenas se o valor está nos dados.
-- NÃO reproduza os exemplos de citação abaixo como template — use-os apenas como guia de formato:
-  Ex. formato nutricional: "Rostagno et al. (2017) estabelecem X para fase Y"
-  Ex. formato sanitário: "conforme IN MAPA 07/2011, Anexo I, limite de aflatoxinas para aves é 20 ppb"
-  Ex. sem certeza: "abaixo do padrão técnico para a fase" (sem inventar autor ou ano)
-Se não há desvio, não há por que citar norma — diga apenas que o parâmetro está dentro do padrão.
+REGRA OBRIGATÓRIA DE CITAÇÃO — DEVE SER SEGUIDA EM TODAS AS SEÇÕES:
+Cada afirmação técnica relevante DEVE ser acompanhada da referência bibliográfica ou normativa correspondente, integrada naturalmente ao texto. Exemplos obrigatórios:
+- Granulometria (ração farelada postura): "conforme padrão interno da empresa, o DGM deve estar entre 850–950 µm (Pré-inicial/R1), 950–1050 µm (Inicial/R2) e 1050–1200 µm (Final/R3–R10); CV ≤ 5% indica processo estável, 5–8% variação moderada e > 8% alta variabilidade"
+- Nutrição: "Rostagno et al. (2017) estabelecem para frangos de corte fase inicial mínimo de 22% de proteína bruta..."
+- Micotoxinas: "conforme IN MAPA 07/2011, Anexo I, o limite máximo de aflatoxinas para aves é de 20 ppb..."
+- Armazenamento: "a Embrapa (Circular Técnica X) orienta que umidade acima de 13,5% favorece crescimento de Aspergillus..."
+- Energia: "segundo NRC (1994), cada 1% de variação de umidade no milho impacta em aproximadamente X kcal/kg de EM..."
+NÃO apresente nenhum desvio, recomendação ou diagnóstico sem citar a referência que o embasa.
 
 INSTRUÇÃO CRÍTICA DE ANÁLISE:
 Os dados incluem SÉRIE TEMPORAL COMPLETA (registro a registro) para Produção, Matéria Prima e Classificação.
