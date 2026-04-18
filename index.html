@@ -507,9 +507,6 @@
         table tr:hover { background: rgba(26,42,110,0.06); }
         table tr:nth-child(even) { background: #f5f7fa; color: #222; }
         table tr:nth-child(odd) { color: #222; }
-        /* ── Exceção: tabelas de micotoxinas usam bg inline gerado pelo JS ── */
-        #rcMicoSecao table tbody tr:nth-child(even),
-        #rcMicoSecao table tbody tr:nth-child(odd) { background: unset; color: unset; }
 
         /* BADGES */
         .badge { display: inline-block; padding: 3px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; }
@@ -1044,11 +1041,6 @@
                 background: #1a2a6e !important;
                 color: #fff !important;
             }
-            /* Cabeçalho roxo das tabelas de micotoxinas */
-            html[data-theme="dark"] #rcMicoSecao table thead th {
-                background: #6c3483 !important;
-                color: #fff !important;
-            }
             /* Linhas de tabela: fundo branco/cinza claro alternado */
             html[data-theme="dark"] table tr {
                 background: #fff !important;
@@ -1061,14 +1053,6 @@
             html[data-theme="dark"] table td {
                 color: #222 !important;
                 border-color: #dce3ef !important;
-            }
-            /* Linhas geradas via JS nas tabelas de micotoxinas */
-            html[data-theme="dark"] #rcMicoSecao table tbody tr {
-                background: #fff !important;
-                color: #222 !important;
-            }
-            html[data-theme="dark"] #rcMicoSecao table tbody tr:nth-child(even) {
-                background: #f5f7fa !important;
             }
             /* Cards de KPI */
             html[data-theme="dark"] .fase-card,
@@ -1436,13 +1420,6 @@
         html[data-theme="dark"] table td{border-color:rgba(255,255,255,0.06)!important;color:#e6edf3!important;}
         html[data-theme="dark"] table tr{color:#e6edf3!important;}
         html[data-theme="dark"] table tr:nth-child(even){background:rgba(255,255,255,0.04)!important;color:#e6edf3!important;}
-        /* ── Cabeçalhos roxos das tabelas de micotoxinas — preservar em ambos os temas ── */
-        #rcMicoSecao table thead tr th { background:#6c3483!important; color:#fff!important; }
-        html[data-theme="dark"] #rcMicoSecao table thead tr th { background:#6c3483!important; color:#fff!important; }
-        /* ── Linhas de dados das tabelas de mico: NÃO sobrescrever com nth-child do dark ── */
-        html[data-theme="dark"] #rcMicoSecao table tr:nth-child(even) { background:unset!important; }
-        /* ── No tema claro, NÃO sobrescrever o bg inline das linhas de mico ── */
-        :not([data-theme="dark"]) #rcMicoSecao table tbody tr { background:unset!important; }
         html[data-theme="dark"] table tr:hover{background:rgba(88,166,255,0.08)!important;}
         html[data-theme="dark"] table td.td-fora {
             background: #5c1010 !important;
@@ -1524,7 +1501,6 @@
         :not([data-theme="dark"]) .btn-primary{background:var(--cor-acento)!important;color:#fff!important;}
         :not([data-theme="dark"]) .btn-primary:hover{background:var(--cor-acento-hover)!important;}
         :not([data-theme="dark"]) table th{background:var(--cor-secundaria)!important;}
-        :not([data-theme="dark"]) #rcMicoSecao table thead th{background:#6c3483!important;color:#fff!important;}
         :not([data-theme="dark"]) .modal-header{background:linear-gradient(to right,var(--cor-primaria),var(--cor-primaria-hover))!important;}
         :not([data-theme="dark"]) .form-section h3{background:var(--cor-secundaria)!important;}
         :not([data-theme="dark"]) .btn-salvar{background:var(--cor-acento)!important;}
