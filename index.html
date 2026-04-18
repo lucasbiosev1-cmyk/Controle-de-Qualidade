@@ -5980,6 +5980,12 @@ function _aplicarChartTema(tema) {
     });
 }
 
+
+// ── Utilitários de tema para linhas de tabela geradas via JS ────
+function _tBgEven() { return document.documentElement.getAttribute('data-theme')==='dark'?'#161b22':'#ffffff'; }
+function _tBgOdd()  { return document.documentElement.getAttribute('data-theme')==='dark'?'#0d1117':'#f5f7fa'; }
+function _tFg()     { return document.documentElement.getAttribute('data-theme')==='dark'?'#e6edf3':'#333333'; }
+function _tBg(i)    { return i%2===0 ? _tBgEven() : _tBgOdd(); }
 function aplicarTema(tema) {
     if (!TEMAS.includes(tema)) tema = 'azul';
     document.documentElement.setAttribute('data-theme', tema);
@@ -9274,7 +9280,7 @@ function aplicarFiltrosRanking() {
     function gerarLinhasTabela(lista, medalhasAtivas) {
         const medalhas = ['🥇','🥈','🥉'];
         return lista.map((s, i) => {
-            const bg = i%2===0 ? '#161b22':'#0d1117';
+            const bg = _tBg(i);
             let pos, posColor;
             if (s.isFabrica) {
                 pos = '🏭'; posColor = '#3498db';
@@ -9306,7 +9312,7 @@ function aplicarFiltrosRanking() {
                     : ' style="padding:8px;text-align:center;"';
                 return `<td${st}>${f(val)}</td>`;
             };
-            return `<tr style="background:${bg};color:#e6edf3;">
+            return `<tr style="background:${bg};color:${_tFg()};">
                 <td style="padding:8px;text-align:center;font-size:16px;font-weight:bold;color:${posColor};">${pos}</td>
                 <td style="padding:8px 10px;font-weight:bold;text-transform:uppercase;border-left:4px solid ${posColor};">${s.fornecedor}</td>
                 <td style="padding:8px;text-align:center;">${s.n}</td>
@@ -11533,7 +11539,7 @@ function tabelaParamHTML(modulo, racaKey, campos, dataVig) {
     return campos.map((c,i) => {
         const cfg = getParam(modulo, racaKey, c.key, dataVig||null);
         const labelExtra = c.calculado ? ' <span style="font-size:9px;background:#e67e22;color:white;padding:1px 5px;border-radius:3px;vertical-align:middle;">CALCULADO</span>' : '';
-        return `<tr style="background:${i%2===0?'#161b22':'#0d1117'};">
+        return `<tr style="background:${_tBg(i)};">
             <td style="padding:7px 12px;font-size:11px;color:#222;font-weight:600;">${c.label}${labelExtra}</td>
             <td style="padding:5px 8px;text-align:center;">
                 <input type="number" step="any" value="${cfg.min}"
@@ -11570,7 +11576,7 @@ function historicoHTML(modulo, racaKey) {
             .map(([k,v])=>'<span style="background:#eaf4fb;color:#1a5276;padding:1px 5px;border-radius:3px;margin:1px;display:inline-block;">'+k+': '+v.min+'–'+v.max+'</span>')
             .join(' ') || '<span style="color:#aaa;">nenhum ativo</span>';
         const bdr = i===0 ? 'border-left:3px solid #27ae60;' : '';
-        const bg  = i===0 ? 'rgba(63,185,80,0.12)' : (i%2===0?'#161b22':'#0d1117');
+        const bg  = i===0 ? 'rgba(63,185,80,0.12)' : (_tBg(i));
         const badge = i===0 ? '<br><span style="font-size:9px;background:#27ae60;color:white;padding:1px 5px;border-radius:3px;">ATUAL</span>' : '';
         return '<tr style="background:'+bg+';'+bdr+'">'+
             '<td style="padding:8px 10px;font-weight:bold;color:#2980b9;white-space:nowrap;">'+vig+badge+'</td>'+
@@ -13433,17 +13439,22 @@ function renderRCMicotoxinas(dados, di, df) {
 
     const medalha = ['🥇','🥈','🥉'];
 
+    const _micoIsDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
+    const _micoBgEven = () => _micoIsDark() ? '#161b22' : '#ffffff';
+    const _micoBgOdd  = () => _micoIsDark() ? '#0d1117' : '#f5f7fa';
+    const _micoFg     = () => _micoIsDark() ? '#e6edf3' : '#333333';
+    const _micoFgMut  = () => _micoIsDark() ? '#8b949e' : '#666666';
+
     document.getElementById('rcMicoTbodyRanking').innerHTML = rankArr.length ? rankArr.map((d,i) => {
         const aflaCorMed = getMicoStyle(getMicoNivel(d.aflaMedia, 'afla')).replace('background:#','color:#').split(';')[0] || '#333';
         const fumoCorMed = getMicoStyle(getMicoNivel(d.fumoMedia, 'fumo')).replace('background:#','color:#').split(';')[0] || '#333';
-        const aflaCorMax = getMicoStyle(getMicoNivel(d.aflaMax,   'afla')).replace('background:#','color:#').split(';')[0] || '#333';
-        const fumoCorMax = getMicoStyle(getMicoNivel(d.fumoMax,   'fumo')).replace('background:#','color:#').split(';')[0] || '#333';
-        const bg = i%2===0?'#161b22':'#0d1117';
+        const bg = i%2===0 ? _micoBgEven() : _micoBgOdd();
+        const fg = _micoFg(); const fgMut = _micoFgMut();
         const rankLabel = i < 3 ? medalha[i] : '#'+(i+1);
-        return `<tr style="background:${bg};color:#e6edf3;">
+        return `<tr style="background:${bg};color:${fg};">
             <td style="padding:7px 8px;text-align:center;font-weight:bold;font-size:14px;">${rankLabel}</td>
             <td style="padding:7px 10px;text-align:center;font-weight:bold;border-left:4px solid #8e44ad;">${d.forn}</td>
-            <td style="padding:7px 10px;text-align:center;font-size:10px;color:#555;">${d.loc}</td>
+            <td style="padding:7px 10px;text-align:center;font-size:10px;color:${fgMut};">${d.loc}</td>
             <td style="padding:7px;text-align:center;">${d.total}</td>
             <td style="padding:7px;text-align:center;font-weight:bold;color:${d.comMico>0?'#e74c3c':'#27ae60'};">${d.comMico}</td>
             <td style="padding:7px;text-align:center;font-weight:bold;color:${aflaCorMed};">${d.aflaMedia > 0 ? d.aflaMedia.toFixed(2) : '—'}</td>
@@ -13464,8 +13475,8 @@ function renderRCMicotoxinas(dados, di, df) {
         const fumo = r.fumonisinas||0;
         const aflaClass = getMicoClass(getMicoNivel(afla, 'afla'));
         const fumoClass = getMicoClass(getMicoNivel(fumo, 'fumo'));
-        const bg = i%2===0?'#161b22':'#0d1117';
-        return `<tr style="background:${bg};color:#e6edf3;">
+        const bg = i%2===0 ? _micoBgEven() : _micoBgOdd();
+        return `<tr style="background:${bg};color:${_micoFg()};">
             <td style="padding:4px 6px;white-space:nowrap;text-align:center;">${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td>
             <td style="padding:4px;text-align:center;">${r.hora||''}</td>
             <td style="padding:4px 6px;font-weight:bold;white-space:nowrap;text-align:center;">${r.produto||''}</td>
@@ -13947,7 +13958,7 @@ function aplicarFiltrosRelMP() {
     // TABELA DETALHADA
     const sorted = [...dados].sort((a,b) => (b.data||'').localeCompare(a.data||'') || (b.hora||'').localeCompare(a.hora||''));
     document.getElementById('rmpTbodyDetalhe').innerHTML = sorted.map((r,i) => {
-        const bg = i%2===0 ? '#161b22':'#0d1117';
+        const bg = _tBg(i);
         const dataFmt = r.data ? new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR') : '-';
         return `<tr style="background:${bg};border-bottom:1px solid #eee;">
             <td style="padding:5px 7px;text-align:center;white-space:nowrap;">${dataFmt}</td>
@@ -14083,10 +14094,10 @@ async function analisarCorrecaoDefeitos() {
         <tbody>`;
 
     afetados.forEach((r, i) => {
-        const bg = i % 2 === 0 ? '#161b22':'#0d1117';
+        const bg = _tBg(i);
         const dataFmt = r.data ? new Date(r.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
         const queimadoCorr = +(parseFloat(r.queimado || 0) * 100).toFixed(4);
-        html += `<tr style="background:${bg};color:#e6edf3;">
+        html += `<tr style="background:${bg};color:${_tFg()};">
             <td style="padding:4px 8px;white-space:nowrap;">${dataFmt}</td>
             <td style="padding:4px 8px;">${r.produto || '-'}</td>
             <td style="padding:4px 8px;">${r.fornecedor || '-'}</td>
@@ -15516,7 +15527,7 @@ function renderizarNC(lista) {
         const prazoVenc = nc.prazo && new Date(nc.prazo) < new Date() && nc.status !== 'Encerrado'
             ? `<span style="color:#e74c3c;font-weight:bold;">${ncFmtData(nc.prazo)} ⚠️</span>`
             : ncFmtData(nc.prazo);
-        return `<tr style="border-bottom:1px solid #21262d;color:#e6edf3;">
+        return `<tr style="border-bottom:1px solid #21262d;color:${_tFg()};">
             <td style="padding:7px 6px;text-align:center;"><span class="nc-num-badge">${nc.numero}</span></td>
             <td style="padding:7px 6px;text-align:center;">${ncFmtData(nc.data)}</td>
             <td style="padding:7px 6px;text-align:center;">${nc.tipo||'-'}</td>
@@ -15713,7 +15724,7 @@ function renderizarDev(lista) {
         tbody.innerHTML = '<tr><td colspan="10"><div style="text-align:center;padding:40px 20px;color:#95a5a6;"><div style="font-size:48px;margin-bottom:12px;opacity:0.4;">↩️</div><p style="font-size:13px;">Nenhuma devolução registrada. Clique em <strong>+ Nova Devolução</strong> para começar.</p></div></td></tr>';
         return;
     }
-    tbody.innerHTML = lista.map(dev => `<tr style="border-bottom:1px solid #21262d;color:#e6edf3;">
+    tbody.innerHTML = lista.map(dev => `<tr style="border-bottom:1px solid #21262d;color:${_tFg()};">
         <td style="padding:7px 6px;text-align:center;"><span class="nc-num-badge" style="background:#d35400;">${dev.numero}</span></td>
         <td style="padding:7px 6px;text-align:center;">${ncFmtData(dev.data)}</td>
         <td style="padding:7px 6px;text-align:center;">${dev.produto||'-'}</td>
@@ -16277,7 +16288,7 @@ function visualizarDev(id) {
             <tbody>${classif.map((c, i) => {
                 const r = parseFloat(c.resultado||0), p = parseFloat(c.parametro||0);
                 const nc2 = r > p;
-                return `<tr style="background:${i%2===0?'#161b22':'#0d1117'};">
+                return `<tr style="background:${_tBg(i)};">
                     <td style="padding:5px 10px;font-weight:600;">${c.defeito||'-'}</td>
                     <td style="text-align:center;color:${nc2?'#e74c3c':'#27ae60'};font-weight:bold;">${r.toFixed(2)}%</td>
                     <td style="text-align:center;color:#7f8c8d;">${p.toFixed(2)}%</td>
@@ -16348,7 +16359,7 @@ function imprimirVisualizacao() {
         const classifRows = classif.map((c, i) => {
             const r = parseFloat(c.resultado || 0), p = parseFloat(c.parametro || 0);
             const nc2 = r > p;
-            return `<tr style="background:${i % 2 === 0 ? '#161b22':'#0d1117'};">
+            return `<tr style="background:${_tBg(i)};">
                 <td style="padding:6px 10px;font-weight:600;border-bottom:1px solid #f0d9c0;">${c.defeito || '-'}</td>
                 <td style="text-align:center;color:${nc2 ? '#c0392b' : '#27ae60'};font-weight:bold;border-bottom:1px solid #f0d9c0;">${r.toFixed(2)}%</td>
                 <td style="text-align:center;color:#7f8c8d;border-bottom:1px solid #f0d9c0;">${p.toFixed(2)}%</td>
@@ -17133,7 +17144,7 @@ function reagVerAlertas() {
             if (st === 'vencido')   msg = 'Validade vencida há ' + Math.abs(dias) + ' dias!';
             if (st === 'vencendo')  msg = dias === 0 ? 'Vence hoje!' : 'Vence em ' + dias + ' dias';
             if (st === 'baixo')     msg = 'Estoque baixo: ' + r.qtdAtual + ' ' + r.unidade + ' (mín: ' + r.minimo + ')';
-            return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:6px;margin-bottom:8px;background:${st==='vencido'?'rgba(248,81,73,0.1)':st==='vencendo'?'#161b22':'#0d1117'};border-left:3px solid ${st==='vencido'?'#e74c3c':st==='vencendo'?'#e67e22':'#f39c12'};">
+            return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:6px;margin-bottom:8px;background:${st==='vencido'?'rgba(248,81,73,0.1)':st==='vencendo'?_tBgEven():_tBgOdd()};border-left:3px solid ${st==='vencido'?'#e74c3c':st==='vencendo'?'#e67e22':'#f39c12'};">
                 <span style="font-size:18px;">${icons[st]}</span>
                 <div>
                     <div style="font-weight:700;font-size:12px;color:#2c3e50;">${r.nome} ${_reagPFBadge(r.controlePF)}</div>
@@ -18534,7 +18545,7 @@ function matRenderTabela() {
 
     tbody.innerHTML = lista.map((m, i) => {
         const st  = _matStatus(m);
-        const bg  = i % 2 === 0 ? '#161b22':'#0d1117';
+        const bg  = _tBg(i);
         const qtd = m.qtd_atual !== undefined ? m.qtd_atual : m.qtdAtual;
         return `<tr style="background:${bg};border-bottom:1px solid #f0f0f0;">
             <td style="padding:9px 12px;font-weight:700;color:#2c3e50;text-align:left;">${m.nome || '—'}</td>
@@ -18895,7 +18906,7 @@ function eqRenderTabela() {
 
     tbody.innerHTML = lista.map((eq, i) => {
         const st  = _eqStatusCalib(eq);
-        const bg  = i % 2 === 0 ? '#161b22':'#0d1117';
+        const bg  = _tBg(i);
         const possuiCalibLabel = (eq.possui_calib || eq.possuiCalib) === 'sim' ? '✅ Sim' : '⚪ Não';
         const proxCalib = eq.prox_calib || eq.proxCalib || '';
         const dataCalib = eq.data_calib || eq.dataCalib || '';
