@@ -6472,7 +6472,7 @@ function aplicarPermissoes() {
     if (btnEMP) btnEMP.style.display = podeEntradaMP ? 'inline-block' : 'none';
     // Coluna de ação
     const thAcaoEMP = document.getElementById('thAcaoEMP');
-    if (thAcaoEMP) thAcaoEMP.style.display = (isAdmin || perms.entrada_excluir || perms.entrada_editar || perms.entrada_aprovar) ? 'table-cell' : 'none';
+    if (thAcaoEMP) thAcaoEMP.style.display = (isAdmin || perms.entrada_editar || perms.entrada_aprovar) ? 'table-cell' : 'none';
 
     // Aba Configurações — visível se tiver qualquer permissão de config
     const temConfig = isAdmin || perms.backup || perms.memoria || perms.parametros || perms.whatsapp;
@@ -10177,7 +10177,7 @@ function exibirTabelaEMP(lista) {
     const podeExcluir  = isAdmin || perms.entrada_excluir;
     const podeEditar   = isAdmin || perms.entrada_editar;
     const podeAprovar  = isAdmin || perms.entrada_aprovar;
-    const temAcao = podeExcluir || podeEditar || podeAprovar;
+    const temAcao = podeEditar || podeAprovar;
 
     const tbody = document.getElementById('tabelaEntradaMP');
     if (!dados.length) {
