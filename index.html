@@ -4972,25 +4972,49 @@
 
     <!-- ===== POPUP AGENDA (exibido ao entrar no sistema) ===== -->
     <div id="popupAgenda">
-        <div class="popup-agenda-box">
+        <div class="popup-agenda-box" style="width:520px;">
             <div class="popup-agenda-header">
                 <div class="popup-agenda-header-left">
                     <span style="font-size:26px;">📅</span>
                     <div>
                         <div class="popup-agenda-header-title">Agenda de Tarefas</div>
-                        <div class="popup-agenda-header-sub">Compromissos para hoje</div>
+                        <div class="popup-agenda-header-sub" id="popupAgendaSubtitle">Compromissos pendentes</div>
                     </div>
                 </div>
                 <button onclick="fecharPopupAgenda()" style="background:rgba(255,255,255,0.15);border:none;color:white;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;">✕</button>
             </div>
             <div class="popup-agenda-red-bar"></div>
+
+            <!-- Aviso de snooze ativo -->
+            <div id="popupAvisoAtivo" style="display:none;" class="popup-agenda-aviso-ativo">
+                ⏰ <span id="popupAvisoAtivoTxt">Aviso ativo — reaparece automaticamente</span>
+            </div>
+
             <div class="popup-agenda-date" id="popupAgendaData">Data: --/--/----</div>
             <div class="popup-agenda-body" id="popupAgendaLista"></div>
+
+            <!-- Painel de configuração do snooze (aparece ao clicar Manter) -->
+            <div class="popup-agenda-snooze-panel" id="popupSnoozePanel">
+                <div class="popup-agenda-snooze-label">⏱ Reaparecer a cada:</div>
+                <div class="popup-agenda-snooze-opts">
+                    <button class="popup-agenda-snooze-opt" onclick="agendaSelecionarSnooze(5,this)">5 min</button>
+                    <button class="popup-agenda-snooze-opt" onclick="agendaSelecionarSnooze(10,this)">10 min</button>
+                    <button class="popup-agenda-snooze-opt ativo" onclick="agendaSelecionarSnooze(15,this)">15 min</button>
+                    <button class="popup-agenda-snooze-opt" onclick="agendaSelecionarSnooze(30,this)">30 min</button>
+                    <button class="popup-agenda-snooze-opt" onclick="agendaSelecionarSnooze(60,this)">1 hora</button>
+                    <button class="popup-agenda-snooze-opt" onclick="agendaSelecionarSnooze(120,this)">2 horas</button>
+                </div>
+                <button class="popup-agenda-snooze-confirm" onclick="agendaConfirmarSnooze()">✔ Confirmar intervalo</button>
+            </div>
+
             <div class="popup-agenda-footer">
                 <button class="popup-agenda-btn-abrir" onclick="fecharPopupAgenda();trocarAba('agenda',document.getElementById('tabAgenda'))">Abrir Agenda</button>
-                <div style="display:flex;gap:8px;">
-                    <button class="popup-agenda-btn-nao-mostrar" onclick="agendaDismissDefinitivo()">✖ Não mostrar novamente</button>
-                    <button class="popup-agenda-btn-fechar" onclick="fecharPopupAgenda()">Fechar</button>
+                <div style="display:flex;gap:8px;" id="popupBotoesNormais">
+                    <button class="popup-agenda-btn-manter"   onclick="agendaMostrarSnooze()">⏰ Manter Aviso</button>
+                    <button class="popup-agenda-btn-desativar" onclick="agendaDesativarAviso()">✖ Desativar Aviso</button>
+                </div>
+                <div style="display:none;gap:8px;" id="popupBotoesSnoozeAtivo">
+                    <button class="popup-agenda-btn-desativar" onclick="agendaDesativarAviso()">✖ Desativar Aviso</button>
                 </div>
             </div>
         </div>
@@ -16783,6 +16807,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                     if (perfilAtual === 'admin') verificarEspacoAoIniciar();
                     if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
                     if (typeof _iaAtualizarMenuAdmin === 'function') _iaAtualizarMenuAdmin();
+                    // ── Agenda: login automático ──
+                    if (typeof _agendaInicializar === 'function') setTimeout(_agendaInicializar, 800);
                 }).catch(() => sgqOcultarLoading());
                 return;
             }
@@ -22550,57 +22576,59 @@ function sgqAutocompleteFechar(campoId) {
 (function() {
     'use strict';
 
-    // ── Estado ──────────────────────────────────────────────────────
+    // ── Estado ───────────────────────────────────────────────────────
     let _compromissos     = [];
     let _filtroAtual      = 'todos';
     let _popupItensAtuais = [];
     let _popupVisivel     = false;
-    let _agendaInterval   = null;
     let _inicializado     = false;
+    let _snoozeMinutos    = 15;          // intervalo padrão do aviso ativo
+    let _snoozeInterval   = null;        // timer do snooze ativo
+    let _snoozeAtivo      = false;       // flag: usuário escolheu "Manter"
+    let _snoozeSelecionado= 15;          // valor selecionado antes de confirmar
     const TABELA          = 'agenda_compromissos';
 
-    // ── Data LOCAL (sem bug de fuso horário UTC) ─────────────────────
+    // ── Data LOCAL ───────────────────────────────────────────────────
     function _hoje() {
         const d = new Date();
         return d.getFullYear() + '-' +
                String(d.getMonth()+1).padStart(2,'0') + '-' +
                String(d.getDate()).padStart(2,'0');
     }
-
     function _formatarData(iso) {
         if (!iso) return '';
         const [y,m,d] = iso.split('-');
         return d+'/'+m+'/'+y;
     }
-
     function _isHoje(iso) { return iso === _hoje(); }
 
+    // ── Recorrência ──────────────────────────────────────────────────
+    // "mensal" = mesmo dia do mês; agora também suporta próximo mês
     function _isRecorrenteHoje(c) {
         if (!c.recorrente || !c.recorrencia) return false;
-        const base  = new Date(c.data + 'T00:00:00');
-        const hoje  = new Date(); hoje.setHours(0,0,0,0);
+        const base = new Date(c.data + 'T00:00:00');
+        const hoje = new Date(); hoje.setHours(0,0,0,0);
         if (base > hoje) return false;
         if (c.recorrencia === 'diario')  return true;
         if (c.recorrencia === 'semanal') return base.getDay()  === hoje.getDay();
         if (c.recorrencia === 'mensal')  return base.getDate() === hoje.getDate();
         return false;
     }
-
     function _eHoje(c) { return _isHoje(c.data) || _isRecorrenteHoje(c); }
 
-    // ── Hora já passou ou chegou ─────────────────────────────────────
+    // ── Hora passou ──────────────────────────────────────────────────
     function _horaPassou(c) {
         if (!c.hora) return true;
         const [hh,mm] = c.hora.substring(0,5).split(':').map(Number);
-        const agora   = new Date();
-        return agora.getHours()*60 + agora.getMinutes() >= hh*60+mm;
+        const n = new Date();
+        return n.getHours()*60 + n.getMinutes() >= hh*60+mm;
     }
 
-    // ── Dismiss (não mostrar novamente) ──────────────────────────────
-    function _chave(c) { return c.id + '_' + _hoje(); }
-    function _getDisp() { try { return JSON.parse(sessionStorage.getItem('agDisp')||'{}'); } catch(e){return{};} }
-    function _setDisp(c) { const d=_getDisp(); d[_chave(c)]=1; sessionStorage.setItem('agDisp',JSON.stringify(d)); }
-    function _dispensado(c) { return !!_getDisp()[_chave(c)]; }
+    // ── Dismiss definitivo (localStorage = persiste entre sessões no mesmo dia) ─
+    // Chave: id + data. Para recorrente mensal, a desativação vale só pro mês atual.
+    function _chaveDisp(c) { return 'agDisp_' + c.id + '_' + _hoje(); }
+    function _dispensado(c) { return localStorage.getItem(_chaveDisp(c)) === '1'; }
+    function _setDispensado(c) { localStorage.setItem(_chaveDisp(c), '1'); }
 
     // ── Supabase ─────────────────────────────────────────────────────
     async function _carregar() {
@@ -22610,13 +22638,11 @@ function sgqAutocompleteFechar(campoId) {
             _compromissos = data || [];
         } catch(e) { _compromissos = []; }
     }
-
     async function _salvar(obj) {
         const { data, error } = await _sbClient.from(TABELA).upsert([obj],{onConflict:'id'}).select();
         if (error) throw error;
         return data[0];
     }
-
     async function _excluir(id) {
         const { error } = await _sbClient.from(TABELA).delete().eq('id',id);
         if (error) throw error;
@@ -22631,11 +22657,14 @@ function sgqAutocompleteFechar(campoId) {
             dataEl.textContent = 'Data: ' + n.toLocaleDateString('pt-BR') +
                 ' — ' + n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
         }
+        const sub = document.getElementById('popupAgendaSubtitle');
+        if (sub) sub.textContent = itens.length > 1 ? itens.length + ' compromissos pendentes' : 'Compromisso pendente';
+
         const lista = document.getElementById('popupAgendaLista');
         if (lista) {
             lista.innerHTML = itens.map(c => {
                 const rec  = c.recorrente && c.recorrencia
-                    ? '<span>🔁 '+c.recorrencia.charAt(0).toUpperCase()+c.recorrencia.slice(1)+'</span>' : '';
+                    ? '<span>🔁 '+({diario:'Diário',semanal:'Semanal',mensal:'Mensal'}[c.recorrencia]||c.recorrencia)+'</span>' : '';
                 const hora = c.hora ? '<span>🕐 '+c.hora.substring(0,5)+'</span>' : '';
                 return '<div class="popup-agenda-item">' +
                     '<div class="popup-agenda-item-titulo">'+c.titulo+'</div>' +
@@ -22643,36 +22672,100 @@ function sgqAutocompleteFechar(campoId) {
                     '<div class="popup-agenda-item-meta">'+hora+rec+'</div></div>';
             }).join('');
         }
+
+        // Atualiza UI conforme snooze ativo
+        _atualizarUISnooze();
+
         const popup = document.getElementById('popupAgenda');
         if (popup) { popup.classList.add('show'); _popupVisivel = true; }
     }
 
-    // ── Fechar (snooze — reaparece no próximo tick de 30 min) ────────
+    function _atualizarUISnooze() {
+        const avisoEl   = document.getElementById('popupAvisoAtivo');
+        const avisoTxt  = document.getElementById('popupAvisoAtivoTxt');
+        const bNorm     = document.getElementById('popupBotoesNormais');
+        const bSnooze   = document.getElementById('popupBotoesSnoozeAtivo');
+        const panel     = document.getElementById('popupSnoozePanel');
+        if (_snoozeAtivo) {
+            if (avisoEl)  avisoEl.style.display  = 'flex';
+            if (avisoTxt) avisoTxt.textContent    = '⏰ Aviso ativo — reaparece a cada ' + _snoozeMinutos + ' min';
+            if (bNorm)    bNorm.style.display     = 'none';
+            if (bSnooze)  bSnooze.style.display   = 'flex';
+            if (panel)    panel.classList.remove('show');
+        } else {
+            if (avisoEl)  avisoEl.style.display  = 'none';
+            if (bNorm)    bNorm.style.display     = 'flex';
+            if (bSnooze)  bSnooze.style.display   = 'none';
+            if (panel)    panel.classList.remove('show');
+        }
+    }
+
+    // ── Fechar popup (sem cancelar snooze ativo) ─────────────────────
     window.fecharPopupAgenda = function() {
         const p = document.getElementById('popupAgenda');
         if (p) p.classList.remove('show');
         _popupVisivel = false;
+        // Se snooze ativo, o intervalo já está rodando — popup reaparece automaticamente
     };
 
-    // ── Não mostrar novamente hoje ────────────────────────────────────
-    window.agendaDismissDefinitivo = function() {
-        _popupItensAtuais.forEach(c => _setDisp(c));
+    // ── Mostrar painel de seleção de snooze ──────────────────────────
+    window.agendaMostrarSnooze = function() {
+        const panel = document.getElementById('popupSnoozePanel');
+        if (panel) panel.classList.toggle('show');
+    };
+
+    // ── Selecionar intervalo ──────────────────────────────────────────
+    window.agendaSelecionarSnooze = function(min, btn) {
+        _snoozeSelecionado = min;
+        document.querySelectorAll('.popup-agenda-snooze-opt').forEach(b => b.classList.remove('ativo'));
+        if (btn) btn.classList.add('ativo');
+    };
+
+    // ── Confirmar snooze — inicia timer e ajusta UI ──────────────────
+    window.agendaConfirmarSnooze = function() {
+        _snoozeMinutos = _snoozeSelecionado;
+        _snoozeAtivo   = true;
+
+        // Cancela interval anterior se existir
+        if (_snoozeInterval) clearInterval(_snoozeInterval);
+
+        // Inicia novo interval com o tempo escolhido
+        _snoozeInterval = setInterval(function() {
+            if (!_snoozeAtivo) return;
+            if (_popupItensAtuais.length === 0) return;
+            _mostrarPopup(_popupItensAtuais); // reabre o popup
+        }, _snoozeMinutos * 60 * 1000);
+
+        _atualizarUISnooze();
+        sgqToast('Aviso mantido — reaparece a cada ' + _snoozeMinutos + ' min.', 'info');
+    };
+
+    // ── Desativar aviso — dispensa todos os itens atuais hoje ────────
+    window.agendaDesativarAviso = function() {
+        // Para o snooze
+        _snoozeAtivo = false;
+        if (_snoozeInterval) { clearInterval(_snoozeInterval); _snoozeInterval = null; }
+
+        // Marca como dispensado hoje (persiste em localStorage)
+        _popupItensAtuais.forEach(c => _setDispensado(c));
         _popupItensAtuais = [];
+
         const p = document.getElementById('popupAgenda');
         if (p) p.classList.remove('show');
         _popupVisivel = false;
-        sgqToast('Compromissos dispensados para hoje.','info');
+
+        sgqToast('Aviso desativado para hoje.', 'info');
     };
 
-    // ── Tick principal ───────────────────────────────────────────────
+    // ── Tick principal — verifica candidatos ─────────────────────────
     async function _tick() {
-        // Aguarda perfilAtual estar disponível
         if (typeof perfilAtual === 'undefined' || perfilAtual !== 'admin') return;
 
         await _carregar();
         agendaRenderizarLista();
 
-        if (_popupVisivel) return; // popup já aberto, não empilha
+        if (_popupVisivel) return; // popup já visível, não empilha
+        if (_snoozeAtivo)  return; // snooze gerencia as reexibições
 
         const candidatos = _compromissos.filter(c =>
             c.ativo !== false &&
@@ -22684,16 +22777,15 @@ function sgqAutocompleteFechar(campoId) {
         if (candidatos.length > 0) _mostrarPopup(candidatos);
     }
 
-    // ── Inicialização: chama imediatamente + a cada 30 min ───────────
+    // ── Inicialização ────────────────────────────────────────────────
     async function _iniciar() {
         if (_inicializado) return;
         _inicializado = true;
         await _tick();
-        if (_agendaInterval) clearInterval(_agendaInterval);
-        _agendaInterval = setInterval(_tick, 30 * 60 * 1000);
+        // Tick de fundo a cada 5 min (verifica novos compromissos que venceram)
+        setInterval(_tick, 5 * 60 * 1000);
     }
 
-    // ── Expõe funções públicas ────────────────────────────────────────
     window._agendaInicializar     = _iniciar;
     window._agendaCarregarEExibir = async function() {
         if (typeof perfilAtual === 'undefined' || perfilAtual !== 'admin') return;
@@ -22726,9 +22818,10 @@ function sgqAutocompleteFechar(campoId) {
             return;
         }
         lista.innerHTML = dados.map(c => {
-            const hoje   = _eHoje(c);
-            const inativo = c.ativo === false;
-            let cls = 'agenda-card' + (inativo ? ' inativo' : c.recorrente ? ' recorrente' : hoje ? ' hoje' : '');
+            const ehoje  = _eHoje(c);
+            const inat   = c.ativo === false;
+            const disp   = _dispensado(c);
+            let cls = 'agenda-card' + (inat ? ' inativo' : disp ? ' inativo' : c.recorrente ? ' recorrente' : ehoje ? ' hoje' : '');
             const recLabel = c.recorrente && c.recorrencia
                 ? ({diario:'Diário',semanal:'Semanal',mensal:'Mensal'}[c.recorrencia]||c.recorrencia) : null;
             return '<div class="'+cls+'" id="agCard_'+c.id+'">' +
@@ -22739,8 +22832,9 @@ function sgqAutocompleteFechar(campoId) {
                 '<span class="agenda-badge agenda-badge-data">📅 '+_formatarData(c.data)+'</span>' +
                 (c.hora?'<span class="agenda-badge agenda-badge-hora">🕐 '+c.hora.substring(0,5)+'</span>':'') +
                 (recLabel?'<span class="agenda-badge agenda-badge-rec">🔁 '+recLabel+'</span>':'') +
-                (hoje&&!inativo?'<span class="agenda-badge agenda-badge-hoje">📌 Hoje</span>':'') +
-                (inativo?'<span class="agenda-badge agenda-badge-inativo">Inativo</span>':'') +
+                (ehoje&&!inat&&!disp?'<span class="agenda-badge agenda-badge-hoje">📌 Hoje</span>':'') +
+                (inat?'<span class="agenda-badge agenda-badge-inativo">Inativo</span>':'') +
+                (disp&&!inat?'<span class="agenda-badge agenda-badge-inativo">✔ Dispensado hoje</span>':'') +
                 '</div></div>' +
                 '<div class="agenda-card-acoes">' +
                 '<button class="agenda-btn-acao agenda-btn-editar" title="Editar" onclick="agendaEditar(\''+c.id+'\')">✏️</button>' +
@@ -22759,21 +22853,18 @@ function sgqAutocompleteFechar(campoId) {
         document.getElementById('agendaHora').value         = '';
         document.getElementById('agendaRecorrente').checked = false;
         document.getElementById('agendaAtivo').checked      = true;
-        document.getElementById('agendaTipoRec').value      = 'diario';
+        document.getElementById('agendaTipoRec').value      = 'mensal';
         document.getElementById('agendaGrupoRec').style.display = 'none';
         document.getElementById('modalAgendaTitulo').textContent = 'Novo Compromisso';
         document.getElementById('modalAgenda').classList.add('show');
     };
-
     window.fecharModalAgenda = function() {
         document.getElementById('modalAgenda').classList.remove('show');
     };
-
     window.agendaToggleRecorrencia = function() {
         document.getElementById('agendaGrupoRec').style.display =
             document.getElementById('agendaRecorrente').checked ? 'flex' : 'none';
     };
-
     window.agendaEditar = function(id) {
         const c = _compromissos.find(x => x.id===id); if (!c) return;
         document.getElementById('agendaEditId').value        = c.id;
@@ -22783,12 +22874,11 @@ function sgqAutocompleteFechar(campoId) {
         document.getElementById('agendaHora').value          = c.hora?c.hora.substring(0,5):'';
         document.getElementById('agendaRecorrente').checked  = !!c.recorrente;
         document.getElementById('agendaAtivo').checked       = c.ativo!==false;
-        document.getElementById('agendaTipoRec').value       = c.recorrencia||'diario';
+        document.getElementById('agendaTipoRec').value       = c.recorrencia||'mensal';
         document.getElementById('agendaGrupoRec').style.display = c.recorrente?'flex':'none';
         document.getElementById('modalAgendaTitulo').textContent = 'Editar Compromisso';
         document.getElementById('modalAgenda').classList.add('show');
     };
-
     window.salvarAgendaCompromisso = async function() {
         const titulo = document.getElementById('agendaTitulo').value.trim();
         const data   = document.getElementById('agendaData').value;
@@ -22809,12 +22899,10 @@ function sgqAutocompleteFechar(campoId) {
             const salvo = await _salvar(obj);
             if (id) { const i=_compromissos.findIndex(x=>x.id===id); if(i>=0)_compromissos[i]=salvo; else _compromissos.push(salvo); }
             else _compromissos.push(salvo);
-            fecharModalAgenda();
-            agendaRenderizarLista();
+            fecharModalAgenda(); agendaRenderizarLista();
             sgqToast('Compromisso salvo!','success');
         } catch(e) { sgqToast('Erro ao salvar: '+e.message,'error'); }
     };
-
     window.agendaToggleAtivo = async function(id) {
         const c=_compromissos.find(x=>x.id===id); if(!c)return;
         try {
@@ -22824,7 +22912,6 @@ function sgqAutocompleteFechar(campoId) {
             sgqToast('Compromisso '+(s.ativo?'ativado':'desativado')+'.','info');
         } catch(e) { sgqToast('Erro: '+e.message,'error'); }
     };
-
     window.agendaExcluir = async function(id) {
         if (!confirm('Deseja excluir este compromisso?')) return;
         try {
@@ -22835,20 +22922,8 @@ function sgqAutocompleteFechar(campoId) {
         } catch(e) { sgqToast('Erro ao excluir: '+e.message,'error'); }
     };
 
-    // ── Dispara ao carregar a página — funciona com login automático ──
-    // Fica tentando até perfilAtual estar disponível (max 30 tentativas)
-    let _tentativas = 0;
-    function _aguardarEIniciar() {
-        if (typeof perfilAtual !== 'undefined' && perfilAtual !== null) {
-            _iniciar();
-        } else if (_tentativas < 30) {
-            _tentativas++;
-            setTimeout(_aguardarEIniciar, 1000); // tenta a cada 1 segundo
-        }
-    }
-    document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(_aguardarEIniciar, 2000); // aguarda 2s após DOM pronto
-    });
+    // ── _agendaInicializar é chamado diretamente pelos hooks de login ──
+    // (login manual em fazerLogin() e login automático no DOMContentLoaded do sistema)
 
 })(); /* fim módulo agenda */
 </script>
