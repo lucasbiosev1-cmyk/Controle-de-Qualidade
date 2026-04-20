@@ -17937,9 +17937,11 @@ function reagCorrigirTotalNota(id) {
 
 function reagAtualizarCards() {
     const total     = _reagentes.length;
-    const baixo     = _reagentes.filter(r => _reagStatus(r) === 'baixo').length;
-    const vencendo  = _reagentes.filter(r => _reagStatus(r) === 'vencendo').length;
-    const vencido   = _reagentes.filter(r => _reagStatus(r) === 'vencido').length;
+    // ── Contagens baseadas em estoque agrupado (reflete a realidade) ──
+    const grupos    = _reagAgruparPorNome();
+    const baixo     = grupos.filter(g => _reagStatusAgrupado(g) === 'baixo').length;
+    const vencendo  = grupos.filter(g => _reagStatusAgrupado(g) === 'vencendo').length;
+    const vencido   = grupos.filter(g => _reagStatusAgrupado(g) === 'vencido').length;
     const pf        = _reagentes.filter(r => r.controlePF).length;
     const el = id => document.getElementById(id);
     if(el('reagCardTotal'))    el('reagCardTotal').textContent    = total;
@@ -17958,9 +17960,46 @@ function reagAtualizarCards() {
         : '—';
 }
 
+// ── Helpers: agrupa _reagentes por nome e calcula status real ────────
+function _reagAgruparPorNome(lista) {
+    const grupos = {};
+    (lista || _reagentes).forEach(r => {
+        const chave = r.nome.trim().toUpperCase();
+        if (!grupos[chave]) {
+            grupos[chave] = {
+                nome:       r.nome,
+                controlePF: r.controlePF,
+                unidade:    r.unidade,
+                minimo:     parseFloat(r.minimo) || 0,
+                qtdTotal:   0,
+                // validade: guarda a mais próxima entre os lotes
+                validadeMaisProxima: null,
+            };
+        }
+        grupos[chave].qtdTotal += parseFloat(r.qtdAtual) || 0;
+        // Mantém a validade mais próxima (pior caso)
+        if (r.validade) {
+            if (!grupos[chave].validadeMaisProxima || r.validade < grupos[chave].validadeMaisProxima) {
+                grupos[chave].validadeMaisProxima = r.validade;
+            }
+        }
+    });
+    return Object.values(grupos);
+}
+
+function _reagStatusAgrupado(g) {
+    const dias = _reagDiasParaVencer(g.validadeMaisProxima);
+    if (dias !== null && dias < 0)  return 'vencido';
+    if (dias !== null && dias <= 60) return 'vencendo';
+    if (g.minimo > 0 && g.qtdTotal <= g.minimo) return 'baixo';
+    return 'ok';
+}
+
 // ── Verificar alertas e exibir botão / popup ──────────────────────
 function reagVerificarAlertas() {
-    const alertas = _reagentes.filter(r => _reagStatus(r) !== 'ok');
+    // Usa estoque agrupado por produto para não inflar a contagem por lote
+    const grupos  = _reagAgruparPorNome();
+    const alertas = grupos.filter(g => _reagStatusAgrupado(g) !== 'ok');
     const btnAl = document.getElementById('btnReagAlertas');
     const cntAl = document.getElementById('reagAlertCount');
     if (!btnAl) return;
@@ -17973,23 +18012,25 @@ function reagVerificarAlertas() {
 }
 
 function reagVerAlertas() {
-    const alertas = _reagentes.filter(r => _reagStatus(r) !== 'ok');
+    // Agrupa por produto para refletir o estoque real (não por lote)
+    const grupos  = _reagAgruparPorNome();
+    const alertas = grupos.filter(g => _reagStatusAgrupado(g) !== 'ok');
     const body    = document.getElementById('reagAlertPopupBody');
     if (!body) return;
     if (!alertas.length) { body.innerHTML = '<p style="color:#27ae60;text-align:center;padding:20px;">✅ Nenhum alerta no momento.</p>'; }
     else {
-        body.innerHTML = alertas.map(r => {
-            const st   = _reagStatus(r);
-            const dias = _reagDiasParaVencer(r.validade);
+        body.innerHTML = alertas.map(g => {
+            const st   = _reagStatusAgrupado(g);
+            const dias = _reagDiasParaVencer(g.validadeMaisProxima);
             const icons = { vencido:'🔴', vencendo:'🟠', baixo:'🟡' };
             let msg = '';
             if (st === 'vencido')   msg = 'Validade vencida há ' + Math.abs(dias) + ' dias!';
             if (st === 'vencendo')  msg = dias === 0 ? 'Vence hoje!' : 'Vence em ' + dias + ' dias';
-            if (st === 'baixo')     msg = 'Estoque baixo: ' + r.qtdAtual + ' ' + r.unidade + ' (mín: ' + r.minimo + ')';
+            if (st === 'baixo')     msg = 'Estoque baixo: ' + g.qtdTotal.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:3}) + ' ' + g.unidade + ' (mín: ' + g.minimo + ')';
             return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:6px;margin-bottom:8px;background:${st==='vencido'?'rgba(248,81,73,0.1)':st==='vencendo'?_tBgEven():_tBgOdd()};border-left:3px solid ${st==='vencido'?'#e74c3c':st==='vencendo'?'#e67e22':'#f39c12'};">
                 <span style="font-size:18px;">${icons[st]}</span>
                 <div>
-                    <div style="font-weight:700;font-size:12px;color:#2c3e50;">${r.nome} ${_reagPFBadge(r.controlePF)}</div>
+                    <div style="font-weight:700;font-size:12px;color:#2c3e50;">${g.nome} ${_reagPFBadge(g.controlePF)}</div>
                     <div style="font-size:11px;color:#666;">${msg}</div>
                 </div>
             </div>`;
@@ -17997,7 +18038,7 @@ function reagVerAlertas() {
     }
     document.getElementById('reagAlertPopup').style.display = 'flex';
     // Disparar alerta por e-mail se configurado
-    _reagEnviarEmailAlerta(alertas);
+    _reagEnviarEmailAlertaAgrupado(alertas);
 }
 
 // ── E-mail de alerta (via mailto — compatível sem backend) ─────────
@@ -18012,6 +18053,24 @@ function _reagEnviarEmailAlerta(alertas) {
         if (st === 'vencendo') msg = 'VENCENDO em ' + dias + ' dias';
         if (st === 'baixo')    msg = 'ESTOQUE BAIXO (' + r.qtdAtual + '/' + r.minimo + ' ' + r.unidade + ')';
         return '• ' + r.nome + (r.controlePF ? ' [PF]' : '') + ' — ' + msg;
+    }).join('%0A');
+    const assunto = encodeURIComponent('⚠️ Alerta de Reagentes — L·Quality');
+    const corpo   = encodeURIComponent('Prezado(a),%0A%0AOs seguintes reagentes necessitam atenção:%0A%0A') + linhas + encodeURIComponent('%0A%0AAcesse o sistema para mais detalhes.%0A%0AL·Quality — Sistema de Gestão da Qualidade');
+    window.open('mailto:' + email + '?subject=' + assunto + '&body=' + corpo, '_blank');
+}
+
+// ── E-mail de alerta agrupado (usado por reagVerAlertas) ──────────
+function _reagEnviarEmailAlertaAgrupado(grupos) {
+    const email = _reagGetEmail();
+    if (!email || !grupos.length) return;
+    const linhas = grupos.map(g => {
+        const st = _reagStatusAgrupado(g);
+        const dias = _reagDiasParaVencer(g.validadeMaisProxima);
+        let msg = '';
+        if (st === 'vencido')  msg = 'VENCIDO há ' + Math.abs(dias) + ' dias';
+        if (st === 'vencendo') msg = 'VENCENDO em ' + dias + ' dias';
+        if (st === 'baixo')    msg = 'ESTOQUE BAIXO (' + g.qtdTotal.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:3}) + '/' + g.minimo + ' ' + g.unidade + ')';
+        return '• ' + g.nome + (g.controlePF ? ' [PF]' : '') + ' — ' + msg;
     }).join('%0A');
     const assunto = encodeURIComponent('⚠️ Alerta de Reagentes — L·Quality');
     const corpo   = encodeURIComponent('Prezado(a),%0A%0AOs seguintes reagentes necessitam atenção:%0A%0A') + linhas + encodeURIComponent('%0A%0AAcesse o sistema para mais detalhes.%0A%0AL·Quality — Sistema de Gestão da Qualidade');
