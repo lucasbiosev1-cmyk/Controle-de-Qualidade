@@ -2717,12 +2717,12 @@
                         <div class="kpi-mod-sub"><span id="kpiNcVencidaSub">—</span> NC no ano</div>
                     </div>
                     <div class="kpi-mod" style="border-left-color:#e67e22;">
-                        <div class="kpi-mod-label">Milho + Soja (Grãos)</div>
+                        <div class="kpi-mod-label">Grãos — Milho + Soja</div>
                         <div class="kpi-mod-row">
                             <span class="kpi-mod-val" id="kpiSemParamVal" style="color:#e67e22;">—</span>
                         </div>
                         <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiSemParamBar" style="background:#e67e22;width:0%;"></div></div>
-                        <div class="kpi-mod-sub" id="kpiSemParamSub">— no ano</div>
+                        <div class="kpi-mod-sub" id="kpiSemParamSub">— no ano · Classificação</div>
                     </div>
                 </div>
 
@@ -7573,12 +7573,12 @@ function atualizarKpisCapa() {
         const kpiClassSub = document.getElementById('kpiConfClassSub'); if(kpiClassSub) kpiClassSub.textContent = nconfClass + ' NC detectadas em ' + nomeMes;
         const kpiClassP = document.getElementById('kpiConfClassP'); if(kpiClassP) { kpiClassP.textContent = confClass + ' de ' + totalClass + ' grãos'; kpiClassP.style.background = corClass + '22'; kpiClassP.style.color = corClass; }
 
-        // ── Módulo Milho + Soja (Grãos) ──
-        const _isGraoMS = r => { const p = (r.produto||'').toLowerCase(); return p.includes('milho') || p.includes('soja'); };
-        const graosMs   = (classificacoes||[]).filter(isMesAtual).filter(_isGraoMS);
-        const graosAno  = (classificacoes||[]).filter(r => r.data && r.data.startsWith(String(anoAtual))).filter(_isGraoMS);
+        // ── Módulo Milho + Soja — Classificação de Grãos (excluindo ESTOQUE) ──
+        const _isGraoAnalise = r => { const p = (r.produto||'').toUpperCase().trim(); return p === 'MILHO' || p === 'SOJA'; };
+        const graosMs   = (classificacoes||[]).filter(isMesAtual).filter(_isGraoAnalise);
+        const graosAno  = (classificacoes||[]).filter(r => r.data && r.data.startsWith(String(anoAtual))).filter(_isGraoAnalise);
         const kpiSPV = document.getElementById('kpiSemParamVal'); if(kpiSPV) { kpiSPV.textContent = graosMs.length; }
-        const barSP = document.getElementById('kpiSemParamBar'); if(barSP) barSP.style.width = Math.min(graosMs.length * 5, 100) + '%';
+        const barSP = document.getElementById('kpiSemParamBar'); if(barSP) barSP.style.width = Math.min(graosMs.length * 3, 100) + '%';
         const kpiSPSub = document.getElementById('kpiSemParamSub'); if(kpiSPSub) kpiSPSub.textContent = graosAno.length + ' no ano';
 
         // ── Módulo Geral ──
