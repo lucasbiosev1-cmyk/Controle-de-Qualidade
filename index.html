@@ -17598,10 +17598,14 @@ function _reagDiasParaVencer(val) {
     return Math.ceil(diff);
 }
 function _reagStatus(r) {
+    const qtd  = parseFloat(r.qtdAtual) || 0;
     const dias = _reagDiasParaVencer(r.validade);
-    if (dias !== null && dias < 0)  return 'vencido';
-    if (dias !== null && dias <= 60) return 'vencendo';
-    if (r.qtdAtual <= r.minimo)      return 'baixo';
+    // Se não há estoque físico, alertas de validade não fazem sentido
+    if (qtd > 0) {
+        if (dias !== null && dias < 0)   return 'vencido';
+        if (dias !== null && dias <= 60) return 'vencendo';
+    }
+    if (qtd <= (parseFloat(r.minimo) || 0)) return 'baixo';
     return 'ok';
 }
 function _reagStatusBadge(st) {
@@ -17989,8 +17993,11 @@ function _reagAgruparPorNome(lista) {
 
 function _reagStatusAgrupado(g) {
     const dias = _reagDiasParaVencer(g.validadeMaisProxima);
-    if (dias !== null && dias < 0)  return 'vencido';
-    if (dias !== null && dias <= 60) return 'vencendo';
+    // Se não há estoque físico (soma de todos os lotes = 0), alertas de validade não fazem sentido
+    if (g.qtdTotal > 0) {
+        if (dias !== null && dias < 0)   return 'vencido';
+        if (dias !== null && dias <= 60) return 'vencendo';
+    }
     if (g.minimo > 0 && g.qtdTotal <= g.minimo) return 'baixo';
     return 'ok';
 }
