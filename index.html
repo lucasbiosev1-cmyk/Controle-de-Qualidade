@@ -2709,20 +2709,20 @@
                         <div class="kpi-mod-sub"><span id="kpiAnalisesP">—</span></div>
                     </div>
                     <div class="kpi-mod" style="border-left-color:#c0392b;">
-                        <div class="kpi-mod-label">NC em Aberto</div>
+                        <div class="kpi-mod-label">NC do Mês</div>
                         <div class="kpi-mod-row">
                             <span class="kpi-mod-val" id="kpiNcAbertas" style="color:#c0392b;">—</span>
                         </div>
                         <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiNcBar" style="background:#c0392b;width:0%;"></div></div>
-                        <div class="kpi-mod-sub"><span id="kpiNcVencidaSub">—</span> — <span id="kpiNcVencidaP">—</span></div>
+                        <div class="kpi-mod-sub"><span id="kpiNcVencidaSub">—</span> NC no ano</div>
                     </div>
-                    <div class="kpi-mod" style="border-left-color:#bbb;">
-                        <div class="kpi-mod-label">Registros S/ Parâmetro</div>
+                    <div class="kpi-mod" style="border-left-color:#e67e22;">
+                        <div class="kpi-mod-label">Milho + Soja (Grãos)</div>
                         <div class="kpi-mod-row">
-                            <span class="kpi-mod-val" id="kpiSemParamVal" style="color:#999;">—</span>
+                            <span class="kpi-mod-val" id="kpiSemParamVal" style="color:#e67e22;">—</span>
                         </div>
-                        <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiSemParamBar" style="background:#bbb;width:0%;"></div></div>
-                        <div class="kpi-mod-sub" id="kpiSemParamSub">excluídos do índice de conformidade</div>
+                        <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiSemParamBar" style="background:#e67e22;width:0%;"></div></div>
+                        <div class="kpi-mod-sub" id="kpiSemParamSub">— no ano</div>
                     </div>
                 </div>
 
@@ -7550,12 +7550,13 @@ function atualizarKpisCapa() {
         const kpiCPP = document.getElementById('kpiConfProdP'); if(kpiCPP) kpiCPP.textContent = confProd + ' de ' + totalProd + ' lotes';
         const barCP = document.getElementById('kpiConfProdBar'); if(barCP) { barCP.style.width = pctProd + '%'; barCP.style.background = corProd; }
 
-        // ── Card 3: NC abertas ──
-        const kpiNC = document.getElementById('kpiNcAbertas'); if(kpiNC) kpiNC.textContent = ncAbertas.length;
+        // ── Card 3: NC do Mês e do Ano ──
+        const ncDoMes  = (listaNC||[]).filter(n => n.data && n.data.startsWith(prefixoMes));
+        const ncDoAno  = (listaNC||[]).filter(n => n.data && n.data.startsWith(String(anoAtual)));
+        const kpiNC = document.getElementById('kpiNcAbertas'); if(kpiNC) kpiNC.textContent = ncDoMes.length;
         const kpiNCSub = document.getElementById('kpiNcVencidaSub');
-        if(kpiNCSub) kpiNCSub.textContent = ncVencidas.length > 0 ? ncVencidas.length + ' prazo(s) vencido(s)' : ncCriticas.length + ' crítica(s)';
-        const kpiNCP = document.getElementById('kpiNcVencidaP'); if(kpiNCP) kpiNCP.textContent = ncCriticas.length + ' NC críticas';
-        const barNC = document.getElementById('kpiNcBar'); if(barNC) barNC.style.width = Math.min(ncAbertas.length * 5, 100) + '%';
+        if(kpiNCSub) kpiNCSub.textContent = ncDoAno.length;
+        const barNC = document.getElementById('kpiNcBar'); if(barNC) barNC.style.width = Math.min(ncDoMes.length * 10, 100) + '%';
 
         // ── Card 4: Conformidade MP ──
         const corMP = corConf(pctMP);
@@ -7572,9 +7573,13 @@ function atualizarKpisCapa() {
         const kpiClassSub = document.getElementById('kpiConfClassSub'); if(kpiClassSub) kpiClassSub.textContent = nconfClass + ' NC detectadas em ' + nomeMes;
         const kpiClassP = document.getElementById('kpiConfClassP'); if(kpiClassP) { kpiClassP.textContent = confClass + ' de ' + totalClass + ' grãos'; kpiClassP.style.background = corClass + '22'; kpiClassP.style.color = corClass; }
 
-        // ── Módulo S/ Parâmetro ──
-        const kpiSPV = document.getElementById('kpiSemParamVal'); if(kpiSPV) kpiSPV.textContent = semParamTotal;
-        const barSP = document.getElementById('kpiSemParamBar'); if(barSP) barSP.style.width = Math.min(semParamTotal * 2, 100) + '%';
+        // ── Módulo Milho + Soja (Grãos) ──
+        const _isGraoMS = r => { const p = (r.produto||'').toLowerCase(); return p.includes('milho') || p.includes('soja'); };
+        const graosMs   = (classificacoes||[]).filter(isMesAtual).filter(_isGraoMS);
+        const graosAno  = (classificacoes||[]).filter(r => r.data && r.data.startsWith(String(anoAtual))).filter(_isGraoMS);
+        const kpiSPV = document.getElementById('kpiSemParamVal'); if(kpiSPV) { kpiSPV.textContent = graosMs.length; }
+        const barSP = document.getElementById('kpiSemParamBar'); if(barSP) barSP.style.width = Math.min(graosMs.length * 5, 100) + '%';
+        const kpiSPSub = document.getElementById('kpiSemParamSub'); if(kpiSPSub) kpiSPSub.textContent = graosAno.length + ' no ano';
 
         // ── Módulo Geral ──
         const corGeral = corConf(pctGeral);
