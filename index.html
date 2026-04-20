@@ -2716,13 +2716,21 @@
                         <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiNcBar" style="background:#c0392b;width:0%;"></div></div>
                         <div class="kpi-mod-sub"><span id="kpiNcVencidaSub">—</span> NC no ano</div>
                     </div>
-                    <div class="kpi-mod" style="border-left-color:#e67e22;">
-                        <div class="kpi-mod-label">NC Grãos — Milho + Soja</div>
+                    <div class="kpi-mod" style="border-left-color:#c0392b;">
+                        <div class="kpi-mod-label">NC Grãos — Milho</div>
                         <div class="kpi-mod-row">
-                            <span class="kpi-mod-val" id="kpiSemParamVal" style="color:#e67e22;">—</span>
+                            <span class="kpi-mod-val" id="kpiNcMilhoMes" style="color:#c0392b;">—</span>
                         </div>
-                        <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiSemParamBar" style="background:#e67e22;width:0%;"></div></div>
-                        <div class="kpi-mod-sub" id="kpiSemParamSub">— no ano · Classificação</div>
+                        <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiNcMilhoBar" style="background:#c0392b;width:0%;"></div></div>
+                        <div class="kpi-mod-sub" id="kpiNcMilhoAno">— no ano</div>
+                    </div>
+                    <div class="kpi-mod" style="border-left-color:#c0392b;">
+                        <div class="kpi-mod-label">NC Grãos — Soja</div>
+                        <div class="kpi-mod-row">
+                            <span class="kpi-mod-val" id="kpiNcSojaMes" style="color:#c0392b;">—</span>
+                        </div>
+                        <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiNcSojaBar" style="background:#c0392b;width:0%;"></div></div>
+                        <div class="kpi-mod-sub" id="kpiNcSojaAno">— no ano</div>
                     </div>
                 </div>
 
@@ -7573,14 +7581,23 @@ function atualizarKpisCapa() {
         const kpiClassSub = document.getElementById('kpiConfClassSub'); if(kpiClassSub) kpiClassSub.textContent = nconfClass + ' NC detectadas em ' + nomeMes;
         const kpiClassP = document.getElementById('kpiConfClassP'); if(kpiClassP) { kpiClassP.textContent = confClass + ' de ' + totalClass + ' grãos'; kpiClassP.style.background = corClass + '22'; kpiClassP.style.color = corClass; }
 
-        // ── Módulo Milho + Soja — Classificação de Grãos (somente NC, excluindo ESTOQUE) ──
-        const _isGraoAnalise = r => { const p = (r.produto||'').toUpperCase().trim(); return p === 'MILHO' || p === 'SOJA'; };
-        const _isGraoNC      = r => _isNConf(_spClass(r));
-        const graosNcMs  = (classificacoes||[]).filter(isMesAtual).filter(_isGraoAnalise).filter(_isGraoNC);
-        const graosNcAno = (classificacoes||[]).filter(r => r.data && r.data.startsWith(String(anoAtual))).filter(_isGraoAnalise).filter(_isGraoNC);
-        const kpiSPV = document.getElementById('kpiSemParamVal'); if(kpiSPV) { kpiSPV.textContent = graosNcMs.length; }
-        const barSP = document.getElementById('kpiSemParamBar'); if(barSP) barSP.style.width = Math.min(graosNcMs.length * 5, 100) + '%';
-        const kpiSPSub = document.getElementById('kpiSemParamSub'); if(kpiSPSub) kpiSPSub.textContent = graosNcAno.length + ' no ano';
+        // ── Módulo NC Grãos — Milho e Soja separados (excluindo ESTOQUE) ──
+        const _isNcClass     = r => _isNConf(_spClass(r));
+        const _isMilho       = r => (r.produto||'').toUpperCase().trim() === 'MILHO';
+        const _isSoja        = r => (r.produto||'').toUpperCase().trim() === 'SOJA';
+        const classAnoAll    = (classificacoes||[]).filter(r => r.data && r.data.startsWith(String(anoAtual)));
+
+        const milhoNcMs  = (classificacoes||[]).filter(isMesAtual).filter(_isMilho).filter(_isNcClass);
+        const milhoNcAno = classAnoAll.filter(_isMilho).filter(_isNcClass);
+        const sojaНcMs   = (classificacoes||[]).filter(isMesAtual).filter(_isSoja).filter(_isNcClass);
+        const sojaNcAno  = classAnoAll.filter(_isSoja).filter(_isNcClass);
+
+        const kpiMilhoMs  = document.getElementById('kpiNcMilhoMes');  if(kpiMilhoMs)  kpiMilhoMs.textContent  = milhoNcMs.length;
+        const kpiMilhoAno = document.getElementById('kpiNcMilhoAno');  if(kpiMilhoAno) kpiMilhoAno.textContent = milhoNcAno.length + ' no ano';
+        const barMilho    = document.getElementById('kpiNcMilhoBar');   if(barMilho)    barMilho.style.width    = Math.min(milhoNcMs.length * 5, 100) + '%';
+        const kpiSojaMs   = document.getElementById('kpiNcSojaMes');   if(kpiSojaMs)   kpiSojaMs.textContent   = sojaНcMs.length;
+        const kpiSojaAno  = document.getElementById('kpiNcSojaAno');   if(kpiSojaAno)  kpiSojaAno.textContent  = sojaNcAno.length + ' no ano';
+        const barSoja     = document.getElementById('kpiNcSojaBar');    if(barSoja)     barSoja.style.width     = Math.min(sojaНcMs.length * 5, 100) + '%';
 
         // ── Módulo Geral ──
         const corGeral = corConf(pctGeral);
