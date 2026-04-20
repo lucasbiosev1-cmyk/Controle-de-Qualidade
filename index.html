@@ -16654,17 +16654,17 @@ const CLASSIF_FARELO_SOJA = [
 
 // Tabela de parâmetros para FCO (Farelo de Carne e Ossos)
 const CLASSIF_FCO = [
-    { nome: 'Retenção ABNT 10 (2,00mm)', param: 10.00, unidade: '%'          },
-    { nome: 'Retenção ABNT 16 (1,18mm)', param: 14.00, unidade: '%'          },
-    { nome: 'Retenção ABNT 30 (0,60mm)', param: 45.00, unidade: '%'          },
-    { nome: 'Umidade',                   param: 8.00,  unidade: '%'          },
-    { nome: 'Densidade',                 param: 690,   unidade: 'g/L'        },
-    { nome: 'Matéria Mineral',           param: 42.00, unidade: '%'          },
-    { nome: 'Índice de Peróxido',        param: 0.10,  unidade: 'meq/kg'     },
-    { nome: 'Índice de Acidez',          param: 2.00,  unidade: 'mg NaOH/g'  },
-    { nome: 'Rancidez',                  param: 0,     unidade: 'Negativo'   },
-    { nome: 'Proteína Bruta',            param: 46.00, unidade: '%'          },
-    { nome: 'Extrato Etéreo',            param: 14.00, unidade: '%'          },
+    { nome: 'Retenção ABNT 10 (2,00mm)', param: 10.00, unidade: '%'     },
+    { nome: 'Retenção ABNT 16 (1,18mm)', param: 14.00, unidade: '%'     },
+    { nome: 'Retenção ABNT 30 (0,60mm)', param: 45.00, unidade: '%'     },
+    { nome: 'Umidade',                   param: 8.00,  unidade: '%'     },
+    { nome: 'Densidade',                 param: 690,   unidade: 'g/L'   },
+    { nome: 'Matéria Mineral',           param: 42.00, unidade: '%'     },
+    { nome: 'Índice de Peróxido',        param: 0.10,  unidade: 'meq/kg'},
+    { nome: 'Índice de Acidez',          param: 2.00,  unidade: 'mgNaOH/g'},
+    { nome: 'Rancidez',                  param: '',    unidade: 'Neg.'  },
+    { nome: 'Proteína Bruta',            param: 46.00, unidade: '%'     },
+    { nome: 'Extrato Etéreo',            param: 14.00, unidade: '%'     },
 ];
 
 function _resetarBotoesClassif() {
@@ -16730,24 +16730,27 @@ function adicionarLinhaClassif(nome='', resultado='', parametro='', unidade='%')
     const tbody = document.getElementById('classifBody');
     if (!tbody) return;
     const tr = document.createElement('tr');
-    const unidLabel = unidade && unidade !== '%' ? `<span style="font-size:10px;color:#888;margin-left:3px;">${unidade}</span>` : '';
+    // Para unidades longas, trunca na coluna resultado mas mostra completo no parâmetro
+    const unidCurta = unidade.length > 5 ? unidade.substring(0,5)+'…' : unidade;
+    const inputRes = resultado === '' ? '' : resultado;
+    const inputPar = parametro === '' ? '' : parametro;
     tr.innerHTML = `
         <td><input class="nc-classif-input nc-classif-input-nome" type="text" placeholder="Ex: Ardido" value="${nome}"></td>
         <td style="position:relative;">
             <div style="display:flex;align-items:center;gap:4px;">
-                <input class="nc-classif-input" type="number" step="0.01" min="0" placeholder="0,00" value="${resultado}" oninput="ncAtualizarCorLinha(this)" style="flex:1;min-width:0;">
-                <span style="font-size:10px;color:#888;white-space:nowrap;">${unidade}</span>
+                <input class="nc-classif-input" type="${unidade==='Neg.'?'text':'number'}" step="0.01" min="0" placeholder="${unidade==='Neg.'?'Neg./Pos.':'0,00'}" value="${inputRes}" oninput="ncAtualizarCorLinha(this)" style="flex:1;min-width:0;">
+                <span style="font-size:9px;color:#888;white-space:nowrap;max-width:48px;overflow:hidden;text-overflow:ellipsis;" title="${unidade}">${unidade}</span>
             </div>
         </td>
         <td style="position:relative;">
             <div style="display:flex;align-items:center;gap:4px;">
-                <input class="nc-classif-input" type="number" step="0.01" min="0" placeholder="0,00" value="${parametro}" oninput="ncAtualizarCorLinha(this)" style="flex:1;min-width:0;" data-unidade="${unidade}">
-                <span style="font-size:10px;color:#888;white-space:nowrap;">${unidade}</span>
+                <input class="nc-classif-input" type="${unidade==='Neg.'?'text':'number'}" step="0.01" min="0" placeholder="${unidade==='Neg.'?'Negativo':'0,00'}" value="${inputPar}" oninput="ncAtualizarCorLinha(this)" style="flex:1;min-width:0;" data-unidade="${unidade}">
+                <span style="font-size:9px;color:#888;white-space:nowrap;max-width:48px;overflow:hidden;text-overflow:ellipsis;" title="${unidade}">${unidade}</span>
             </div>
         </td>
         <td style="text-align:center;"><button class="nc-btn-rem-row" onclick="removerLinhaClassif(this)" title="Remover">−</button></td>`;
     tbody.appendChild(tr);
-    if (resultado !== '' && parametro !== '') ncAtualizarCorLinha(tr.querySelector('input[type=number]'));
+    if (inputRes !== '' && inputPar !== '') ncAtualizarCorLinha(tr.querySelector('input'));
 }
 
 function removerLinhaClassif(btn) { btn.closest('tr').remove(); }
