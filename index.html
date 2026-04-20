@@ -2717,7 +2717,7 @@
                         <div class="kpi-mod-sub"><span id="kpiNcVencidaSub">—</span> NC no ano</div>
                     </div>
                     <div class="kpi-mod" style="border-left-color:#c0392b;">
-                        <div class="kpi-mod-label">NC Grãos — Milho</div>
+                        <div class="kpi-mod-label">NC <span id="kpiMilhoLabelMes">—</span> — Milho</div>
                         <div class="kpi-mod-row">
                             <span class="kpi-mod-val" id="kpiNcMilhoMes" style="color:#c0392b;">—</span>
                         </div>
@@ -2725,7 +2725,7 @@
                         <div class="kpi-mod-sub"><span id="kpiNcMilhoAno">—</span> NC no ano</div>
                     </div>
                     <div class="kpi-mod" style="border-left-color:#c0392b;">
-                        <div class="kpi-mod-label">NC Grãos — Soja</div>
+                        <div class="kpi-mod-label">NC <span id="kpiSojaLabelMes">—</span> — Soja</div>
                         <div class="kpi-mod-row">
                             <span class="kpi-mod-val" id="kpiNcSojaMes" style="color:#c0392b;">—</span>
                         </div>
@@ -7594,9 +7594,11 @@ function atualizarKpisCapa() {
 
         const kpiMilhoMs  = document.getElementById('kpiNcMilhoMes');    if(kpiMilhoMs)  kpiMilhoMs.textContent  = milhoNcMs.length;
         const kpiMilhoAno = document.getElementById('kpiNcMilhoAno');    if(kpiMilhoAno) kpiMilhoAno.textContent = milhoNcAno.length;
+        const kpiMilhoLbl = document.getElementById('kpiMilhoLabelMes'); if(kpiMilhoLbl) kpiMilhoLbl.textContent = nomeMes;
         const barMilho    = document.getElementById('kpiNcMilhoBar');    if(barMilho)    barMilho.style.width    = Math.min(milhoNcMs.length * 5, 100) + '%';
         const kpiSojaMs   = document.getElementById('kpiNcSojaMes');     if(kpiSojaMs)   kpiSojaMs.textContent   = sojaНcMs.length;
         const kpiSojaAno  = document.getElementById('kpiNcSojaAno');     if(kpiSojaAno)  kpiSojaAno.textContent  = sojaNcAno.length;
+        const kpiSojaLbl  = document.getElementById('kpiSojaLabelMes');  if(kpiSojaLbl)  kpiSojaLbl.textContent  = nomeMes;
         const barSoja     = document.getElementById('kpiNcSojaBar');     if(barSoja)     barSoja.style.width     = Math.min(sojaНcMs.length * 5, 100) + '%';
 
         // ── Módulo Geral ──
