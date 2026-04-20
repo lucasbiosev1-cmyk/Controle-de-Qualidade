@@ -22781,9 +22781,17 @@ function sgqAutocompleteFechar(campoId) {
     async function _iniciar() {
         if (_inicializado) return;
         _inicializado = true;
-        await _tick();
-        // Tick de fundo a cada 5 min (verifica novos compromissos que venceram)
-        setInterval(_tick, 5 * 60 * 1000);
+        await _tick(); // disparo imediato
+
+        // Tick a cada 1 minuto — sincronizado com o próximo minuto cheio do relógio
+        // Ex: se são 14:32:45, o primeiro tick extra dispara em 15s (às 14:33:00)
+        // e depois a cada 60s exatos. Garante detecção no minuto correto do alarme.
+        const agora       = new Date();
+        const msAtePróximo = (60 - agora.getSeconds()) * 1000 - agora.getMilliseconds();
+        setTimeout(function() {
+            _tick();
+            setInterval(_tick, 60 * 1000); // a cada 1 minuto daqui em diante
+        }, msAtePróximo);
     }
 
     window._agendaInicializar     = _iniciar;
