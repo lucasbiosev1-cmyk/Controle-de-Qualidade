@@ -15995,16 +15995,20 @@ function imprimirRelatorioNC(tipo) {
         let classifHtml = '';
         if (classifRows.length > 0) {
             const rowsHtml = classifRows.map(tr => {
-                const cells = tr.querySelectorAll('input');
-                const defeito   = cells[0]?.value || '-';
-                const resultado = parseFloat(cells[1]?.value || 0);
-                const parametro = parseFloat(cells[2]?.value || 0);
-                const nc = resultado > parametro;
+                const inputs    = tr.querySelectorAll('input');
+                const defeito   = inputs[0]?.value || '-';
+                const unidade   = tr.querySelector('input[data-unidade]')?.dataset?.unidade || '%';
+                const isTexto   = unidade === 'Neg.' || isNaN(parseFloat(inputs[1]?.value));
+                const resultado = isTexto ? (inputs[1]?.value || '-') : parseFloat(inputs[1]?.value || 0);
+                const parametro = isTexto ? (inputs[2]?.value || '-') : parseFloat(inputs[2]?.value || 0);
+                const nc        = isTexto ? false : (resultado > parametro);
+                const resStr    = isTexto ? resultado : resultado.toFixed(2) + ' ' + unidade;
+                const parStr    = isTexto ? parametro : parametro.toFixed(2) + ' ' + unidade;
                 return `<tr>
                     <td style="text-align:left;font-weight:600;">${defeito}</td>
-                    <td style="font-weight:bold;color:${nc ? '#e74c3c' : '#27ae60'};">${resultado.toFixed(2)}%</td>
-                    <td style="color:#7f8c8d;">${parametro.toFixed(2)}%</td>
-                    <td style="color:${nc ? '#e74c3c' : '#27ae60'};font-weight:bold;">${nc ? '⚠ NC' : '✔ OK'}</td>
+                    <td style="font-weight:bold;color:${nc ? '#e74c3c' : '#27ae60'};">${resStr}</td>
+                    <td style="color:#7f8c8d;">${parStr}</td>
+                    <td style="color:${nc ? '#e74c3c' : '#27ae60'};font-weight:bold;">${nc ? '▲ NC' : '✔ OK'}</td>
                 </tr>`;
             }).join('');
             classifHtml = `
@@ -16013,8 +16017,8 @@ function imprimirRelatorioNC(tipo) {
                 <thead>
                     <tr style="background:#1a2a6e;color:white;">
                         <th style="padding:5px 8px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:0.4px;">Avaliados</th>
-                        <th style="padding:5px 8px;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:0.4px;">Resultado (%)</th>
-                        <th style="padding:5px 8px;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:0.4px;">Parâmetro (%)</th>
+                        <th style="padding:5px 8px;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:0.4px;">Resultado</th>
+                        <th style="padding:5px 8px;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:0.4px;">Parâmetro</th>
                         <th style="padding:5px 8px;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:0.4px;">Situação</th>
                     </tr>
                 </thead>
