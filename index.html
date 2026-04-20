@@ -2722,7 +2722,7 @@
                             <span class="kpi-mod-val" id="kpiNcMilhoMes" style="color:#c0392b;">—</span>
                         </div>
                         <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiNcMilhoBar" style="background:#c0392b;width:0%;"></div></div>
-                        <div class="kpi-mod-sub"><span id="kpiNcMilhoAno">—</span> no ano</div>
+                        <div class="kpi-mod-sub">em <span id="kpiNcMilhoNomeMes">—</span> · <span id="kpiNcMilhoAno">—</span> no ano</div>
                     </div>
                     <div class="kpi-mod" style="border-left-color:#c0392b;">
                         <div class="kpi-mod-label">NC Grãos — Soja</div>
@@ -2730,7 +2730,7 @@
                             <span class="kpi-mod-val" id="kpiNcSojaMes" style="color:#c0392b;">—</span>
                         </div>
                         <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiNcSojaBar" style="background:#c0392b;width:0%;"></div></div>
-                        <div class="kpi-mod-sub"><span id="kpiNcSojaAno">—</span> no ano</div>
+                        <div class="kpi-mod-sub">em <span id="kpiNcSojaNomeMes">—</span> · <span id="kpiNcSojaAno">—</span> no ano</div>
                     </div>
                 </div>
 
@@ -7592,12 +7592,14 @@ function atualizarKpisCapa() {
         const sojaНcMs   = (classificacoes||[]).filter(isMesAtual).filter(_isSoja).filter(_isNcClass);
         const sojaNcAno  = classAnoAll.filter(_isSoja).filter(_isNcClass);
 
-        const kpiMilhoMs  = document.getElementById('kpiNcMilhoMes'); if(kpiMilhoMs)  kpiMilhoMs.textContent  = milhoNcMs.length;
-        const kpiMilhoAno = document.getElementById('kpiNcMilhoAno'); if(kpiMilhoAno) kpiMilhoAno.textContent = milhoNcAno.length;
-        const barMilho    = document.getElementById('kpiNcMilhoBar'); if(barMilho)    barMilho.style.width    = Math.min(milhoNcMs.length * 5, 100) + '%';
-        const kpiSojaMs   = document.getElementById('kpiNcSojaMes');  if(kpiSojaMs)   kpiSojaMs.textContent   = sojaНcMs.length;
-        const kpiSojaAno  = document.getElementById('kpiNcSojaAno');  if(kpiSojaAno)  kpiSojaAno.textContent  = sojaNcAno.length;
-        const barSoja     = document.getElementById('kpiNcSojaBar');  if(barSoja)     barSoja.style.width     = Math.min(sojaНcMs.length * 5, 100) + '%';
+        const kpiMilhoMs  = document.getElementById('kpiNcMilhoMes');    if(kpiMilhoMs)  kpiMilhoMs.textContent  = milhoNcMs.length;
+        const kpiMilhoAno = document.getElementById('kpiNcMilhoAno');    if(kpiMilhoAno) kpiMilhoAno.textContent = milhoNcAno.length;
+        const kpiMilhoNM  = document.getElementById('kpiNcMilhoNomeMes');if(kpiMilhoNM)  kpiMilhoNM.textContent  = nomeMes;
+        const barMilho    = document.getElementById('kpiNcMilhoBar');    if(barMilho)    barMilho.style.width    = Math.min(milhoNcMs.length * 5, 100) + '%';
+        const kpiSojaMs   = document.getElementById('kpiNcSojaMes');     if(kpiSojaMs)   kpiSojaMs.textContent   = sojaНcMs.length;
+        const kpiSojaAno  = document.getElementById('kpiNcSojaAno');     if(kpiSojaAno)  kpiSojaAno.textContent  = sojaNcAno.length;
+        const kpiSojaNM   = document.getElementById('kpiNcSojaNomeMes'); if(kpiSojaNM)   kpiSojaNM.textContent   = nomeMes;
+        const barSoja     = document.getElementById('kpiNcSojaBar');     if(barSoja)     barSoja.style.width     = Math.min(sojaНcMs.length * 5, 100) + '%';
 
         // ── Módulo Geral ──
         const corGeral = corConf(pctGeral);
