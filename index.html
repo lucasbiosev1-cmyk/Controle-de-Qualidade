@@ -17437,6 +17437,7 @@ async function reagCarregarDados() {
             dataEmissao:  n.data_emissao,
             dataEntrada:  n.data_entrada,
             valorTotalNF: n.valor_total_nf != null ? parseFloat(n.valor_total_nf) : null,
+            totalItensNF: n.total_itens_nf != null ? parseInt(n.total_itens_nf) : null,
             itens:        n.itens ? JSON.parse(n.itens) : []
         }));
     } catch(e) {
@@ -17542,12 +17543,13 @@ async function _reagSalvarMovimento(mov) {
 // ── Salvar nota de entrada no Supabase ────────────────────────────
 async function _reagSalvarNota(n) {
     const { error } = await _sbClient.from('reag_notas').insert({
-        chave_nf:       n.chave,
-        fornecedor:     n.fornecedor,
-        data_emissao:   n.dataEmissao,
-        data_entrada:   n.dataEntrada,
-        valor_total_nf: n.valorTotalNF ?? null,
-        itens:          JSON.stringify(n.itens)
+        chave_nf:        n.chave,
+        fornecedor:      n.fornecedor,
+        data_emissao:    n.dataEmissao,
+        data_entrada:    n.dataEntrada,
+        valor_total_nf:  n.valorTotalNF ?? null,
+        total_itens_nf:  n.totalItensNF ?? null,
+        itens:           JSON.stringify(n.itens)
     });
     if (error) throw error;
 }
@@ -17818,7 +17820,7 @@ function reagRenderNotas() {
             <td style="padding:8px;text-align:center;font-size:11px;">${_fmtData(n.dataEmissao)}</td>
             <td style="padding:8px;text-align:center;font-size:11px;">${_fmtData(n.dataEntrada)}</td>
             <td style="padding:8px;text-align:center;font-size:11px;">${n.fornecedor}</td>
-            <td style="padding:8px;text-align:center;font-size:11px;font-weight:700;color:#1a2a6e;">${n.itens.length} item(s)</td>
+            <td style="padding:8px;text-align:center;font-size:11px;font-weight:700;color:#1a2a6e;">${(n.totalItensNF != null ? n.totalItensNF : n.itens.length)} item(s)</td>
             <td style="padding:8px;text-align:center;font-size:12px;font-weight:800;color:#27ae60;">
                 ${valorTotal != null
                     ? 'R$ ' + valorTotal.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})
@@ -17826,13 +17828,77 @@ function reagRenderNotas() {
             </td>
             <td style="padding:8px;text-align:center;display:flex;gap:5px;justify-content:center;">
                 <button onclick="reagVerNota('${n.id}')" style="background:#1a2a6e;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;">Ver</button>
+                ${n.totalItensNF == null ? `<button onclick="reagCorrigirTotalNota('${n.id}')" title="Importar XML só para corrigir total de itens" style="background:#e67e22;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;">📄 XML</button>` : ''}
                 <button onclick="reagExcluirNota('${n.id}')" style="background:#e74c3c;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;">🗑️</button>
             </td>
         </tr>`;
     }).join('');
 }
 
-// ── Cards de resumo ───────────────────────────────────────────────
+// ── Corrigir total de itens de nota antiga via XML ────────────────
+function reagCorrigirTotalNota(id) {
+    const n = _reagNotas.find(x => String(x.id) === String(id));
+    if (!n) return;
+
+    // Criar input file invisível
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.xml';
+    input.style.display = 'none';
+    document.body.appendChild(input);
+
+    input.onchange = async function() {
+        const file = input.files[0];
+        input.remove();
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const parser = new DOMParser();
+                const xml = parser.parseFromString(e.target.result, 'text/xml');
+
+                // Verificar se a chave do XML bate com a nota
+                const chaveXML = (xml.querySelector('chNFe') || xml.querySelector('Id'))?.textContent?.replace(/\D/g,'') || '';
+                const chaveNota = (n.chave || '').replace(/\D/g,'');
+                if (chaveXML && chaveNota && chaveXML !== chaveNota) {
+                    sgqToast('❌ XML não corresponde a esta nota. Chave diferente.', 'error');
+                    return;
+                }
+
+                // Contar total de itens (tags <det> ou <prod>)
+                const totalItens = xml.querySelectorAll('det').length || xml.querySelectorAll('prod').length;
+                if (!totalItens) {
+                    sgqToast('❌ Nenhum item encontrado no XML. Verifique se é um NF-e válido.', 'error');
+                    return;
+                }
+
+                // Atualizar no Supabase
+                const notaId = n.id.startsWith('NF_') ? null : n.id;
+                if (notaId) {
+                    const { error } = await _sbClient
+                        .from('reag_notas')
+                        .update({ total_itens_nf: totalItens })
+                        .eq('id', notaId);
+                    if (error) throw error;
+                }
+
+                // Atualizar em memória
+                n.totalItensNF = totalItens;
+                reagRenderNotas();
+                sgqToast(`✅ Total corrigido! Nota ${_reagNumeroNF(n.chave)}: ${totalItens} item(s)`, 'success');
+
+            } catch(err) {
+                sgqToast('❌ Erro ao ler XML: ' + err.message, 'error');
+            }
+        };
+        reader.readAsText(file, 'UTF-8');
+    };
+
+    input.click();
+}
+
+
 function reagAtualizarCards() {
     const total     = _reagentes.length;
     const baixo     = _reagentes.filter(r => _reagStatus(r) === 'baixo').length;
@@ -18356,7 +18422,8 @@ async function reagSalvarNota() {
         }
 
         // ── Salvar nota de entrada ────────────────────────────────
-        const nota = { chave, fornecedor, dataEmissao: emissao, dataEntrada: _reagHoje(), valorTotalNF, itens };
+        const totalItensNF = itens.length + itensNaoVinculados.length;
+        const nota = { chave, fornecedor, dataEmissao: emissao, dataEntrada: _reagHoje(), valorTotalNF, itens, totalItensNF };
         await _reagSalvarNota(nota);
         _reagNotas.unshift({ ...nota, id: 'NF_' + Date.now() });
 
@@ -18521,7 +18588,7 @@ function reagVerNota(id) {
                             <div style="font-size:12px;font-weight:800;color:#1a2a6e;margin-top:2px;">${_fmtData(n.dataEmissao)} / ${_fmtData(n.dataEntrada)}</div>
                         </div>
                     </div>
-                    <div style="font-size:11px;font-weight:800;color:#1a2a6e;margin-bottom:8px;">PRODUTOS (${n.itens.length} item(s))</div>
+                    <div style="font-size:11px;font-weight:800;color:#1a2a6e;margin-bottom:8px;">PRODUTOS (${(n.totalItensNF != null ? n.totalItensNF : n.itens.length)} item(s))</div>
                     <div style="border:1px solid #eee;border-radius:7px;overflow:hidden;">${itensHtml}</div>
                     ${totalHtml}
                     <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
