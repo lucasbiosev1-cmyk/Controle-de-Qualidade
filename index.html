@@ -6241,10 +6241,11 @@
         <div class="form-wrapper">
             <form id="formCadastroProd" onsubmit="return false;">
                 <input type="hidden" id="cadIdProd">
+                <!-- Linha 1: Dados de Registro (4 campos) -->
                 <div class="form-section">
                     <h3>Dados de Registro</h3>
                     <div class="form-grid form-grid-4">
-                        <div class="form-group required"><label>Data</label><div style="display:flex;align-items:center;gap:4px;"><button type="button" onclick="alterarDataCampo('cadDataProd',-1)" title="Dia anterior" style="flex-shrink:0;width:28px;height:34px;background:#2c3e50;color:#ecf0f1;border:1px solid #4a6278;border-radius:4px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;" onmouseover="this.style.background='#3d5166'" onmouseout="this.style.background='#2c3e50'">&#8249;</button><input type="text" id="cadDataProd" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)" onchange="gerarLoteAutomatico()" style="flex:1;min-width:0;"><button type="button" onclick="alterarDataCampo('cadDataProd',1)" title="Próximo dia" style="flex-shrink:0;width:28px;height:34px;background:#2c3e50;color:#ecf0f1;border:1px solid #4a6278;border-radius:4px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;" onmouseover="this.style.background='#3d5166'" onmouseout="this.style.background='#2c3e50'">&#8250;</button></div></div>
+                        <div class="form-group required" style="min-width:0;overflow:hidden;"><label>Data</label><div style="display:flex;align-items:stretch;gap:3px;width:100%;box-sizing:border-box;"><button type="button" onclick="alterarDataCampo('cadDataProd',-1)" title="Dia anterior" style="flex:0 0 24px;height:27px;background:#3a4a5a;color:#ecf0f1;border:1px solid #4a6278;border-radius:4px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;" onmouseover="this.style.background='#4a5e70'" onmouseout="this.style.background='#3a4a5a'">&#8249;</button><input type="text" id="cadDataProd" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)" onchange="gerarLoteAutomatico()" style="flex:1;min-width:0;width:100%;box-sizing:border-box;"><button type="button" onclick="alterarDataCampo('cadDataProd',1)" title="Próximo dia" style="flex:0 0 24px;height:27px;background:#3a4a5a;color:#ecf0f1;border:1px solid #4a6278;border-radius:4px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;" onmouseover="this.style.background='#4a5e70'" onmouseout="this.style.background='#3a4a5a'">&#8250;</button></div></div>
                         <div class="form-group"><label>Hora</label><input type="text" id="cadHoraProd" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" oninput="mascaraHora(this)" onchange="gerarLoteAutomatico()"></div>
                         <div class="form-group required">
                             <label>Ração</label>
@@ -6274,13 +6275,17 @@
                         <div class="form-group required"><label>Lote (Automático)</label><input type="text" id="cadLoteProd" required readonly></div>
                     </div>
                 </div>
+                <!-- Linha 2: Granulometria (4 campos) -->
                 <div class="form-section">
                     <h3>Granulometria (µm)</h3>
-                    <div class="form-grid form-grid-2">
+                    <div class="form-grid form-grid-4">
                         <div class="form-group required"><label>DGM</label><input type="number" id="cadDGMProd" step="0.01" min="0" required></div>
                         <div class="form-group"><label>DPG</label><input type="number" id="cadDPGProd" step="0.01" min="0"></div>
+                        <div class="form-group"><label>Granulo 1 (4mm)</label><input type="number" id="cadGranulo1Prod" step="0.01" min="0"></div>
+                        <div class="form-group"><label>Granulo 2 (2mm)</label><input type="number" id="cadGranulo2Prod" step="0.01" min="0"></div>
                     </div>
                 </div>
+                <!-- Linha 3: Físico-Químicos (4 campos) -->
                 <div class="form-section">
                     <h3>Parâmetros Físico-Químicos</h3>
                     <div class="form-grid form-grid-4">
@@ -6288,23 +6293,23 @@
                         <div class="form-group"><label>Proteína (%)</label><input type="number" id="cadProteinaProd" step="0.01" min="0"></div>
                         <div class="form-group"><label>Fibra Bruta (%)</label><input type="number" id="cadFibraProd" step="0.01" min="0"></div>
                         <div class="form-group"><label>Solubilidade Protéica (%)</label><input type="number" id="cadSolubilProd" step="0.01" min="0"></div>
+                    </div>
+                </div>
+                <!-- Linha 4: Físico-Químicos cont. + Minerais (4 campos) -->
+                <div class="form-section">
+                    <h3>Físico-Químicos e Nutrientes</h3>
+                    <div class="form-grid form-grid-4">
                         <div class="form-group"><label>Umidade (%)</label><input type="number" id="cadUmidadeProd" step="0.01" min="0"></div>
                         <div class="form-group"><label>Densidade</label><input type="number" id="cadDensidadeProd" step="0.01" min="0"></div>
-                    </div>
-                </div>
-                <div class="form-section">
-                    <h3>Nutrientes e Minerais</h3>
-                    <div class="form-grid form-grid-4">
                         <div class="form-group"><label>Material Mineral (%)</label><input type="number" id="cadMineralProd" step="0.01" min="0"></div>
                         <div class="form-group"><label>Cálcio (%)</label><input type="number" id="cadCalcioProd" step="0.01" min="0"></div>
-                        <div class="form-group"><label>Fósforo (%)</label><input type="number" id="cadFosforoProd" step="0.01" min="0"></div>
                     </div>
                 </div>
+                <!-- Linha 5: Minerais + Dist. Granulométrica — Fósforo, Grânulo 3, Fundo (campo fora = Fundo por último) -->
                 <div class="form-section">
-                    <h3>Distribuição Granulométrica</h3>
+                    <h3>Minerais e Distribuição Granulométrica</h3>
                     <div class="form-grid form-grid-4">
-                        <div class="form-group"><label>Granulo 1 (4mm)</label><input type="number" id="cadGranulo1Prod" step="0.01" min="0"></div>
-                        <div class="form-group"><label>Granulo 2 (2mm)</label><input type="number" id="cadGranulo2Prod" step="0.01" min="0"></div>
+                        <div class="form-group"><label>Fósforo (%)</label><input type="number" id="cadFosforoProd" step="0.01" min="0"></div>
                         <div class="form-group"><label>Granulo 3 (0,60mm)</label><input type="number" id="cadGranulo3Prod" step="0.01" min="0"></div>
                         <div class="form-group"><label>Fundo</label><input type="number" id="cadFundoProd" step="0.01" min="0"></div>
                     </div>
