@@ -6275,14 +6275,13 @@
                         <div class="form-group required"><label>Lote (Automático)</label><input type="text" id="cadLoteProd" required readonly></div>
                     </div>
                 </div>
-                <!-- Linha 2: Granulometria (4 campos) -->
+                <!-- Linha 2: Granulometria DGM/DPG (2 campos) -->
                 <div class="form-section">
                     <h3>Granulometria (µm)</h3>
                     <div class="form-grid form-grid-4">
                         <div class="form-group required"><label>DGM</label><input type="number" id="cadDGMProd" step="0.01" min="0" required></div>
                         <div class="form-group"><label>DPG</label><input type="number" id="cadDPGProd" step="0.01" min="0"></div>
-                        <div class="form-group"><label>Granulo 1 (4mm)</label><input type="number" id="cadGranulo1Prod" step="0.01" min="0"></div>
-                        <div class="form-group"><label>Granulo 2 (2mm)</label><input type="number" id="cadGranulo2Prod" step="0.01" min="0"></div>
+                        <div class="form-group"><label>Material Mineral (%)</label><input type="number" id="cadMineralProd" step="0.01" min="0"></div>
                     </div>
                 </div>
                 <!-- Linha 3: Físico-Químicos (4 campos) -->
@@ -6301,19 +6300,21 @@
                     <div class="form-grid form-grid-4">
                         <div class="form-group"><label>Umidade (%)</label><input type="number" id="cadUmidadeProd" step="0.01" min="0"></div>
                         <div class="form-group"><label>Densidade</label><input type="number" id="cadDensidadeProd" step="0.01" min="0"></div>
-                        <div class="form-group"><label>Material Mineral (%)</label><input type="number" id="cadMineralProd" step="0.01" min="0"></div>
                         <div class="form-group"><label>Cálcio (%)</label><input type="number" id="cadCalcioProd" step="0.01" min="0"></div>
+                        <div class="form-group"><label>Fósforo (%)</label><input type="number" id="cadFosforoProd" step="0.01" min="0"></div>
                     </div>
                 </div>
-                <!-- Linha 5: Minerais + Dist. Granulométrica — Fósforo, Grânulo 3, Fundo (campo fora = Fundo por último) -->
+                <!-- Linha 2b: Distribuição Granulométrica — Granulo 1, 2, 3 e Fundo em sequência -->
                 <div class="form-section">
-                    <h3>Minerais e Distribuição Granulométrica</h3>
+                    <h3>Distribuição Granulométrica</h3>
                     <div class="form-grid form-grid-4">
-                        <div class="form-group"><label>Fósforo (%)</label><input type="number" id="cadFosforoProd" step="0.01" min="0"></div>
+                        <div class="form-group"><label>Granulo 1 (4mm)</label><input type="number" id="cadGranulo1Prod" step="0.01" min="0"></div>
+                        <div class="form-group"><label>Granulo 2 (2mm)</label><input type="number" id="cadGranulo2Prod" step="0.01" min="0"></div>
                         <div class="form-group"><label>Granulo 3 (0,60mm)</label><input type="number" id="cadGranulo3Prod" step="0.01" min="0"></div>
                         <div class="form-group"><label>Fundo</label><input type="number" id="cadFundoProd" step="0.01" min="0"></div>
                     </div>
                 </div>
+
                 <div class="form-section">
                     <button type="button" class="obs-toggle" onclick="toggleObs(this)">
                         <span class="obs-arrow">▶</span> 💬 Observação (opcional)
