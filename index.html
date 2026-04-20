@@ -17102,17 +17102,22 @@ function visualizarDev(id) {
         <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;">
             <thead><tr style="background:#d35400;color:white;">
                 <th style="padding:7px 10px;text-align:left;">Avaliado</th>
-                <th style="padding:7px 10px;">Resultado (%)</th>
-                <th style="padding:7px 10px;">Parâmetro (%)</th>
+                <th style="padding:7px 10px;">Resultado</th>
+                <th style="padding:7px 10px;">Parâmetro</th>
                 <th style="padding:7px 10px;">Status</th>
             </tr></thead>
             <tbody>${classif.map((c, i) => {
-                const r = parseFloat(c.resultado||0), p = parseFloat(c.parametro||0);
-                const nc2 = r > p;
+                const unidade  = c.unidade || '%';
+                const isTexto  = unidade === 'Neg.' || isNaN(parseFloat(c.resultado));
+                const r = isTexto ? (c.resultado || '-') : parseFloat(c.resultado || 0);
+                const p = isTexto ? (c.parametro || '-') : parseFloat(c.parametro || 0);
+                const nc2 = isTexto ? false : (r > p);
+                const resStr = isTexto ? r : r.toFixed(2) + ' ' + unidade;
+                const parStr = isTexto ? p : p.toFixed(2) + ' ' + unidade;
                 return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
                     <td style="padding:5px 10px;font-weight:600;">${c.defeito||'-'}</td>
-                    <td style="text-align:center;color:${nc2?'#e74c3c':'#27ae60'};font-weight:bold;">${r.toFixed(2)}%</td>
-                    <td style="text-align:center;color:#7f8c8d;">${p.toFixed(2)}%</td>
+                    <td style="text-align:center;color:${nc2?'#e74c3c':'#27ae60'};font-weight:bold;">${resStr}</td>
+                    <td style="text-align:center;color:#7f8c8d;">${parStr}</td>
                     <td style="text-align:center;color:${nc2?'#e74c3c':'#27ae60'};font-weight:bold;">${nc2?'⚠ NC':'✔ OK'}</td>
                 </tr>`;
             }).join('')}</tbody>
