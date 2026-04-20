@@ -4018,12 +4018,29 @@
                 <div style="font-size:18px;font-weight:900;color:#1a2a6e;letter-spacing:.5px;">🧫 Produtos Químicos</div>
                 <div style="font-size:11px;color:#888;margin-top:2px;">Controle de entrada, validade e alertas de produtos químicos laboratoriais</div>
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <!-- Dropdown Ações -->
+                <div style="position:relative;" id="reagAcoesDropdownWrap">
+                    <button onclick="reagToggleAcoes()" style="background:#2c3e50;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:6px;">
+                        ⚙️ Ações <span style="font-size:10px;opacity:.8;">▾</span>
+                    </button>
+                    <div id="reagAcoesDropdown" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.13);z-index:999;min-width:210px;overflow:hidden;">
+                        <button onclick="reagAbrirEstudo();reagFecharAcoes()" style="width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:700;color:#8e44ad;display:flex;align-items:center;gap:8px;">
+                            📊 Estudo de Consumo
+                        </button>
+                        <button onclick="imprimirConferenciaQuimicos();reagFecharAcoes()" style="width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:700;color:#e67e22;display:flex;align-items:center;gap:8px;">
+                            🖨️ Imprimir Conferência
+                        </button>
+                        <button onclick="reagAbrirModalNota();reagFecharAcoes()" style="width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:700;color:#1a2a6e;display:flex;align-items:center;gap:8px;">
+                            📋 Entrada por Nota
+                        </button>
+                        <button onclick="reagAbrirModalCadastro();reagFecharAcoes()" style="width:100%;text-align:left;background:none;border:none;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:700;color:#27ae60;display:flex;align-items:center;gap:8px;">
+                            ➕ Cadastrar Reagente
+                        </button>
+                    </div>
+                </div>
+                <!-- Alerta — só aparece quando há alertas -->
                 <button onclick="reagVerAlertas()" id="btnReagAlertas" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12px;display:none;">⚠️ Ver Alertas <span id="reagAlertCount" style="background:#fff;color:#e74c3c;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:900;margin-left:4px;"></span></button>
-                <button onclick="reagAbrirEstudo()" style="background:#8e44ad;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">📊 Estudo de Consumo</button>
-                <button onclick="imprimirConferenciaQuimicos()" style="background:#e67e22;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">🖨️ Imprimir Conferência</button>
-                <button onclick="reagAbrirModalNota()" style="background:#1a2a6e;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">+ Entrada por Nota</button>
-                <button onclick="reagAbrirModalCadastro()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">+ Cadastrar Reagente</button>
             </div>
         </div>
 
@@ -17388,6 +17405,25 @@ function _reagGetEmail() {
 }
 
 // ── Carregar dados do Supabase ────────────────────────────────────
+// ── Dropdown Ações ────────────────────────────────────────────────
+function reagToggleAcoes() {
+    const dd = document.getElementById('reagAcoesDropdown');
+    if (!dd) return;
+    const aberto = dd.style.display === 'block';
+    dd.style.display = aberto ? 'none' : 'block';
+    if (!aberto) {
+        setTimeout(() => document.addEventListener('click', _reagFecharAcoesFora, { once: true }), 10);
+    }
+}
+function reagFecharAcoes() {
+    const dd = document.getElementById('reagAcoesDropdown');
+    if (dd) dd.style.display = 'none';
+}
+function _reagFecharAcoesFora(e) {
+    const wrap = document.getElementById('reagAcoesDropdownWrap');
+    if (wrap && !wrap.contains(e.target)) reagFecharAcoes();
+}
+
 async function reagCarregarDados() {
     try {
         const { data, error } = await _sbClient
