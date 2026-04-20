@@ -6664,11 +6664,20 @@ function _tBgEven() { return document.documentElement.getAttribute('data-theme')
 function _tBgOdd()  { return document.documentElement.getAttribute('data-theme')==='dark'?'#0d1117':'#f5f7fa'; }
 function _tFg()     { return document.documentElement.getAttribute('data-theme')==='dark'?'#e6edf3':'#333333'; }
 function _tBg(i)    { return i%2===0 ? _tBgEven() : _tBgOdd(); }
-function aplicarTema(tema) {
+function aplicarTema(tema, salvarNoBanco) {
     if (!TEMAS.includes(tema)) tema = 'azul';
     document.documentElement.setAttribute('data-theme', tema);
     localStorage.setItem('tema', tema);
     _aplicarChartTema(tema);
+    // Salva no Supabase vinculado ao usuário (funciona em modo anônimo/outro PC)
+    if (salvarNoBanco !== false && typeof _sbClient !== 'undefined' && typeof usuarioAtual !== 'undefined' && usuarioAtual) {
+        try {
+            var uid = (typeof USUARIOS !== 'undefined' && USUARIOS[usuarioAtual]) ? USUARIOS[usuarioAtual].id : null;
+            if (uid) {
+                _sbClient.from('perfis').update({ tema: tema }).eq('id', uid).then(function(){});
+            }
+        } catch(e) {}
+    }
     // Atualiza botões do header (caso ainda existam)
     TEMAS.forEach(t => {
         const btn = document.getElementById('tb' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -6971,6 +6980,11 @@ async function fazerLogin() {
             email:    authData.user.email,
             username: perfilData.username || authData.user.email
         };
+
+        // ── Carrega tema salvo no perfil do Supabase (funciona em qualquer PC/aba anônima) ──
+        if (perfilData.tema && typeof aplicarTema === 'function') {
+            aplicarTema(perfilData.tema, false); // false = não re-salvar no banco
+        }
 
         _registrarAuditoria('LOGIN', 'auth', null, { agente: navigator.userAgent.substring(0, 80) }).catch(() => {});
         setTimeout(sgqIniciarPresenca, 800);
@@ -16808,6 +16822,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                     email:    session.user.email,
                     username: perfilData.username || session.user.email
                 };
+
+                // ── Carrega tema do Supabase (funciona em modo anônimo/outro PC) ──
+                if (perfilData.tema && typeof aplicarTema === 'function') {
+                    aplicarTema(perfilData.tema, false);
+                }
 
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainSystem').style.display  = 'block';
