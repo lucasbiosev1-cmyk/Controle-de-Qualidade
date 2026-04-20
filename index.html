@@ -4897,7 +4897,10 @@
                     <div style="font-size:11px;color:#888;margin-top:2px;">Gerencie seus compromissos e tarefas recorrentes</div>
                 </div>
             </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
             <button class="agenda-btn-novo" onclick="abrirModalAgenda()">➕ Novo Compromisso</button>
+            <button onclick="agendaTestarPopupAgora()" style="background:#e67e22;color:white;border:none;border-radius:6px;padding:10px 16px;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;" title="Limpa dismisses e força verificação agora">🔔 Testar Popup</button>
+        </div>
         </div>
 
         <!-- Filtros -->
@@ -22764,15 +22767,39 @@ function sgqAutocompleteFechar(campoId) {
         await _carregar();
         agendaRenderizarLista();
 
-        if (_popupVisivel) return; // popup já visível, não empilha
-        if (_snoozeAtivo)  return; // snooze gerencia as reexibições
+        if (_popupVisivel) return;
+        if (_snoozeAtivo)  return;
 
-        const candidatos = _compromissos.filter(c =>
-            c.ativo !== false &&
-            _eHoje(c) &&
-            !_dispensado(c) &&
-            _horaPassou(c)
-        );
+        var agora    = new Date();
+        var agoraMin = agora.getHours() * 60 + agora.getMinutes();
+        var dataHoje = agora.getFullYear() + '-' +
+                       String(agora.getMonth()+1).padStart(2,'0') + '-' +
+                       String(agora.getDate()).padStart(2,'0');
+
+        console.log('[AGENDA] tick', dataHoje, agora.toLocaleTimeString('pt-BR'),
+                    'compromissos:', _compromissos.length);
+
+        var candidatos = _compromissos.filter(function(c) {
+            if (c.ativo === false) { return false; }
+
+            // Verifica se é hoje (data exata ou recorrente)
+            var eHoje = _eHoje(c);
+            if (!eHoje) { return false; }
+
+            // Verifica dismiss
+            if (_dispensado(c)) { return false; }
+
+            // Verifica hora: sem hora = sempre mostra; com hora = hora já chegou
+            if (c.hora) {
+                var pts  = c.hora.substring(0,5).split(':');
+                var hMin = parseInt(pts[0]) * 60 + parseInt(pts[1]);
+                if (agoraMin < hMin) { return false; }
+            }
+
+            return true;
+        });
+
+        console.log('[AGENDA] candidatos:', candidatos.length, candidatos.map(function(c){return c.titulo+' '+c.hora;}));
 
         if (candidatos.length > 0) _mostrarPopup(candidatos);
     }
@@ -22783,16 +22810,33 @@ function sgqAutocompleteFechar(campoId) {
         _inicializado = true;
         await _tick(); // disparo imediato
 
-        // Tick a cada 1 minuto — sincronizado com o próximo minuto cheio do relógio
-        // Ex: se são 14:32:45, o primeiro tick extra dispara em 15s (às 14:33:00)
-        // e depois a cada 60s exatos. Garante detecção no minuto correto do alarme.
-        const agora       = new Date();
-        const msAtePróximo = (60 - agora.getSeconds()) * 1000 - agora.getMilliseconds();
+        // Sincroniza com o próximo minuto cheio do relógio local
+        var agora      = new Date();
+        var msAteProx  = (60 - agora.getSeconds()) * 1000 - agora.getMilliseconds();
+        console.log('[AGENDA] proximo tick em', msAteProx, 'ms');
         setTimeout(function() {
             _tick();
-            setInterval(_tick, 60 * 1000); // a cada 1 minuto daqui em diante
-        }, msAtePróximo);
+            setInterval(_tick, 60 * 1000);
+        }, msAteProx);
     }
+
+    // ── Botão de teste: limpa dismisses e força tick imediato ─────────
+    window.agendaTestarPopupAgora = function() {
+        // Remove todos os dismisses do dia atual do localStorage
+        var hoje = _hoje();
+        Object.keys(localStorage).forEach(function(k) {
+            if (k.startsWith('agDisp_') && k.endsWith('_' + hoje)) {
+                localStorage.removeItem(k);
+                console.log('[AGENDA] dismiss removido:', k);
+            }
+        });
+        _snoozeAtivo  = false;
+        _popupVisivel = false;
+        var popup = document.getElementById('popupAgenda');
+        if (popup) popup.classList.remove('show');
+        sgqToast('Verificando compromissos agora...', 'info');
+        _tick();
+    };
 
     window._agendaInicializar     = _iniciar;
     window._agendaCarregarEExibir = async function() {
