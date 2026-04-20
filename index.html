@@ -4897,10 +4897,7 @@
                     <div style="font-size:11px;color:#888;margin-top:2px;">Gerencie seus compromissos e tarefas recorrentes</div>
                 </div>
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
             <button class="agenda-btn-novo" onclick="abrirModalAgenda()">➕ Novo Compromisso</button>
-            <button onclick="agendaTestarPopupAgora()" style="background:#e67e22;color:white;border:none;border-radius:6px;padding:10px 16px;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;" title="Limpa dismisses e força verificação agora">🔔 Testar Popup</button>
-        </div>
         </div>
 
         <!-- Filtros -->
@@ -4997,12 +4994,12 @@
             <div class="popup-agenda-body" id="popupAgendaLista"></div>
 
             <!-- Painel de configuração do snooze (aparece ao clicar Manter) -->
-            <div class="popup-agenda-snooze-panel" id="popupSnoozePanel">
+            <div class="popup-agenda-snooze-panel" id="popupSnoozePanel" style="display:none;">
                 <div class="popup-agenda-snooze-label">⏱ Reaparecer a cada:</div>
                 <div class="popup-agenda-snooze-opts">
                     <button class="popup-agenda-snooze-opt" onclick="agendaSelecionarSnooze(5,this)">5 min</button>
                     <button class="popup-agenda-snooze-opt" onclick="agendaSelecionarSnooze(10,this)">10 min</button>
-                    <button class="popup-agenda-snooze-opt ativo" onclick="agendaSelecionarSnooze(15,this)">15 min</button>
+                    <button class="popup-agenda-snooze-opt" onclick="agendaSelecionarSnooze(15,this)">15 min</button>
                     <button class="popup-agenda-snooze-opt" onclick="agendaSelecionarSnooze(30,this)">30 min</button>
                     <button class="popup-agenda-snooze-opt" onclick="agendaSelecionarSnooze(60,this)">1 hora</button>
                     <button class="popup-agenda-snooze-opt" onclick="agendaSelecionarSnooze(120,this)">2 horas</button>
@@ -22694,12 +22691,12 @@ function sgqAutocompleteFechar(campoId) {
             if (avisoTxt) avisoTxt.textContent    = '⏰ Aviso ativo — reaparece a cada ' + _snoozeMinutos + ' min';
             if (bNorm)    bNorm.style.display     = 'none';
             if (bSnooze)  bSnooze.style.display   = 'flex';
-            if (panel)    panel.classList.remove('show');
+            if (panel)    panel.style.display = 'none';
         } else {
             if (avisoEl)  avisoEl.style.display  = 'none';
             if (bNorm)    bNorm.style.display     = 'flex';
             if (bSnooze)  bSnooze.style.display   = 'none';
-            if (panel)    panel.classList.remove('show');
+            if (panel)    panel.style.display = 'none';
         }
     }
 
@@ -22713,8 +22710,9 @@ function sgqAutocompleteFechar(campoId) {
 
     // ── Mostrar painel de seleção de snooze ──────────────────────────
     window.agendaMostrarSnooze = function() {
-        const panel = document.getElementById('popupSnoozePanel');
-        if (panel) panel.classList.toggle('show');
+        var panel = document.getElementById('popupSnoozePanel');
+        if (!panel) return;
+        panel.style.display = (panel.style.display === 'none' || panel.style.display === '') ? 'flex' : 'none';
     };
 
     // ── Selecionar intervalo ──────────────────────────────────────────
@@ -22772,12 +22770,6 @@ function sgqAutocompleteFechar(campoId) {
 
         var agora    = new Date();
         var agoraMin = agora.getHours() * 60 + agora.getMinutes();
-        var dataHoje = agora.getFullYear() + '-' +
-                       String(agora.getMonth()+1).padStart(2,'0') + '-' +
-                       String(agora.getDate()).padStart(2,'0');
-
-        console.log('[AGENDA] tick', dataHoje, agora.toLocaleTimeString('pt-BR'),
-                    'compromissos:', _compromissos.length);
 
         var candidatos = _compromissos.filter(function(c) {
             if (c.ativo === false) { return false; }
@@ -22799,8 +22791,6 @@ function sgqAutocompleteFechar(campoId) {
             return true;
         });
 
-        console.log('[AGENDA] candidatos:', candidatos.length, candidatos.map(function(c){return c.titulo+' '+c.hora;}));
-
         if (candidatos.length > 0) _mostrarPopup(candidatos);
     }
 
@@ -22813,30 +22803,11 @@ function sgqAutocompleteFechar(campoId) {
         // Sincroniza com o próximo minuto cheio do relógio local
         var agora      = new Date();
         var msAteProx  = (60 - agora.getSeconds()) * 1000 - agora.getMilliseconds();
-        console.log('[AGENDA] proximo tick em', msAteProx, 'ms');
         setTimeout(function() {
             _tick();
             setInterval(_tick, 60 * 1000);
         }, msAteProx);
     }
-
-    // ── Botão de teste: limpa dismisses e força tick imediato ─────────
-    window.agendaTestarPopupAgora = function() {
-        // Remove todos os dismisses do dia atual do localStorage
-        var hoje = _hoje();
-        Object.keys(localStorage).forEach(function(k) {
-            if (k.startsWith('agDisp_') && k.endsWith('_' + hoje)) {
-                localStorage.removeItem(k);
-                console.log('[AGENDA] dismiss removido:', k);
-            }
-        });
-        _snoozeAtivo  = false;
-        _popupVisivel = false;
-        var popup = document.getElementById('popupAgenda');
-        if (popup) popup.classList.remove('show');
-        sgqToast('Verificando compromissos agora...', 'info');
-        _tick();
-    };
 
     window._agendaInicializar     = _iniciar;
     window._agendaCarregarEExibir = async function() {
