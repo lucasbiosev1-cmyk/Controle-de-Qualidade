@@ -15623,7 +15623,7 @@ async function executarCorrecaoDefeitos() {
                 <div id="classifGraosCorpo">
                     <!-- SELETOR MILHO / SOJA -->
                     <div style="display:flex;gap:10px;margin-bottom:12px;align-items:center;">
-                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">Tipo de Gr&#227;o:</span>
+                        <span style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;">Mat&#233;ria Prima:</span>
                         <button type="button" id="btnClassifMilho"
                             onclick="carregarClassifMilho()"
                             style="padding:5px 18px;border-radius:20px;border:2px solid #e67e22;background:#e67e22;color:#fff;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;">
@@ -15638,6 +15638,11 @@ async function executarCorrecaoDefeitos() {
                             onclick="carregarClassifFareloSoja()"
                             style="padding:5px 18px;border-radius:20px;border:2px solid #8e44ad;background:#fff;color:#8e44ad;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;">
                             🟣 Farelo de Soja
+                        </button>
+                        <button type="button" id="btnClassifFCO"
+                            onclick="carregarClassifFCO()"
+                            style="padding:5px 18px;border-radius:20px;border:2px solid #2980b9;background:#fff;color:#2980b9;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;">
+                            🔵 FCO
                         </button>
                     </div>
                     <table class="nc-classif-table" id="classifTable">
@@ -16647,13 +16652,42 @@ const CLASSIF_FARELO_SOJA = [
     { nome: 'Extrato Etéreo',       param: 5.00,   unidade: '%'    },
 ];
 
+// Tabela de parâmetros para FCO (Farelo de Carne e Ossos)
+const CLASSIF_FCO = [
+    { nome: 'Retenção ABNT 10 (2,00mm)', param: 10.00, unidade: '%'          },
+    { nome: 'Retenção ABNT 16 (1,18mm)', param: 14.00, unidade: '%'          },
+    { nome: 'Retenção ABNT 30 (0,60mm)', param: 45.00, unidade: '%'          },
+    { nome: 'Umidade',                   param: 8.00,  unidade: '%'          },
+    { nome: 'Densidade',                 param: 690,   unidade: 'g/L'        },
+    { nome: 'Matéria Mineral',           param: 42.00, unidade: '%'          },
+    { nome: 'Índice de Peróxido',        param: 0.10,  unidade: 'meq/kg'     },
+    { nome: 'Índice de Acidez',          param: 2.00,  unidade: 'mg NaOH/g'  },
+    { nome: 'Rancidez',                  param: 0,     unidade: 'Negativo'   },
+    { nome: 'Proteína Bruta',            param: 46.00, unidade: '%'          },
+    { nome: 'Extrato Etéreo',            param: 14.00, unidade: '%'          },
+];
+
 function _resetarBotoesClassif() {
     const bm = document.getElementById('btnClassifMilho');
     const bs = document.getElementById('btnClassifSoja');
     const bf = document.getElementById('btnClassifFareloSoja');
+    const bc = document.getElementById('btnClassifFCO');
     if (bm) { bm.style.background='rgba(230,126,34,0.15)'; bm.style.color='#e67e22'; }
-    if (bs) { bs.style.background='rgba(39,174,96,0.15)'; bs.style.color='#27ae60'; }
+    if (bs) { bs.style.background='rgba(39,174,96,0.15)';  bs.style.color='#27ae60'; }
     if (bf) { bf.style.background='rgba(142,68,173,0.15)'; bf.style.color='#8e44ad'; }
+    if (bc) { bc.style.background='rgba(41,128,185,0.15)'; bc.style.color='#2980b9'; }
+}
+
+function carregarClassifFCO() {
+    limparClassif();
+    _resetarBotoesClassif();
+    const th1 = document.getElementById('thResultado');
+    const th2 = document.getElementById('thParametro');
+    if (th1) th1.textContent = 'Resultado';
+    if (th2) th2.textContent = 'Parâmetro';
+    CLASSIF_FCO.forEach(d => adicionarLinhaClassif(d.nome, '', d.param, d.unidade));
+    const bc = document.getElementById('btnClassifFCO');
+    if (bc) { bc.style.background='#2980b9'; bc.style.color='#fff'; }
 }
 
 function carregarClassifMilho() {
