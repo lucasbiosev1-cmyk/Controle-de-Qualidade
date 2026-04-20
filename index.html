@@ -17980,9 +17980,11 @@ function _reagAgruparPorNome(lista) {
                 validadeMaisProxima: null,
             };
         }
-        grupos[chave].qtdTotal += parseFloat(r.qtdAtual) || 0;
-        // Mantém a validade mais próxima (pior caso)
-        if (r.validade) {
+        const qtdLote = parseFloat(r.qtdAtual) || 0;
+        grupos[chave].qtdTotal += qtdLote;
+        // Só considera validade de lotes com estoque físico > 0
+        // Lotes zerados não representam produto real na prateleira
+        if (r.validade && qtdLote > 0) {
             if (!grupos[chave].validadeMaisProxima || r.validade < grupos[chave].validadeMaisProxima) {
                 grupos[chave].validadeMaisProxima = r.validade;
             }
