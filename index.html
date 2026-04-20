@@ -16440,7 +16440,8 @@ async function salvarDev() {
     }
     const classifData = Array.from(document.querySelectorAll('#classifBody tr')).map(tr => {
         const inputs = tr.querySelectorAll('input');
-        return { defeito: inputs[0]?.value||'', resultado: inputs[1]?.value||'', parametro: inputs[2]?.value||'' };
+        const unidade = tr.querySelector('input[data-unidade]')?.dataset?.unidade || '%';
+        return { defeito: inputs[0]?.value||'', resultado: inputs[1]?.value||'', parametro: inputs[2]?.value||'', unidade };
     }).filter(c => c.defeito);
     const editId = document.getElementById('dev-edit-id').value;
 
@@ -17177,12 +17178,17 @@ function imprimirVisualizacao() {
         };
 
         const classifRows = classif.map((c, i) => {
-            const r = parseFloat(c.resultado || 0), p = parseFloat(c.parametro || 0);
-            const nc2 = r > p;
+            const unidade = c.unidade || '%';
+            const isTexto = isNaN(parseFloat(c.resultado));
+            const r = isTexto ? (c.resultado || '-') : parseFloat(c.resultado || 0);
+            const p = isTexto ? (c.parametro || '-') : parseFloat(c.parametro || 0);
+            const nc2 = isTexto ? false : (r > p);
+            const resStr = isTexto ? r : r.toFixed(2) + ' ' + unidade;
+            const parStr = isTexto ? p : p.toFixed(2) + ' ' + unidade;
             return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
                 <td style="padding:6px 10px;font-weight:600;border-bottom:1px solid #f0d9c0;">${c.defeito || '-'}</td>
-                <td style="text-align:center;color:${nc2 ? '#c0392b' : '#27ae60'};font-weight:bold;border-bottom:1px solid #f0d9c0;">${r.toFixed(2)}%</td>
-                <td style="text-align:center;color:#7f8c8d;border-bottom:1px solid #f0d9c0;">${p.toFixed(2)}%</td>
+                <td style="text-align:center;color:${nc2 ? '#c0392b' : '#27ae60'};font-weight:bold;border-bottom:1px solid #f0d9c0;">${resStr}</td>
+                <td style="text-align:center;color:#7f8c8d;border-bottom:1px solid #f0d9c0;">${parStr}</td>
                 <td style="text-align:center;border-bottom:1px solid #f0d9c0;">
                     <span style="color:${nc2 ? '#c0392b' : '#27ae60'};font-weight:bold;font-size:11px;">
                         ${nc2 ? '▲ NC' : '✔ OK'}
@@ -17196,8 +17202,8 @@ function imprimirVisualizacao() {
             <table>
                 <thead><tr>
                     <th>Avaliados</th>
-                    <th>Resultado (%)</th>
-                    <th>Parâmetro (%)</th>
+                    <th>Resultado</th>
+                    <th>Parâmetro</th>
                     <th>Situação</th>
                 </tr></thead>
                 <tbody>${classifRows}</tbody>
