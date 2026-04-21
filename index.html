@@ -1728,7 +1728,148 @@
         html[data-theme="dark"] .btn-logout{background:transparent!important;color:rgba(255,255,255,0.3)!important;border:1px solid rgba(255,255,255,0.1)!important;}
         html[data-theme="dark"] .btn-primary{background:#58a6ff!important;color:#0d1117!important;}
         html[data-theme="dark"] .btn-primary:hover{background:#388bfd!important;}
-        html[data-theme="dark"] .container,.cfg-sub-panels,[data-theme="dark"] .container,[data-theme="dark"] .cfg-sub-panels{background:#161b22!important;border-color:#30363d!important;}
+        html[data-theme="dark"] .container { background:#161b22!important; border-color:#30363d!important; color:#e6edf3!important; }
+        html[data-theme="dark"] .cfg-sub-panels { background:#161b22!important; border-color:#30363d!important; }
+
+        /* ── DARK: todas as abas de Configurações — conteúdo inline ── */
+
+        /* Parâmetros */
+        html[data-theme="dark"] #cfg-panel-parametros [style*="border-bottom:2px solid #ddd"] { border-bottom-color:#30363d!important; }
+
+        /* Backup */
+        html[data-theme="dark"] #cfg-panel-backup [style*="background:#eef2ff"],
+        html[data-theme="dark"] #cfg-panel-backup [style*="background:#eaf0fb"] {
+            background:rgba(88,166,255,0.07)!important; border-color:rgba(88,166,255,0.2)!important;
+        }
+        html[data-theme="dark"] #cfg-panel-backup [style*="color:#0a1e7f"] { color:#58a6ff!important; }
+        html[data-theme="dark"] #cfg-panel-backup [style*="color:#444"],
+        html[data-theme="dark"] #cfg-panel-backup [style*="color:#555"],
+        html[data-theme="dark"] #cfg-panel-backup [style*="color:#777"],
+        html[data-theme="dark"] #cfg-panel-backup [style*="color:#888"] { color:rgba(255,255,255,0.4)!important; }
+        html[data-theme="dark"] #cfg-panel-backup input[type="time"],
+        html[data-theme="dark"] #cfg-panel-backup input[type="date"],
+        html[data-theme="dark"] #cfg-panel-backup input[type="text"],
+        html[data-theme="dark"] #cfg-panel-backup input[type="number"],
+        html[data-theme="dark"] #cfg-panel-backup select,
+        html[data-theme="dark"] #cfg-panel-backup textarea {
+            background:#0d1117!important; color:#e6edf3!important; border-color:#30363d!important;
+        }
+        html[data-theme="dark"] #cfg-panel-backup [style*="background:#f0f4ff"],
+        html[data-theme="dark"] #cfg-panel-backup [style*="background:#f8f9fa"],
+        html[data-theme="dark"] #cfg-panel-backup [style*="background:white"],
+        html[data-theme="dark"] #cfg-panel-backup [style*="background:#fff"] {
+            background:#0d1117!important; border-color:#30363d!important;
+        }
+
+        /* Memória */
+        html[data-theme="dark"] #cfg-panel-memoria [style*="background:#f0f4ff"],
+        html[data-theme="dark"] #cfg-panel-memoria [style*="background:#f8f9fa"],
+        html[data-theme="dark"] #cfg-panel-memoria [style*="background:white"],
+        html[data-theme="dark"] #cfg-panel-memoria [style*="background:#fff"],
+        html[data-theme="dark"] #cfg-panel-memoria [style*="background:#eef2ff"] {
+            background:#0d1117!important; border-color:#30363d!important;
+        }
+        html[data-theme="dark"] #cfg-panel-memoria [style*="color:#0a1e7f"] { color:#58a6ff!important; }
+        html[data-theme="dark"] #cfg-panel-memoria [style*="color:#444"],
+        html[data-theme="dark"] #cfg-panel-memoria [style*="color:#555"],
+        html[data-theme="dark"] #cfg-panel-memoria [style*="color:#777"],
+        html[data-theme="dark"] #cfg-panel-memoria [style*="color:#888"] { color:rgba(255,255,255,0.4)!important; }
+        html[data-theme="dark"] #cfg-panel-memoria input,
+        html[data-theme="dark"] #cfg-panel-memoria select,
+        html[data-theme="dark"] #cfg-panel-memoria textarea {
+            background:#0d1117!important; color:#e6edf3!important; border-color:#30363d!important;
+        }
+
+        /* Usuários */
+        html[data-theme="dark"] #cfg-panel-usuarios [style*="background:white"],
+        html[data-theme="dark"] #cfg-panel-usuarios [style*="background:#fff"],
+        html[data-theme="dark"] #cfg-panel-usuarios [style*="background:#f8f9fa"] {
+            background:#161b22!important; border-color:#30363d!important; color:#e6edf3!important;
+        }
+        html[data-theme="dark"] #cfg-panel-usuarios [style*="color:#1a5276"] { color:#58a6ff!important; }
+        html[data-theme="dark"] #cfg-panel-usuarios [style*="color:#888"] { color:rgba(255,255,255,0.4)!important; }
+        html[data-theme="dark"] #cfg-panel-usuarios [style*="background:#eaf4fb"] {
+            background:rgba(88,166,255,0.08)!important; border-color:rgba(88,166,255,0.2)!important;
+        }
+        html[data-theme="dark"] #cfg-panel-usuarios input,
+        html[data-theme="dark"] #cfg-panel-usuarios select {
+            background:#0d1117!important; color:#e6edf3!important; border-color:#30363d!important;
+        }
+
+        /* WhatsApp */
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp [style*="background:white"],
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp [style*="background:#fff"],
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp [style*="background:#f4f7ff"],
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp [style*="background:#f4fbf6"],
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp [style*="background:#f8f9fa"] {
+            background:#0d1117!important; border-color:#30363d!important;
+        }
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp [style*="color:#0a1e7f"],
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp [style*="color:#1a6b35"] { color:#58a6ff!important; }
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp [style*="color:#555"],
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp [style*="color:#999"] { color:rgba(255,255,255,0.4)!important; }
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp [style*="border-bottom:1px solid #eee"] { border-bottom-color:#30363d!important; }
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp input,
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp select,
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp textarea {
+            background:#0d1117!important; color:#e6edf3!important; border-color:#30363d!important;
+        }
+
+        /* Aparência — cards de tema */
+        html[data-theme="dark"] #cfg-panel-aparencia .container { background:#161b22!important; border-color:#30363d!important; }
+        html[data-theme="dark"] #cfg-panel-aparencia [style*="color:#34495e"] { color:#e6edf3!important; }
+        html[data-theme="dark"] #cfg-panel-aparencia [style*="color:#777"] { color:rgba(255,255,255,0.4)!important; }
+        html[data-theme="dark"] #cfg-panel-aparencia [style*="border-bottom:2px solid #34495e"] { border-bottom-color:#30363d!important; }
+        /* rodapé dos cards de tema (fundo #fff) — exceto o dark que já é escuro */
+        html[data-theme="dark"] #temaCard-azul [style*="background:#fff"],
+        html[data-theme="dark"] #temaCard-verde [style*="background:#fff"],
+        html[data-theme="dark"] #temaCard-cinza [style*="background:#fff"],
+        html[data-theme="dark"] #temaCard-vinho [style*="background:#fff"] {
+            background:#0d1117!important;
+        }
+        html[data-theme="dark"] #temaCard-azul,
+        html[data-theme="dark"] #temaCard-verde,
+        html[data-theme="dark"] #temaCard-cinza,
+        html[data-theme="dark"] #temaCard-vinho,
+        html[data-theme="dark"] #temaCard-dark {
+            border-color:#30363d!important;
+        }
+        html[data-theme="dark"] #temaCard-azul [style*="color:#0a1e7f"] { color:#58a6ff!important; }
+        html[data-theme="dark"] #temaCard-verde [style*="color:#145a32"] { color:#3fb950!important; }
+        html[data-theme="dark"] #temaCard-cinza [style*="color:#2c3e50"] { color:#e6edf3!important; }
+        html[data-theme="dark"] #temaCard-vinho [style*="color:#6d1a36"] { color:#f85149!important; }
+        html[data-theme="dark"] #temaCard-azul [style*="color:#888"],
+        html[data-theme="dark"] #temaCard-verde [style*="color:#888"],
+        html[data-theme="dark"] #temaCard-cinza [style*="color:#888"],
+        html[data-theme="dark"] #temaCard-vinho [style*="color:#888"] { color:rgba(255,255,255,0.35)!important; }
+
+        /* ── DARK: Memória — code inline ── */
+        html[data-theme="dark"] #cfg-panel-memoria code {
+            background:#0d1117!important; border-color:#30363d!important; color:#79c0ff!important;
+        }
+        /* ── DARK: Usuários — cards brancos (presença + histórico + gerenciamento) ── */
+        html[data-theme="dark"] #sgq-presenca-card { background:#161b22!important; box-shadow:none!important; border-color:#30363d!important; }
+        html[data-theme="dark"] #cfg-panel-usuarios > div > div[style*="background:white"],
+        html[data-theme="dark"] #cfg-panel-usuarios > div > div[style*="background:#fff"] {
+            background:#161b22!important; box-shadow:none!important; border-color:#30363d!important; color:#e6edf3!important;
+        }
+        html[data-theme="dark"] #cfg-panel-usuarios [style*="background:#eaf4fb"] {
+            background:rgba(88,166,255,0.08)!important; border-color:rgba(88,166,255,0.2)!important;
+        }
+        /* ── DARK: WhatsApp — card body branco ── */
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp > div > div > div[style*="background:white"],
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp > div > div > div[style*="background:#fff"] {
+            background:#161b22!important; box-shadow:none!important; color:#e6edf3!important;
+        }
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp [style*="border-bottom:1px solid #eee"] { border-bottom-color:#30363d!important; }
+        /* ── DARK: Backup — card de status (#eef2ff) ── */
+        html[data-theme="dark"] #cfg-panel-backup [style*="background:#eef2ff"] {
+            background:rgba(88,166,255,0.07)!important; border-color:rgba(88,166,255,0.2)!important;
+        }
+        html[data-theme="dark"] #cfg-panel-backup [style*="color:#444"] { color:rgba(255,255,255,0.5)!important; }
+        html[data-theme="dark"] #cfg-panel-backup input[type="time"] {
+            background:#0d1117!important; color:#58a6ff!important; border-color:#30363d!important;
+        }
         html[data-theme="dark"] .tabela-container{background:#010409!important;border-color:#21262d!important;}
         html[data-theme="dark"] .filtros{background:rgba(88,166,255,0.03)!important;border-color:#30363d!important;}
         html[data-theme="dark"] .filtros label{color:rgba(255,255,255,0.55)!important;}
@@ -15919,7 +16060,6 @@ async function executarCorrecaoDefeitos() {
         </div>
         <div class="nc-modal-footer">
             <button class="nc-btn nc-btn-secondary" onclick="fecharModalDev()">Cancelar</button>
-            <button class="nc-btn nc-btn-info" onclick="imprimirRelatorioNC('dev')" title="Gerar relatório para impressão">🖨️ Imprimir</button>
             <button class="nc-btn nc-btn-primary" onclick="salvarDev()">💾 Salvar Devolução</button>
         </div>
     </div>
