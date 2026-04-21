@@ -3166,7 +3166,7 @@
                             <th style="background:#e67e22;color:white;white-space:nowrap;">AVARIADO TOTAL %</th>
                             <th>Umidade %</th><th>Densidade</th>
                             <th>Aflatoxinas PPB</th><th>Fumonisinas PPB</th><th>Zearalenona PPB</th><th>Don PPB</th>
-                            <th>Local</th><th>Status</th><th id="thAcaoClass">Ação</th>
+                            <th>Local</th><th>Status</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaClassificacoes"><tr><td colspan="26" style="text-align:center;color:#999;">Nenhum registro encontrado</td></tr></tbody>
@@ -6687,6 +6687,7 @@
                     <button type="button" class="btn-salvar" onclick="salvarClassificacao(event)">Salvar</button>
                     <button type="button" class="btn-limpar-form" onclick="limparFormularioClass()">Limpar</button>
                     <button type="button" class="btn-cancelar" onclick="fecharModalCadastroClass()">Cancelar</button>
+                    <button type="button" id="btnDeletarClassModal" class="btn-cancelar" style="display:none;background:#e74c3c;color:white;border-color:#e74c3c;margin-left:auto;" onclick="deletarClassModal()">🗑️ Deletar</button>
                 </div>
             </form>
         </div>
@@ -7329,7 +7330,7 @@ function aplicarPermissoes() {
     document.getElementById('btnCadastroClass').style.display = podeCadastro ? 'inline-block' : 'none';
     document.getElementById('btnCadastroMP').style.display    = podeCadastro ? 'inline-block' : 'none';
     document.getElementById('thAcaoProd') && (document.getElementById('thAcaoProd').style.display = 'none');
-    document.getElementById('thAcaoClass').style.display = podeCadastro ? 'table-cell' : 'none';
+    // thAcaoClass removido — botão excluir migrado para dentro do modal
     // thAcaoMP removido — botão excluir migrado para dentro do modal
 
     // Abas filhas de Lançamentos — visíveis só com permissão de cadastro
@@ -8257,6 +8258,8 @@ function abrirModalCadastroClass() {
     document.getElementById('formCadastroClass').reset();
     document.getElementById('cadDataClass').value = dataHoje();
     classFornecedorAutoFill('');
+    const btnDel = document.getElementById('btnDeletarClassModal');
+    if (btnDel) btnDel.style.display = 'none';
     document.getElementById('modalCadastroClass').classList.add('show');
 }
 
@@ -8304,7 +8307,17 @@ function abrirModalEdicaoClass(id) {
     const obsToggleClass = obsClass.closest('.obs-body').previousElementSibling;
     if (r.obs) { obsToggleClass.classList.add('open'); obsClass.closest('.obs-body').classList.add('open'); }
     else { obsToggleClass.classList.remove('open'); obsClass.closest('.obs-body').classList.remove('open'); }
+    const btnDel = document.getElementById('btnDeletarClassModal');
+    if (btnDel) btnDel.style.display = (perfilAtual === 'admin') ? 'inline-block' : 'none';
     document.getElementById('modalCadastroClass').classList.add('show');
+}
+
+function deletarClassModal() {
+    const id = idEdicaoClass;
+    if (!id) return;
+    if (!confirm('Deseja realmente deletar este registro de classificação?')) return;
+    deletarClass(id);
+    fecharModalCadastroClass();
 }
 
 function fecharModalCadastroClass() {
@@ -8385,15 +8398,12 @@ function exibirTabelaClass() {
     const filtrados = filtrarDadosClass();
     document.getElementById('totalRegistrosClass').textContent = filtrados.length;
     if (filtrados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="27" style="text-align:center;color:#999;">Nenhum registro encontrado</td></tr>'; return;
+        tbody.innerHTML = '<tr><td colspan="26" style="text-align:center;color:#999;">Nenhum registro encontrado</td></tr>'; return;
     }
     const isAdmin = perfilAtual === 'admin';
     tbody.innerHTML = filtrados.map(r => {
         const avariado = getAvariados(r); // queimado+ardido+mofado+fermentando+chocho+gessado+germinado+picado+esverdeado
         const status = statusPorParametros(r, 'class', r.produto, CAMPOS_CLASS, r.data);
-        const acaoTd = isAdmin
-            ? `<td><button class="btn-action btn-edit" onclick="abrirModalEdicaoClass(${r.id})" title="Editar">✏️</button><button class="btn-action btn-delete" onclick="deletarClass(${r.id})">Del</button></td>`
-            : '';
         const fornCell = r.obs
             ? `<td style="white-space:normal;text-align:left;min-width:130px;text-transform:uppercase;"><span class="obs-tooltip-wrap">${r.fornecedor}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span></td>`
             : `<td style="white-space:normal;text-align:left;min-width:130px;text-transform:uppercase;">${r.fornecedor}</td>`;
@@ -8421,7 +8431,7 @@ function exibirTabelaClass() {
             <td class="${getMicoClass(getMicoNivel(r.fumonisinas??0,'fumo'))}" style="padding:4px;text-align:center;">${r.fumonisinas!=null&&r.fumonisinas>0?r.fumonisinas.toFixed(2):'-'}</td>
             <td${estiloFora(r.zearalenona??0,'class',r.produto,'zearalenona',r.data)}>${fmtN(r.zearalenona,2)}</td>
             <td${estiloFora(r.don??0,'class',r.produto,'don',r.data)}>${fmtN(r.don,2)}</td>
-            <td style="text-transform:uppercase;">${r.local}</td><td>${status}</td>${acaoTd}
+            <td style="text-transform:uppercase;">${r.local}</td><td>${status}</td>
         </tr>`;
     }).join('');
 }
