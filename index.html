@@ -11566,21 +11566,10 @@ async function carregarTodosAsync() {
 
     let rawP = [], rawC = [], rawM = [];
     try {
-        // Busca apenas os últimos 13 meses para reduzir volume de dados na carga inicial
-        const _dataCorte = (() => {
-            const d = new Date();
-            d.setMonth(d.getMonth() - 13);
-            return d.toISOString().slice(0, 10);
-        })();
-        const _dbRecente = (tabela) => _sbClient
-            .from(tabela).select('*')
-            .gte('data', _dataCorte)
-            .order('id', { ascending: true });
-
         [rawP, rawC, rawM] = await Promise.all([
-            _dbRecente('producoes').then(r => { if (r.error) throw new Error(r.error.message); return r.data || []; }),
-            _dbRecente('classificacoes').then(r => { if (r.error) throw new Error(r.error.message); return r.data || []; }),
-            _dbRecente('materias_primas').then(r => { if (r.error) throw new Error(r.error.message); return r.data || []; }),
+            dbGetAll('producoes'),
+            dbGetAll('classificacoes'),
+            dbGetAll('materias_primas')
         ]);
     } catch(e) {
         // ✅ MELHORIA: feedback visual ao usuário em vez de console.error silencioso
@@ -22892,6 +22881,7 @@ function autoFornecedorClass(local) {
             if (primeiro) primeiro.focus();
         }, 50);
     }
+}
 function classFornecedorAutoFill(valor) {
     const isAgronor = (valor||'').trim().toUpperCase() === 'AGRONOR';
     const campNF  = document.getElementById('cadNFClass');
