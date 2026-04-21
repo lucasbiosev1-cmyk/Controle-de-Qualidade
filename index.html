@@ -22888,10 +22888,10 @@ function autoFornecedorClass(local) {
         if (campForn) campForn.value = mapa[local].fornecedor;
         if (campProd) campProd.value = mapa[local].produto;
     } else {
-        if (campForn && campForn.value === 'AGRONOR') campForn.value = '';
-        if (campProd && ['MILHO ESTOQUE 01','MILHO ESTOQUE 02','SOJA ESTOQUE 01'].includes(campProd.value)) campProd.value = '';
+        if (campForn) campForn.value = '';
+        if (campProd) campProd.value = '';
     }
-    // Chama após setar o campo para garantir que o DOM já tem o valor
+    // Sempre atualiza NF com base no fornecedor resultante
     classFornecedorAutoFill(campForn ? campForn.value : '');
 }
 function classFornecedorAutoFill(valor) {
