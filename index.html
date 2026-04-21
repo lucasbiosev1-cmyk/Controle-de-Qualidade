@@ -22888,13 +22888,11 @@ function autoFornecedorClass(local) {
     if (mapa[local]) {
         if (campForn) campForn.value = mapa[local].fornecedor;
         if (campProd) campProd.value = mapa[local].produto;
-        if (campNF)  { campNF.value = ''; campNF.removeAttribute('required'); }
-        if (nfGrupo) nfGrupo.classList.remove('required');
+        classFornecedorAutoFill(mapa[local].fornecedor);
     } else {
         if (campForn && campForn.value === 'AGRONOR') campForn.value = '';
         if (campProd && ['MILHO ESTOQUE 01','MILHO ESTOQUE 02','SOJA ESTOQUE 01'].includes(campProd.value)) campProd.value = '';
-        if (campNF)  campNF.setAttribute('required', '');
-        if (nfGrupo) nfGrupo.classList.add('required');
+        classFornecedorAutoFill('');
     }
 }
 function classFornecedorAutoFill(valor) {
