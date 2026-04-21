@@ -5106,6 +5106,7 @@
                         <button onclick="salvarParametros()" style="background:#27ae60;color:white;padding:9px 22px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;">💾 Salvar</button>
                         <button onclick="atualizarParametros()" style="background:#2980b9;color:white;padding:9px 20px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;" title="Aplica os valores editados nas tabelas sem salvar permanentemente">🔃 Atualizar</button>
                         <button onclick="resetarParametros()" style="background:#e74c3c;color:white;padding:9px 18px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;">🔄 Padrões</button>
+                        <button onclick="diagnosticoChavesParametros()" style="background:#8e44ad;color:white;padding:9px 18px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;" title="Ver chaves salvas no banco">🔍 Diagnóstico</button>
                     </div>
                 </div>
                 <div id="msgSucessoParam" class="msg-sucesso"></div>
@@ -12221,6 +12222,17 @@ function diagnosticarClass() {
 }
 
 // Para exibição na tela de parâmetros (usa snapshot selecionado ou mais recente)
+function diagnosticoChavesParametros() {
+    const resultado = {};
+    Object.keys(PARAMETROS).forEach(modulo => {
+        resultado[modulo] = Object.keys(PARAMETROS[modulo] || {});
+    });
+    const txt = JSON.stringify(resultado, null, 2);
+    const w = window.open('', '_blank', 'width=700,height=500');
+    w.document.write('<pre style="font-size:13px;padding:20px;">' + txt + '</pre>');
+    w.document.close();
+}
+
 function getParam(modulo, racaKey, campo, dataRegistro) {
     const snap = getSnapshotVigente(modulo, racaKey, dataRegistro);
     // Se há snapshot salvo para esta ração/produto mas o campo não está nele,
