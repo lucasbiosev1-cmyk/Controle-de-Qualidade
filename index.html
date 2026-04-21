@@ -12749,15 +12749,20 @@ carregarMicoParams();
 function statusPorParametros(registro, modulo, racaoOuProduto, campos, dataRegistro) {
     if (!racaoOuProduto) return '<span class="badge" style="background:#ecf0f1;color:#95a5a6;">S/ PARÂM.</span>';
     const chaveKey = racaoOuProduto.replace(/ /g, '_');
-    // Tenta também com hífen normalizado (ex: BEPEL-CALCÁRIO → BEPEL_CALCÁRIO)
     const chaveAlt = racaoOuProduto.replace(/[-\s]/g, '_');
+    // Mapa explícito para chaves com grafia irregular salvas no banco
+    const _CHAVE_MAP = {
+        'BEPEL_CALCÁRIO_GROSSO': 'BEPEL-CALCÁRIO_GROSSO',
+        'BEPEL_CALCÁRIO_FINO':   'BEPEL_-_CALCÁRIO_FINO',
+    };
+    const chaveFinal   = _CHAVE_MAP[chaveKey] || chaveKey;
+    const chaveAltFinal = _CHAVE_MAP[chaveAlt] || chaveAlt;
     let algumAtivoComValor = false;
     let algumFora = false;
     campos.forEach(c => {
-        let cfg = getParam(modulo, chaveKey, c.key, dataRegistro || null);
-        // Fallback: tenta chave com hífen normalizado se não achou snapshot
-        if ((!cfg || !cfg.ativo) && chaveAlt !== chaveKey) {
-            const cfgAlt = getParam(modulo, chaveAlt, c.key, dataRegistro || null);
+        let cfg = getParam(modulo, chaveFinal, c.key, dataRegistro || null);
+        if ((!cfg || !cfg.ativo) && chaveAltFinal !== chaveFinal) {
+            const cfgAlt = getParam(modulo, chaveAltFinal, c.key, dataRegistro || null);
             if (cfgAlt && cfgAlt.ativo) cfg = cfgAlt;
         }
         if (!cfg || !cfg.ativo) return; // não marcado como ativo → ignora
@@ -12788,9 +12793,15 @@ function estiloFora(valor, modulo, racaoOuProduto, campo, dataRegistro) {
     if (!racaoOuProduto) return '';
     const chaveKey = racaoOuProduto.replace(/ /g,'_');
     const chaveAlt = racaoOuProduto.replace(/[-\s]/g,'_');
-    let cfg = getParam(modulo, chaveKey, campo, dataRegistro||null);
-    if ((!cfg || !cfg.ativo) && chaveAlt !== chaveKey) {
-        const cfgAlt = getParam(modulo, chaveAlt, campo, dataRegistro||null);
+    const _CHAVE_MAP = {
+        'BEPEL_CALCÁRIO_GROSSO': 'BEPEL-CALCÁRIO_GROSSO',
+        'BEPEL_CALCÁRIO_FINO':   'BEPEL_-_CALCÁRIO_FINO',
+    };
+    const chaveFinal    = _CHAVE_MAP[chaveKey] || chaveKey;
+    const chaveAltFinal = _CHAVE_MAP[chaveAlt] || chaveAlt;
+    let cfg = getParam(modulo, chaveFinal, campo, dataRegistro||null);
+    if ((!cfg || !cfg.ativo) && chaveAltFinal !== chaveFinal) {
+        const cfgAlt = getParam(modulo, chaveAltFinal, campo, dataRegistro||null);
         if (cfgAlt && cfgAlt.ativo) cfg = cfgAlt;
     }
     if (!cfg || !cfg.ativo) return '';
