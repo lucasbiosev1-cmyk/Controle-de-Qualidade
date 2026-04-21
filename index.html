@@ -10344,7 +10344,7 @@ function aplicarFiltrosRanking() {
                         const realVal = valoresG[ctx.dataIndex];
                         return realVal === 0 ? '0.00% ✔' : realVal.toFixed(2) + '%';
                     },
-                    color: (ctx) => valoresG[ctx.dataIndex] === 0 ? '#27ae60' : '#333',
+                    color: (ctx) => { const dark = document.documentElement.getAttribute('data-theme') === 'dark'; return valoresG[ctx.dataIndex] === 0 ? '#3fb950' : (dark ? '#e6edf3' : '#333'); },
                     font: (ctx) => ({ size: 10, weight: valoresG[ctx.dataIndex] === 0 ? 'bold' : 'bold' }),
                     padding: { left: 4 }
                 }
