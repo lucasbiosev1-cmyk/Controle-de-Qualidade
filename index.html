@@ -1596,6 +1596,65 @@
         html[data-theme="dark"] #relClassConteudo{background:#161b22!important;box-shadow:none!important;}
         html[data-theme="dark"] #rankingConteudo{background:#161b22!important;box-shadow:none!important;}
         html[data-theme="dark"] #boletimConteudo{background:#161b22!important;box-shadow:none!important;}
+
+        /* ── Boletim: painel de controles (dark mode) ── */
+        /* card principal */
+        html[data-theme="dark"] #aba-boletim > div > div:first-of-type {
+            background:#161b22!important;
+            border:1px solid #30363d!important;
+            box-shadow:none!important;
+        }
+        /* título azul escuro */
+        html[data-theme="dark"] #aba-boletim [style*="color:#0a1e7f"] {
+            color:#58a6ff!important;
+        }
+        /* subtítulo cinza */
+        html[data-theme="dark"] #aba-boletim [style*="color:#aaa"] {
+            color:rgba(255,255,255,0.4)!important;
+        }
+        /* separador da faixa inferior */
+        html[data-theme="dark"] #aba-boletim > div > div:first-of-type > div:last-child {
+            border-top-color:#30363d!important;
+        }
+        /* colunas Módulos e Opções (fundo #f8f9fa) */
+        html[data-theme="dark"] #aba-boletim [style*="background:#f8f9fa"] {
+            background:#0d1117!important;
+            border-color:#30363d!important;
+        }
+        /* coluna Produção (fundo #eef2ff) */
+        html[data-theme="dark"] #aba-boletim [style*="background:#eef2ff"] {
+            background:rgba(88,166,255,0.06)!important;
+            border-color:rgba(88,166,255,0.2)!important;
+        }
+        /* labels de seção (#888) */
+        html[data-theme="dark"] #aba-boletim [style*="color:#888"] {
+            color:rgba(255,255,255,0.35)!important;
+        }
+        /* labels dos inputs (#666) */
+        html[data-theme="dark"] #aba-boletim [style*="color:#666"] {
+            color:rgba(255,255,255,0.4)!important;
+        }
+        /* texto dos checkboxes */
+        html[data-theme="dark"] #aba-boletim label > span:not([style]) {
+            color:#e6edf3!important;
+        }
+        /* inputs de data */
+        html[data-theme="dark"] #bolDataInicio,
+        html[data-theme="dark"] #bolDataFim {
+            background:#0d1117!important;
+            border-color:#30363d!important;
+            color:#e6edf3!important;
+        }
+        /* botão "Por Fase" inativo (fundo branco) */
+        html[data-theme="dark"] #lbl-modo-fase {
+            background:#0d1117!important;
+            border-color:#30363d!important;
+            color:#e6edf3!important;
+        }
+        /* descrição do modo */
+        html[data-theme="dark"] #bolModoDesc {
+            color:rgba(255,255,255,0.35)!important;
+        }
         html[data-theme="dark"] .relatorio-title{color:#e6edf3!important;border-bottom-color:#30363d!important;}
         html[data-theme="dark"] .relatorio-periodo{color:rgba(255,255,255,0.4)!important;}
         html[data-theme="dark"] .grafico-container{background:#161b22!important;border-color:#30363d!important;}
@@ -1963,6 +2022,59 @@
             background: #0d1117 !important;
             color: #e6edf3 !important;
             border-color: #30363d !important;
+        }
+
+        /* ── DARK: Configurações — Parâmetros ── */
+        html[data-theme="dark"] #cfg-panel-parametros .container { background:#161b22!important; border-color:#30363d!important; color:#e6edf3!important; }
+        html[data-theme="dark"] #cfg-panel-parametros [style*="color:#34495e"] { color:#e6edf3!important; }
+        html[data-theme="dark"] #cfg-panel-parametros [style*="color:#777"] { color:rgba(255,255,255,0.4)!important; }
+        html[data-theme="dark"] #cfg-panel-parametros [style*="border-bottom:2px solid #ddd"] { border-bottom-color:#30363d!important; }
+        html[data-theme="dark"] #cfg-panel-parametros [style*="border-bottom:2px solid #34495e"] { border-bottom-color:#30363d!important; }
+        html[data-theme="dark"] .param-cat-btn { background:#0d1117!important; color:#8b949e!important; border:1px solid #30363d!important; }
+        html[data-theme="dark"] .param-cat-btn:hover { background:#161b22!important; color:#e6edf3!important; }
+        /* input de seleção de ração */
+        html[data-theme="dark"] .param-select-racao {
+            background:#0d1117!important; color:#e6edf3!important; border-color:#30363d!important;
+        }
+        /* inputs na tabela de parâmetros */
+        html[data-theme="dark"] #cfg-panel-parametros input[type="number"] {
+            background:#0d1117!important; color:#e6edf3!important; border-color:#30363d!important;
+        }
+        /* texto das células da tabela */
+        html[data-theme="dark"] #cfg-panel-parametros td[style*="color:#222"] { color:#e6edf3!important; }
+
+        /* ── DARK: Configurações — Backup / Memória / Usuários / WhatsApp ── */
+        html[data-theme="dark"] #cfg-panel-backup .container,
+        html[data-theme="dark"] #cfg-panel-memoria .container,
+        html[data-theme="dark"] #cfg-panel-usuarios .container,
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp .container { background:#161b22!important; border-color:#30363d!important; }
+        html[data-theme="dark"] #cfg-panel-backup [style*="color:#0a1e7f"],
+        html[data-theme="dark"] #cfg-panel-memoria [style*="color:#0a1e7f"],
+        html[data-theme="dark"] #cfg-panel-usuarios [style*="color:#0a1e7f"],
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp [style*="color:#0a1e7f"] { color:#58a6ff!important; }
+        html[data-theme="dark"] #cfg-panel-backup [style*="color:#34495e"],
+        html[data-theme="dark"] #cfg-panel-memoria [style*="color:#34495e"],
+        html[data-theme="dark"] #cfg-panel-usuarios [style*="color:#34495e"],
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp [style*="color:#34495e"] { color:#e6edf3!important; }
+        html[data-theme="dark"] #cfg-panel-backup [style*="color:#555"],
+        html[data-theme="dark"] #cfg-panel-backup [style*="color:#666"],
+        html[data-theme="dark"] #cfg-panel-backup [style*="color:#777"],
+        html[data-theme="dark"] #cfg-panel-memoria [style*="color:#555"],
+        html[data-theme="dark"] #cfg-panel-memoria [style*="color:#666"],
+        html[data-theme="dark"] #cfg-panel-memoria [style*="color:#777"],
+        html[data-theme="dark"] #cfg-panel-usuarios [style*="color:#555"],
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp [style*="color:#555"] { color:rgba(255,255,255,0.4)!important; }
+        html[data-theme="dark"] #cfg-panel-backup input,
+        html[data-theme="dark"] #cfg-panel-backup select,
+        html[data-theme="dark"] #cfg-panel-backup textarea,
+        html[data-theme="dark"] #cfg-panel-memoria input,
+        html[data-theme="dark"] #cfg-panel-memoria select,
+        html[data-theme="dark"] #cfg-panel-usuarios input,
+        html[data-theme="dark"] #cfg-panel-usuarios select,
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp input,
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp select,
+        html[data-theme="dark"] #cfg-panel-alertaWhatsApp textarea {
+            background:#0d1117!important; color:#e6edf3!important; border-color:#30363d!important;
         }
 
         /* NC e devolucoes */
@@ -12368,19 +12480,24 @@ function confirmarAtualizar(escopo) {
 // RENDERIZAÇÃO
 // ─────────────────────────────────────────────────────────────────────────────
 function trocarCatParam(cat, btn) {
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
     document.querySelectorAll('.param-cat-panel').forEach(p => {
         p.style.display = 'none';
         p.classList.remove('param-cat-ativo');
     });
     document.querySelectorAll('.param-cat-btn').forEach(b => {
-        b.style.background='#ecf0f1'; b.style.color='#555';
+        b.style.background = dark ? '#0d1117' : '#ecf0f1';
+        b.style.color      = dark ? '#8b949e' : '#555';
+        b.style.border     = dark ? '1px solid #30363d' : '';
     });
     const panel = document.getElementById('paramCat-'+cat);
     if (panel) {
         panel.style.display = '';
         panel.classList.add('param-cat-ativo');
     }
-    btn.style.background='#34495e'; btn.style.color='white';
+    btn.style.background = dark ? '#388bfd' : '#34495e';
+    btn.style.color      = 'white';
+    btn.style.border     = dark ? '1px solid #388bfd' : '';
 }
 
 function tabelaParamHTML(modulo, racaKey, campos, dataVig) {
@@ -13004,12 +13121,17 @@ function selecionarModoProd(modo) {
     const campo    = document.getElementById('bolModoProdRacao');
     if (campo) campo.value = modo;
 
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const inactiveBg     = dark ? '#0d1117' : 'white';
+    const inactiveColor  = dark ? '#e6edf3' : '#0a1e7f';
+    const inactiveBorder = dark ? '#30363d' : '#bdc3c7';
+
     if (modo === 'racao') {
-        btnRacao.style.background = '#0a1e7f'; btnRacao.style.color = 'white';
-        btnFase.style.background  = 'white';   btnFase.style.color  = '#0a1e7f';
+        btnRacao.style.background = '#0a1e7f'; btnRacao.style.color = 'white'; btnRacao.style.borderColor = '#0a1e7f';
+        btnFase.style.background  = inactiveBg; btnFase.style.color = inactiveColor; btnFase.style.borderColor = inactiveBorder;
     } else {
-        btnFase.style.background  = '#0a1e7f'; btnFase.style.color  = 'white';
-        btnRacao.style.background = 'white';   btnRacao.style.color = '#0a1e7f';
+        btnFase.style.background  = '#0a1e7f'; btnFase.style.color = 'white'; btnFase.style.borderColor = '#0a1e7f';
+        btnRacao.style.background = inactiveBg; btnRacao.style.color = inactiveColor; btnRacao.style.borderColor = inactiveBorder;
     }
 }
 
@@ -20440,6 +20562,60 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   /* ── conteúdo ── */
   #relMensalIA_conteudo { flex:1; overflow-y:auto; padding:20px 22px; }
+
+  /* ════════════════════════════════════════
+     DARK MODE — Análise Técnica Mensal
+  ════════════════════════════════════════ */
+  html[data-theme="dark"] #modalRelatorioMensalIA .rml-wrap {
+    background:#161b22!important; box-shadow:0 24px 72px rgba(0,0,0,0.8)!important;
+  }
+  html[data-theme="dark"] #modalRelatorioMensalIA .rml-panel {
+    background:#0d1117!important; border-bottom-color:#30363d!important;
+  }
+  html[data-theme="dark"] #modalRelatorioMensalIA .rml-fld-lbl {
+    color:rgba(255,255,255,0.4)!important;
+  }
+  html[data-theme="dark"] #modalRelatorioMensalIA .rml-fld-lbl.az {
+    color:#58a6ff!important;
+  }
+  html[data-theme="dark"] #modalRelatorioMensalIA input[type="month"].rml-mi {
+    background:#0d1117!important; border-color:#30363d!important; color:#e6edf3!important;
+  }
+  html[data-theme="dark"] #modalRelatorioMensalIA input[type="month"].rml-mi[style*="background:#f8faff"] {
+    background:#161b22!important;
+  }
+  html[data-theme="dark"] #modalRelatorioMensalIA .rml-comp-tag { color:#3fb950!important; }
+  /* botão Copiar (fundo branco) */
+  html[data-theme="dark"] #modalRelatorioMensalIA .rml-btn-cop {
+    background:#0d1117!important; color:#e6edf3!important; border-color:#30363d!important;
+  }
+  /* seções (módulos / analistas) */
+  html[data-theme="dark"] #modalRelatorioMensalIA .rml-sec {
+    background:#0d1117!important; border-color:#30363d!important;
+  }
+  html[data-theme="dark"] #modalRelatorioMensalIA .rml-sec-title { color:#58a6ff!important; }
+  html[data-theme="dark"] #modalRelatorioMensalIA .rml-qbtn-on {
+    background:rgba(88,166,255,0.12)!important; color:#58a6ff!important; border-color:#388bfd!important;
+  }
+  html[data-theme="dark"] #modalRelatorioMensalIA .rml-qbtn-off {
+    background:#0d1117!important; color:#8b949e!important; border-color:#30363d!important;
+  }
+  /* chips de módulo — fundo claro vira escuro, mantendo a cor de borda */
+  html[data-theme="dark"] #modalRelatorioMensalIA #lbl_rml_prod  { background:rgba(10,30,127,0.25)!important; }
+  html[data-theme="dark"] #modalRelatorioMensalIA #lbl_rml_mp    { background:rgba(142,68,173,0.2)!important; }
+  html[data-theme="dark"] #modalRelatorioMensalIA #lbl_rml_class { background:rgba(230,126,34,0.2)!important; }
+  html[data-theme="dark"] #modalRelatorioMensalIA #lbl_rml_nc    { background:rgba(231,76,60,0.2)!important; }
+  html[data-theme="dark"] #modalRelatorioMensalIA #lbl_rml_dev   { background:rgba(39,174,96,0.2)!important; }
+  html[data-theme="dark"] #modalRelatorioMensalIA #lbl_rml_an_cq     { background:rgba(26,82,118,0.25)!important; }
+  html[data-theme="dark"] #modalRelatorioMensalIA #lbl_rml_an_nut    { background:rgba(17,122,101,0.2)!important; }
+  html[data-theme="dark"] #modalRelatorioMensalIA #lbl_rml_an_vet    { background:rgba(110,47,160,0.2)!important; }
+  html[data-theme="dark"] #modalRelatorioMensalIA #lbl_rml_an_prompt { background:rgba(183,65,14,0.2)!important; }
+  /* prompt livre */
+  html[data-theme="dark"] #modalRelatorioMensalIA #rml_prompt_livre_texto {
+    background:#0d1117!important; color:#e6edf3!important; border-color:#b7410e!important;
+  }
+  /* área de conteúdo */
+  html[data-theme="dark"] #relMensalIA_conteudo { background:#161b22!important; color:#e6edf3!important; }
 </style>
 
 <div id="modalRelatorioMensalIA" style="display:none;position:fixed;inset:0;z-index:9400;background:rgba(4,10,35,0.75);align-items:center;justify-content:center;padding:16px;">
