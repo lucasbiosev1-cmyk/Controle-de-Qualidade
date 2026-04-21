@@ -6942,10 +6942,10 @@ async function fazerLogin() {
     sgqMostrarLoading('Bem-vindo! Sistema iniciando...');
 
     try {
-        // ✅ Passo 1: busca o e-mail pelo username na tabela perfis
+        // ✅ Passo 1: busca perfil completo pelo username em uma única chamada
         const { data: perfilLogin, error: perfilLoginError } = await _sbClient
             .from('perfis')
-            .select('email, ativo')
+            .select('*')
             .eq('username', usernameRaw)
             .single();
 
@@ -6973,26 +6973,8 @@ async function fazerLogin() {
             return;
         }
 
-        // ✅ Busca perfil completo do usuário
-        const { data: perfilData, error: perfilError } = await _sbClient
-            .from('perfis')
-            .select('*')
-            .eq('id', authData.user.id)
-            .single();
-
-        if (perfilError || !perfilData) {
-            err.textContent = 'Perfil não encontrado. Contate o administrador.';
-            err.classList.add('show');
-            await _sbClient.auth.signOut();
-            return;
-        }
-
-        if (perfilData.ativo === false) {
-            err.textContent = 'Usuário inativo. Contate o administrador.';
-            err.classList.add('show');
-            await _sbClient.auth.signOut();
-            return;
-        }
+        // ✅ Usa o perfil já carregado no passo 1 — sem segunda chamada ao banco
+        const perfilData = perfilLogin;
 
         let perms = {};
         try { perms = typeof perfilData.perms === 'string' ? JSON.parse(perfilData.perms) : (perfilData.perms || {}); } catch(e) {}
@@ -11584,10 +11566,21 @@ async function carregarTodosAsync() {
 
     let rawP = [], rawC = [], rawM = [];
     try {
+        // Busca apenas os últimos 13 meses para reduzir volume de dados na carga inicial
+        const _dataCorte = (() => {
+            const d = new Date();
+            d.setMonth(d.getMonth() - 13);
+            return d.toISOString().slice(0, 10);
+        })();
+        const _dbRecente = (tabela) => _sbClient
+            .from(tabela).select('*')
+            .gte('data', _dataCorte)
+            .order('id', { ascending: true });
+
         [rawP, rawC, rawM] = await Promise.all([
-            dbGetAll('producoes'),
-            dbGetAll('classificacoes'),
-            dbGetAll('materias_primas')
+            _dbRecente('producoes').then(r => { if (r.error) throw new Error(r.error.message); return r.data || []; }),
+            _dbRecente('classificacoes').then(r => { if (r.error) throw new Error(r.error.message); return r.data || []; }),
+            _dbRecente('materias_primas').then(r => { if (r.error) throw new Error(r.error.message); return r.data || []; }),
         ]);
     } catch(e) {
         // ✅ MELHORIA: feedback visual ao usuário em vez de console.error silencioso
@@ -22880,7 +22873,6 @@ function autoFornecedorClass(local) {
     const mapa = {
         'Silo 1 Milho': { fornecedor: 'AGRONOR', produto: 'MILHO ESTOQUE 01' },
         'Silo 2 Milho': { fornecedor: 'AGRONOR', produto: 'MILHO ESTOQUE 02' },
-        'Silo 1 Soja':  { fornecedor: 'AGRONOR', produto: 'SOJA ESTOQUE 01'  },
     };
     const campForn = document.getElementById('cadFornecedorClass');
     const campProd = document.getElementById('cadProdutoClass');
@@ -22893,7 +22885,13 @@ function autoFornecedorClass(local) {
     }
     // Sempre atualiza NF com base no fornecedor resultante
     classFornecedorAutoFill(campForn ? campForn.value : '');
-}
+    // Se vínculo com AGRONOR, posiciona cursor no primeiro campo analítico
+    if (mapa[local]) {
+        setTimeout(() => {
+            const primeiro = document.getElementById('cadQueimadoClass');
+            if (primeiro) primeiro.focus();
+        }, 50);
+    }
 function classFornecedorAutoFill(valor) {
     const isAgronor = (valor||'').trim().toUpperCase() === 'AGRONOR';
     const campNF  = document.getElementById('cadNFClass');
