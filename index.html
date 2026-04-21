@@ -6952,13 +6952,13 @@ async function fazerLogin() {
         if (perfilLoginError || !perfilLogin) {
             err.textContent = 'Usuário não encontrado.';
             err.classList.add('show');
-            return;
+            sgqOcultarLoading(); return;
         }
 
         if (perfilLogin.ativo === false) {
             err.textContent = 'Usuário inativo. Contate o administrador.';
             err.classList.add('show');
-            return;
+            sgqOcultarLoading(); return;
         }
 
         // ✅ Passo 2: autentica com e-mail + senha via Supabase Auth (JWT server-side)
@@ -6970,7 +6970,7 @@ async function fazerLogin() {
         if (authError) {
             err.textContent = 'Senha incorreta.';
             err.classList.add('show');
-            return;
+            sgqOcultarLoading(); return;
         }
 
         // ✅ Usa o perfil já carregado no passo 1 — sem segunda chamada ao banco
@@ -7053,10 +7053,10 @@ async function fazerLogin() {
     } catch(e) {
         err.textContent = 'Erro de conexão. Verifique sua internet e tente novamente.';
         err.classList.add('show');
+        sgqOcultarLoading();
     } finally {
         btn.textContent = 'Entrar';
         btn.disabled = false;
-        sgqOcultarLoading();
     }
 }
 
