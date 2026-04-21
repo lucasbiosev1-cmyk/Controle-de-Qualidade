@@ -2939,7 +2939,6 @@
                         <option value="SOJA INTEGRAL EXTRUSADA">SOJA INTEGRAL EXTRUSADA</option>
                         <option value="FARINHA DE CARNE E OSSO">FARINHA DE CARNE E OSSO</option>
                         <option value="SAL MOÍDO">SAL MOÍDO</option>
-                        <option value="MILHO">MILHO</option>
                     </select>
                 </div>
                 <div style="display:flex;gap:5px;">
@@ -6372,7 +6371,7 @@
                     </div>
                     <div class="form-grid form-grid-2">
                         <div class="form-group required"><label>Fornecedor</label><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
-<input type="text" id="cadFornecedorClass" required autocomplete="off" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onblur="setTimeout(()=>sgqAutocompleteFechar('cadFornecedorClass'),180)">
+<input type="text" id="cadFornecedorClass" required autocomplete="off" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onblur="setTimeout(()=>sgqAutocompleteFechar('cadFornecedorClass'),180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorClass')">
 <ul id="cadFornecedorClass_list" class="sgq-autocomplete-list"></ul>
 </div></div>
                         <div class="form-group required">
@@ -6459,14 +6458,13 @@
                         <div class="form-group required">
                             <label>Produto</label>
                             <div style="display:flex;gap:4px;align-items:flex-start;">
-                                <select id="cadProdutoMP" style="flex:1;padding:4px;border:1px solid #bdc3c7;border-radius:4px;font-size:10px;text-transform:uppercase;" required>
+                                <select id="cadProdutoMP" style="flex:1;padding:4px;border:1px solid #bdc3c7;border-radius:4px;font-size:10px;text-transform:uppercase;" required onchange="mpProdutoAutoFill(this.value)">
                                     <option value="">SELECIONE...</option>
                                     <option value="FARELO DE SOJA">FARELO DE SOJA</option>
                                     <option value="SOJA EXTRUSADA DOSADOR">SOJA EXTRUSADA DOSADOR</option>
                                     <option value="SOJA INTEGRAL EXTRUSADA">SOJA INTEGRAL EXTRUSADA</option>
                                     <option value="FARINHA DE CARNE E OSSO">FARINHA DE CARNE E OSSO</option>
                                     <option value="SAL MOÍDO">SAL MOÍDO</option>
-                                    <option value="MILHO">MILHO</option>
                                 </select>
                                 <button type="button" style="padding:4px 7px;background:#3498db;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:10px;" onclick="abrirModalNovaMateria()" title="Adicionar nova matéria prima">+</button>
                             </div>
@@ -6475,7 +6473,7 @@
                     </div>
                     <div class="form-grid" style="grid-template-columns:1fr 1fr;">
                         <div class="form-group required"><label>Fornecedor</label><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
-<input type="text" id="cadFornecedorMP" required autocomplete="off" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp')" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp')" onblur="setTimeout(()=>sgqAutocompleteFechar('cadFornecedorMP'),180)">
+<input type="text" id="cadFornecedorMP" required autocomplete="off" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp')" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp')" onblur="setTimeout(()=>sgqAutocompleteFechar('cadFornecedorMP'),180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorMP')">
 <ul id="cadFornecedorMP_list" class="sgq-autocomplete-list"></ul>
 </div></div>
                     </div>
@@ -7504,8 +7502,11 @@ function atualizarKpisCapa() {
         function _spMP(r) { return statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data); }
 
         // ── Classificação — mês atual e anterior ──
-        const classMes = (classificacoes||[]).filter(isMesAtual);
-        const classMesAnt = (classificacoes||[]).filter(isMesAnt);
+        // Exclui produtos de estoque do KPI de Classificação de Grãos
+        const _ESTOQUE_EXCLUIR = ['MILHO ESTOQUE 01','MILHO ESTOQUE 02','SOJA ESTOQUE 01'];
+        const _naoEhEstoque = r => !_ESTOQUE_EXCLUIR.includes((r.produto||'').toUpperCase().trim());
+        const classMes = (classificacoes||[]).filter(isMesAtual).filter(_naoEhEstoque);
+        const classMesAnt = (classificacoes||[]).filter(isMesAnt).filter(_naoEhEstoque);
         const confClass   = classMes.filter(r => _isConf(_spClass(r))).length;
         const nconfClass  = classMes.filter(r => _isNConf(_spClass(r))).length;
         const totalClass  = classMes.filter(r => _temParam(_spClass(r))).length;
@@ -8238,6 +8239,7 @@ function abrirModalEdicaoMP(id) {
     document.getElementById('cadHoraMP').value                    = r.hora;
     document.getElementById('cadProdutoMP').value                 = r.produto;
     document.getElementById('cadFornecedorMP').value              = r.fornecedor;
+    mpProdutoAutoFill(r.produto);
     document.getElementById('cadNFMP').value                      = r.nf;
     document.getElementById('cadUmidadeMP').value                 = r.umidade ?? '';
     document.getElementById('cadDensidadeMP').value               = r.densidade ?? '';
@@ -8287,6 +8289,7 @@ function limparFormularioMP() {
     document.getElementById('cadDataMP').value = dataHoje();
     const obsEl = document.getElementById('cadObsMP');
     if (obsEl) { obsEl.value = ''; const tog = obsEl.closest('.obs-body').previousElementSibling; tog.classList.remove('open'); obsEl.closest('.obs-body').classList.remove('open'); }
+    mpProdutoAutoFill('');
 }
 
 function salvarMateriaPrima(event) {
@@ -8302,7 +8305,7 @@ function salvarMateriaPrima(event) {
     const r = {
         id: idEdicaoMP || Date.now(), data,
         hora:           document.getElementById('cadHoraMP').value,
-        produto: produto.toUpperCase(), fornecedor: fornecedor.toUpperCase(), nf: (document.getElementById('cadNFMP').value||'').toUpperCase(),
+        produto: produto.toUpperCase(), fornecedor: fornecedor.toUpperCase(), nf: (function(){ const _nfv=(document.getElementById('cadNFMP').value||'').trim().toUpperCase(); const _semNF=['SOJA EXTRUSADA DOSADOR','SOJA INTEGRAL EXTRUSADA']; return (!_nfv && _semNF.includes(produto.toUpperCase())) ? '-' : _nfv; })(),
         umidade:        _pfM('cadUmidadeMP'),
         densidade:      _pfM('cadDensidadeMP'),
         extrato:        _pfM('cadExtratoMP'),
@@ -8336,6 +8339,25 @@ function salvarMateriaPrima(event) {
     dbUpsertOne('materias_primas', r).then(() => { sgqToast('Matéria Prima salva com sucesso!', 'success'); _registrarAuditoria(idEdicaoMP ? 'EDIT' : 'CREATE', 'materias_primas', r.id, { produto: r.produto, data: r.data }).catch(() => {}); }).catch(e => { mostrarErroMP('❌ Erro ao salvar: ' + e.message); sgqToast('Erro ao salvar Matéria Prima: ' + e.message, 'error'); });
     fecharModalCadastroMP(); limparFormularioMP(); exibirTabelaMP();
     setTimeout(_empHookAposRegistro, 800);
+}
+
+function mpProdutoAutoFill(produto) {
+    const _autoForn = ['SOJA EXTRUSADA DOSADOR','SOJA INTEGRAL EXTRUSADA'];
+    const campForn = document.getElementById('cadFornecedorMP');
+    if (!campForn) return;
+    if (_autoForn.includes((produto||'').toUpperCase())) {
+        campForn.value = 'AGRONOR';
+        campForn.readOnly = true;
+        campForn.style.background = '#eaf4fb';
+        campForn.style.color = '#1a5276';
+        campForn.style.fontWeight = '700';
+    } else {
+        campForn.readOnly = false;
+        campForn.style.background = '';
+        campForn.style.color = '';
+        campForn.style.fontWeight = '';
+        if (campForn.value === 'AGRONOR') campForn.value = '';
+    }
 }
 
 function exibirTabelaMP() {
@@ -22863,6 +22885,34 @@ function sgqAutocompleteFiltrar(input, campoId, tipo) {
     lista.innerHTML = filtrados.map(f =>
         `<li onmousedown="sgqAutocompleteSelecionar('${campoId}','${f.replace(/'/g,"\'")}')">${f}</li>`
     ).join('');
+    lista._sgqIdx = -1;
+}
+
+function sgqAutocompleteNavegar(event, campoId) {
+    const lista = document.getElementById(campoId + '_list');
+    if (!lista) return;
+    const itens = lista.querySelectorAll('li');
+    if (!itens.length) return;
+    if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        lista._sgqIdx = (lista._sgqIdx === undefined ? -1 : lista._sgqIdx);
+        lista._sgqIdx = Math.min(lista._sgqIdx + 1, itens.length - 1);
+        itens.forEach((li, i) => li.classList.toggle('sgq-ac-active', i === lista._sgqIdx));
+        itens[lista._sgqIdx].scrollIntoView({ block: 'nearest' });
+    } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        lista._sgqIdx = (lista._sgqIdx === undefined ? 0 : lista._sgqIdx);
+        lista._sgqIdx = Math.max(lista._sgqIdx - 1, 0);
+        itens.forEach((li, i) => li.classList.toggle('sgq-ac-active', i === lista._sgqIdx));
+        itens[lista._sgqIdx].scrollIntoView({ block: 'nearest' });
+    } else if (event.key === 'Enter') {
+        if (lista._sgqIdx >= 0 && itens[lista._sgqIdx]) {
+            event.preventDefault();
+            itens[lista._sgqIdx].dispatchEvent(new MouseEvent('mousedown'));
+        }
+    } else if (event.key === 'Escape') {
+        sgqAutocompleteFechar(campoId);
+    }
 }
 
 function sgqAutocompleteSelecionar(campoId, valor) {
@@ -22873,7 +22923,7 @@ function sgqAutocompleteSelecionar(campoId, valor) {
 
 function sgqAutocompleteFechar(campoId) {
     const lista = document.getElementById(campoId + '_list');
-    if (lista) lista.innerHTML = '';
+    if (lista) { lista.innerHTML = ''; lista._sgqIdx = -1; }
 }
 
 /* =====================================================================
