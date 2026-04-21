@@ -10140,13 +10140,20 @@ function aplicarFiltrosRanking() {
             .normalize('NFD').replace(/[̀-ͯ]/g,'');
         return n === 'FABRICA AGRONOR' || n.startsWith('FABRICA AGRONOR');
     }
+    // Detecta estoque próprio Agronor (fornecedor = "AGRONOR" sem sufixo)
+    function _isEstoqueAgronor(forn) {
+        const n = (forn||'').toUpperCase().trim()
+            .normalize('NFD').replace(/[̀-ͯ]/g,'');
+        return n === 'AGRONOR';
+    }
 
-    // Base geral: sem estoques, sem Fábrica Agronor
+    // Base geral: sem estoques, sem Fábrica Agronor, sem estoque próprio Agronor
     let base = classificacoes.filter(r => {
         const prod = (r.produto||'').toUpperCase();
         return r.data >= di && r.data <= df
             && !PRODUTOS_ESTOQUE.includes(prod)
-            && !_isFabricaAgronor(r.fornecedor);
+            && !_isFabricaAgronor(r.fornecedor)
+            && !_isEstoqueAgronor(r.fornecedor);
     });
     if (prodSel !== 'all') base = base.filter(r => r.produto === prodSel);
 
