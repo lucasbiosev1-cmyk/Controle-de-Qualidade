@@ -6371,7 +6371,7 @@
                     </div>
                     <div class="form-grid form-grid-2">
                         <div class="form-group required"><label>Fornecedor</label><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
-<input type="text" id="cadFornecedorClass" required autocomplete="off" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onblur="setTimeout(()=>sgqAutocompleteFechar('cadFornecedorClass'),180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorClass')">
+<input type="text" id="cadFornecedorClass" required autocomplete="off" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorClass_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorClass')},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorClass')">
 <ul id="cadFornecedorClass_list" class="sgq-autocomplete-list"></ul>
 </div></div>
                         <div class="form-group required">
@@ -6473,7 +6473,7 @@
                     </div>
                     <div class="form-grid" style="grid-template-columns:1fr 1fr;">
                         <div class="form-group required"><label>Fornecedor</label><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
-<input type="text" id="cadFornecedorMP" required autocomplete="off" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp')" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp')" onblur="setTimeout(()=>sgqAutocompleteFechar('cadFornecedorMP'),180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorMP')">
+<input type="text" id="cadFornecedorMP" required autocomplete="off" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp');mpFornecedorAutoFill(this.value)" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorMP_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorMP');mpFornecedorAutoFill(document.getElementById('cadFornecedorMP').value)},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorMP')">
 <ul id="cadFornecedorMP_list" class="sgq-autocomplete-list"></ul>
 </div></div>
                     </div>
@@ -8240,6 +8240,7 @@ function abrirModalEdicaoMP(id) {
     document.getElementById('cadProdutoMP').value                 = r.produto;
     document.getElementById('cadFornecedorMP').value              = r.fornecedor;
     mpProdutoAutoFill(r.produto);
+    mpFornecedorAutoFill(r.fornecedor);
     document.getElementById('cadNFMP').value                      = r.nf;
     document.getElementById('cadUmidadeMP').value                 = r.umidade ?? '';
     document.getElementById('cadDensidadeMP').value               = r.densidade ?? '';
@@ -8290,6 +8291,7 @@ function limparFormularioMP() {
     const obsEl = document.getElementById('cadObsMP');
     if (obsEl) { obsEl.value = ''; const tog = obsEl.closest('.obs-body').previousElementSibling; tog.classList.remove('open'); obsEl.closest('.obs-body').classList.remove('open'); }
     mpProdutoAutoFill('');
+    mpFornecedorAutoFill('');
 }
 
 function salvarMateriaPrima(event) {
@@ -8341,6 +8343,24 @@ function salvarMateriaPrima(event) {
     setTimeout(_empHookAposRegistro, 800);
 }
 
+function _mpAplicarRegraAgronor(isAgronor) {
+    const campNF = document.getElementById('cadNFMP');
+    if (!campNF) return;
+    if (isAgronor) {
+        campNF.value = '-';
+        campNF.readOnly = true;
+        campNF.style.background = '#eaf4fb';
+        campNF.style.color = '#1a5276';
+        campNF.style.fontWeight = '700';
+    } else {
+        campNF.readOnly = false;
+        campNF.style.background = '';
+        campNF.style.color = '';
+        campNF.style.fontWeight = '';
+        if (campNF.value === '-') campNF.value = '';
+    }
+}
+
 function mpProdutoAutoFill(produto) {
     const _autoForn = ['SOJA EXTRUSADA DOSADOR','SOJA INTEGRAL EXTRUSADA'];
     const campForn = document.getElementById('cadFornecedorMP');
@@ -8351,13 +8371,20 @@ function mpProdutoAutoFill(produto) {
         campForn.style.background = '#eaf4fb';
         campForn.style.color = '#1a5276';
         campForn.style.fontWeight = '700';
+        _mpAplicarRegraAgronor(true);
     } else {
         campForn.readOnly = false;
         campForn.style.background = '';
         campForn.style.color = '';
         campForn.style.fontWeight = '';
         if (campForn.value === 'AGRONOR') campForn.value = '';
+        _mpAplicarRegraAgronor(false);
     }
+}
+
+function mpFornecedorAutoFill(valor) {
+    const isAgronor = (valor||'').trim().toUpperCase() === 'AGRONOR';
+    _mpAplicarRegraAgronor(isAgronor);
 }
 
 function exibirTabelaMP() {
@@ -22899,18 +22926,24 @@ function sgqAutocompleteNavegar(event, campoId) {
         lista._sgqIdx = Math.min(lista._sgqIdx + 1, itens.length - 1);
         itens.forEach((li, i) => li.classList.toggle('sgq-ac-active', i === lista._sgqIdx));
         itens[lista._sgqIdx].scrollIntoView({ block: 'nearest' });
+        lista._sgqNavigating = true;
     } else if (event.key === 'ArrowUp') {
         event.preventDefault();
         lista._sgqIdx = (lista._sgqIdx === undefined ? 0 : lista._sgqIdx);
         lista._sgqIdx = Math.max(lista._sgqIdx - 1, 0);
         itens.forEach((li, i) => li.classList.toggle('sgq-ac-active', i === lista._sgqIdx));
         itens[lista._sgqIdx].scrollIntoView({ block: 'nearest' });
+        lista._sgqNavigating = true;
     } else if (event.key === 'Enter') {
         if (lista._sgqIdx >= 0 && itens[lista._sgqIdx]) {
             event.preventDefault();
-            itens[lista._sgqIdx].dispatchEvent(new MouseEvent('mousedown'));
+            event.stopPropagation();
+            const valor = itens[lista._sgqIdx].textContent;
+            lista._sgqNavigating = false;
+            sgqAutocompleteSelecionar(campoId, valor);
         }
     } else if (event.key === 'Escape') {
+        lista._sgqNavigating = false;
         sgqAutocompleteFechar(campoId);
     }
 }
