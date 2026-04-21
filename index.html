@@ -6371,7 +6371,7 @@
                     </div>
                     <div class="form-grid form-grid-2">
                         <div class="form-group required"><label>Fornecedor</label><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
-<input type="text" id="cadFornecedorClass" required autocomplete="off" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorClass_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorClass')},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorClass')">
+<input type="text" id="cadFornecedorClass" required autocomplete="off" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class');classFornecedorAutoFill(this.value)" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorClass_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorClass');classFornecedorAutoFill(document.getElementById('cadFornecedorClass').value)},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorClass')">
 <ul id="cadFornecedorClass_list" class="sgq-autocomplete-list"></ul>
 </div></div>
                         <div class="form-group required">
@@ -8019,6 +8019,7 @@ function abrirModalEdicaoClass(id) {
         sel.value = matched ? matched.value : r.local;
     })();
     document.getElementById('cadFornecedorClass').value           = r.fornecedor;
+    classFornecedorAutoFill(r.fornecedor);
     document.getElementById('cadProdutoClass').value              = r.produto;
     document.getElementById('cadQueimadoClass').value             = r.queimado;
     document.getElementById('cadEsverdeadoClass').value           = r.esverdeado;
@@ -8057,6 +8058,7 @@ function limparFormularioClass() {
     document.getElementById('cadDataClass').value = dataHoje();
     const obsEl = document.getElementById('cadObsClass');
     if (obsEl) { obsEl.value = ''; const tog = obsEl.closest('.obs-body').previousElementSibling; tog.classList.remove('open'); obsEl.closest('.obs-body').classList.remove('open'); }
+    classFornecedorAutoFill('');
 }
 
 function salvarClassificacao(event) {
@@ -8066,12 +8068,14 @@ function salvarClassificacao(event) {
     const local      = document.getElementById('cadLocalClass').value;
     const fornecedor = document.getElementById('cadFornecedorClass').value.trim();
     const produto    = document.getElementById('cadProdutoClass').value;
-    if (!data || !nf || !local || !fornecedor || !produto) {
+    const isAgronorClass = fornecedor.toUpperCase() === 'AGRONOR';
+    const nfFinal = (!nf && isAgronorClass) ? '-' : nf;
+    if (!data || !nfFinal || !local || !fornecedor || !produto) {
         mostrarErroClass('❌ Preencha todos os campos obrigatórios!'); return;
     }
-    // Bloquear NF duplicada, exceto NF = "0"
-    if (nf.trim() !== '0') {
-        const nfUpper = nf.toUpperCase();
+    // Bloquear NF duplicada, exceto NF = "0" ou "-" (AGRONOR)
+    if (nfFinal.trim() !== '0' && nfFinal.trim() !== '-') {
+        const nfUpper = nfFinal.toUpperCase();
         const duplicada = classificacoes.some(r =>
             r.nf.toUpperCase() === nfUpper && r.id !== (idEdicaoClass || null)
         );
@@ -8083,7 +8087,7 @@ function salvarClassificacao(event) {
     const r = {
         id: idEdicaoClass || Date.now(), data,
         hora:        document.getElementById('cadHoraClass').value,
-        nf: nf.toUpperCase(), local: local, fornecedor: fornecedor.toUpperCase(), produto: produto.toUpperCase(),
+        nf: nfFinal.toUpperCase(), local: local, fornecedor: fornecedor.toUpperCase(), produto: produto.toUpperCase(),
         queimado:    _pfC('cadQueimadoClass'),
         esverdeado:  _pfC('cadEsverdeadoClass'),
         picado:      _pfC('cadPicadoClass'),
@@ -22893,6 +22897,30 @@ function autoFornecedorClass(local) {
         if (nfGrupo) nfGrupo.classList.add('required');
     }
 }
+function classFornecedorAutoFill(valor) {
+    const isAgronor = (valor||'').trim().toUpperCase() === 'AGRONOR';
+    const campNF  = document.getElementById('cadNFClass');
+    const nfGrupo = campNF ? campNF.closest('.form-group') : null;
+    if (!campNF) return;
+    if (isAgronor) {
+        campNF.value = '-';
+        campNF.readOnly = true;
+        campNF.removeAttribute('required');
+        campNF.style.background   = '#eaf4fb';
+        campNF.style.color        = '#1a5276';
+        campNF.style.fontWeight   = '700';
+        if (nfGrupo) nfGrupo.classList.remove('required');
+    } else {
+        campNF.readOnly = false;
+        campNF.setAttribute('required', '');
+        campNF.style.background = '';
+        campNF.style.color      = '';
+        campNF.style.fontWeight = '';
+        if (campNF.value === '-') campNF.value = '';
+        if (nfGrupo) nfGrupo.classList.add('required');
+    }
+}
+
 function _sgqGetFornecedores(tipo) {
     if (tipo === 'mp') {
         return [...new Set((materiasPrimas || []).map(r => (r.fornecedor || '').trim().toUpperCase()).filter(Boolean))].sort();
@@ -22919,6 +22947,18 @@ function sgqAutocompleteNavegar(event, campoId) {
     const lista = document.getElementById(campoId + '_list');
     if (!lista) return;
     const itens = lista.querySelectorAll('li');
+    // Se lista visível e Enter pressionado, sempre bloquear propagação
+    if (event.key === 'Enter' && itens.length > 0) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        if (lista._sgqIdx >= 0 && itens[lista._sgqIdx]) {
+            const valor = itens[lista._sgqIdx].textContent.trim();
+            lista._sgqNavigating = false;
+            sgqAutocompleteSelecionar(campoId, valor);
+        }
+        return;
+    }
     if (!itens.length) return;
     if (event.key === 'ArrowDown') {
         event.preventDefault();
@@ -22934,14 +22974,6 @@ function sgqAutocompleteNavegar(event, campoId) {
         itens.forEach((li, i) => li.classList.toggle('sgq-ac-active', i === lista._sgqIdx));
         itens[lista._sgqIdx].scrollIntoView({ block: 'nearest' });
         lista._sgqNavigating = true;
-    } else if (event.key === 'Enter') {
-        if (lista._sgqIdx >= 0 && itens[lista._sgqIdx]) {
-            event.preventDefault();
-            event.stopPropagation();
-            const valor = itens[lista._sgqIdx].textContent;
-            lista._sgqNavigating = false;
-            sgqAutocompleteSelecionar(campoId, valor);
-        }
     } else if (event.key === 'Escape') {
         lista._sgqNavigating = false;
         sgqAutocompleteFechar(campoId);
@@ -22958,6 +22990,31 @@ function sgqAutocompleteFechar(campoId) {
     const lista = document.getElementById(campoId + '_list');
     if (lista) { lista.innerHTML = ''; lista._sgqIdx = -1; }
 }
+
+// Registra listener de captura para garantir que Enter feche o autocomplete
+// antes de qualquer outro handler do formulário
+document.addEventListener('DOMContentLoaded', function() {
+    ['cadFornecedorMP','cadFornecedorClass'].forEach(function(campoId) {
+        const input = document.getElementById(campoId);
+        if (!input) return;
+        input.addEventListener('keydown', function(event) {
+            if (event.key !== 'Enter') return;
+            const lista = document.getElementById(campoId + '_list');
+            if (!lista) return;
+            const itens = lista.querySelectorAll('li');
+            if (!itens.length) return;
+            // Há lista aberta — bloqueia tudo e seleciona
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            if (lista._sgqIdx >= 0 && itens[lista._sgqIdx]) {
+                const valor = itens[lista._sgqIdx].textContent.trim();
+                lista._sgqNavigating = false;
+                sgqAutocompleteSelecionar(campoId, valor);
+            }
+        }, true); // true = fase de captura, antes de qualquer outro handler
+    });
+});
 
 /* =====================================================================
    MÓDULO AGENDA DE COMPROMISSOS
