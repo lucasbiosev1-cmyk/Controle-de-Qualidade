@@ -22912,6 +22912,8 @@ async function sgqCarregarHistoricoAcessos() {
             return true;
         });
 
+        const _dark = document.documentElement.getAttribute('data-theme') === 'dark';
+
         const rows = dataFiltrada.map((r, idx) => {
             const nomeExibido = _canonico(r.usuario); // username limpo
             const dt = new Date(r.criado_em);
@@ -22922,20 +22924,26 @@ async function sgqCarregarHistoricoAcessos() {
             // isSelf: compara tanto o valor raw quanto o canônico
             const isSelf  = r.usuario === usuarioAtual || nomeExibido === usuarioAtual
                          || (r.usuario || '').toLowerCase() === (usuarioAtual || '').toLowerCase();
-            const acaoBadge = isLogin
-                ? `<span style="background:#e8f8f0;color:#27ae60;border:1px solid #a9dfbf;border-radius:10px;padding:2px 9px;font-size:10px;font-weight:700;">🔓 LOGIN</span>`
-                : `<span style="background:#fdf2f8;color:#8e44ad;border:1px solid #d7bde2;border-radius:10px;padding:2px 9px;font-size:10px;font-weight:700;">🔒 LOGOUT</span>`;
-            const perfilBadge = isAdmin
-                ? `<span style="background:#fef3e2;color:#a04000;border:1px solid #f5cba7;border-radius:10px;padding:2px 7px;font-size:9px;font-weight:700;">👑 Admin</span>`
-                : `<span style="background:#eaf4fb;color:#1a5276;border:1px solid #aed6f1;border-radius:10px;padding:2px 7px;font-size:9px;font-weight:700;">👤 Usuário</span>`;
-            const trStyle = isSelf ? 'background:#fffde7;' : (idx % 2 === 0 ? 'background:#fafafa;' : '');
 
-            return `<tr style="${trStyle}">
-                <td style="padding:7px 10px;font-size:12px;font-weight:700;color:#2c3e50;">${nomeExibido}${isSelf ? ' <span style="font-size:9px;color:#888;">(você)</span>' : ''}</td>
+            const acaoBadge = isLogin
+                ? `<span style="background:${_dark?'rgba(63,185,80,0.15)':'#e8f8f0'};color:${_dark?'#3fb950':'#27ae60'};border:1px solid ${_dark?'rgba(63,185,80,0.3)':'#a9dfbf'};border-radius:10px;padding:2px 9px;font-size:10px;font-weight:700;">🔓 LOGIN</span>`
+                : `<span style="background:${_dark?'rgba(188,122,255,0.12)':'#fdf2f8'};color:${_dark?'#bc8cff':'#8e44ad'};border:1px solid ${_dark?'rgba(188,122,255,0.3)':'#d7bde2'};border-radius:10px;padding:2px 9px;font-size:10px;font-weight:700;">🔒 LOGOUT</span>`;
+            const perfilBadge = isAdmin
+                ? `<span style="background:${_dark?'rgba(210,105,30,0.15)':'#fef3e2'};color:${_dark?'#e3956a':'#a04000'};border:1px solid ${_dark?'rgba(210,105,30,0.3)':'#f5cba7'};border-radius:10px;padding:2px 7px;font-size:9px;font-weight:700;">👑 Admin</span>`
+                : `<span style="background:${_dark?'rgba(88,166,255,0.12)':'#eaf4fb'};color:${_dark?'#79c0ff':'#1a5276'};border:1px solid ${_dark?'rgba(88,166,255,0.25)':'#aed6f1'};border-radius:10px;padding:2px 7px;font-size:9px;font-weight:700;">👤 Usuário</span>`;
+
+            const trBg = isSelf
+                ? (_dark ? 'background:rgba(88,166,255,0.08);' : 'background:#fffde7;')
+                : (idx % 2 === 0 ? (_dark ? 'background:rgba(255,255,255,0.03);' : 'background:#fafafa;') : '');
+            const nameColor = _dark ? '#e6edf3' : '#2c3e50';
+            const metaColor = _dark ? 'rgba(255,255,255,0.45)' : '#555';
+
+            return `<tr style="${trBg}">
+                <td style="padding:7px 10px;font-size:12px;font-weight:700;color:${nameColor};">${nomeExibido}${isSelf ? ` <span style="font-size:9px;color:${_dark?'rgba(255,255,255,0.3)':'#888'};">(você)</span>` : ''}</td>
                 <td style="padding:7px 10px;">${perfilBadge}</td>
                 <td style="padding:7px 10px;">${acaoBadge}</td>
-                <td style="padding:7px 10px;font-size:11px;color:#555;">${dataFmt}</td>
-                <td style="padding:7px 10px;font-size:11px;color:#555;font-weight:600;">${horaFmt}</td>
+                <td style="padding:7px 10px;font-size:11px;color:${metaColor};">${dataFmt}</td>
+                <td style="padding:7px 10px;font-size:11px;color:${metaColor};font-weight:600;">${horaFmt}</td>
             </tr>`;
         }).join('');
 
