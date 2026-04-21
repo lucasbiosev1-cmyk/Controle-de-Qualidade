@@ -7313,7 +7313,7 @@ function trocarAba(aba, btn) {
         if (parentBtn) parentBtn.classList.add('active');
     }
     // ── Preenche filtros de data com o mês atual ao abrir relatórios ──
-    const abasRelatorio = ['relatorio','relClass','relMP','ranking','boletim','naoConformidade','entradaMP'];
+    const abasRelatorio = ['relatorio','relClass','relMP','ranking','boletim','naoConformidade','entradaMP','producao','classificacao','materiaPrima'];
     if (abasRelatorio.includes(aba)) preencherFiltrosMesAtual(aba);
 
     if (aba === 'relatorio') inicializarRelatorio();
@@ -7334,8 +7334,8 @@ function preencherFiltrosMesAtual(aba) {
     const mes    = String(hoje.getMonth() + 1).padStart(2, '0');
     const inicio = `${ano}-${mes}-01`;
     // último dia do mês atual
-    const ultimoDia = new Date(ano, hoje.getMonth() + 1, 0).getDate();
-    const fim = `${ano}-${mes}-${String(ultimoDia).padStart(2, '0')}`;
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    const fim = `${ano}-${mes}-${dia}`;
     const mesStr = `${ano}-${mes}`; // para inputs type="month"
 
     const pares = {
