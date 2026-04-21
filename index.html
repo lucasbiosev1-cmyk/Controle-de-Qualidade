@@ -6367,11 +6367,11 @@
                                 <option value="Produção Silo 2">Produção Silo 2</option>
                             </select>
                         </div>
-                        <div class="form-group required"><label>Nota Fiscal</label><input type="text" id="cadNFClass"></div>
+                        <div class="form-group required"><label>Nota Fiscal</label><input type="text" id="cadNFClass" autocomplete="new-password"></div>
                     </div>
                     <div class="form-grid form-grid-2">
                         <div class="form-group required"><label>Fornecedor</label><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
-<input type="text" id="cadFornecedorClass" required autocomplete="off" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class');classFornecedorAutoFill(this.value)" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorClass_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorClass');classFornecedorAutoFill(document.getElementById('cadFornecedorClass').value)},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorClass')">
+<input type="text" id="cadFornecedorClass" required autocomplete="new-password" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class');classFornecedorAutoFill(this.value)" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorClass_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorClass');classFornecedorAutoFill(document.getElementById('cadFornecedorClass').value)},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorClass')">
 <ul id="cadFornecedorClass_list" class="sgq-autocomplete-list"></ul>
 </div></div>
                         <div class="form-group required">
@@ -6469,11 +6469,11 @@
                                 <button type="button" style="padding:4px 7px;background:#3498db;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:10px;" onclick="abrirModalNovaMateria()" title="Adicionar nova matéria prima">+</button>
                             </div>
                         </div>
-                        <div class="form-group"><label>Nota Fiscal</label><input type="text" id="cadNFMP"></div>
+                        <div class="form-group"><label>Nota Fiscal</label><input type="text" id="cadNFMP" autocomplete="new-password"></div>
                     </div>
                     <div class="form-grid" style="grid-template-columns:1fr 1fr;">
                         <div class="form-group required"><label>Fornecedor</label><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
-<input type="text" id="cadFornecedorMP" required autocomplete="off" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp');mpFornecedorAutoFill(this.value)" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorMP_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorMP');mpFornecedorAutoFill(document.getElementById('cadFornecedorMP').value)},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorMP')">
+<input type="text" id="cadFornecedorMP" required autocomplete="new-password" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp');mpFornecedorAutoFill(this.value)" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorMP_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorMP');mpFornecedorAutoFill(document.getElementById('cadFornecedorMP').value)},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorMP')">
 <ul id="cadFornecedorMP_list" class="sgq-autocomplete-list"></ul>
 </div></div>
                     </div>
@@ -8333,18 +8333,23 @@ function salvarMateriaPrima(event) {
 function _mpAplicarRegraAgronor(isAgronor) {
     const campNF = document.getElementById('cadNFMP');
     if (!campNF) return;
+    let placeholder = document.getElementById('cadNFMP_placeholder');
     if (isAgronor) {
         campNF.value = '-';
-        campNF.readOnly = true;
-        campNF.style.background = '#eaf4fb';
-        campNF.style.color = '#1a5276';
-        campNF.style.fontWeight = '700';
+        campNF.style.display = 'none';
+        if (!placeholder) {
+            placeholder = document.createElement('span');
+            placeholder.id = 'cadNFMP_placeholder';
+            placeholder.style.cssText = 'display:inline-block;padding:4px 8px;font-size:13px;font-weight:700;color:#999;letter-spacing:2px;';
+            placeholder.textContent = '—';
+            campNF.parentNode.insertBefore(placeholder, campNF);
+        }
+        placeholder.style.display = 'inline-block';
     } else {
+        campNF.style.display = '';
         campNF.readOnly = false;
-        campNF.style.background = '';
-        campNF.style.color = '';
-        campNF.style.fontWeight = '';
         if (campNF.value === '-') campNF.value = '';
+        if (placeholder) placeholder.style.display = 'none';
     }
 }
 
@@ -12732,10 +12737,17 @@ carregarMicoParams();
 function statusPorParametros(registro, modulo, racaoOuProduto, campos, dataRegistro) {
     if (!racaoOuProduto) return '<span class="badge" style="background:#ecf0f1;color:#95a5a6;">S/ PARÂM.</span>';
     const chaveKey = racaoOuProduto.replace(/ /g, '_');
-    let algumAtivoComValor = false; // campo ativo E com valor lançado
+    // Tenta também com hífen normalizado (ex: BEPEL-CALCÁRIO → BEPEL_CALCÁRIO)
+    const chaveAlt = racaoOuProduto.replace(/[-\s]/g, '_');
+    let algumAtivoComValor = false;
     let algumFora = false;
     campos.forEach(c => {
-        const cfg = getParam(modulo, chaveKey, c.key, dataRegistro || null);
+        let cfg = getParam(modulo, chaveKey, c.key, dataRegistro || null);
+        // Fallback: tenta chave com hífen normalizado se não achou snapshot
+        if ((!cfg || !cfg.ativo) && chaveAlt !== chaveKey) {
+            const cfgAlt = getParam(modulo, chaveAlt, c.key, dataRegistro || null);
+            if (cfgAlt && cfgAlt.ativo) cfg = cfgAlt;
+        }
         if (!cfg || !cfg.ativo) return; // não marcado como ativo → ignora
         // Ativo mas sem limite real (min=0 e max≥9999) → ignora
         const semLimiteReal = (cfg.min === 0) && (cfg.max >= 9999);
@@ -12763,7 +12775,12 @@ function statusPorParametros(registro, modulo, racaoOuProduto, campos, dataRegis
 function estiloFora(valor, modulo, racaoOuProduto, campo, dataRegistro) {
     if (!racaoOuProduto) return '';
     const chaveKey = racaoOuProduto.replace(/ /g,'_');
-    const cfg = getParam(modulo, chaveKey, campo, dataRegistro||null);
+    const chaveAlt = racaoOuProduto.replace(/[-\s]/g,'_');
+    let cfg = getParam(modulo, chaveKey, campo, dataRegistro||null);
+    if ((!cfg || !cfg.ativo) && chaveAlt !== chaveKey) {
+        const cfgAlt = getParam(modulo, chaveAlt, campo, dataRegistro||null);
+        if (cfgAlt && cfgAlt.ativo) cfg = cfgAlt;
+    }
     if (!cfg || !cfg.ativo) return '';
     // Para campo calculado avariados, o valor já foi calculado pelo chamador
     const v = parseFloat(valor);
