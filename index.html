@@ -6367,7 +6367,7 @@
                                 <option value="Produção Silo 2">Produção Silo 2</option>
                             </select>
                         </div>
-                        <div class="form-group required"><label>Nota Fiscal</label><input type="text" id="cadNFClass" required></div>
+                        <div class="form-group required"><label>Nota Fiscal</label><input type="text" id="cadNFClass"></div>
                     </div>
                     <div class="form-grid form-grid-2">
                         <div class="form-group required"><label>Fornecedor</label><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
@@ -7998,6 +7998,7 @@ function abrirModalCadastroClass() {
     document.getElementById('modalTituloClass').textContent = 'Cadastro de Classificação';
     document.getElementById('formCadastroClass').reset();
     document.getElementById('cadDataClass').value = dataHoje();
+    classFornecedorAutoFill('');
     document.getElementById('modalCadastroClass').classList.add('show');
 }
 
@@ -22883,17 +22884,15 @@ function autoFornecedorClass(local) {
     };
     const campForn = document.getElementById('cadFornecedorClass');
     const campProd = document.getElementById('cadProdutoClass');
-    const campNF   = document.getElementById('cadNFClass');
-    const nfGrupo  = campNF ? campNF.closest('.form-group') : null;
     if (mapa[local]) {
         if (campForn) campForn.value = mapa[local].fornecedor;
         if (campProd) campProd.value = mapa[local].produto;
-        classFornecedorAutoFill(mapa[local].fornecedor);
     } else {
         if (campForn && campForn.value === 'AGRONOR') campForn.value = '';
         if (campProd && ['MILHO ESTOQUE 01','MILHO ESTOQUE 02','SOJA ESTOQUE 01'].includes(campProd.value)) campProd.value = '';
-        classFornecedorAutoFill('');
     }
+    // Chama após setar o campo para garantir que o DOM já tem o valor
+    classFornecedorAutoFill(campForn ? campForn.value : '');
 }
 function classFornecedorAutoFill(valor) {
     const isAgronor = (valor||'').trim().toUpperCase() === 'AGRONOR';
