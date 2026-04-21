@@ -7037,6 +7037,7 @@ async function fazerLogin() {
         sgqMostrarLoading('Carregando seus dados...');
         carregarTodosAsync().then(() => {
             sgqOcultarLoading();
+            _inicializarFiltrosDataMesAtual();
             exibirTabelaProd();
             exibirTabelaClass();
             exibirTabelaMP();
@@ -7953,9 +7954,29 @@ function filtrarDadosProd() {
     ).sort((a, b) => new Date(b.data) - new Date(a.data));
 }
 
+function _inicializarFiltrosDataMesAtual() {
+    const hoje = new Date();
+    const ano  = hoje.getFullYear();
+    const mes  = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia  = String(hoje.getDate()).padStart(2, '0');
+    const inicio = `${ano}-${mes}-01`;
+    const fim    = `${ano}-${mes}-${dia}`;
+    [
+        ['filterDataInicioProd',  'filterDataFimProd'],
+        ['filterDataInicioClass', 'filterDataFimClass'],
+        ['filterDataInicioMP',    'filterDataFimMP'],
+    ].forEach(([idIni, idFim]) => {
+        const elIni = document.getElementById(idIni);
+        const elFim = document.getElementById(idFim);
+        if (elIni && !elIni.value) elIni.value = inicio;
+        if (elFim && !elFim.value) elFim.value = fim;
+    });
+}
+
 function aplicarFiltrosProd() { exibirTabelaProd(); }
 function limparFiltrosProd() {
-    ['filterLoteProd','filterDataInicioProd','filterDataFimProd','filterRacaoProd'].forEach(id => document.getElementById(id).value = '');
+    ['filterLoteProd','filterRacaoProd'].forEach(id => document.getElementById(id).value = '');
+    _inicializarFiltrosDataMesAtual();
     exibirTabelaProd();
 }
 
@@ -8185,7 +8206,8 @@ function popularFornecedoresClass() {
 
 function aplicarFiltrosClass() { exibirTabelaClass(); }
 function limparFiltrosClass() {
-    ['filterNFClass','filterDataInicioClass','filterDataFimClass','filterProdutoClass','filterFornecedorClass'].forEach(id => document.getElementById(id).value = '');
+    ['filterNFClass','filterProdutoClass','filterFornecedorClass'].forEach(id => document.getElementById(id).value = '');
+    _inicializarFiltrosDataMesAtual();
     exibirTabelaClass();
 }
 
@@ -8437,7 +8459,8 @@ function filtrarDadosMP() {
 
 function aplicarFiltrosMP() { exibirTabelaMP(); }
 function limparFiltrosMP() {
-    ['filterNFMP','filterDataInicioMP','filterDataFimMP','filterProdutoMP'].forEach(id => document.getElementById(id).value = '');
+    ['filterNFMP','filterProdutoMP'].forEach(id => document.getElementById(id).value = '');
+    _inicializarFiltrosDataMesAtual();
     exibirTabelaMP();
 }
 
