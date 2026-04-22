@@ -13299,6 +13299,9 @@ function selecionarModoProd(modo) {
 function classificarFaseRacao(racao) {
     if (!racao) return { categoria: 'outros', fase: 'Outros Produtos', ordem: 99, cor: '#0B3C5D', icone: '📦' };
     const r = racao.toUpperCase();
+    // Calcário é matéria-prima — não deve ser classificado como fase de ração
+    if (r.includes('CALCÁRIO') || r.includes('CALCARIO'))
+        return { categoria: 'calcario', fase: 'CALCÁRIO', ordem: 98, cor: '#546e7a', icone: '🪨' };
     if (/CORTE R1\b/.test(r))
         return { categoria: 'corte_pre_inicial', fase: 'CORTE — PRÉ-INICIAL (R1)',    ordem: 1, cor: '#0B3C5D', icone: '🐣' };
     if (/CORTE R2\b/.test(r))
@@ -13354,21 +13357,36 @@ function gerarResumoFase(allRows, cor) {
     </div>`;
 }
 
+// ─── Helper: identifica se uma ração é calcário (matéria-prima) ──────────────
+function _isCalcario(racao) {
+    if (!racao) return false;
+    const r = racao.toUpperCase();
+    return r.includes('CALCÁRIO') || r.includes('CALCARIO');
+}
+
 function gerarSecaoProd(dados, agrupar, resumo, destNC, periodo) {
     if (!dados.length) return `<div class="bol-secao-header">🌾 Produção</div><div class="bol-empty">Nenhum registro de produção no período.</div>`;
+
+    // ── Separar calcários (matéria-prima) dos dados de ração ────────────────
+    const dadosCalcario = dados.filter(r => _isCalcario(r.racao));
+    const dadosRacao    = dados.filter(r => !_isCalcario(r.racao));
 
     const campoModo  = document.getElementById('bolModoProdRacao');
     const modoPorFase = campoModo && campoModo.value === 'fase';
 
     let html = `<div class="bol-secao-header">🌾 1. PRODUÇÃO — ANÁLISE GRANULOMÉTRICA E FÍSICO-QUÍMICA</div>
     <div class="bol-secao-sub">
-        <span>Total: ${dados.length} registros &nbsp;|&nbsp; Período: ${periodo} &nbsp;|&nbsp; Modo: ${modoPorFase?'Por Fase':'Por Tipo de Ração'}</span>
+        <span>Total: ${dadosRacao.length} registro${dadosRacao.length!==1?'s':''} de ração${dadosCalcario.length ? ` &nbsp;|&nbsp; ${dadosCalcario.length} registro${dadosCalcario.length!==1?'s':''} de calcário` : ''} &nbsp;|&nbsp; Período: ${periodo} &nbsp;|&nbsp; Modo: ${modoPorFase?'Por Fase':'Por Tipo de Ração'}</span>
 
     </div>`;
 
     if (!agrupar) {
-        const rows = [...dados].sort((a,b)=>a.data.localeCompare(b.data));
+        const rows = [...dadosRacao].sort((a,b)=>a.data.localeCompare(b.data));
         html += `<div style="padding:0;">` + gerarTabelaProd(rows, false, destNC) + `</div>`;
+        // Calcários sem agrupamento também ficam separados
+        if (dadosCalcario.length) {
+            html += gerarSecaoCalcarioProd(dadosCalcario, resumo, destNC, periodo);
+        }
         return html;
     }
 
@@ -13376,7 +13394,7 @@ function gerarSecaoProd(dados, agrupar, resumo, destNC, periodo) {
         // ── MODO POR FASE ────────────────────────────────────────────────
         // Cada fase vira um bloco único: tabela consolidada + resumo das médias da fase toda
         const faseMap = {};
-        dados.forEach(r => {
+        dadosRacao.forEach(r => {
             const f = classificarFaseRacao(r.racao);
             if (!faseMap[f.categoria]) faseMap[f.categoria] = { info: f, rows: [] };
             faseMap[f.categoria].rows.push(r);
@@ -13429,13 +13447,63 @@ function gerarSecaoProd(dados, agrupar, resumo, destNC, periodo) {
     } else {
         // ── MODO POR TIPO DE RAÇÃO (original) ────────────────────────────
         const grupos = {};
-        dados.forEach(r => { (grupos[r.racao]=grupos[r.racao]||[]).push(r); });
+        dadosRacao.forEach(r => { (grupos[r.racao]=grupos[r.racao]||[]).push(r); });
         Object.keys(grupos).sort().forEach(racao => {
             const rows = grupos[racao].sort((a,b)=>a.data.localeCompare(b.data));
             html += gerarGrupoProd(racao, rows, resumo, destNC);
         });
     }
 
+    // ── SEÇÃO SEPARADA PARA CALCÁRIO (matéria-prima, não é ração) ────────────
+    if (dadosCalcario.length) {
+        html += gerarSecaoCalcarioProd(dadosCalcario, resumo, destNC, periodo);
+    }
+
+    return html;
+}
+
+// ─── Seção exclusiva de Calcário no relatório de produção ────────────────────
+function gerarSecaoCalcarioProd(dados, resumo, destNC, periodo) {
+    const aMedia = arr => arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : 0;
+    let html = `<div style="margin-top:18px;">
+        <div style="background:#546e7a;color:white;padding:10px 20px;font-size:12px;font-weight:bold;
+                    text-transform:uppercase;letter-spacing:1px;
+                    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+                    border-left:6px solid rgba(255,255,255,0.35);page-break-after:avoid;break-after:avoid;">
+            🪨 MATÉRIAS-PRIMAS — CALCÁRIO GROSSO / FINO
+            <span style="font-size:10px;font-weight:normal;opacity:0.85;margin-left:auto;float:right;">
+                ${dados.length} registro${dados.length!==1?'s':''} &nbsp;·&nbsp; Não vinculado a rações
+            </span>
+        </div>`;
+
+    // Agrupar por tipo de calcário
+    const grupos = {};
+    dados.forEach(r => { (grupos[r.racao] = grupos[r.racao] || []).push(r); });
+    Object.keys(grupos).sort().forEach(nome => {
+        const rows = grupos[nome].sort((a,b) => a.data.localeCompare(b.data));
+        const dgms = rows.map(r=>parseFloat(r.dgm)).filter(v=>!isNaN(v)&&v>0);
+        const ums  = rows.map(r=>parseFloat(r.umidade)).filter(v=>!isNaN(v)&&v>0);
+        const mins = rows.map(r=>parseFloat(r.mineral)).filter(v=>!isNaN(v)&&v>0);
+        html += `<div style="margin:0 16px 14px;">
+            <div style="background:#eceff1;border-left:4px solid #546e7a;padding:7px 14px;
+                        font-size:11px;font-weight:bold;color:#37474f;text-transform:uppercase;
+                        letter-spacing:0.5px;margin-top:8px;">
+                🪨 ${nome}
+            </div>
+            <div class="bol-tabela-wrap">` + gerarTabelaProd(rows, true, destNC) + `</div>`;
+        if (resumo && rows.length > 1) {
+            html += `<div class="bol-resumo-grid" style="-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+                <div class="bol-resumo-card"><div class="rv">${dgms.length?aMedia(dgms).toFixed(0)+' µm':'-'}</div><div class="rl">DGM médio</div></div>
+                <div class="bol-resumo-card"><div class="rv">${dgms.length?Math.min(...dgms).toFixed(0)+' – '+Math.max(...dgms).toFixed(0)+' µm':'-'}</div><div class="rl">DGM min–max</div></div>
+                <div class="bol-resumo-card"><div class="rv">${ums.length?aMedia(ums).toFixed(1)+'%':'-'}</div><div class="rl">Umidade média</div></div>
+                <div class="bol-resumo-card"><div class="rv">${mins.length?aMedia(mins).toFixed(2)+'%':'-'}</div><div class="rl">Mineral médio</div></div>
+                <div class="bol-resumo-card" style="border-color:#546e7a;"><div class="rv" style="color:#546e7a;">${rows.length}</div><div class="rl">Total registros</div></div>
+            </div>`;
+        }
+        html += `</div>`;
+    });
+
+    html += `</div>`;
     return html;
 }
 
