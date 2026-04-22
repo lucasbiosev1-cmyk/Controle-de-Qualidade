@@ -16936,6 +16936,24 @@ async function salvarDev() {
         return { defeito: inputs[0]?.value||'', resultado: inputs[1]?.value||'', parametro: inputs[2]?.value||'', unidade };
     }).filter(c => c.defeito);
     const editId = document.getElementById('dev-edit-id').value;
+    const lote = document.getElementById('dev-lote').value.trim();
+
+    // Bloqueia duplicata por NF/Lote + Fornecedor
+    if (lote) {
+        try {
+            let _q = _sbClient.from('devolucoes').select('id,numero').ilike('fornecedor', fornecedor).eq('lote', lote);
+            if (editId) _q = _q.neq('id', editId);
+            const { data: _dup } = await _q;
+            if (_dup && _dup.length > 0) {
+                const _nums = _dup.map(d => d.numero).join(', ');
+                if (_btnDev) { _btnDev.disabled = false; _btnDev.innerHTML = '💾 Salvar Devolução'; }
+                alert(`⚠️ Já existe uma devolução cadastrada com este Nº NF/Lote para este fornecedor.\n\nRegistro(s) existente(s): ${_nums}\n\nVerifique antes de continuar.`);
+                return;
+            }
+        } catch(_e) {
+            // se falhar a consulta, permite salvar (não bloqueia por erro de rede)
+        }
+    }
 
     // Busca no Supabase o maior número DEV já usado para este fornecedor (fonte de verdade)
     let _maxSeq = 0;
