@@ -16935,11 +16935,16 @@ async function salvarDev() {
     const editId = document.getElementById('dev-edit-id').value;
 
     // Calcula o número sequencial por fornecedor no formato DEV-XXXX
-    const qtdForn = listaDev.filter(d =>
-        (d.fornecedor || '').trim().toLowerCase() === fornecedor.toLowerCase() &&
-        (editId ? String(d.id) !== String(editId) : true)
-    ).length + 1;
-    const numeroCalculado = 'DEV-' + String(qtdForn).padStart(4, '0');
+    // Usa o maior número já existente + 1 (evita duplicatas por gaps ou recarregamentos)
+    let _maxSeq = 0;
+    listaDev.forEach(d => {
+        if ((d.fornecedor || '').trim().toLowerCase() === fornecedor.toLowerCase() &&
+            (editId ? String(d.id) !== String(editId) : true)) {
+            const _m = (d.numero || '').match(/DEV-(\d+)/);
+            if (_m) { const _s = parseInt(_m[1], 10); if (_s > _maxSeq) _maxSeq = _s; }
+        }
+    });
+    const numeroCalculado = 'DEV-' + String(_maxSeq + 1).padStart(4, '0');
     document.getElementById('dev-numero').value = numeroCalculado;
 
     const dev = {
@@ -17754,8 +17759,8 @@ function imprimirVisualizacao() {
             .sign-wrap{margin-top:14px;padding-top:10px;border-top:1px solid #e0e0e0;}
             .sign-row{display:table;width:100%;table-layout:fixed;}
             .sign-box{display:table-cell;text-align:center;padding:0 10px;vertical-align:bottom;}
-            .sign-name{font-size:11px;font-weight:700;color:#2c3e50;display:block;text-align:center;margin-bottom:0;}
-            .sign-line{border-bottom:1px solid #333;height:0;margin-bottom:4px;}
+            .sign-name{font-size:11px;font-weight:700;color:#2c3e50;display:block;text-align:center;margin-bottom:2px;}
+            .sign-line{border-bottom:1px solid #333;height:32px;margin-bottom:4px;}
             .sign-label{font-size:8px;color:#777;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
             @media print{
                 button{display:none!important;}
@@ -17799,19 +17804,16 @@ function imprimirVisualizacao() {
             <div class="sign-wrap">
                 <div class="sign-row">
                     <div class="sign-box">
-                        <div style="height:36px;"></div>
                         <div class="sign-name">Lucas Lima</div>
                         <div class="sign-line"></div>
                         <div class="sign-label">Resp. Técnico: CRQ 04473318</div>
                     </div>
                     <div class="sign-box">
-                        <div style="height:36px;"></div>
                         <div class="sign-name">&nbsp;</div>
                         <div class="sign-line"></div>
                         <div class="sign-label">Assistente</div>
                     </div>
                     <div class="sign-box">
-                        <div style="height:36px;"></div>
                         <div class="sign-name">&nbsp;</div>
                         <div class="sign-line"></div>
                         <div class="sign-label">Supervisor de Produção</div>
