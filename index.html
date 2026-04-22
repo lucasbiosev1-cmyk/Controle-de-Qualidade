@@ -16188,7 +16188,7 @@ async function executarCorrecaoDefeitos() {
         </div>
         <div class="nc-modal-footer">
             <button class="nc-btn nc-btn-secondary" onclick="fecharModalDev()">Cancelar</button>
-            <button class="nc-btn nc-btn-primary" onclick="salvarDev()">💾 Salvar Devolução</button>
+            <button id="btnSalvarDev" class="nc-btn nc-btn-primary" onclick="salvarDev()">💾 Salvar Devolução</button>
         </div>
     </div>
 </div>
@@ -16919,6 +16919,9 @@ function atualizarSelectNC() {
 }
 
 async function salvarDev() {
+    const _btnDev = document.getElementById('btnSalvarDev');
+    if (_btnDev && _btnDev.disabled) return;
+    if (_btnDev) { _btnDev.disabled = true; _btnDev.textContent = '⏳ Salvando...'; }
     const data = document.getElementById('dev-data').value;
     const produto = document.getElementById('dev-produto').value.trim();
     const fornecedor = document.getElementById('dev-fornecedor').value.trim();
@@ -16989,6 +16992,8 @@ async function salvarDev() {
         console.error('Erro salvarDev:', e);
         sgqToast('❌ Erro ao salvar Devolução: ' + (e.message || 'Falha ao conectar com o servidor.'), 'error');
         alert('Erro ao salvar Devolução: ' + (e.message || JSON.stringify(e)));
+    } finally {
+        if (_btnDev) { _btnDev.disabled = false; _btnDev.innerHTML = '💾 Salvar Devolução'; }
     }
 }
 
