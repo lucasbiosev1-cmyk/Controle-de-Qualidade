@@ -6193,6 +6193,8 @@
                             <div style="display:flex;gap:6px;align-items:center;">
                                 <select id="cadMateriaPrimaEMP" required style="flex:1;padding:5px 8px;border:1px solid #bdc3c7;border-radius:4px;font-size:11px;text-transform:uppercase;font-weight:bold;">
                                     <option value="">SELECIONE...</option>
+                                    <option>CALCÁRIO FINO</option>
+                                    <option>CALCÁRIO GROSSO</option>
                                     <option>FARELO DE SOJA</option>
                                     <option>FARELO DE TRIGO</option>
                                     <option>FARINHA DE CARNE E OSSO</option>
@@ -11254,7 +11256,7 @@ function limparFiltrosEMP() {
 
 // Lista fixa de matérias primas para o modal EMP
 const _EMP_MP_PADRAO = [
-    'FARELO DE SOJA','FARELO DE TRIGO',
+    'CALCÁRIO FINO','CALCÁRIO GROSSO','FARELO DE SOJA','FARELO DE TRIGO',
     'FARINHA DE CARNE E OSSO','MILHO ESTOQUE 01','MILHO ESTOQUE 02',
     'NUTRITINS','SOJA EXTRUSADA DOSADOR','SOJA INTEGRAL EXTRUSADA'
 ];
@@ -15040,7 +15042,9 @@ function _rmpFmt(v) {
 function _rmpPopularSelectProduto() {
     const sel = document.getElementById('rmpProduto');
     if (!sel) return;
-    const prods = [...new Set(materiasPrimas.map(r => r.produto).filter(Boolean))].sort();
+    const _isCalcarioNome = n => n && (n.toUpperCase().includes('CALCÁRIO') || n.toUpperCase().includes('CALCARIO'));
+    const prods = [...new Set(materiasPrimas.map(r => r.produto).filter(Boolean))].sort()
+        .filter(p => !_isCalcarioNome(p));
     sel.innerHTML = '<option value="all">TODOS OS PRODUTOS</option>';
     prods.forEach(p => {
         const o = document.createElement('option');
@@ -15048,10 +15052,14 @@ function _rmpPopularSelectProduto() {
         sel.appendChild(o);
     });
 
-    // Popular select de fornecedores
+    // Popular select de fornecedores (excluindo fornecedores de calcário)
     const selForn = document.getElementById('rmpFornecedor');
     if (!selForn) return;
-    const forns = [...new Set(materiasPrimas.map(r => r.fornecedor).filter(Boolean))].sort();
+    const calcFornecedores = new Set(
+        materiasPrimas.filter(r => _isCalcarioNome(r.produto)).map(r => r.fornecedor).filter(Boolean)
+    );
+    const forns = [...new Set(materiasPrimas.map(r => r.fornecedor).filter(Boolean))].sort()
+        .filter(f => !calcFornecedores.has(f));
     selForn.innerHTML = '<option value="all">TODOS OS FORNECEDORES</option>';
     forns.forEach(f => {
         const o = document.createElement('option');
@@ -15713,13 +15721,13 @@ async function executarCorrecaoDefeitos() {
 .nc-sign-space { height: 32px; }
 .nc-sign-line {
     border-top: 1px solid #333;
-    margin: 4px 8px;
+    margin: 4px 8px 0;
 }
 .nc-sign-label {
     font-size: 9px;
     font-weight: 800;
     color: #1a2a6e;
-    margin-top: 3px;
+    margin-top: 0.5px;
     text-transform: uppercase;
     letter-spacing: 0.4px;
 }
@@ -17747,7 +17755,7 @@ function imprimirVisualizacao() {
             .sign-row{display:table;width:100%;table-layout:fixed;}
             .sign-box{display:table-cell;text-align:center;padding:0 10px;vertical-align:bottom;}
             .sign-name{font-size:11px;font-weight:700;color:#2c3e50;display:block;text-align:center;margin-bottom:0;}
-            .sign-line{border-bottom:1px solid #333;height:32px;margin-bottom:4px;}
+            .sign-line{border-bottom:1px solid #333;height:0;margin-bottom:4px;}
             .sign-label{font-size:8px;color:#777;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
             @media print{
                 button{display:none!important;}
@@ -17791,16 +17799,19 @@ function imprimirVisualizacao() {
             <div class="sign-wrap">
                 <div class="sign-row">
                     <div class="sign-box">
+                        <div style="height:36px;"></div>
                         <div class="sign-name">Lucas Lima</div>
                         <div class="sign-line"></div>
                         <div class="sign-label">Resp. Técnico: CRQ 04473318</div>
                     </div>
                     <div class="sign-box">
+                        <div style="height:36px;"></div>
                         <div class="sign-name">&nbsp;</div>
                         <div class="sign-line"></div>
                         <div class="sign-label">Assistente</div>
                     </div>
                     <div class="sign-box">
+                        <div style="height:36px;"></div>
                         <div class="sign-name">&nbsp;</div>
                         <div class="sign-line"></div>
                         <div class="sign-label">Supervisor de Produção</div>
