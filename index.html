@@ -3262,6 +3262,15 @@
                     <select id="relModo" onchange="alterarModoRel()">
                         <option value="fase">POR FASE</option>
                         <option value="racao">POR RAÇÃO</option>
+                        <option value="calcario">CALCÁRIO</option>
+                    </select>
+                </div>
+                <div class="form-group" id="grupoCalcario" style="display:none;">
+                    <label>TIPO DE CALCÁRIO</label>
+                    <select id="relCalcario" onchange="aplicarFiltrosRel()">
+                        <option value="g:BEPEL CALCÁRIO FINO|BEPEL CALCÁRIO GROSSO">TODOS (FINO + GROSSO)</option>
+                        <option value="BEPEL CALCÁRIO FINO">CALCÁRIO FINO</option>
+                        <option value="BEPEL CALCÁRIO GROSSO">CALCÁRIO GROSSO</option>
                     </select>
                 </div>
                 <div class="form-group" id="grupoFase">
@@ -8832,8 +8841,9 @@ const LIMITES_REF = {
 
 function alterarModoRel() {
     const modo = document.getElementById('relModo').value;
-    document.getElementById('grupoFase').style.display  = modo === 'fase'  ? '' : 'none';
-    document.getElementById('grupoRacao').style.display = modo === 'racao' ? '' : 'none';
+    document.getElementById('grupoFase').style.display     = modo === 'fase'     ? '' : 'none';
+    document.getElementById('grupoRacao').style.display    = modo === 'racao'    ? '' : 'none';
+    document.getElementById('grupoCalcario').style.display = modo === 'calcario' ? '' : 'none';
     aplicarFiltrosRel();
 }
 
@@ -8892,6 +8902,16 @@ function aplicarFiltrosRel() {
             tituloSel  = racSel;
         }
         corPrincipal = '#2980b9';
+    } else if (modo === 'calcario') {
+        const calSel = document.getElementById('relCalcario').value;
+        if (calSel.startsWith('g:')) {
+            racoesAlvo = calSel.slice(2).split('|');
+            tituloSel  = 'CALCÁRIO GROSSO + FINO';
+        } else {
+            racoesAlvo = [calSel];
+            tituloSel  = calSel.replace('BEPEL ', '');
+        }
+        corPrincipal = '#546e7a';
     } else {
         const faseSel = document.getElementById('relFase').value;
         const fase    = FASES_MAP[faseSel];
