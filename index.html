@@ -15720,32 +15720,35 @@ async function executarCorrecaoDefeitos() {
     background: #f8f9fb;
     border: 1px solid #d0d8ea;
     border-radius: 2px;
-    padding: 8px 8px 8px;
+    padding: 8px 8px 6px;
     page-break-inside: avoid;
     break-inside: avoid;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    min-height: 55px;
 }
-.nc-sign-space { display: none; }
-.nc-sign-line {
-    border-top: 1px solid #333;
-    margin: 0 8px;
-}
+.nc-sign-space { height: 30px; display: block; }
+.nc-sign-bottom { display: inline-block; width: 100%; }
 .nc-sign-label {
     font-size: 9px;
     font-weight: 800;
     color: #1a2a6e;
-    margin-top: 0;
-    margin-bottom: 2px;
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
     text-transform: uppercase;
     letter-spacing: 0.4px;
+    display: block;
+}
+.nc-sign-line {
+    border: none;
+    border-top: 1px solid #333;
+    margin: 1px 8px 0;
+    display: block;
+    height: 0;
 }
 .nc-sign-sub {
     font-size: 8px;
     color: #7b8ab0;
-    margin-top: 1px;
+    margin-top: 2px;
+    display: block;
 }
 
 /* RODAPÉ DO RELATÓRIO */
@@ -17838,8 +17841,9 @@ function imprimirVisualizacao() {
             .sign-wrap{margin-top:14px;padding-top:10px;border-top:1px solid #e0e0e0;}
             .sign-row{display:table;width:100%;table-layout:fixed;}
             .sign-box{display:table-cell;text-align:center;padding:0 10px;vertical-align:bottom;}
-            .sign-name{font-size:11px;font-weight:700;color:#2c3e50;display:block;text-align:center;margin-bottom:2px;}
-            .sign-line{border-bottom:1px solid #333;height:32px;margin-bottom:4px;}
+            .sign-space{height:32px;display:block;}
+            .sign-name{font-size:11px;font-weight:700;color:#2c3e50;display:block;text-align:center;margin:0 0 1px 0;line-height:1.2;}
+            .sign-line{border:none;border-top:1px solid #333;margin:0 0 4px 0;display:block;}
             .sign-label{font-size:8px;color:#777;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
             @media print{
                 button{display:none!important;}
@@ -17883,16 +17887,19 @@ function imprimirVisualizacao() {
             <div class="sign-wrap">
                 <div class="sign-row">
                     <div class="sign-box">
+                        <div class="sign-space"></div>
                         <div class="sign-name">Lucas Lima</div>
                         <div class="sign-line"></div>
                         <div class="sign-label">Resp. Técnico: CRQ 04473318</div>
                     </div>
                     <div class="sign-box">
+                        <div class="sign-space"></div>
                         <div class="sign-name">&nbsp;</div>
                         <div class="sign-line"></div>
                         <div class="sign-label">Assistente</div>
                     </div>
                     <div class="sign-box">
+                        <div class="sign-space"></div>
                         <div class="sign-name">&nbsp;</div>
                         <div class="sign-line"></div>
                         <div class="sign-label">Supervisor de Produção</div>
