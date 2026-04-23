@@ -1671,15 +1671,26 @@
         html[data-theme="dark"] .secao-title{color:#e6edf3!important;border-bottom-color:#30363d!important;}
         html[data-theme="dark"] .msg-info-rel{background:rgba(88,166,255,0.08)!important;color:#58a6ff!important;border-left-color:#388bfd!important;}
         html[data-theme="dark"] .bol-resumo-card{background:#161b22!important;border-color:#30363d!important;color:#e6edf3!important;}
+        html[data-theme="dark"] .bol-resumo-grid{background:#0d1117!important;border-color:#30363d!important;}
         html[data-theme="dark"] .bol-secao-header{background:#161b22!important;border-color:#30363d!important;color:#e6edf3!important;}
         html[data-theme="dark"] .bol-grupo-header{background:#0d1117!important;border-color:#30363d!important;color:#e6edf3!important;}
         html[data-theme="dark"] .bol-tabela-wrap{background:#161b22!important;border-color:#30363d!important;}
+        html[data-theme="dark"] .bol-table { background:#161b22!important; }
+        html[data-theme="dark"] .bol-table th { background:#1c2128!important; color:#e6edf3!important; border-color:#30363d!important; }
         html[data-theme="dark"] .bol-table tr { background: #161b22 !important; }
         html[data-theme="dark"] .bol-table td { color: #e6edf3 !important; border-color: #30363d !important; background: transparent; }
         html[data-theme="dark"] .bol-table tr:nth-child(even) { background: #0d1117 !important; }
         html[data-theme="dark"] .bol-table tr:hover { background: #21262d !important; }
         html[data-theme="dark"] .bol-td-fora { background: #5c1a1a !important; color: #ff8080 !important; font-weight: bold; }
         html[data-theme="dark"] .bol-td-alert { background: #3d2e00 !important; color: #ffd166 !important; font-weight: bold; }
+        html[data-theme="dark"] #boletimConteudo [style*="background:white"],
+        html[data-theme="dark"] #boletimConteudo [style*="background: white"],
+        html[data-theme="dark"] #boletimConteudo [style*="background:#fff"],
+        html[data-theme="dark"] #boletimConteudo [style*="background:#f8f9fa"],
+        html[data-theme="dark"] #boletimConteudo [style*="background:#f8faff"],
+        html[data-theme="dark"] #boletimConteudo [style*="background:#eef3fa"],
+        html[data-theme="dark"] #boletimConteudo [style*="background:#f5f8ff"] { background:#161b22!important; color:#e6edf3!important; }
+        html[data-theme="dark"] .bol-grupo-stats { background:#0d1117!important; color:#8b949e!important; }
         /* Tela de início — sempre clara, independente do tema */
         html[data-theme="dark"] #aba-capa,
         html[data-theme="dark"] #abaCapa { background:#f2f2f0!important; color:#333!important; }
@@ -6450,7 +6461,7 @@
               </div>
             </div>
             <!-- ÁREA DE PRÉVIA / CONTEÚDO DO BOLETIM -->
-            <div id="boletimConteudo" style="background:white;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+            <div id="boletimConteudo" style="border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
                 <div style="padding:60px 40px;text-align:center;color:#bbb;">
                     <div style="font-size:48px;margin-bottom:16px;">📋</div>
                     <div style="font-size:15px;font-weight:bold;color:#ccc;">Selecione o período e clique em GERAR BOLETIM</div>
@@ -6711,7 +6722,7 @@
                         <div class="form-group"><label>Fósforo (%)</label><input type="number" id="cadFosforoMP" step="0.01" min="0"></div>
                         <div class="form-group"><label>Índice de Acidez</label><input type="number" id="cadAcidezMP" step="0.01" min="0"></div>
                         <div class="form-group"><label>Atividade Ureática</label><input type="number" id="cadUreatidaMP" step="0.01" min="0"></div>
-                        <div class="form-group"><label>Rancidez</label><input type="number" id="cadRancidezMP" step="0.01" min="0"></div>
+                        <div class="form-group"><label>Rancidez</label><select id="cadRancidezMP" style="width:100%;padding:6px 10px;background:var(--gh-canvas-subtle,#161b22);color:var(--gh-fg-default,#e6edf3);border:1px solid var(--gh-border-default,#30363d);border-radius:6px;font-size:13px;height:36px;"><option value="">Selecione...</option><option value="negativo">Negativo</option><option value="positivo">Positivo</option></select></div>
                         <div class="form-group"><label>Índice de Peróxido</label><input type="number" id="cadPeroxidoMP" step="0.01" min="0"></div>
                         <div class="form-group"><label>Digestibilidade em Pepsina</label><input type="number" id="cadDigestibilidadeMP" step="0.01" min="0"></div>
                         <div class="form-group"><label>Granulometria 1</label><input type="number" id="cadGranulo1MP" step="0.01" min="0"></div>
@@ -8491,7 +8502,7 @@ function salvarMateriaPrima(event) {
         mineral:        _pfM('cadMineralMP'),
         acidez:         _pfM('cadAcidezMP'),
         ureatica:       _pfM('cadUreatidaMP'),
-        rancidez:       _pfM('cadRancidezMP'),
+        rancidez:       (function(){ const v = document.getElementById('cadRancidezMP').value; return v ? v : null; })(),
         peroxido:       _pfMPerox('cadPeroxidoMP'),
         digestibilidade:_pfM('cadDigestibilidadeMP'),
         granulo1:       _pfM('cadGranulo1MP'),
@@ -8592,7 +8603,7 @@ function exibirTabelaMP() {
             <td${estiloFora(r.mineral,'mp',r.produto,'mineral',r.data)}>${fmtN(r.mineral,2)}</td>
             <td${estiloFora(r.acidez,'mp',r.produto,'acidez',r.data)}>${fmtN(r.acidez,2)}</td>
             <td${estiloFora(r.ureatica,'mp',r.produto,'ureatica',r.data)}>${fmtN(r.ureatica,2)}</td>
-            <td${estiloFora(r.rancidez,'mp',r.produto,'rancidez',r.data)}>${fmtN(r.rancidez,2)}</td>
+            <td${estiloFora(r.rancidez,'mp',r.produto,'rancidez',r.data)}>${r.rancidez ? r.rancidez.charAt(0).toUpperCase()+r.rancidez.slice(1) : '-'}</td>
             <td${estiloFora(r.peroxido,'mp',r.produto,'peroxido',r.data)}>${fmtN(r.peroxido,2)}</td>
             <td${estiloFora(r.digestibilidade,'mp',r.produto,'digestibilidade',r.data)}>${fmtN(r.digestibilidade,2)}</td>
             <td>${fmtN(r.granulo1,2)}</td>
@@ -11761,7 +11772,7 @@ async function carregarTodosAsync() {
         mineral:         r.mineral         !== undefined ? (r.mineral         !== null ? parseFloat(r.mineral)         : null) : null,
         acidez:          r.acidez          !== undefined ? (r.acidez          !== null ? parseFloat(r.acidez)          : null) : null,
         ureatica:        r.ureatica        !== undefined ? (r.ureatica        !== null ? parseFloat(r.ureatica)        : null) : null,
-        rancidez:        r.rancidez        !== undefined ? (r.rancidez        !== null ? parseFloat(r.rancidez)        : null) : null,
+        rancidez:        r.rancidez        !== undefined ? (r.rancidez        !== null ? r.rancidez                    : null) : null,
         peroxido:        r.peroxido        !== undefined ? (r.peroxido        !== null ? parseFloat(r.peroxido)        : null) : null,
         digestibilidade: r.digestibilidade !== undefined ? (r.digestibilidade !== null ? parseFloat(r.digestibilidade) : null) : null,
         granulo1:        r.granulo1        !== undefined ? (r.granulo1        !== null ? parseFloat(r.granulo1)        : null) : null,
@@ -13685,7 +13696,7 @@ function gerarTabelaMP(rows, compacto, destNC) {
             <td${cl(r.mineral,'mineral')}>${fmtN(r.mineral,2)}</td>
             <td${cl(r.acidez,'acidez')}>${fmtN(r.acidez,2)}</td>
             <td${cl(r.ureatica,'ureatica')}>${fmtN(r.ureatica,3)}</td>
-            <td>${fmtN(r.rancidez,2)}</td>
+            <td>${r.rancidez ? r.rancidez.charAt(0).toUpperCase()+r.rancidez.slice(1) : '-'}</td>
             <td${perCl}>${(r.peroxido === null || r.peroxido === undefined || r.peroxido === '') ? '-' : fmtN(r.peroxido,1)}</td>
             <td>${fmtN(r.digestibilidade,2)}</td>
             <td style="text-align:center;white-space:nowrap;">${status}</td>
@@ -15137,7 +15148,7 @@ function aplicarFiltrosRelMP() {
             <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.mineral)}</td>
             <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.acidez)}</td>
             <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.ureatica)}</td>
-            <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.rancidez)}</td>
+            <td style="padding:5px 4px;text-align:center;">${r.rancidez ? r.rancidez.charAt(0).toUpperCase()+r.rancidez.slice(1) : '-'}</td>
             <td style="padding:5px 4px;text-align:center;">${(r.peroxido === null || r.peroxido === undefined || r.peroxido === '') ? '-' : _rmpFmt(r.peroxido)}</td>
             <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.digestibilidade)}</td>
         </tr>`;
