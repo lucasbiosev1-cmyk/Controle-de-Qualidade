@@ -4225,7 +4225,6 @@
                     </div>
                     <div style="display:flex;gap:6px;align-items:flex-end;">
                         <button onclick="exportarDev()" style="background:#7f8c8d;color:white;padding:8px 14px;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:11px;display:flex;align-items:center;gap:4px;">📥 Excel</button>
-                        <button onclick="renumerarDevPorFornecedor()" title="Corrige a sequência DEV reiniciando em 0001 para cada fornecedor" style="background:#8e44ad;color:white;padding:8px 14px;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:11px;display:flex;align-items:center;gap:4px;">🔢 Renumerar</button>
                     </div>
                 </div>
 
@@ -17093,51 +17092,6 @@ function exportarDev() {
     XLSX.writeFile(wb, `DEV_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.xlsx`);
 }
 
-// ===== RENUMERAÇÃO POR FORNECEDOR =====
-// Corrige registros existentes no Supabase que possuem sequência errada,
-// reiniciando em DEV-0001 para cada fornecedor (ordem cronológica).
-async function renumerarDevPorFornecedor() {
-    if (!confirm('⚠️ Esta ação irá RENUMERAR todas as devoluções no banco de dados,\nreiniciando a sequência em DEV-0001 para cada fornecedor (ordem por data/id).\n\nTem certeza?')) return;
-    try {
-        sgqToast('🔢 Renumerando...', 'info');
-        // Busca todos os registros ordenados por data e id
-        const { data: todos, error: errLoad } = await _sbClient
-            .from('devolucoes')
-            .select('*')
-            .order('data', { ascending: true })
-            .order('id',   { ascending: true });
-        if (errLoad) throw errLoad;
-        if (!todos || !todos.length) { sgqToast('Nenhum registro encontrado.', 'warning'); return; }
-
-        // Agrupa por fornecedor (case-insensitive) e atribui nova sequência
-        const seqPorForn = {};
-        const atualizacoes = todos.map(d => {
-            const fKey = (d.fornecedor || '').trim().toLowerCase();
-            if (!seqPorForn[fKey]) seqPorForn[fKey] = 0;
-            seqPorForn[fKey]++;
-            const novoNumero = 'DEV-' + String(seqPorForn[fKey]).padStart(4, '0');
-            return { ...d, numero: novoNumero };
-        });
-
-        // Verifica se há mudanças reais antes de persistir
-        const comMudanca = atualizacoes.filter((d, i) => d.numero !== todos[i].numero);
-        if (!comMudanca.length) { sgqToast('✅ Sequências já estão corretas. Nada alterado.', 'success'); return; }
-
-        // Persiste via upsert em lote
-        const { error: errSave } = await _sbClient.from('devolucoes').upsert(atualizacoes, { onConflict: 'id' });
-        if (errSave) throw errSave;
-
-        // Atualiza lista local e re-renderiza
-        listaDev = atualizacoes;
-        salvarStorageNC();
-        renderizarDev(listaDev);
-        sgqToast(`✅ ${comMudanca.length} registro(s) renumerado(s) com sucesso!`, 'success');
-    } catch(e) {
-        console.error('Erro renumerarDev:', e);
-        sgqToast('❌ Erro ao renumerar: ' + (e.message || JSON.stringify(e)), 'error');
-    }
-}
-
 // ===== EVIDÊNCIAS / IMAGENS NC =====
 let ncImagens = [];
 let devImagens = [];
@@ -17566,6 +17520,34 @@ async function carregarNCeDevSupabase() {
         }
         if (devData.data) {
             listaDev = devData.data;
+
+            // ✅ Correção automática de sequência por fornecedor (silenciosa, roda uma vez se necessário)
+            (async () => {
+                try {
+                    const { data: _todos } = await _sbClient
+                        .from('devolucoes').select('*')
+                        .order('data', { ascending: true }).order('id', { ascending: true });
+                    if (!_todos || !_todos.length) return;
+                    const _seqForn = {};
+                    const _atualizados = _todos.map(d => {
+                        const _k = (d.fornecedor || '').trim().toLowerCase();
+                        _seqForn[_k] = (_seqForn[_k] || 0) + 1;
+                        return { ...d, numero: 'DEV-' + String(_seqForn[_k]).padStart(4, '0') };
+                    });
+                    const _comMudanca = _atualizados.filter((d, i) => d.numero !== _todos[i].numero);
+                    if (!_comMudanca.length) return; // tudo certo, nada a fazer
+                    await _sbClient.from('devolucoes').upsert(_atualizados, { onConflict: 'id' });
+                    listaDev = _atualizados;
+                    salvarStorageNC();
+                    // Re-renderiza com dados corrigidos
+                    const _hoje2 = new Date();
+                    const _am2 = _hoje2.getFullYear() + '-' + String(_hoje2.getMonth()+1).padStart(2,'0');
+                    const _p2 = _am2 + '-01';
+                    const _u2 = _am2 + '-' + String(new Date(_hoje2.getFullYear(), _hoje2.getMonth()+1, 0).getDate()).padStart(2,'0');
+                    renderizarDev(listaDev.filter(d => d.data && d.data >= _p2 && d.data <= _u2));
+                } catch(_e) { /* silencioso — não interrompe o fluxo */ }
+            })();
+
             // ✅ Filtra automaticamente o mês atual ao carregar
             const hoje = new Date();
             const anoMes = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
