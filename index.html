@@ -15720,22 +15720,26 @@ async function executarCorrecaoDefeitos() {
     background: #f8f9fb;
     border: 1px solid #d0d8ea;
     border-radius: 2px;
-    padding: 10px 8px 8px;
+    padding: 8px 8px 8px;
     page-break-inside: avoid;
     break-inside: avoid;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 60px;
 }
-.nc-sign-space { height: 32px; min-height: 32px; display: block; }
+.nc-sign-space { flex: 1; }
 .nc-sign-line {
     border-top: 1px solid #333;
-    margin: 4px 8px 0;
-    page-break-after: avoid;
-    break-after: avoid;
+    margin: 0 8px 0;
 }
 .nc-sign-label {
     font-size: 9px;
     font-weight: 800;
     color: #1a2a6e;
-    margin-top: 0.5px;
+    margin-top: 0;
+    margin-bottom: 3px;
+    order: -1;
     text-transform: uppercase;
     letter-spacing: 0.4px;
     page-break-before: avoid;
@@ -16965,30 +16969,34 @@ async function salvarDev() {
         }
     }
 
-    // Busca no Supabase o maior número DEV já usado para este fornecedor (fonte de verdade)
-    let _maxSeq = 0;
-    try {
-        const { data: _devsForn } = await _sbClient
-            .from('devolucoes')
-            .select('numero')
-            .ilike('fornecedor', fornecedor);
-        (_devsForn || []).forEach(d => {
-            // Ignora o próprio registro sendo editado para não inflar a sequência
-            if (editId && listaDev.find(x => String(x.id) === String(editId) && (x.numero === d.numero || String(x.id) === String(editId)))) return;
-            const _m = (d.numero || '').match(/DEV-(\d+)/);
-            if (_m) { const _s = parseInt(_m[1], 10); if (_s > _maxSeq) _maxSeq = _s; }
-        });
-    } catch(_e) {
-        // fallback: usa listaDev local se Supabase falhar
-        listaDev.forEach(d => {
-            if ((d.fornecedor || '').trim().toLowerCase() === fornecedor.toLowerCase() &&
-                (editId ? String(d.id) !== String(editId) : true)) {
+    // Se for edição, preserva o número original — nunca regera na edição
+    let numeroCalculado;
+    if (editId) {
+        const _devExist = listaDev.find(x => String(x.id) === String(editId));
+        numeroCalculado = (_devExist && _devExist.numero) || document.getElementById('dev-numero').value;
+    } else {
+        // Novo registro: busca o maior número DEV já usado para este fornecedor
+        let _maxSeq = 0;
+        try {
+            const { data: _devsForn } = await _sbClient
+                .from('devolucoes')
+                .select('numero')
+                .ilike('fornecedor', fornecedor);
+            (_devsForn || []).forEach(d => {
                 const _m = (d.numero || '').match(/DEV-(\d+)/);
                 if (_m) { const _s = parseInt(_m[1], 10); if (_s > _maxSeq) _maxSeq = _s; }
-            }
-        });
+            });
+        } catch(_e) {
+            // fallback: usa listaDev local se Supabase falhar
+            listaDev.forEach(d => {
+                if ((d.fornecedor || '').trim().toLowerCase() === fornecedor.toLowerCase()) {
+                    const _m = (d.numero || '').match(/DEV-(\d+)/);
+                    if (_m) { const _s = parseInt(_m[1], 10); if (_s > _maxSeq) _maxSeq = _s; }
+                }
+            });
+        }
+        numeroCalculado = 'DEV-' + String(_maxSeq + 1).padStart(4, '0');
     }
-    const numeroCalculado = 'DEV-' + String(_maxSeq + 1).padStart(4, '0');
     document.getElementById('dev-numero').value = numeroCalculado;
 
     const dev = {
