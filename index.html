@@ -1618,8 +1618,9 @@
         }
         /* colunas Módulos e Opções (fundo #f8f9fa) */
         html[data-theme="dark"] #aba-boletim [style*="background:#f8f9fa"] {
-            background:#0d1117!important;
+            background:#161b22!important;
             border-color:#30363d!important;
+            color:#e6edf3!important;
         }
         /* coluna Produção (fundo #eef2ff) */
         html[data-theme="dark"] #aba-boletim [style*="background:#eef2ff"] {
@@ -6340,8 +6341,8 @@
                 <div style="border-top:1px solid #ecf0f1;padding-top:12px;display:grid;grid-template-columns:auto auto 1fr;gap:12px;align-items:stretch;">
 
                     <!-- Coluna 1: Módulos -->
-                    <div style="background:var(--gh-canvas-subtle,#f8f9fa);border:1px solid var(--gh-border-default,#e0e0e0);border-radius:6px;padding:10px 14px;min-width:160px;">
-                        <div style="font-size:10px;font-weight:bold;color:var(--gh-fg-muted,#888);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">📦 Incluir no boletim</div>
+                    <div style="background:#f8f9fa;border:1px solid #e0e0e0;border-radius:6px;padding:10px 14px;min-width:160px;">
+                        <div style="font-size:10px;font-weight:bold;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">📦 Incluir no boletim</div>
                         <div style="display:flex;flex-direction:column;gap:6px;">
                             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;" id="lbl-bol-prod">
                                 <input type="checkbox" id="bolIncluirProd" checked onchange="atualizarLabelBoletim('prod')" style="cursor:pointer;width:13px;height:13px;">
@@ -6359,8 +6360,8 @@
                     </div>
 
                     <!-- Coluna 2: Opções gerais -->
-                    <div style="background:var(--gh-canvas-subtle,#f8f9fa);border:1px solid var(--gh-border-default,#e0e0e0);border-radius:6px;padding:10px 14px;min-width:170px;">
-                        <div style="font-size:10px;font-weight:bold;color:var(--gh-fg-muted,#888);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">⚙️ Opções</div>
+                    <div style="background:#f8f9fa;border:1px solid #e0e0e0;border-radius:6px;padding:10px 14px;min-width:170px;">
+                        <div style="font-size:10px;font-weight:bold;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">⚙️ Opções</div>
                         <div style="display:flex;flex-direction:column;gap:6px;">
                             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;">
                                 <input type="checkbox" id="bolAgrupar" checked style="cursor:pointer;width:13px;height:13px;">
@@ -13056,10 +13057,17 @@ function atualizarLabelBoletim(tipo) {
     const map = { prod: 'lbl-bol-prod', class: 'lbl-bol-class', mp: 'lbl-bol-mp' };
     const chk = { prod: 'bolIncluirProd', class: 'bolIncluirClass', mp: 'bolIncluirMP' };
     const cores = { prod: '#0a1e7f', class: '#27ae60', mp: '#0a1e7f' };
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const el = document.getElementById(map[tipo]);
     const checked = document.getElementById(chk[tipo]).checked;
-    el.style.borderColor = checked ? cores[tipo] : '#e0e0e0';
-    el.style.background = checked ? (tipo==='prod'?'#eef2ff':tipo==='class'?'#e8fdf0':'#f5eeff') : '#fafafa';
+    el.style.borderColor = checked ? cores[tipo] : (isDark ? '#30363d' : '#e0e0e0');
+    if (isDark) {
+        el.style.background = checked
+            ? (tipo==='prod'?'rgba(88,166,255,0.08)':tipo==='class'?'rgba(35,134,54,0.12)':'rgba(88,166,255,0.08)')
+            : 'transparent';
+    } else {
+        el.style.background = checked ? (tipo==='prod'?'#eef2ff':tipo==='class'?'#e8fdf0':'#f5eeff') : '#fafafa';
+    }
 }
 
 function fmtDate(d) {
