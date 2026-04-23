@@ -6340,8 +6340,8 @@
                 <div style="border-top:1px solid #ecf0f1;padding-top:12px;display:grid;grid-template-columns:auto auto 1fr;gap:12px;align-items:stretch;">
 
                     <!-- Coluna 1: Módulos -->
-                    <div style="background:#f8f9fa;border:1px solid #e0e0e0;border-radius:6px;padding:10px 14px;min-width:160px;">
-                        <div style="font-size:10px;font-weight:bold;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">📦 Incluir no boletim</div>
+                    <div style="background:var(--gh-canvas-subtle,#f8f9fa);border:1px solid var(--gh-border-default,#e0e0e0);border-radius:6px;padding:10px 14px;min-width:160px;">
+                        <div style="font-size:10px;font-weight:bold;color:var(--gh-fg-muted,#888);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">📦 Incluir no boletim</div>
                         <div style="display:flex;flex-direction:column;gap:6px;">
                             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;" id="lbl-bol-prod">
                                 <input type="checkbox" id="bolIncluirProd" checked onchange="atualizarLabelBoletim('prod')" style="cursor:pointer;width:13px;height:13px;">
@@ -6359,8 +6359,8 @@
                     </div>
 
                     <!-- Coluna 2: Opções gerais -->
-                    <div style="background:#f8f9fa;border:1px solid #e0e0e0;border-radius:6px;padding:10px 14px;min-width:170px;">
-                        <div style="font-size:10px;font-weight:bold;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">⚙️ Opções</div>
+                    <div style="background:var(--gh-canvas-subtle,#f8f9fa);border:1px solid var(--gh-border-default,#e0e0e0);border-radius:6px;padding:10px 14px;min-width:170px;">
+                        <div style="font-size:10px;font-weight:bold;color:var(--gh-fg-muted,#888);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">⚙️ Opções</div>
                         <div style="display:flex;flex-direction:column;gap:6px;">
                             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;">
                                 <input type="checkbox" id="bolAgrupar" checked style="cursor:pointer;width:13px;height:13px;">
@@ -8603,7 +8603,7 @@ function exibirTabelaMP() {
             <td${estiloFora(r.mineral,'mp',r.produto,'mineral',r.data)}>${fmtN(r.mineral,2)}</td>
             <td${estiloFora(r.acidez,'mp',r.produto,'acidez',r.data)}>${fmtN(r.acidez,2)}</td>
             <td${estiloFora(r.ureatica,'mp',r.produto,'ureatica',r.data)}>${fmtN(r.ureatica,2)}</td>
-            <td${estiloFora(r.rancidez,'mp',r.produto,'rancidez',r.data)}>${r.rancidez ? r.rancidez.charAt(0).toUpperCase()+r.rancidez.slice(1) : '-'}</td>
+            <td${estiloFora(r.rancidez,'mp',r.produto,'rancidez',r.data)}>${(['SOJA EXTRUSADA DOSADOR','FARINHA DE CARNE E OSSO'].includes((r.produto||'').toUpperCase()) && r.rancidez) ? r.rancidez.charAt(0).toUpperCase()+r.rancidez.slice(1) : '-'}</td>
             <td${estiloFora(r.peroxido,'mp',r.produto,'peroxido',r.data)}>${fmtN(r.peroxido,2)}</td>
             <td${estiloFora(r.digestibilidade,'mp',r.produto,'digestibilidade',r.data)}>${fmtN(r.digestibilidade,2)}</td>
             <td>${fmtN(r.granulo1,2)}</td>
@@ -13696,7 +13696,7 @@ function gerarTabelaMP(rows, compacto, destNC) {
             <td${cl(r.mineral,'mineral')}>${fmtN(r.mineral,2)}</td>
             <td${cl(r.acidez,'acidez')}>${fmtN(r.acidez,2)}</td>
             <td${cl(r.ureatica,'ureatica')}>${fmtN(r.ureatica,3)}</td>
-            <td>${r.rancidez ? r.rancidez.charAt(0).toUpperCase()+r.rancidez.slice(1) : '-'}</td>
+            <td>${(['SOJA EXTRUSADA DOSADOR','FARINHA DE CARNE E OSSO'].includes((r.produto||'').toUpperCase()) && r.rancidez) ? r.rancidez.charAt(0).toUpperCase()+r.rancidez.slice(1) : '-'}</td>
             <td${perCl}>${(r.peroxido === null || r.peroxido === undefined || r.peroxido === '') ? '-' : fmtN(r.peroxido,1)}</td>
             <td>${fmtN(r.digestibilidade,2)}</td>
             <td style="text-align:center;white-space:nowrap;">${status}</td>
@@ -15148,7 +15148,7 @@ function aplicarFiltrosRelMP() {
             <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.mineral)}</td>
             <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.acidez)}</td>
             <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.ureatica)}</td>
-            <td style="padding:5px 4px;text-align:center;">${r.rancidez ? r.rancidez.charAt(0).toUpperCase()+r.rancidez.slice(1) : '-'}</td>
+            <td style="padding:5px 4px;text-align:center;">${(['SOJA EXTRUSADA DOSADOR','FARINHA DE CARNE E OSSO'].includes((r.produto||'').toUpperCase()) && r.rancidez) ? r.rancidez.charAt(0).toUpperCase()+r.rancidez.slice(1) : '-'}</td>
             <td style="padding:5px 4px;text-align:center;">${(r.peroxido === null || r.peroxido === undefined || r.peroxido === '') ? '-' : _rmpFmt(r.peroxido)}</td>
             <td style="padding:5px 4px;text-align:center;">${_rmpFmt(r.digestibilidade)}</td>
         </tr>`;
