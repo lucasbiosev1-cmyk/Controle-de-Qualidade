@@ -3488,7 +3488,8 @@
                                     <th style="padding:6px;">HORA</th>
                                     <th style="padding:6px;text-align:left;">RAÇÃO</th>
                                     <th style="padding:6px;">LOTE</th>
-                                    <th style="padding:6px;" id="thValor">DGM</th>
+                                    <th style="padding:6px;" id="thValor">DGM (µm)</th>
+                                    <th style="padding:6px;" id="thDPG">DPG (µm)</th>
                                     <th style="padding:6px;">STATUS</th>
                                 </tr>
                             </thead>
@@ -8842,7 +8843,8 @@ function aplicarFiltrosRel() {
     document.getElementById('relPeriodo').textContent  = `PERÍODO: ${diStr} ATÉ ${dfStr}  |  ${dados.length} registro(s)`;
     document.getElementById('relTitulo').textContent   = `RELATÓRIO: ${tituloSel}`;
     document.getElementById('relGraficoTitulo').textContent = `EVOLUÇÃO ${tituloSel} — ${analNome}`;
-    document.getElementById('thValor').textContent    = analNome;
+    document.getElementById('thValor').textContent    = analNome + ' (µm)';
+    if (document.getElementById('thDPG')) document.getElementById('thDPG').textContent = 'DPG (µm)';
     document.getElementById('thAnalise').textContent  = `MÉDIA ${analNome}`;
     // Atualiza capa
     if (document.getElementById('relCapaPeriodo')) {
@@ -9063,7 +9065,7 @@ function renderGraficoBar(base, subFases, analise, analNome) {
 function renderDetalhe(dados, analise, analNome) {
     const tbody = document.getElementById('relTbodyDetalhe');
     if (!dados.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#999;">Nenhum registro no período</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#999;">Nenhum registro no período</td></tr>';
         return;
     }
     const sorted = [...dados].sort((a,b) => a.data.localeCompare(b.data) || a.hora.localeCompare(b.hora));
@@ -9077,12 +9079,27 @@ function renderDetalhe(dados, analise, analNome) {
             const foraMax = cfg.max < 9999 && val > cfg.max;
             if (foraMin || foraMax) status = '<span class="badge badge-nao-conforme">NC</span>';
         }
+        const dpgVal = parseFloat(r.dpg);
+        const dpgCfg = getParam('prod', racKey, 'dpg', r.data);
+        let dpgStatus = '';
+        let dpgCor = '';
+        if (!isNaN(dpgVal) && dpgVal > 0) {
+            if (dpgCfg && dpgCfg.ativo) {
+                const foraMin = dpgCfg.min > 0 && dpgVal < dpgCfg.min;
+                const foraMax = dpgCfg.max < 9999 && dpgVal > dpgCfg.max;
+                dpgCor = (foraMin || foraMax) ? 'color:#e74c3c;' : '';
+            }
+            dpgStatus = dpgVal.toFixed(2);
+        } else {
+            dpgStatus = '<span style="color:#666;">—</span>';
+        }
         return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
             <td style="padding:5px 8px;">${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td>
             <td style="padding:5px 8px;">${r.hora||''}</td>
             <td style="padding:5px 8px;text-align:left;">${r.racao}</td>
             <td style="padding:5px 8px;">${r.lote||''}</td>
             <td style="padding:5px 8px;font-weight:bold;">${val.toFixed(2)}</td>
+            <td style="padding:5px 8px;font-weight:bold;${dpgCor}">${dpgStatus}</td>
             <td style="padding:5px 8px;">${status}</td>
         </tr>`;
     }).join('');
