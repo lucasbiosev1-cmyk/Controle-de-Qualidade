@@ -3076,28 +3076,38 @@
                     <select id="filterRacaoProd">
                         <option value="">Todas</option>
                         <option value="SOJA MOÍDA">SOJA MOÍDA</option>
-                        <option value="CORTE R1 WISIUM">CORTE R1 WISIUM</option>
-                        <option value="CORTE R2 WISIUM">CORTE R2 WISIUM</option>
-                        <option value="CORTE R3 MCASSAB">CORTE R3 MCASSAB</option>
-                        <option value="CORTE R3 WISIUM">CORTE R3 WISIUM</option>
-                        <option value="CORTE R4 WISIUM">CORTE R4 WISIUM</option>
-                        <option value="CORTE R4 MCASSAB">CORTE R4 MCASSAB</option>
-                        <option value="CORTE R5 WISIUM">CORTE R5 WISIUM</option>
-                        <option value="CORTE R5 MCASSAB">CORTE R5 MCASSAB</option>
-                        <option value="POSTURA MCASSAB R1">POSTURA MCASSAB R1</option>
-                        <option value="POSTURA MCASSAB R2">POSTURA MCASSAB R2</option>
-                        <option value="POSTURA MCASSAB R3">POSTURA MCASSAB R3</option>
-                        <option value="POSTURA MCASSAB R5">POSTURA MCASSAB R5</option>
-                        <option value="POSTURA MCASSAB R6">POSTURA MCASSAB R6</option>
-                        <option value="POSTURA MCASSAB R7">POSTURA MCASSAB R7</option>
-                        <option value="POSTURA MCASSAB R9">POSTURA MCASSAB R9</option>
-                        <option value="POSTURA MCASSAB R 10">POSTURA MCASSAB R 10</option>
-                        <option value="POSTURA TECTRON R7">POSTURA TECTRON R7</option>
-                        <option value="POSTURA TECTRON R8">POSTURA TECTRON R8</option>
-                        <option value="POSTURA TECTRON R9">POSTURA TECTRON R9</option>
-                        <option value="POSTURA TECTRON R 10">POSTURA TECTRON R 10</option>
-                        <option value="BEPEL CALCÁRIO FINO">BEPEL CALCÁRIO FINO</option>
-                        <option value="BEPEL CALCÁRIO GROSSO">BEPEL CALCÁRIO GROSSO</option>
+                        <optgroup label="── CORTES WISIUM ──">
+                            <option value="CORTE R1 WISIUM">CORTE R1 WISIUM</option>
+                            <option value="CORTE R2 WISIUM">CORTE R2 WISIUM</option>
+                            <option value="CORTE R3 WISIUM">CORTE R3 WISIUM</option>
+                            <option value="CORTE R4 WISIUM">CORTE R4 WISIUM</option>
+                            <option value="CORTE R5 WISIUM">CORTE R5 WISIUM</option>
+                        </optgroup>
+                        <optgroup label="── CORTES MCASSAB ──">
+                            <option value="CORTE R3 MCASSAB">CORTE R3 MCASSAB</option>
+                            <option value="CORTE R4 MCASSAB">CORTE R4 MCASSAB</option>
+                            <option value="CORTE R5 MCASSAB">CORTE R5 MCASSAB</option>
+                        </optgroup>
+                        <optgroup label="── POSTURA MCASSAB ──">
+                            <option value="POSTURA MCASSAB R1">POSTURA MCASSAB R1</option>
+                            <option value="POSTURA MCASSAB R2">POSTURA MCASSAB R2</option>
+                            <option value="POSTURA MCASSAB R3">POSTURA MCASSAB R3</option>
+                            <option value="POSTURA MCASSAB R5">POSTURA MCASSAB R5</option>
+                            <option value="POSTURA MCASSAB R6">POSTURA MCASSAB R6</option>
+                            <option value="POSTURA MCASSAB R7">POSTURA MCASSAB R7</option>
+                            <option value="POSTURA MCASSAB R9">POSTURA MCASSAB R9</option>
+                            <option value="POSTURA MCASSAB R 10">POSTURA MCASSAB R 10</option>
+                        </optgroup>
+                        <optgroup label="── POSTURA TECTRON ──">
+                            <option value="POSTURA TECTRON R7">POSTURA TECTRON R7</option>
+                            <option value="POSTURA TECTRON R8">POSTURA TECTRON R8</option>
+                            <option value="POSTURA TECTRON R9">POSTURA TECTRON R9</option>
+                            <option value="POSTURA TECTRON R 10">POSTURA TECTRON R 10</option>
+                        </optgroup>
+                        <optgroup label="── BEPEL CALCÁRIO ──">
+                            <option value="BEPEL CALCÁRIO FINO">BEPEL CALCÁRIO FINO</option>
+                            <option value="BEPEL CALCÁRIO GROSSO">BEPEL CALCÁRIO GROSSO</option>
+                        </optgroup>
                     </select>
                 </div>
                 <div style="display:flex;gap:5px;">
@@ -6522,17 +6532,45 @@
                             <label>Ração</label>
                             <select id="cadRacaoProdSelect" onchange="handleRacaoSelectChange(this)">
                                 <option value="">Selecione...</option>
-                                <option value="SOJA MOÍDA">SOJA MOÍDA</option>
-                                <option value="CORTE R1 WISIUM">CORTE R1 WISIUM</option>
-                                <option value="CORTE R2 WISIUM">CORTE R2 WISIUM</option>
-                                <option value="CORTE R3 MCASSAB">CORTE R3 MCASSAB</option>
-                                <option value="CORTE R4 WISIUM">CORTE R4 WISIUM</option>
-                                <option value="CORTE R5 WISIUM">CORTE R5 WISIUM</option>
-                                <option value="POSTURA MCASSAB R1">POSTURA MCASSAB R1</option>
-                                <option value="POSTURA MCASSAB R7">POSTURA MCASSAB R7</option>
-                                <option value="POSTURA TECTRON R8">POSTURA TECTRON R8</option>
-                                <option value="BEPEL CALCÁRIO FINO">BEPEL CALCÁRIO FINO</option>
-                                <option value="BEPEL CALCÁRIO GROSSO">BEPEL CALCÁRIO GROSSO</option>
+                                <optgroup label="── SOJA ──">
+                                    <option value="SOJA MOÍDA">SOJA MOÍDA</option>
+                                </optgroup>
+                                <optgroup label="── CORTES WISIUM ──">
+                                    <option value="CORTE R1 WISIUM">CORTE R1 WISIUM</option>
+                                    <option value="CORTE R2 WISIUM">CORTE R2 WISIUM</option>
+                                    <option value="CORTE R3 WISIUM">CORTE R3 WISIUM</option>
+                                    <option value="CORTE R4 WISIUM">CORTE R4 WISIUM</option>
+                                    <option value="CORTE R5 WISIUM">CORTE R5 WISIUM</option>
+                                    <option value="CORTE R6 WISIUM">CORTE R6 WISIUM</option>
+                                </optgroup>
+                                <optgroup label="── CORTES MCASSAB ──">
+                                    <option value="CORTE R1 MCASSAB">CORTE R1 MCASSAB</option>
+                                    <option value="CORTE R2 MCASSAB">CORTE R2 MCASSAB</option>
+                                    <option value="CORTE R3 MCASSAB">CORTE R3 MCASSAB</option>
+                                    <option value="CORTE R4 MCASSAB">CORTE R4 MCASSAB</option>
+                                    <option value="CORTE R5 MCASSAB">CORTE R5 MCASSAB</option>
+                                </optgroup>
+                                <optgroup label="── POSTURA MCASSAB ──">
+                                    <option value="POSTURA MCASSAB R1">POSTURA MCASSAB R1</option>
+                                    <option value="POSTURA MCASSAB R2">POSTURA MCASSAB R2</option>
+                                    <option value="POSTURA MCASSAB R3">POSTURA MCASSAB R3</option>
+                                    <option value="POSTURA MCASSAB R5">POSTURA MCASSAB R5</option>
+                                    <option value="POSTURA MCASSAB R6">POSTURA MCASSAB R6</option>
+                                    <option value="POSTURA MCASSAB R7">POSTURA MCASSAB R7</option>
+                                    <option value="POSTURA MCASSAB R8">POSTURA MCASSAB R8</option>
+                                    <option value="POSTURA MCASSAB R9">POSTURA MCASSAB R9</option>
+                                    <option value="POSTURA MCASSAB R 10">POSTURA MCASSAB R 10</option>
+                                </optgroup>
+                                <optgroup label="── POSTURA TECTRON ──">
+                                    <option value="POSTURA TECTRON R7">POSTURA TECTRON R7</option>
+                                    <option value="POSTURA TECTRON R8">POSTURA TECTRON R8</option>
+                                    <option value="POSTURA TECTRON R9">POSTURA TECTRON R9</option>
+                                    <option value="POSTURA TECTRON R 10">POSTURA TECTRON R 10</option>
+                                </optgroup>
+                                <optgroup label="── BEPEL CALCÁRIO ──">
+                                    <option value="BEPEL CALCÁRIO FINO">BEPEL CALCÁRIO FINO</option>
+                                    <option value="BEPEL CALCÁRIO GROSSO">BEPEL CALCÁRIO GROSSO</option>
+                                </optgroup>
                                 <option value="__nova__">➕ Nova Ração...</option>
                             </select>
                             <div id="novaRacaoArea" style="display:none;margin-top:6px;">
@@ -12186,13 +12224,36 @@ function _injetarRacaoEmMemoria(nome) {
 }
 
 function _injetarRacaoNosSelects(nome) {
-    // Select do modal de cadastro (antes do "➕ Nova Ração...")
+    // Select do modal de cadastro — insere na optgroup correta mantendo ordem
     const selModal = document.getElementById('cadRacaoProdSelect');
     if (selModal && !Array.from(selModal.options).some(o => o.value === nome)) {
-        const optNova = selModal.querySelector('option[value="__nova__"]');
         const opt = document.createElement('option');
         opt.value = nome; opt.textContent = nome;
-        selModal.insertBefore(opt, optNova);
+        const nomeUp = nome.toUpperCase();
+        let grupoLabel = null;
+        if (nomeUp.startsWith('CORTE') && nomeUp.includes('WISIUM'))         grupoLabel = '── CORTES WISIUM ──';
+        else if (nomeUp.startsWith('CORTE') && nomeUp.includes('MCASSAB'))   grupoLabel = '── CORTES MCASSAB ──';
+        else if (nomeUp.startsWith('CORTE'))                                  grupoLabel = '── CORTES WISIUM ──';
+        else if (nomeUp.startsWith('POSTURA') && nomeUp.includes('MCASSAB')) grupoLabel = '── POSTURA MCASSAB ──';
+        else if (nomeUp.startsWith('POSTURA') && nomeUp.includes('TECTRON')) grupoLabel = '── POSTURA TECTRON ──';
+        else if (nomeUp.startsWith('POSTURA'))                                grupoLabel = '── POSTURA MCASSAB ──';
+        else if (nomeUp.startsWith('BEPEL') || nomeUp.includes('CALC'))      grupoLabel = '── BEPEL CALCÁRIO ──';
+        else if (nomeUp.includes('SOJA'))                                     grupoLabel = '── SOJA ──';
+        const grupos = selModal.querySelectorAll('optgroup');
+        let alvoGrupo = null;
+        grupos.forEach(g => { if (g.label === grupoLabel) alvoGrupo = g; });
+        if (alvoGrupo) {
+            alvoGrupo.appendChild(opt);
+        } else {
+            let outrosGrp = selModal.querySelector('optgroup[label="── OUTROS ──"]');
+            if (!outrosGrp) {
+                outrosGrp = document.createElement('optgroup');
+                outrosGrp.label = '── OUTROS ──';
+                const optNova = selModal.querySelector('option[value="__nova__"]');
+                selModal.insertBefore(outrosGrp, optNova);
+            }
+            outrosGrp.appendChild(opt);
+        }
     }
     // Select de filtro da tabela de produção
     const selFiltro = document.getElementById('filterRacaoProd');
