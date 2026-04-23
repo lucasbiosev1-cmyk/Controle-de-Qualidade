@@ -1646,11 +1646,21 @@
             border-color:#30363d!important;
             color:#e6edf3!important;
         }
-        /* botão "Por Fase" inativo (fundo branco) */
-        html[data-theme="dark"] #lbl-modo-fase {
+        /* botões modo produção inativos no dark */
+        html[data-theme="dark"] #lbl-modo-fase,
+        html[data-theme="dark"] #lbl-modo-racao {
             background:#0d1117!important;
             border-color:#30363d!important;
             color:#e6edf3!important;
+        }
+        /* botão ativo no dark — sobrescreve o seletor acima via JS inline, mas garante cor certa */
+        html[data-theme="dark"] #lbl-modo-fase[style*="background: rgb(10, 30, 127)"],
+        html[data-theme="dark"] #lbl-modo-fase[style*="background:#0a1e7f"],
+        html[data-theme="dark"] #lbl-modo-racao[style*="background: rgb(10, 30, 127)"],
+        html[data-theme="dark"] #lbl-modo-racao[style*="background:#0a1e7f"] {
+            background:#0a1e7f!important;
+            border-color:#0a1e7f!important;
+            color:white!important;
         }
         /* descrição do modo */
         html[data-theme="dark"] #bolModoDesc {
@@ -6391,7 +6401,7 @@
                                 🏷️ Tipo de Ração
                             </button>
                             <button id="lbl-modo-fase" onclick="selecionarModoProd('fase')"
-                                style="flex:1;padding:7px 10px;font-size:11px;font-weight:bold;border:2px solid #bdc3c7;border-radius:5px;cursor:pointer;background:white;color:#555;transition:all 0.2s;">
+                                style="flex:1;padding:7px 10px;font-size:11px;font-weight:bold;border:2px solid #bdc3c7;border-radius:5px;cursor:pointer;background:#f0f0f0;color:#555;transition:all 0.2s;">
                                 📂 Por Fase
                             </button>
                         </div>
