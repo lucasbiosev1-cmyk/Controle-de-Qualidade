@@ -15723,8 +15723,12 @@ async function executarCorrecaoDefeitos() {
     padding: 8px 8px 8px;
     page-break-inside: avoid;
     break-inside: avoid;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 55px;
 }
-.nc-sign-space { height: 32px; display: block; }
+.nc-sign-space { display: none; }
 .nc-sign-line {
     border-top: 1px solid #333;
     margin: 0 8px;
@@ -17157,7 +17161,7 @@ const CLASSIF_MILHO = [
     { nome: 'Queimado',       param: 2.00 },
     { nome: 'Ardido',         param: 2.00 },
     { nome: 'Mofado',         param: 3.00 },
-    { nome: 'Fermentado',     param: 3.00 },
+    { nome: 'Fermentado',     param: 5.00 },
     { nome: 'Chochos',        param: 3.00 },
     { nome: 'Gessados',       param: 3.00 },
     { nome: 'Germinado',      param: 3.00 },
