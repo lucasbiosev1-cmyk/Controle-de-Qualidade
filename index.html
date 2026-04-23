@@ -6734,7 +6734,7 @@
                         <div class="form-group"><label>Fósforo (%)</label><input type="number" id="cadFosforoMP" step="0.01" min="0"></div>
                         <div class="form-group"><label>Índice de Acidez</label><input type="number" id="cadAcidezMP" step="0.01" min="0"></div>
                         <div class="form-group"><label>Atividade Ureática</label><input type="number" id="cadUreatidaMP" step="0.01" min="0"></div>
-                        <div class="form-group"><label>Rancidez</label><select id="cadRancidezMP" style="width:100%;padding:6px 10px;background:var(--gh-canvas-subtle,#161b22);color:var(--gh-fg-default,#e6edf3);border:1px solid var(--gh-border-default,#30363d);border-radius:6px;font-size:13px;height:36px;"><option value="">Selecione...</option><option value="negativo">Negativo</option><option value="positivo">Positivo</option></select></div>
+                        <div class="form-group"><label>Rancidez</label><select id="cadRancidezMP"><option value="">Selecione...</option><option value="negativo">Negativo</option><option value="positivo">Positivo</option></select></div>
                         <div class="form-group"><label>Índice de Peróxido</label><input type="number" id="cadPeroxidoMP" step="0.01" min="0"></div>
                         <div class="form-group"><label>Digestibilidade em Pepsina</label><input type="number" id="cadDigestibilidadeMP" step="0.01" min="0"></div>
                         <div class="form-group"><label>Granulometria 1</label><input type="number" id="cadGranulo1MP" step="0.01" min="0"></div>
@@ -8543,24 +8543,12 @@ function salvarMateriaPrima(event) {
 function _mpAplicarRegraAgronor(isAgronor) {
     const campNF = document.getElementById('cadNFMP');
     if (!campNF) return;
-    let placeholder = document.getElementById('cadNFMP_placeholder');
-    if (isAgronor) {
-        campNF.value = '-';
-        campNF.style.display = 'none';
-        if (!placeholder) {
-            placeholder = document.createElement('span');
-            placeholder.id = 'cadNFMP_placeholder';
-            placeholder.style.cssText = 'display:inline-block;padding:4px 8px;font-size:13px;font-weight:700;color:#999;letter-spacing:2px;';
-            placeholder.textContent = '—';
-            campNF.parentNode.insertBefore(placeholder, campNF);
-        }
-        placeholder.style.display = 'inline-block';
-    } else {
-        campNF.style.display = '';
-        campNF.readOnly = false;
-        if (campNF.value === '-') campNF.value = '';
-        if (placeholder) placeholder.style.display = 'none';
-    }
+    // Campo NF sempre visível e editável, independente do fornecedor ser AGRONOR ou não
+    campNF.style.display = '';
+    campNF.readOnly = false;
+    if (campNF.value === '-') campNF.value = '';
+    const placeholder = document.getElementById('cadNFMP_placeholder');
+    if (placeholder) placeholder.style.display = 'none';
 }
 
 function mpProdutoAutoFill(produto) {
