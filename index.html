@@ -15709,6 +15709,10 @@ async function executarCorrecaoDefeitos() {
     margin-top: 14px;
     padding-top: 10px;
     border-top: 1.5px solid #1a2a6e;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    page-break-before: avoid;
+    break-before: avoid;
 }
 .nc-sign-block {
     flex: 1;
@@ -15717,11 +15721,15 @@ async function executarCorrecaoDefeitos() {
     border: 1px solid #d0d8ea;
     border-radius: 2px;
     padding: 10px 8px 8px;
+    page-break-inside: avoid;
+    break-inside: avoid;
 }
-.nc-sign-space { height: 32px; }
+.nc-sign-space { height: 32px; min-height: 32px; display: block; }
 .nc-sign-line {
     border-top: 1px solid #333;
     margin: 4px 8px 0;
+    page-break-after: avoid;
+    break-after: avoid;
 }
 .nc-sign-label {
     font-size: 9px;
@@ -15730,6 +15738,8 @@ async function executarCorrecaoDefeitos() {
     margin-top: 0.5px;
     text-transform: uppercase;
     letter-spacing: 0.4px;
+    page-break-before: avoid;
+    break-before: avoid;
 }
 .nc-sign-sub {
     font-size: 8px;
