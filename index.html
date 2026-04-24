@@ -2856,38 +2856,38 @@
         <div class="mob-section">
             <button class="mob-item" onclick="mobNav('capa','Início')">🏠 Início</button>
         </div>
-        <div class="mob-section">
+        <div class="mob-section" id="mobSecLancamentos">
             <div class="mob-section-label">Lançamentos</div>
-            <button class="mob-item" onclick="mobNav('producao','Produção')">🌾 Produção</button>
-            <button class="mob-item" onclick="mobNav('materiaPrima','Matéria Prima')">🧪 Matéria Prima</button>
-            <button class="mob-item" onclick="mobNav('classificacao','Classificação')">🌽 Classificação</button>
+            <button class="mob-item" id="mobBtnProducao"      onclick="mobNav('producao','Produção')">🌾 Produção</button>
+            <button class="mob-item" id="mobBtnMateriaPrima"  onclick="mobNav('materiaPrima','Matéria Prima')">🧪 Matéria Prima</button>
+            <button class="mob-item" id="mobBtnClassificacao" onclick="mobNav('classificacao','Classificação')">🌽 Classificação</button>
         </div>
-        <div class="mob-section">
+        <div class="mob-section" id="mobSecRelatorios">
             <div class="mob-section-label">Relatórios</div>
-            <button class="mob-item" onclick="mobNav('relatorio','Rel. Produção')">📊 Rel. Produção</button>
-            <button class="mob-item" onclick="mobNav('relClass','Rel. Classificação')">📊 Rel. Classificação</button>
-            <button class="mob-item" onclick="mobNav('relMP','Rel. Mat. Prima')">🧪 Rel. Mat. Prima</button>
-            <button class="mob-item" onclick="mobNav('ranking','Ranking')">🏆 Ranking</button>
-            <button class="mob-item" onclick="mobNav('boletim','Boletim Industrial')">📋 Boletim Industrial</button>
+            <button class="mob-item" id="mobBtnRelProducao"   onclick="mobNav('relatorio','Rel. Produção')">📊 Rel. Produção</button>
+            <button class="mob-item" id="mobBtnRelClass"      onclick="mobNav('relClass','Rel. Classificação')">📊 Rel. Classificação</button>
+            <button class="mob-item" id="mobBtnRelMP"         onclick="mobNav('relMP','Rel. Mat. Prima')">🧪 Rel. Mat. Prima</button>
+            <button class="mob-item" id="mobBtnRanking"       onclick="mobNav('ranking','Ranking')">🏆 Ranking</button>
+            <button class="mob-item" id="mobBtnBoletim"       onclick="mobNav('boletim','Boletim Industrial')">📋 Boletim Industrial</button>
         </div>
         <div class="mob-section">
-            <button class="mob-item" onclick="mobNav('entradaMP','Entradas Mat. Prima')">📥 Entradas Mat. Prima</button>
+            <button class="mob-item" id="mobBtnEntradaMP" onclick="mobNav('entradaMP','Entradas Mat. Prima')">📥 Entradas Mat. Prima</button>
         </div>
-        <div class="mob-section">
+        <div class="mob-section" id="mobSecNC">
             <div class="mob-section-label">Não Conformidade</div>
-            <button class="mob-item" onclick="mobNavNC('aba-nc-inner','Não Conformidade')">⚠️ Não Conformidade</button>
-            <button class="mob-item" onclick="mobNavNC('aba-dev-inner','Devolução')">↩️ Devolução</button>
+            <button class="mob-item" id="mobBtnNC"       onclick="mobNavNC('aba-nc-inner','Não Conformidade')">⚠️ Não Conformidade</button>
+            <button class="mob-item" id="mobBtnDev"      onclick="mobNavNC('aba-dev-inner','Devolução')">↩️ Devolução</button>
         </div>
-        <div class="mob-section">
+        <div class="mob-section" id="mobSecEstoque">
             <div class="mob-section-label">Estoque</div>
-            <button class="mob-item" onclick="mobNav('estoqueReagentes','Produtos Químicos')">🧫 Produtos Químicos</button>
-            <button class="mob-item" onclick="mobNav('estoqueMateriais','Materiais')">📦 Materiais</button>
+            <button class="mob-item" id="mobBtnEstoqueReag" onclick="mobNav('estoqueReagentes','Produtos Químicos')">🧫 Produtos Químicos</button>
+            <button class="mob-item" id="mobBtnEstoqueMat"  onclick="mobNav('estoqueMateriais','Materiais')">📦 Materiais</button>
         </div>
         <div class="mob-section">
-            <button class="mob-item" onclick="mobNav('equipamentos','Equipamentos')">🔬 Equipamentos</button>
+            <button class="mob-item" id="mobBtnEquipamentos" onclick="mobNav('equipamentos','Equipamentos')">🔬 Equipamentos</button>
         </div>
         <div class="mob-section">
-            <button class="mob-item" onclick="mobNav('agenda','Agenda')">📅 Agenda</button>
+            <button class="mob-item" id="mobBtnAgenda" onclick="mobNav('agenda','Agenda')">📅 Agenda</button>
         </div>
         <div class="mob-section">
             <button class="mob-item" id="mobBtnConfiguracoes" onclick="mobNav('configuracoes','Configurações')">⚙️ Configurações</button>
@@ -7458,13 +7458,39 @@ function aplicarPermissoes() {
     if (tabAgenda) tabAgenda.style.display = isAdmin ? 'inline-block' : 'none';
 
     // ── Mobile: mostrar/ocultar itens de menu ──
-    document.querySelectorAll('.mob-item').forEach(btn => {
-        const onclick = btn.getAttribute('onclick') || '';
-        if (onclick.includes("'estoqueReagentes'"))  btn.style.display = podeQuimicos     ? 'block' : 'none';
-        if (onclick.includes("'estoqueMateriais'"))   btn.style.display = podeMateriais   ? 'block' : 'none';
-        if (onclick.includes("'equipamentos'"))       btn.style.display = podeEquipamentos ? 'block' : 'none';
-        if (onclick.includes("'agenda'"))             btn.style.display = isAdmin          ? 'block' : 'none';
-    });
+    const _mob = (id, visivel) => { const el = document.getElementById(id); if (el) el.style.display = visivel ? 'block' : 'none'; };
+    // Lançamentos
+    _mob('mobBtnProducao',      isAdmin || podeCadastro);
+    _mob('mobBtnMateriaPrima',  isAdmin || podeCadastro);
+    _mob('mobBtnClassificacao', isAdmin || podeCadastro);
+    // Seção lançamentos (oculta a seção inteira se não tiver acesso)
+    const mobSecLanc = document.getElementById('mobSecLancamentos');
+    if (mobSecLanc) mobSecLanc.style.display = (isAdmin || podeCadastro) ? '' : 'none';
+    // Relatórios
+    _mob('mobBtnRelProducao',   isAdmin || podeRel);
+    _mob('mobBtnRelClass',      isAdmin || podeRel);
+    _mob('mobBtnRelMP',         isAdmin || podeRel);
+    _mob('mobBtnRanking',       isAdmin || podeRel);
+    _mob('mobBtnBoletim',       isAdmin || perms.boletim);
+    const mobSecRel = document.getElementById('mobSecRelatorios');
+    if (mobSecRel) mobSecRel.style.display = (isAdmin || podeRel || perms.boletim) ? '' : 'none';
+    // Entradas Mat. Prima
+    _mob('mobBtnEntradaMP',     isAdmin || podeEntradaMP);
+    // Não Conformidade
+    _mob('mobBtnNC',            isAdmin || podeNC);
+    _mob('mobBtnDev',           isAdmin || podeNC);
+    const mobSecNC2 = document.getElementById('mobSecNC');
+    if (mobSecNC2) mobSecNC2.style.display = (isAdmin || podeNC) ? '' : 'none';
+    // Estoque
+    _mob('mobBtnEstoqueReag',   isAdmin || podeQuimicos);
+    _mob('mobBtnEstoqueMat',    isAdmin || podeMateriais);
+    const mobSecEst = document.getElementById('mobSecEstoque');
+    if (mobSecEst) mobSecEst.style.display = (isAdmin || podeQuimicos || podeMateriais) ? '' : 'none';
+    // Equipamentos e Agenda
+    _mob('mobBtnEquipamentos',  isAdmin || podeEquipamentos);
+    _mob('mobBtnAgenda',        isAdmin);
+    // Configurações
+    _mob('mobBtnConfiguracoes', isAdmin);
 
     // Carrega entradas ao logar
     if (podeEntradaMP) {
