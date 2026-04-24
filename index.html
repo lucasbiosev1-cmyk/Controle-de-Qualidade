@@ -7468,6 +7468,7 @@ function aplicarPermissoes() {
 
     // Carrega entradas ao logar
     if (podeEntradaMP) {
+        carregarListaMP(); // ✅ Carrega lista de matérias-primas do Supabase
         carregarEntradasMP().then(() => exibirTabelaEMP());
     }
 
@@ -11251,6 +11252,29 @@ const _EMP_MP_PADRAO = [
 ];
 let _empListaMP = [..._EMP_MP_PADRAO];
 
+// ✅ Carrega lista de matérias-primas do Supabase (tabela: lista_materias_primas)
+async function carregarListaMP() {
+    try {
+        const { data, error } = await _sbClient
+            .from('lista_materias_primas')
+            .select('nome')
+            .order('nome', { ascending: true });
+        if (error) throw new Error(error.message);
+        if (data && data.length > 0) {
+            _empListaMP = data.map(r => r.nome.toUpperCase());
+        } else {
+            // Se a tabela estiver vazia, popula com os padrões
+            _empListaMP = [..._EMP_MP_PADRAO];
+            for (const nome of _EMP_MP_PADRAO) {
+                await _sbClient.from('lista_materias_primas').upsert({ nome }, { onConflict: 'nome' });
+            }
+        }
+    } catch(e) {
+        console.warn('Erro ao carregar lista_materias_primas, usando padrão:', e.message);
+        _empListaMP = [..._EMP_MP_PADRAO];
+    }
+}
+
 function _empPopularSelectMP(valorAtual) {
     const inp = document.getElementById('cadMateriaPrimaEMP');
     if (!inp) return;
@@ -11258,24 +11282,39 @@ function _empPopularSelectMP(valorAtual) {
     else if (valorAtual === '') inp.value = '';
 }
 
-function empAdicionarMP() {
-    const nome = prompt('Digite o nome da nova mat\u00e9ria prima:');
+async function empAdicionarMP() {
+    const nome = prompt('Digite o nome da nova matéria prima:');
     if (!nome || !nome.trim()) return;
     const nomeUp = nome.trim().toUpperCase();
-    if (_empListaMP.includes(nomeUp)) { alert('J\u00e1 existe na lista!'); return; }
-    _empListaMP.push(nomeUp);
-    const inp = document.getElementById('cadMateriaPrimaEMP');
-    if (inp) inp.value = nomeUp;
+    if (_empListaMP.includes(nomeUp)) { alert('Já existe na lista!'); return; }
+    try {
+        const { error } = await _sbClient.from('lista_materias_primas').upsert({ nome: nomeUp }, { onConflict: 'nome' });
+        if (error) throw new Error(error.message);
+        _empListaMP.push(nomeUp);
+        _empListaMP.sort();
+        const inp = document.getElementById('cadMateriaPrimaEMP');
+        if (inp) inp.value = nomeUp;
+        sgqToast('Matéria prima "' + nomeUp + '" adicionada com sucesso!', 'success');
+    } catch(e) {
+        alert('Erro ao salvar no banco: ' + e.message);
+    }
 }
 
-function empRemoverMP() {
+async function empRemoverMP() {
     const inp = document.getElementById('cadMateriaPrimaEMP');
     const val = (inp ? inp.value : '').trim().toUpperCase();
-    if (!val) { alert('Digite ou selecione uma mat\u00e9ria prima para remover.'); return; }
-    if (!_empListaMP.includes(val)) { alert('Esta mat\u00e9ria prima n\u00e3o est\u00e1 na lista padr\u00e3o.'); return; }
-    if (!confirm(`Remover "${val}" da lista padr\u00e3o?`)) return;
-    _empListaMP = _empListaMP.filter(m => m !== val);
-    if (inp) inp.value = '';
+    if (!val) { alert('Digite ou selecione uma matéria prima para remover.'); return; }
+    if (!_empListaMP.includes(val)) { alert('Esta matéria prima não está na lista.'); return; }
+    if (!confirm(`Remover "${val}" da lista padrão?`)) return;
+    try {
+        const { error } = await _sbClient.from('lista_materias_primas').delete().eq('nome', val);
+        if (error) throw new Error(error.message);
+        _empListaMP = _empListaMP.filter(m => m !== val);
+        if (inp) inp.value = '';
+        sgqToast('Matéria prima "' + val + '" removida com sucesso!', 'success');
+    } catch(e) {
+        alert('Erro ao remover do banco: ' + e.message);
+    }
 }
 
 
