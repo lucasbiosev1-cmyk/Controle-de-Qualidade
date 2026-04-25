@@ -11478,6 +11478,12 @@ async function salvarEntradaMP(event) {
     if (!nf)           { mostrarMsgEMP('erro','Informe o número da nota fiscal.'); return; }
 
     if (_empEditandoId) {
+        // Ao editar: verifica duplicata de NF excluindo o próprio registro
+        const nfDupEdit = entradasMP.find(e => String(e.id) !== String(_empEditandoId) && (e.nf||'').toString().trim().toUpperCase() === nf);
+        if (nfDupEdit) {
+            mostrarMsgEMP('erro', `⚠️ NF "${nf}" já está registrada (Fornecedor: ${nfDupEdit.fornecedor || '-'}, Data: ${nfDupEdit.data ? nfDupEdit.data.split('-').reverse().join('/') : '-'}). Não é possível duplicar.`);
+            return;
+        }
         const idx = entradasMP.findIndex(e => e.id === _empEditandoId);
         if (idx >= 0) {
             entradasMP[idx] = { ...entradasMP[idx], data, hora, materia_prima, fornecedor, nf, placa, obs };
@@ -11486,6 +11492,12 @@ async function salvarEntradaMP(event) {
         mostrarMsgEMP('sucesso','✅ Entrada atualizada com sucesso!');
     } else {
         const nfUp = nf.toUpperCase();
+        // Bloqueia NF duplicada
+        const nfDupNovo = entradasMP.find(e => (e.nf||'').toString().trim().toUpperCase() === nfUp);
+        if (nfDupNovo) {
+            mostrarMsgEMP('erro', `⚠️ NF "${nfUp}" já está registrada (Fornecedor: ${nfDupNovo.fornecedor || '-'}, Data: ${nfDupNovo.data ? nfDupNovo.data.split('-').reverse().join('/') : '-'}). Não é possível duplicar.`);
+            return;
+        }
         const emClass = classificacoes.some(r => (r.nf||'').toString().trim().toUpperCase() === nfUp);
         const emMP    = materiasPrimas.some(r => (r.nf||'').toString().trim().toUpperCase() === nfUp);
         const statusInicial = (emClass || emMP) ? 'CONCLUÍDA' : 'EM ANÁLISE';
