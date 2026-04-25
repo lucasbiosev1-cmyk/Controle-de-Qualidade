@@ -6,7 +6,7 @@
         // Aplica tema salvo ANTES do CSS renderizar — evita flash de tema errado
         (function() {
             try {
-                var t = localStorage.getItem('tema') || 'azul';
+                var t = localStorage.getItem('tema') || 'dark';
                 document.documentElement.setAttribute('data-theme', t);
             } catch(e) {}
         })();
@@ -55,9 +55,25 @@
         .tr-row-odd  { background: #f5f7fa; color: #333333; }
         html[data-theme="dark"] .tr-row-even { background: #161b22; color: #e6edf3; }
         html[data-theme="dark"] .tr-row-odd  { background: #0d1117; color: #e6edf3; }
+
+        /* ── Linha selecionada ── */
+        tr.tr-row-selected,
+        tr.tr-row-selected td {
+            background: #1c3a5e !important;
+            color: #a8d8ff !important;
+            outline: none;
+        }
+        tr.tr-row-selected td[style*="color:"] { color: #a8d8ff !important; }
+        tr.tr-row-selected { box-shadow: inset 3px 0 0 #58a6ff, inset -1px 0 0 rgba(88,166,255,0.2); }
+        tbody tr.tr-row-hover:hover:not(.tr-row-selected) {
+            background: rgba(88,166,255,0.07) !important;
+            transition: background 0.15s;
+        }
+
         @media print {
             .tr-row-even, html[data-theme="dark"] .tr-row-even { background: #ffffff !important; color: #222 !important; }
             .tr-row-odd,  html[data-theme="dark"] .tr-row-odd  { background: #f5f7fa !important; color: #222 !important; }
+            .tr-row-selected { background: #ffffff !important; color: #222 !important; box-shadow: none !important; }
         }
 
         /* =========================================================
@@ -7004,7 +7020,7 @@ function _tBgOdd()  { return document.documentElement.getAttribute('data-theme')
 function _tFg()     { return document.documentElement.getAttribute('data-theme')==='dark'?'#e6edf3':'#333333'; }
 function _tBg(i)    { return i%2===0 ? _tBgEven() : _tBgOdd(); }
 function aplicarTema(tema, salvarNoBanco) {
-    if (!TEMAS.includes(tema)) tema = 'azul';
+    if (!TEMAS.includes(tema)) tema = 'dark';
     document.documentElement.setAttribute('data-theme', tema);
     localStorage.setItem('tema', tema);
     _aplicarChartTema(tema);
@@ -7042,7 +7058,7 @@ function aplicarTema(tema, salvarNoBanco) {
 }
 // Aplica tema salvo ao carregar
 (function() {
-    const saved = localStorage.getItem('tema') || 'azul';
+    const saved = localStorage.getItem('tema') || 'dark';
     document.documentElement.setAttribute('data-theme', saved);
     // Atualiza botões após DOM estar pronto
     document.addEventListener('DOMContentLoaded', () => { aplicarTema(saved); _aplicarChartTema(saved); });
@@ -7305,6 +7321,8 @@ async function fazerLogin() {
         // ── Carrega tema salvo no perfil do Supabase (funciona em qualquer PC/aba anônima) ──
         if (perfilData.tema && typeof aplicarTema === 'function') {
             aplicarTema(perfilData.tema, false); // false = não re-salvar no banco
+        } else if (typeof aplicarTema === 'function') {
+            aplicarTema('dark', false); // padrão dark para novos usuários sem tema salvo
         }
 
         _registrarAuditoria('LOGIN', 'auth', null, { agente: navigator.userAgent.substring(0, 80) }).catch(() => {});
@@ -7721,7 +7739,7 @@ function trocarSubCfg(subAba, btn) {
     if (subAba === 'memoria')        { atualizarMemoria(); memAtualizarOpenAI(); }
     if (subAba === 'alertaWhatsApp') inicializarAbaWhatsApp();
     if (subAba === 'usuarios')       { renderizarListaUsuarios(); sgqCarregarHistoricoAcessos(); _sgqRenderizarPresenca(); }
-    if (subAba === 'aparencia')      aplicarTema(localStorage.getItem('tema') || 'azul');
+    if (subAba === 'aparencia')      aplicarTema(localStorage.getItem('tema') || 'dark');
 }
 
 // ===================================================
@@ -8019,6 +8037,15 @@ function _renderizarAlertas({ pctProd, pctProdAnt, pctMP, pctMPAnt, pctClass, nc
 // ===================================================
 // DADOS_PLANILHA removido — tudo vem do Supabase
 // ===================================================
+/* ── Seleção de linha de tabela ── */
+function selecionarLinha(tr) {
+    const tbody = tr.closest('tbody');
+    if (!tbody) return;
+    const jaSelecionada = tr.classList.contains('tr-row-selected');
+    tbody.querySelectorAll('tr.tr-row-selected').forEach(r => r.classList.remove('tr-row-selected'));
+    if (!jaSelecionada) tr.classList.add('tr-row-selected');
+}
+
 function carregarTodos() {
     // Legado síncrono mantido por compatibilidade, mas não faz nada.
     // O carregamento real é feito por carregarTodosAsync().
@@ -8193,7 +8220,7 @@ function exibirTabelaProd() {
         const racaoCell = r.obs
             ? `<td style="white-space:normal;text-align:left;min-width:150px;text-transform:uppercase;"><span class="obs-tooltip-wrap">${r.racao}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span></td>`
             : `<td style="white-space:normal;text-align:left;min-width:150px;text-transform:uppercase;">${r.racao}</td>`;
-        return `<tr ${podeCadastroProd ? 'ondblclick="abrirModalEdicaoProd('+r.id+')" style="cursor:pointer;" title="Duplo clique para editar"' : ''}>
+        return `<tr class="tr-row-hover" onclick="selecionarLinha(this)" ${podeCadastroProd ? 'ondblclick="abrirModalEdicaoProd('+r.id+')" style="cursor:pointer;" title="Duplo clique para editar"' : 'style="cursor:pointer;"'}>
             <td>${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td><td style="text-transform:uppercase;">${r.hora}</td>
             ${racaoCell}
             <td style="text-transform:uppercase;">${r.lote}</td>
@@ -8427,7 +8454,7 @@ function exibirTabelaClass() {
         const fornCell = r.obs
             ? `<td style="white-space:normal;text-align:left;min-width:130px;text-transform:uppercase;"><span class="obs-tooltip-wrap">${r.fornecedor}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span></td>`
             : `<td style="white-space:normal;text-align:left;min-width:130px;text-transform:uppercase;">${r.fornecedor}</td>`;
-        return `<tr ${isAdmin ? 'ondblclick="abrirModalEdicaoClass('+r.id+')" style="cursor:pointer;" title="Duplo clique para editar"' : ''}>
+        return `<tr class="tr-row-hover" onclick="selecionarLinha(this)" ${isAdmin ? 'ondblclick="abrirModalEdicaoClass('+r.id+')" style="cursor:pointer;" title="Duplo clique para editar"' : 'style="cursor:pointer;"'}>
             <td>${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td><td style="text-transform:uppercase;">${r.hora}</td>
             <td style="text-transform:uppercase;">${r.nf}</td>
             ${fornCell}
@@ -8686,7 +8713,7 @@ function exibirTabelaMP() {
         const fornCellMP = r.obs
             ? `<td style="white-space:normal;text-align:left;min-width:150px;text-transform:uppercase;"><span class="obs-tooltip-wrap">${r.fornecedor}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span></td>`
             : `<td style="white-space:normal;text-align:left;min-width:150px;text-transform:uppercase;">${r.fornecedor}</td>`;
-        return `<tr ${isAdmin ? 'ondblclick="abrirModalEdicaoMP('+r.id+')" style="cursor:pointer;" title="Duplo clique para editar"' : ''}>
+        return `<tr class="tr-row-hover" onclick="selecionarLinha(this)" ${isAdmin ? 'ondblclick="abrirModalEdicaoMP('+r.id+')" style="cursor:pointer;" title="Duplo clique para editar"' : 'style="cursor:pointer;"'}>
             <td>${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td><td style="text-transform:uppercase;">${r.hora}</td>
             <td style="text-transform:uppercase;">${r.nf}</td>
             <td style="white-space:normal;text-align:left;min-width:150px;text-transform:uppercase;">${r.produto}</td>
@@ -17556,6 +17583,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 // ── Carrega tema do Supabase (funciona em modo anônimo/outro PC) ──
                 if (perfilData.tema && typeof aplicarTema === 'function') {
                     aplicarTema(perfilData.tema, false);
+                } else if (typeof aplicarTema === 'function') {
+                    aplicarTema('dark', false); // padrão dark para usuários sem tema salvo
                 }
 
                 document.getElementById('loginScreen').style.display = 'none';
