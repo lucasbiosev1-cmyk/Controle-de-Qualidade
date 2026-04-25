@@ -1027,15 +1027,18 @@
         .obs-toggle {
             display: flex; align-items: center; gap: 6px;
             background: none; border: none; cursor: pointer;
-            font-size: 10px; font-weight: bold; color: rgba(255,255,255,0.4);
+            font-size: 10px; font-weight: bold; color: #555;
             text-transform: uppercase; padding: 4px 0; margin-bottom: 4px;
             letter-spacing: 0.3px;
         }
-        .obs-toggle:hover { color: #58a6ff; }
+        html[data-theme="dark"] .obs-toggle { color: rgba(255,255,255,0.65); }
+        .obs-toggle:hover { color: #2471a3; }
+        html[data-theme="dark"] .obs-toggle:hover { color: #58a6ff; }
         .obs-toggle .obs-arrow {
             display: inline-block; transition: transform 0.2s;
-            font-size: 9px; color: rgba(255,255,255,0.3);
+            font-size: 9px; color: #888;
         }
+        html[data-theme="dark"] .obs-toggle .obs-arrow { color: rgba(255,255,255,0.4); }
         .obs-toggle.open .obs-arrow { transform: rotate(90deg); }
         .obs-body { display: none; }
         .obs-body.open { display: block; }
