@@ -6242,10 +6242,12 @@
             <div class="form-wrapper">
                 <form id="formCadastroEMP" onsubmit="return false;">
                     <input type="hidden" id="cadIdEMP">
+
+                    <!-- ── SEÇÃO 1: DADOS DA ENTRADA ── -->
                     <div class="form-section">
-                        <h3>DADOS DA ENTRADA</h3>
-                        <!-- Data e Hora centralizados -->
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                        <h3>📅 DADOS DA ENTRADA</h3>
+                        <!-- Data · Hora · Status em 3 colunas -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:4px;">
                             <div class="form-group required">
                                 <label>DATA</label>
                                 <input type="text" id="cadDataEMP" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)" style="text-align:center;">
@@ -6254,10 +6256,19 @@
                                 <label>HORA</label>
                                 <input type="text" id="cadHoraEMP" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" required oninput="mascaraHora(this)" style="text-align:center;">
                             </div>
+                            <div class="form-group required">
+                                <label>STATUS</label>
+                                <input type="text" id="cadStatusEMP" value="EM ANÁLISE" readonly style="background:#fff8e1;color:#b7770d;font-weight:bold;text-align:center;">
+                            </div>
                         </div>
-                        <!-- Matéria Prima com campo pesquisável + botões -->
-                        <div class="form-group" style="margin-bottom:8px;">
-                            <label>MATÉRIA PRIMA <span style="color:#e74c3c;">*</span></label>
+                    </div>
+
+                    <!-- ── SEÇÃO 2: IDENTIFICAÇÃO DA CARGA ── -->
+                    <div class="form-section">
+                        <h3>🚛 IDENTIFICAÇÃO DA CARGA</h3>
+                        <!-- Matéria Prima (linha inteira) -->
+                        <div class="form-group required" style="margin-bottom:8px;">
+                            <label>MATÉRIA PRIMA</label>
                             <div style="display:flex;gap:6px;align-items:center;">
                                 <div class="sgq-autocomplete-wrap" style="position:relative;flex:1;">
                                     <input type="text" id="cadMateriaPrimaEMP" required autocomplete="new-password"
@@ -6273,8 +6284,8 @@
                                 <button type="button" onclick="empRemoverMP()" title="Remover matéria prima selecionada" style="background:#e74c3c;color:white;border:none;border-radius:4px;width:28px;height:28px;font-size:20px;cursor:pointer;line-height:1;flex-shrink:0;">−</button>
                             </div>
                         </div>
-                        <!-- Fornecedor e NF -->
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                        <!-- Fornecedor · NF · Placa em 3 colunas -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:4px;">
                             <div class="form-group required">
                                 <label>FORNECEDOR</label>
                                 <div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
@@ -6291,16 +6302,22 @@
                                 <label>NÚMERO DA NOTA FISCAL</label>
                                 <input type="text" id="cadNFEMP" required style="text-align:center;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
                             </div>
+                            <div class="form-group">
+                                <label>PLACA DO VEÍCULO</label>
+                                <input type="text" id="cadPlacaEMP" maxlength="8" placeholder="Ex: ABC-1D23"
+                                    style="text-transform:uppercase;text-align:center;letter-spacing:2px;font-weight:bold;"
+                                    oninput="this.value=this.value.toUpperCase()">
+                            </div>
                         </div>
-                        <!-- Usuário e Status -->
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                    </div>
+
+                    <!-- ── SEÇÃO 3: CONTROLE ── -->
+                    <div class="form-section">
+                        <h3>👤 CONTROLE</h3>
+                        <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:4px;">
                             <div class="form-group">
                                 <label>USUÁRIO RESPONSÁVEL</label>
-                                <input type="text" id="cadUsuarioEMP" readonly style="background:#f0f3f8;color:#555;text-align:center;text-transform:uppercase;">
-                            </div>
-                            <div class="form-group">
-                                <label>STATUS</label>
-                                <input type="text" value="EM ANÁLISE" readonly style="background:#fff8e1;color:#b7770d;font-weight:bold;text-align:center;">
+                                <input type="text" id="cadUsuarioEMP" readonly style="background:#f0f3f8;color:#555;text-transform:uppercase;">
                             </div>
                         </div>
                     </div>
@@ -11383,8 +11400,12 @@ function abrirModalEMP() {
     _empPopularSelectMP('');
     document.getElementById('cadFornecedorEMP').value = '';
     document.getElementById('cadNFEMP').value = '';
+    const _placaEMPNew = document.getElementById('cadPlacaEMP');
+    if (_placaEMPNew) _placaEMPNew.value = '';
     const uNome = USUARIOS[usuarioAtual]?.nome || usuarioAtual || '';
     document.getElementById('cadUsuarioEMP').value = uNome;
+    const _stEMP = document.getElementById('cadStatusEMP');
+    if (_stEMP) { _stEMP.value = 'EM ANÁLISE'; _stEMP.style.background='#fff8e1'; _stEMP.style.color='#b7770d'; }
     document.getElementById('modalCadastroEMP').classList.add('show');
     setTimeout(() => document.getElementById('cadMateriaPrimaEMP').focus(), 100);
 }
@@ -11401,6 +11422,17 @@ function editarEntradaMP(id) {
     document.getElementById('cadFornecedorEMP').value = entrada.fornecedor || '';
     document.getElementById('cadNFEMP').value = entrada.nf || '';
     document.getElementById('cadUsuarioEMP').value = entrada.usuario || '';
+    const placaEMP = document.getElementById('cadPlacaEMP');
+    if (placaEMP) placaEMP.value = (entrada.placa || '').toUpperCase();
+    // Status visual no modal de edição
+    const _stEMPEdit = document.getElementById('cadStatusEMP');
+    if (_stEMPEdit) {
+        const st = entrada.status || 'EM ANÁLISE';
+        _stEMPEdit.value = st;
+        const cores = { 'APROVADA':'#e8f5e9|#27ae60', 'REPROVADA':'#fdecea|#e74c3c', 'CONCLUÍDA':'#e3f2fd|#1565c0' };
+        const [bg, clr] = (cores[st]||'#fff8e1|#b7770d').split('|');
+        _stEMPEdit.style.background = bg; _stEMPEdit.style.color = clr;
+    }
     // Observação
     const obsEMP = document.getElementById('cadObsEMP');
     obsEMP.value = entrada.obs || '';
@@ -11423,6 +11455,8 @@ function limparFormularioEMP() {
     _empPopularSelectMP('');
     document.getElementById('cadFornecedorEMP').value = '';
     document.getElementById('cadNFEMP').value = '';
+    const placaElEMP = document.getElementById('cadPlacaEMP');
+    if (placaElEMP) placaElEMP.value = '';
     const obsEl = document.getElementById('cadObsEMP');
     if (obsEl) { obsEl.value = ''; const tog = obsEl.closest('.obs-body').previousElementSibling; tog.classList.remove('open'); obsEl.closest('.obs-body').classList.remove('open'); }
 }
@@ -11436,6 +11470,7 @@ async function salvarEntradaMP(event) {
     const nf          = document.getElementById('cadNFEMP').value.trim().toUpperCase();
     const usuario     = USUARIOS[usuarioAtual]?.nome || usuarioAtual || '';
     const obs         = (document.getElementById('cadObsEMP').value || '').trim();
+    const placa       = (document.getElementById('cadPlacaEMP')?.value || '').trim().toUpperCase();
 
     if (!data)         { mostrarMsgEMP('erro','Informe a data.'); return; }
     if (!materia_prima){ mostrarMsgEMP('erro','Selecione a matéria prima.'); return; }
@@ -11445,7 +11480,7 @@ async function salvarEntradaMP(event) {
     if (_empEditandoId) {
         const idx = entradasMP.findIndex(e => e.id === _empEditandoId);
         if (idx >= 0) {
-            entradasMP[idx] = { ...entradasMP[idx], data, hora, materia_prima, fornecedor, nf, obs };
+            entradasMP[idx] = { ...entradasMP[idx], data, hora, materia_prima, fornecedor, nf, placa, obs };
             try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e){}
         }
         mostrarMsgEMP('sucesso','✅ Entrada atualizada com sucesso!');
@@ -11457,7 +11492,7 @@ async function salvarEntradaMP(event) {
 
         const novaEntrada = {
             id: Date.now(),
-            data, hora, materia_prima, fornecedor, nf,
+            data, hora, materia_prima, fornecedor, nf, placa,
             usuario, obs,
             status: statusInicial,
             criado_em: new Date().toISOString()
