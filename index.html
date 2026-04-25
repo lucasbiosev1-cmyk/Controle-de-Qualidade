@@ -6226,7 +6226,7 @@
                     <thead>
                         <tr>
                             <th>DATA</th><th>HORA</th><th style="text-align:center;">MATÉRIA PRIMA</th><th style="text-align:center;">FORNECEDOR</th><th>NOTA FISCAL</th>
-                            <th>USUÁRIO</th><th>STATUS</th><th id="thAcaoEMP">AÇÃO</th>
+                            <th>PLACA</th><th>USUÁRIO</th><th>STATUS</th><th id="thAcaoEMP">AÇÃO</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaEntradaMP"><tr><td colspan="8" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
@@ -11279,7 +11279,7 @@ function exibirTabelaEMP(lista) {
 
     const tbody = document.getElementById('tabelaEntradaMP');
     if (!dados.length) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
         return;
     }
 
@@ -11303,6 +11303,7 @@ function exibirTabelaEMP(lista) {
             <td style="text-align:center;font-weight:bold;">${r.materia_prima||'-'}</td>
             <td style="text-align:center;">${r.obs ? `<span class="obs-tooltip-wrap">${r.fornecedor||'-'}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span>` : (r.fornecedor||'-')}</td>
             <td>${r.nf||'-'}</td>
+            <td style="text-align:center;letter-spacing:1px;font-weight:bold;">${r.placa||'-'}</td>
             <td>${r.usuario||'-'}</td>
             <td>${_empStatusBadge(r.status)}</td>
             ${temAcao ? `<td>${acoes}</td>` : ''}
