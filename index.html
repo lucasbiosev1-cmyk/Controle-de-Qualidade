@@ -4432,10 +4432,10 @@
                 <input type="checkbox" id="reagFiltroControlado" onchange="reagRenderTabela()" style="width:15px;height:15px;accent-color:#8e44ad;cursor:pointer;">
                 🚔 Controlados PF
             </label>
-            <!-- Checkbox: Agrupar por produto -->
-            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;background:#eaf7fb;border:1px solid #a8d8ea;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;color:#1a5276;" class="reag-check-label" title="Agrupa todos os lotes/fornecedores do mesmo produto e soma o estoque total">
-                <input type="checkbox" id="reagFiltroAgrupar" onchange="reagRenderTabela()" style="width:15px;height:15px;accent-color:#1a5276;cursor:pointer;">
-                📦 Agrupar por produto
+            <!-- Checkbox: Ver por lote (antes "Agrupar") — agrupado é o padrão -->
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;background:#eaf7fb;border:1px solid #a8d8ea;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;color:#1a5276;" class="reag-check-label" title="Desmarca para ver cada lote/fornecedor individualmente. Por padrão a tabela agrupa por produto.">
+                <input type="checkbox" id="reagFiltroAgrupar" onchange="reagRenderTabela()" style="width:15px;height:15px;accent-color:#1a5276;cursor:pointer;" checked>
+                🔍 Ver por lote
             </label>
             <!-- Checkbox: Ocultar zerado -->
             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;background:#fff8e1;border:1px solid #f9ca34;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;color:#7d5a00;" class="reag-check-label" title="Oculta itens com quantidade atual igual a zero">
@@ -13114,7 +13114,7 @@ function renderPanelMicotoxinas() {
 
     panel.innerHTML = `
     <div style="margin-bottom:14px;">
-        <p style="font-size:12px;color:#666;margin-bottom:14px;">
+        <p style="font-size:12px;color:var(--gh-fg-muted,#8b949e);margin-bottom:14px;">
             Configure as <strong>faixas de classificação</strong> de Aflatoxina e Fumonisina. Os limites serão aplicados nos relatórios de Micotoxinas e Classificação.
         </p>
         <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
@@ -13126,76 +13126,76 @@ function renderPanelMicotoxinas() {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:820px;">
 
         <!-- AFLATOXINA -->
-        <div style="background:#fdf2f8;border:1px solid #e8b4d4;border-radius:8px;padding:18px;">
-            <div style="font-weight:bold;font-size:14px;color:#7b241c;margin-bottom:14px;border-bottom:2px solid #e8b4d4;padding-bottom:8px;">
+        <div style="background:var(--gh-canvas-subtle,#161b22);border:1px solid #7b241c;border-radius:8px;padding:18px;">
+            <div style="font-weight:bold;font-size:14px;color:#f1948a;margin-bottom:14px;border-bottom:2px solid #7b241c;padding-bottom:8px;">
                 🔬 AFLATOXINA (PPB)
             </div>
             <table style="width:100%;border-collapse:collapse;font-size:12px;">
                 <thead>
                     <tr>
-                        <th style="padding:6px 8px;text-align:left;color:#555;font-weight:bold;">FAIXA</th>
-                        <th style="padding:6px 8px;text-align:center;color:#555;font-weight:bold;">LIMITE ATÉ (PPB)</th>
+                        <th style="padding:6px 8px;text-align:left;color:var(--gh-fg-muted,#8b949e);font-weight:bold;">FAIXA</th>
+                        <th style="padding:6px 8px;text-align:center;color:var(--gh-fg-muted,#8b949e);font-weight:bold;">LIMITE ATÉ (PPB)</th>
                         <th style="padding:6px 8px;text-align:center;width:80px;"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr style="background:#d5f5e3;">
+                    <tr style="background:#0d3320;">
                         <td style="padding:8px;"><span style="background:#27ae60;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">LEVE</span></td>
-                        <td style="padding:8px;text-align:center;">até <input id="micoAflaLeve" type="number" min="0" step="0.1" value="${L.afla.leve}" style="width:80px;padding:5px;border:1px solid #ddd;border-radius:4px;text-align:center;font-size:12px;"></td>
-                        <td style="padding:8px;font-size:10px;color:#888;">ppb</td>
+                        <td style="padding:8px;text-align:center;color:var(--gh-fg-default,#e6edf3);">até <input id="micoAflaLeve" type="number" min="0" step="0.1" value="${L.afla.leve}" style="width:80px;padding:5px;border:1px solid var(--gh-border-default,#30363d);border-radius:4px;text-align:center;font-size:12px;background:var(--gh-bg,#0d1117);color:var(--gh-fg-default,#e6edf3);"></td>
+                        <td style="padding:8px;font-size:10px;color:var(--gh-fg-muted,#8b949e);">ppb</td>
                     </tr>
-                    <tr style="background:#fdebd0;">
+                    <tr style="background:#3d2800;">
                         <td style="padding:8px;"><span style="background:#e67e22;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">MODERADO</span></td>
-                        <td style="padding:8px;text-align:center;">até <input id="micoAflaModera" type="number" min="0" step="0.5" value="${L.afla.moderado}" style="width:80px;padding:5px;border:1px solid #ddd;border-radius:4px;text-align:center;font-size:12px;"></td>
-                        <td style="padding:8px;font-size:10px;color:#888;">ppb</td>
+                        <td style="padding:8px;text-align:center;color:var(--gh-fg-default,#e6edf3);">até <input id="micoAflaModera" type="number" min="0" step="0.5" value="${L.afla.moderado}" style="width:80px;padding:5px;border:1px solid var(--gh-border-default,#30363d);border-radius:4px;text-align:center;font-size:12px;background:var(--gh-bg,#0d1117);color:var(--gh-fg-default,#e6edf3);"></td>
+                        <td style="padding:8px;font-size:10px;color:var(--gh-fg-muted,#8b949e);">ppb</td>
                     </tr>
-                    <tr style="background:#fde8e8;">
+                    <tr style="background:#5c1010;">
                         <td style="padding:8px;"><span style="background:#e74c3c;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">CRÍTICO</span></td>
-                        <td style="padding:8px;text-align:center;">acima de <input id="micoAflaCrit" type="number" min="0" step="1" value="${L.afla.critico}" style="width:80px;padding:5px;border:1px solid #ddd;border-radius:4px;text-align:center;font-size:12px;"></td>
-                        <td style="padding:8px;font-size:10px;color:#888;">ppb</td>
+                        <td style="padding:8px;text-align:center;color:var(--gh-fg-default,#e6edf3);">acima de <input id="micoAflaCrit" type="number" min="0" step="1" value="${L.afla.critico}" style="width:80px;padding:5px;border:1px solid var(--gh-border-default,#30363d);border-radius:4px;text-align:center;font-size:12px;background:var(--gh-bg,#0d1117);color:var(--gh-fg-default,#e6edf3);"></td>
+                        <td style="padding:8px;font-size:10px;color:var(--gh-fg-muted,#8b949e);">ppb</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
         <!-- FUMONISINA -->
-        <div style="background:#f0f4ff;border:1px solid #aec6f6;border-radius:8px;padding:18px;">
-            <div style="font-weight:bold;font-size:14px;color:#1a3a7f;margin-bottom:14px;border-bottom:2px solid #aec6f6;padding-bottom:8px;">
+        <div style="background:var(--gh-canvas-subtle,#161b22);border:1px solid #1a3a7f;border-radius:8px;padding:18px;">
+            <div style="font-weight:bold;font-size:14px;color:#7fb3f5;margin-bottom:14px;border-bottom:2px solid #1a3a7f;padding-bottom:8px;">
                 🧪 FUMONISINA (PPB)
             </div>
             <table style="width:100%;border-collapse:collapse;font-size:12px;">
                 <thead>
                     <tr>
-                        <th style="padding:6px 8px;text-align:left;color:#555;font-weight:bold;">FAIXA</th>
-                        <th style="padding:6px 8px;text-align:center;color:#555;font-weight:bold;">LIMITE ATÉ (PPB)</th>
+                        <th style="padding:6px 8px;text-align:left;color:var(--gh-fg-muted,#8b949e);font-weight:bold;">FAIXA</th>
+                        <th style="padding:6px 8px;text-align:center;color:var(--gh-fg-muted,#8b949e);font-weight:bold;">LIMITE ATÉ (PPB)</th>
                         <th style="padding:6px 8px;text-align:center;width:80px;"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr style="background:#d5f5e3;">
+                    <tr style="background:#0d3320;">
                         <td style="padding:8px;"><span style="background:#27ae60;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">LEVE</span></td>
-                        <td style="padding:8px;text-align:center;">até <input id="micoFumoLeve" type="number" min="0" step="0.1" value="${L.fumo.leve}" style="width:90px;padding:5px;border:1px solid #ddd;border-radius:4px;text-align:center;font-size:12px;"></td>
-                        <td style="padding:8px;font-size:10px;color:#888;">ppb</td>
+                        <td style="padding:8px;text-align:center;color:var(--gh-fg-default,#e6edf3);">até <input id="micoFumoLeve" type="number" min="0" step="0.1" value="${L.fumo.leve}" style="width:90px;padding:5px;border:1px solid var(--gh-border-default,#30363d);border-radius:4px;text-align:center;font-size:12px;background:var(--gh-bg,#0d1117);color:var(--gh-fg-default,#e6edf3);"></td>
+                        <td style="padding:8px;font-size:10px;color:var(--gh-fg-muted,#8b949e);">ppb</td>
                     </tr>
-                    <tr style="background:#fdebd0;">
+                    <tr style="background:#3d2800;">
                         <td style="padding:8px;"><span style="background:#e67e22;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">MODERADO</span></td>
-                        <td style="padding:8px;text-align:center;">até <input id="micoFumoModera" type="number" min="0" step="100" value="${L.fumo.moderado}" style="width:90px;padding:5px;border:1px solid #ddd;border-radius:4px;text-align:center;font-size:12px;"></td>
-                        <td style="padding:8px;font-size:10px;color:#888;">ppb</td>
+                        <td style="padding:8px;text-align:center;color:var(--gh-fg-default,#e6edf3);">até <input id="micoFumoModera" type="number" min="0" step="100" value="${L.fumo.moderado}" style="width:90px;padding:5px;border:1px solid var(--gh-border-default,#30363d);border-radius:4px;text-align:center;font-size:12px;background:var(--gh-bg,#0d1117);color:var(--gh-fg-default,#e6edf3);"></td>
+                        <td style="padding:8px;font-size:10px;color:var(--gh-fg-muted,#8b949e);">ppb</td>
                     </tr>
-                    <tr style="background:#fde8e8;">
+                    <tr style="background:#5c1010;">
                         <td style="padding:8px;"><span style="background:#e74c3c;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">CRÍTICO</span></td>
-                        <td style="padding:8px;text-align:center;">acima de <input id="micoFumoCrit" type="number" min="0" step="100" value="${L.fumo.critico}" style="width:90px;padding:5px;border:1px solid #ddd;border-radius:4px;text-align:center;font-size:12px;"></td>
-                        <td style="padding:8px;font-size:10px;color:#888;">ppb</td>
+                        <td style="padding:8px;text-align:center;color:var(--gh-fg-default,#e6edf3);">acima de <input id="micoFumoCrit" type="number" min="0" step="100" value="${L.fumo.critico}" style="width:90px;padding:5px;border:1px solid var(--gh-border-default,#30363d);border-radius:4px;text-align:center;font-size:12px;background:var(--gh-bg,#0d1117);color:var(--gh-fg-default,#e6edf3);"></td>
+                        <td style="padding:8px;font-size:10px;color:var(--gh-fg-muted,#8b949e);">ppb</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <div style="margin-top:16px;padding:12px;background:#eaf6fb;border-left:4px solid #3498db;border-radius:3px;font-size:11px;color:#1a5276;">
-        ℹ️ <strong>Como funciona:</strong> Valores = 0 ficam em branco. Acima de 0 até o limite Leve → <span style="color:#d68910;font-weight:bold;">LEVE</span>. 
-        Do Leve até o Moderado → <span style="color:#ca6f1e;font-weight:bold;">MODERADO</span>. 
-        Acima do Crítico → <span style="color:#c0392b;font-weight:bold;">CRÍTICO</span>. 
+    <div style="margin-top:16px;padding:12px;background:var(--gh-canvas-subtle,#161b22);border-left:4px solid #3498db;border-radius:3px;font-size:11px;color:var(--gh-fg-default,#e6edf3);">
+        ℹ️ <strong>Como funciona:</strong> Valores = 0 ficam em branco. Acima de 0 até o limite Leve → <span style="color:#2ecc71;font-weight:bold;">LEVE</span>. 
+        Do Leve até o Moderado → <span style="color:#f39c12;font-weight:bold;">MODERADO</span>. 
+        Acima do Crítico → <span style="color:#ff6b6b;font-weight:bold;">CRÍTICO</span>. 
         Estes limites aplicam-se no Relatório de Micotoxinas e nas colunas de Aflatoxina/Fumonisina na Classificação.
     </div>`;
 }
@@ -18446,14 +18446,16 @@ function _reagDiasParaVencer(val) {
     return Math.ceil(diff);
 }
 function _reagStatus(r) {
-    const qtd  = parseFloat(r.qtdAtual) || 0;
-    const dias = _reagDiasParaVencer(r.validade);
-    // Se não há estoque físico, alertas de validade não fazem sentido
+    const qtd    = parseFloat(r.qtdAtual) || 0;
+    const minimo = parseFloat(r.minimo)   || 0;
+    const dias   = _reagDiasParaVencer(r.validade);
+    // Validade só conta se há estoque físico
     if (qtd > 0) {
         if (dias !== null && dias < 0)   return 'vencido';
         if (dias !== null && dias <= 60) return 'vencendo';
     }
-    if (qtd <= (parseFloat(r.minimo) || 0)) return 'baixo';
+    // Estoque baixo só se o mínimo foi configurado (> 0) e qtd ficou abaixo dele
+    if (minimo > 0 && qtd <= minimo) return 'baixo';
     return 'ok';
 }
 function _reagStatusBadge(st) {
@@ -18497,10 +18499,14 @@ function reagRenderTabela() {
     const filtBusca       = ((document.getElementById('reagFiltroBusca')         || {}).value || '').trim().toLowerCase();
     const filtStatus      = (document.getElementById('reagFiltroStatus')          || {}).value || '';
     const filtControlado  = (document.getElementById('reagFiltroControlado')      || {}).checked || false;
-    const filtAgrupar     = (document.getElementById('reagFiltroAgrupar')         || {}).checked || false;
+    // reagFiltroAgrupar agora significa "ver por lote" — quando DESMARCADO = modo agrupado (padrão)
+    const filtVerLote = (document.getElementById('reagFiltroAgrupar') || {}).checked || false;
+    const filtAgrupar = !filtVerLote; // agrupado é o padrão
     const filtOcultarZero = (document.getElementById('reagFiltroOcultarZerado')   || {}).checked || false;
 
     // ── Filtro base ──────────────────────────────────────────────
+    // No modo agrupado, o filtro de status é aplicado APÓS o agrupamento
+    // (pois o status agrupado = soma dos lotes, diferente do status individual)
     let lista = _reagentes.filter(r => {
         if (filtControlado && !r.controlePF) return false;
         if (filtBusca) {
@@ -18509,7 +18515,8 @@ function reagRenderTabela() {
             const nfChave   = (r.nfChave || '').toLowerCase();
             if (!nomeMatch && !nfNum.includes(filtBusca) && !nfChave.includes(filtBusca)) return false;
         }
-        if (filtStatus && _reagStatus(r) !== filtStatus) return false;
+        // Filtro de status por lote só no modo NÃO agrupado
+        if (filtStatus && !filtAgrupar && _reagStatus(r) !== filtStatus) return false;
         return true;
     });
 
@@ -18579,6 +18586,28 @@ function reagRenderTabela() {
 
         let listaAgrupada = Object.values(grupos);
 
+        // Calcular status agrupado para cada grupo
+        listaAgrupada.forEach(g => {
+            g._status = g.qtdTotal <= 0
+                ? 'ok'
+                : (g.minimo > 0 && g.qtdTotal <= g.minimo ? 'baixo' : 'ok');
+        });
+
+        // Ordenar: Controlados PF primeiro → status crítico (baixo antes de ok) → nome A-Z
+        const _statusOrdem = { baixo: 0, ok: 1 };
+        listaAgrupada.sort((a, b) => {
+            const pfA = a.controlePF ? 0 : 1;
+            const pfB = b.controlePF ? 0 : 1;
+            if (pfA !== pfB) return pfA - pfB;
+            const stA = _statusOrdem[a._status] ?? 2;
+            const stB = _statusOrdem[b._status] ?? 2;
+            if (stA !== stB) return stA - stB;
+            return a.nome.localeCompare(b.nome, 'pt-BR');
+        });
+
+        // Aplicar filtro de status APÓS agrupamento (usando status agrupado)
+        if (filtStatus) listaAgrupada = listaAgrupada.filter(g => g._status === filtStatus);
+
         // Ocultar zerado no modo agrupado
         if (filtOcultarZero) listaAgrupada = listaAgrupada.filter(g => g.qtdTotal > 0);
 
@@ -18588,7 +18617,7 @@ function reagRenderTabela() {
         }
 
         tbody.innerHTML = listaAgrupada.map(g => {
-            const stAtual = g.qtdTotal <= 0 ? 'vencido' : g.qtdTotal <= g.minimo ? 'baixo' : 'ok';
+            const stAtual = g._status || (g.qtdTotal <= 0 ? 'ok' : (g.minimo > 0 && g.qtdTotal <= g.minimo ? 'baixo' : 'ok'));
             const rowBg   = _isDark
                 ? (stAtual === 'baixo' ? '#1f2010' : '#161b22')
                 : (stAtual === 'baixo' ? '#fffdf0' : '#fff');
@@ -19380,6 +19409,10 @@ async function reagSalvarNota() {
         _reagNotas.unshift({ ...nota, id: 'NF_' + Date.now() });
 
         reagFecharModalNota();
+        // ✅ FIX: reseta filtro de status para "Todos" após entrada de NF
+        // evita que itens atualizados fiquem ocultos pelo filtro anterior
+        const _selFiltro1 = document.getElementById('reagFiltroStatus');
+        if (_selFiltro1 && _selFiltro1.value !== '') { _selFiltro1.value = ''; }
         reagRenderTabela();
         reagRenderNotas();
         reagAtualizarCards();
@@ -19894,6 +19927,9 @@ async function reagSalvarCadastro() {
             sgqToast('✅ Reagente cadastrado e vinculado à nota!', 'success');
         } else {
             reagFecharModalCadastro();
+            // ✅ FIX: reseta filtro de status para "Todos" ao cadastrar/editar reagente
+            const _selFiltro3 = document.getElementById('reagFiltroStatus');
+            if (_selFiltro3 && _selFiltro3.value !== '') { _selFiltro3.value = ''; }
             reagRenderTabela();
             reagAtualizarCards();
             reagVerificarAlertas();
@@ -19964,6 +20000,9 @@ async function reagSalvarConsumo() {
         _reagMovimentos.unshift(mov);
 
         document.getElementById('reagModalConsumo').style.display = 'none';
+        // ✅ FIX: reseta filtro de status para "Todos" após ajuste de estoque
+        const _selFiltro2 = document.getElementById('reagFiltroStatus');
+        if (_selFiltro2 && _selFiltro2.value !== '') { _selFiltro2.value = ''; }
         reagRenderTabela();
         reagAtualizarCards();
         reagVerificarAlertas();
