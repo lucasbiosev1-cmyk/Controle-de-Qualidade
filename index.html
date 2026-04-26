@@ -18637,23 +18637,24 @@ function reagRenderTabela() {
         }
 
         tbody.innerHTML = listaAgrupada.map(g => {
-            const st        = g._status;
-            const rowBg     = _isDark ? (st === 'baixo' ? '#1f2010' : '#161b22') : (st === 'baixo' ? '#fffdf0' : '#fff');
+            const st         = g._status;
+            const rowBg      = _isDark ? (st === 'baixo' ? '#1f2010' : '#161b22') : (st === 'baixo' ? '#fffdf0' : '#fff');
             const textColor  = _isDark ? '#e6edf3' : '#2c3e50';
             const mutedColor = _isDark ? '#8b949e' : '#666';
             const pfBorder   = g.controlePF ? 'border-left:4px solid #8e44ad;' : '';
-            const nLotes     = g.lotes.size;
+            const lotesArr   = [...g.lotes];
+            const lotesTxt   = lotesArr.length > 0 ? lotesArr.join(', ') : '—';
+            const fornArr    = [...g.fornecedores];
+            const fornTxt    = fornArr.length > 0 ? fornArr.join(', ') : '—';
             return `<tr style="border-bottom:1px solid ${_isDark?'#21262d':'#f0f0f0'};background:${rowBg};${pfBorder}">
                 <td style="padding:9px 12px;text-align:left;">
                     <div style="font-weight:700;color:${textColor};">${g.nome}</div>
                     ${g.controlePF ? '<div>'+_reagPFBadge(g.controlePF)+'</div>' : ''}
                     ${g.portaria ? '<div style="font-size:9px;color:#8e44ad;margin-top:1px;">'+g.portaria+'</div>' : ''}
                 </td>
-                <td style="padding:9px 8px;text-align:center;font-size:11px;color:${mutedColor};">
-                    <span style="color:${_isDark?'#8b949e':'#aaa'};font-size:10px;">${nLotes} lote${nLotes!==1?'s':''}</span>
-                </td>
-                <td style="padding:9px 8px;text-align:center;font-size:11px;color:${mutedColor};">—</td>
-                <td style="padding:9px 8px;text-align:center;font-size:15px;font-weight:900;color:${st==='baixo'?'#e67e22':(_isDark?'#58a6ff':'#1a5276')};">
+                <td style="padding:9px 8px;text-align:center;font-size:11px;color:${mutedColor};">${lotesTxt}</td>
+                <td style="padding:9px 8px;text-align:center;font-size:11px;color:${mutedColor};">${fornTxt}</td>
+                <td style="padding:9px 8px;text-align:center;font-weight:800;color:${st==='baixo'?'#e67e22':textColor};">
                     ${g.qtdTotal.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:3})} ${g.unidade||''}
                 </td>
                 <td style="padding:9px 8px;text-align:center;font-size:11px;color:${mutedColor};">${g.minimo > 0 ? g.minimo+' '+(g.unidade||'') : '—'}</td>
@@ -18663,7 +18664,9 @@ function reagRenderTabela() {
                 <td style="padding:9px 8px;text-align:center;font-size:11px;color:${mutedColor};">—</td>
                 <td style="padding:9px 8px;text-align:center;">${_reagStatusBadge(st)}</td>
                 <td style="padding:9px 8px;text-align:center;white-space:nowrap;">
-                    <button onclick="reagEditarCadastro('${g.ids[0]}')" title="Editar primeiro lote" style="background:#3498db;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;margin:1px;">✏️</button>
+                    <button onclick="reagAbrirConsumo('${g.ids[0]}')" title="Registrar consumo" style="background:#e67e22;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;margin:1px;">📉</button>
+                    <button onclick="reagEditarCadastro('${g.ids[0]}')" title="Editar" style="background:#3498db;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;margin:1px;">✏️</button>
+                    <button onclick="reagExcluir('${g.ids[0]}')" title="Excluir" style="background:#e74c3c;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;margin:1px;">🗑️</button>
                 </td>
             </tr>`;
         }).join('');
