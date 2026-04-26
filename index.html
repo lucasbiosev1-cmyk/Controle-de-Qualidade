@@ -874,9 +874,11 @@
             #headerSubtitle { display: none !important; }
             /* Logo menor */
             #mainHeader svg { width: 100px !important; }
-            /* Esconde nome/perfil, mantém avatar */
+            /* Esconde nome/perfil, avatar e botão sair do header — migrados para mobileNavBar */
             #headerUserInfo { display: none !important; }
-            .btn-logout { padding: 6px 12px; font-size: 11px; }
+            #mainHeader .btn-logout { display: none !important; }
+            #mainHeader #headerAvatar { display: none !important; }
+            #headerDivider2 { display: none !important; }
             .theme-switcher { display: none; }
 
             /* NAVEGAÇÃO - scroll horizontal */
@@ -1104,6 +1106,65 @@
             pointer-events: none; transition: opacity 0.15s;
         }
         .obs-tooltip-wrap:hover .obs-tooltip { visibility: visible; opacity: 1; }
+
+        /* ===== TOOLBAR ENTRADA DE MATÉRIA PRIMA ===== */
+        .emp-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .emp-toolbar-btns {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .emp-btn-registrar {
+            background: #2471a3; color: white; border: none;
+            border-radius: 4px; padding: 10px 18px;
+            font-size: 13px; font-weight: bold; cursor: pointer;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .emp-btn-registrar:hover { background: #1a5276; }
+        .emp-btn-atualizar {
+            background: #2980b9; color: white; border: none;
+            border-radius: 4px; padding: 10px 18px;
+            font-size: 13px; font-weight: bold; cursor: pointer;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .emp-btn-atualizar:hover { background: #2471a3; }
+        .emp-total-label {
+            font-weight: bold; text-transform: uppercase;
+            color: #333; font-size: 13px;
+        }
+        html[data-theme="dark"] .emp-total-label { color: #e6edf3; }
+
+        @media (max-width: 600px) {
+            .emp-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .emp-toolbar-btns {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .emp-btn-registrar,
+            .emp-btn-atualizar {
+                width: 100%;
+                justify-content: center;
+                padding: 12px 10px;
+                font-size: 12px;
+            }
+            .emp-total-label {
+                text-align: center;
+                font-size: 12px;
+                padding: 4px 0;
+                border-top: 1px solid rgba(255,255,255,0.08);
+            }
+        }
 
         /* ===== REMOVER SETAS DOS CAMPOS NUMÉRICOS ===== */
         input[type=number]::-webkit-inner-spin-button,
@@ -2951,6 +3012,13 @@
             <span></span>
         </button>
         <span id="mobileNavTitle">SGQ — Início</span>
+        <div style="display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0;">
+            <div id="mobileAvatar" style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#58a6ff,#388bfd);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#0d1117;flex-shrink:0;">U</div>
+            <button onclick="fazerLogout()" style="background:rgba(248,81,73,0.15);color:#f85149;border:1px solid rgba(248,81,73,0.4);border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;letter-spacing:0.5px;text-transform:uppercase;font-family:'Montserrat',Arial,sans-serif;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Sair
+            </button>
+        </div>
     </div>
     <!-- Overlay e painel mobile -->
     <div id="mobileMenuOverlay" onclick="fecharMenuMobile()"></div>
@@ -6303,10 +6371,12 @@
                     <button class="btn-limpar" onclick="limparFiltrosEMP()">LIMPAR</button>
                 </div>
             </div>
-            <div style="margin-bottom:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-                <button onclick="abrirModalEMP()" style="background:#2471a3;color:white;border:none;border-radius:4px;padding:10px 18px;font-size:13px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:6px;">+ REGISTRAR ENTRADA</button>
-                <button onclick="atualizarStatusEMP(this)" style="background:#2980b9;color:white;border:none;border-radius:4px;padding:10px 18px;font-size:13px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:6px;" title="Recarrega os status do banco de dados">🔄 Atualizar Status</button>
-                <span style="font-weight:bold;text-transform:uppercase;color:#333;">Total de registros: <span id="totalRegistrosEMP">0</span></span>
+            <div class="emp-toolbar">
+                <div class="emp-toolbar-btns">
+                    <button onclick="abrirModalEMP()" class="emp-btn-registrar">+ REGISTRAR ENTRADA</button>
+                    <button onclick="atualizarStatusEMP(this)" class="emp-btn-atualizar" title="Recarrega os status do banco de dados">🔄 Atualizar Status</button>
+                </div>
+                <span class="emp-total-label">TOTAL DE REGISTROS: <span id="totalRegistrosEMP">0</span></span>
             </div>
             <div class="tabela-container" id="tabelaEMPContainer">
                 <table>
@@ -7451,6 +7521,8 @@ async function fazerLogin() {
         const iniciais = partes.length >= 2 ? (partes[0][0] + partes[partes.length-1][0]).toUpperCase() : nomeCompleto.slice(0,2).toUpperCase();
         const avatarEl = document.getElementById('headerAvatar');
         if (avatarEl) avatarEl.textContent = iniciais;
+        const mobileAvatarEl = document.getElementById('mobileAvatar');
+        if (mobileAvatarEl) mobileAvatarEl.textContent = iniciais;
 
         const capaNome = document.getElementById('capaNomeUsuario');
         if (capaNome) capaNome.textContent = partes[0] || nomeCompleto;
@@ -17740,6 +17812,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const iniciais = partes.length >= 2 ? (partes[0][0] + partes[partes.length-1][0]).toUpperCase() : nomeCompleto.slice(0,2).toUpperCase();
                 const avatarEl = document.getElementById('headerAvatar');
                 if (avatarEl) avatarEl.textContent = iniciais;
+                const mobileAvatarEl2 = document.getElementById('mobileAvatar');
+                if (mobileAvatarEl2) mobileAvatarEl2.textContent = iniciais;
                 const capaNome = document.getElementById('capaNomeUsuario');
                 if (capaNome) capaNome.textContent = partes[0] || nomeCompleto;
 
