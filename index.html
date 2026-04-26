@@ -4478,7 +4478,7 @@
             </label>
             <!-- Checkbox: Ver por lote (antes "Agrupar") — agrupado é o padrão -->
             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;background:#eaf7fb;border:1px solid #a8d8ea;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;color:#1a5276;" class="reag-check-label" title="Desmarca para ver cada lote/fornecedor individualmente. Por padrão a tabela agrupa por produto.">
-                <input type="checkbox" id="reagFiltroAgrupar" onchange="reagRenderTabela()" style="width:15px;height:15px;accent-color:#1a5276;cursor:pointer;" checked>
+                <input type="checkbox" id="reagFiltroAgrupar" onchange="reagRenderTabela()" style="width:15px;height:15px;accent-color:#1a5276;cursor:pointer;">
                 🔍 Ver por lote
             </label>
             <!-- Checkbox: Ocultar zerado -->
@@ -4493,22 +4493,18 @@
             <div style="overflow-x:auto;">
                 <table style="width:100%;border-collapse:collapse;font-size:12px;">
                     <thead id="reagThead">
-                        <tr style="background:#1a2a6e;color:#fff;">
+                        <tr style="background:#1a5276;color:#fff;">
                             <th style="padding:10px 12px;text-align:left;font-size:11px;letter-spacing:.5px;">REAGENTE</th>
-                            <th style="padding:10px 8px;text-align:center;">LOTE</th>
-                            <th style="padding:10px 8px;text-align:center;">FORNECEDOR</th>
-                            <th style="padding:10px 8px;text-align:center;">QTD ATUAL</th>
+                            <th style="padding:10px 8px;text-align:center;">ESTOQUE TOTAL</th>
+                            <th style="padding:10px 8px;text-align:center;">UNIDADE</th>
                             <th style="padding:10px 8px;text-align:center;">MÍNIMO</th>
-                            <th style="padding:10px 8px;text-align:center;">VALIDADE</th>
-                            <th style="padding:10px 8px;text-align:center;">ENTRADA</th>
-                            <th style="padding:10px 8px;text-align:center;">NOTA FISCAL</th>
-                            <th style="padding:10px 8px;text-align:center;">CUSTO UNIT.</th>
+                            <th style="padding:10px 8px;text-align:center;">LOTES</th>
+                            <th style="padding:10px 8px;text-align:center;">FORNECEDORES</th>
                             <th style="padding:10px 8px;text-align:center;">STATUS</th>
-                            <th style="padding:10px 8px;text-align:center;">AÇÕES</th>
                         </tr>
                     </thead>
                     <tbody id="reagTbody">
-                        <tr><td colspan="11" style="text-align:center;padding:40px;color:#aaa;">Nenhum reagente cadastrado.</td></tr>
+                        <tr><td colspan="7" style="text-align:center;padding:40px;color:#aaa;">Nenhum reagente cadastrado.</td></tr>
                     </tbody>
                 </table>
             </div>
