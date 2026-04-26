@@ -7958,18 +7958,23 @@ function atualizarKpisCapa() {
             return parseFloat(v) > 0;
         };
         const camposMP   = ['proteina','solubil','umidade','densidade','mineral','acidez','ureatica','rancidez','peroxido','digestibilidade'];
-        const camposProd = ['dgm','dpg','umidade','densidade','proteina','fibra','mineral','calcio','fosforo','fundo'];
+        const camposProd = ['dgm','umidade','densidade','proteina','fibra','mineral','calcio','fosforo'];
         const camposDefeito = ['queimado','ardido','mofado','esverdeado','fermentando','chocho','picado','gessado','quebrado','germinado','carunchado','impureza'];
         const contarClass = (r) => {
             let n = 0;
             if (camposDefeito.some(c => temValorMP(r, c))) n++;
             if (temValorMP(r, 'umidade'))   n++;
             if (temValorMP(r, 'densidade')) n++;
+            if (temValorMP(r, 'aflatoxinas')) n++;
+            if (temValorMP(r, 'fumonisinas')) n++;
             return n;
         };
         const contarProd = (r) => {
             let n = camposProd.filter(c => temValorMP(r, c)).length;
-            if (temValorMP(r,'granulo1') || temValorMP(r,'granulo2') || temValorMP(r,'granulo3')) n++;
+            // DGM e DPG contam como 1 somente (DGM já está em camposProd, DPG entra aqui se DGM não estiver)
+            if (!temValorMP(r,'dgm') && temValorMP(r,'dpg')) n++;
+            // Granulo1, Granulo2, Granulo3 e Fundo contam como 1 somente
+            if (temValorMP(r,'granulo1') || temValorMP(r,'granulo2') || temValorMP(r,'granulo3') || temValorMP(r,'fundo')) n++;
             return n;
         };
 
