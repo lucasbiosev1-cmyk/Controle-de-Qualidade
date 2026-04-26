@@ -17105,105 +17105,105 @@ async function salvarDev() {
     }
     const _btnDev = document.getElementById('btnSalvarDev');
     if (_btnDev && _btnDev.disabled) return;
-    if (_btnDev) { _btnDev.disabled = true; _btnDev.textContent = '⏳ Salvando...'; }
-    const data = document.getElementById('dev-data').value;
-    const produto = document.getElementById('dev-produto').value.trim();
+
+    // ── Validações síncronas (sem rede) ──────────────────────────────────
+    const data       = document.getElementById('dev-data').value;
+    const produto    = document.getElementById('dev-produto').value.trim();
     const fornecedor = document.getElementById('dev-fornecedor').value.trim();
-    const motivo = document.getElementById('dev-motivo').value;
+    const motivo     = document.getElementById('dev-motivo').value;
     if (!data || !produto || !fornecedor || !motivo) {
         alert('Preencha todos os campos obrigatórios (*).');
         return;
     }
-    const classifData = Array.from(document.querySelectorAll('#classifBody tr')).map(tr => {
-        const inputs = tr.querySelectorAll('input');
-        const unidade = tr.querySelector('input[data-unidade]')?.dataset?.unidade || '%';
-        return { defeito: inputs[0]?.value||'', resultado: inputs[1]?.value||'', parametro: inputs[2]?.value||'', unidade };
-    }).filter(c => c.defeito);
-    const editId = document.getElementById('dev-edit-id').value;
-    const lote = document.getElementById('dev-lote').value.trim();
-
-    // Bloqueia duplicata por NF/Lote + Fornecedor
-    // "Ñ" significa "Sem Nota Fiscal" — não bloqueia duplicata neste caso
+    const lote     = document.getElementById('dev-lote').value.trim();
     const _semNota = lote && lote.toUpperCase() === 'Ñ';
+    const editId   = document.getElementById('dev-edit-id').value;
+
+    // Verificação de duplicata apenas na lista local (sem query extra ao Supabase)
     if (lote && !_semNota) {
-        try {
-            let _q = _sbClient.from('devolucoes').select('id,numero').ilike('fornecedor', fornecedor).eq('lote', lote);
-            if (editId) _q = _q.neq('id', editId);
-            const { data: _dup } = await _q;
-            if (_dup && _dup.length > 0) {
-                const _nums = _dup.map(d => d.numero).join(', ');
-                if (_btnDev) { _btnDev.disabled = false; _btnDev.innerHTML = '💾 Salvar Devolução'; }
-                alert(`⚠️ Já existe uma devolução cadastrada com este Nº NF/Lote para este fornecedor.\n\nRegistro(s) existente(s): ${_nums}\n\nVerifique antes de continuar.`);
-                return;
-            }
-        } catch(_e) {
-            // se falhar a consulta, permite salvar (não bloqueia por erro de rede)
+        const _dupLocal = listaDev.filter(d =>
+            String(d.id) !== String(editId) &&
+            (d.lote || '').trim() === lote &&
+            (d.fornecedor || '').trim().toLowerCase() === fornecedor.toLowerCase()
+        );
+        if (_dupLocal.length > 0) {
+            const _nums = _dupLocal.map(d => d.numero).join(', ');
+            alert(`⚠️ Já existe uma devolução cadastrada com este Nº NF/Lote para este fornecedor.\n\nRegistro(s) existente(s): ${_nums}\n\nVerifique antes de continuar.`);
+            return;
         }
     }
 
-    // Se for edição, preserva o número original — nunca regera na edição
+    // ── Calcula número DEV localmente (sem query ao Supabase) ────────────
     let numeroCalculado;
     if (editId) {
         const _devExist = listaDev.find(x => String(x.id) === String(editId));
         numeroCalculado = (_devExist && _devExist.numero) || document.getElementById('dev-numero').value;
     } else {
-        // Novo registro: busca o maior número DEV já usado para este fornecedor
         let _maxSeq = 0;
-        try {
-            const { data: _devsForn } = await _sbClient
-                .from('devolucoes')
-                .select('numero')
-                .ilike('fornecedor', fornecedor);
-            (_devsForn || []).forEach(d => {
+        listaDev.forEach(d => {
+            if ((d.fornecedor || '').trim().toLowerCase() === fornecedor.toLowerCase()) {
                 const _m = (d.numero || '').match(/DEV-(\d+)/);
                 if (_m) { const _s = parseInt(_m[1], 10); if (_s > _maxSeq) _maxSeq = _s; }
-            });
-        } catch(_e) {
-            // fallback: usa listaDev local se Supabase falhar
-            listaDev.forEach(d => {
-                if ((d.fornecedor || '').trim().toLowerCase() === fornecedor.toLowerCase()) {
-                    const _m = (d.numero || '').match(/DEV-(\d+)/);
-                    if (_m) { const _s = parseInt(_m[1], 10); if (_s > _maxSeq) _maxSeq = _s; }
-                }
-            });
-        }
+            }
+        });
         numeroCalculado = 'DEV-' + String(_maxSeq + 1).padStart(4, '0');
     }
-    document.getElementById('dev-numero').value = numeroCalculado;
+
+    const classifData = Array.from(document.querySelectorAll('#classifBody tr')).map(tr => {
+        const inputs  = tr.querySelectorAll('input');
+        const unidade = tr.querySelector('input[data-unidade]')?.dataset?.unidade || '%';
+        return { defeito: inputs[0]?.value||'', resultado: inputs[1]?.value||'', parametro: inputs[2]?.value||'', unidade };
+    }).filter(c => c.defeito);
 
     const dev = {
-        id:             editId ? parseInt(editId) : Date.now(),
-        numero:         numeroCalculado,
+        id:            editId ? parseInt(editId) : Date.now(),
+        numero:        numeroCalculado,
         data, produto, fornecedor, motivo,
-        tipo:           document.getElementById('dev-tipo').value,
-        lote:           document.getElementById('dev-lote').value,
-        placa:          document.getElementById('dev-placa') ? document.getElementById('dev-placa').value.toUpperCase() : '',
-        parametro:      document.getElementById('dev-parametro')?.value || '',
-        desc_motivo:    document.getElementById('dev-desc-motivo')?.value || '',
-        status:         document.getElementById('dev-status').value || 'Concluída',
-        classificacao:  JSON.stringify(classifData),
-        imagens:        JSON.stringify(devImagens.slice()),
+        tipo:          document.getElementById('dev-tipo').value,
+        lote:          lote,
+        placa:         document.getElementById('dev-placa') ? document.getElementById('dev-placa').value.toUpperCase() : '',
+        parametro:     document.getElementById('dev-parametro')?.value || '',
+        desc_motivo:   document.getElementById('dev-desc-motivo')?.value || '',
+        status:        document.getElementById('dev-status').value || 'Concluída',
+        classificacao: JSON.stringify(classifData),
+        imagens:       JSON.stringify(devImagens.slice()),
     };
-    try {
-        const { error } = await _sbClient
-            .from('devolucoes')
-            .upsert(dev, { onConflict: 'id' });
-        if (error) throw error;
-        if (editId) {
-            const idx = listaDev.findIndex(d => d.id == editId);
-            if (idx > -1) listaDev[idx] = dev;
-        } else { listaDev.push(dev); devIdSeq++; }
-        salvarStorageNC();
-        fecharModalDev();
-        renderizarDev(listaDev);
-        sgqToast('✅ Devolução salva com sucesso!', 'success');
-    } catch(e) {
-        console.error('Erro salvarDev:', e);
-        sgqToast('❌ Erro ao salvar Devolução: ' + (e.message || 'Falha ao conectar com o servidor.'), 'error');
-        alert('Erro ao salvar Devolução: ' + (e.message || JSON.stringify(e)));
-    } finally {
-        if (_btnDev) { _btnDev.disabled = false; _btnDev.innerHTML = '💾 Salvar Devolução'; }
+
+    // ── ✅ OPTIMISTIC UI: atualiza tela instantaneamente ────────────────
+    if (editId) {
+        const idx = listaDev.findIndex(d => d.id == editId);
+        if (idx > -1) listaDev[idx] = dev;
+    } else {
+        listaDev.unshift(dev); // insere no topo para aparecer imediatamente
+        devIdSeq++;
     }
+    salvarStorageNC();
+    fecharModalDev();
+    renderizarDev(listaDev);
+    sgqToast('✅ Devolução salva!', 'success');
+
+    // ── Sincroniza com Supabase em background (não bloqueia a UI) ────────
+    _sbClient
+        .from('devolucoes')
+        .upsert(dev, { onConflict: 'id' })
+        .then(({ error }) => {
+            if (error) {
+                console.error('Erro sync Supabase (salvarDev):', error);
+                if (editId) {
+                    sgqToast('⚠️ Erro ao sincronizar com o servidor. Recarregando dados...', 'warning');
+                    setTimeout(() => location.reload(), 2500);
+                } else {
+                    listaDev = listaDev.filter(d => d.id !== dev.id);
+                    salvarStorageNC();
+                    renderizarDev(listaDev);
+                    sgqToast('❌ Falha ao salvar no servidor. Registro removido localmente.', 'error');
+                }
+            }
+        })
+        .catch(e => {
+            console.error('Erro sync Supabase (salvarDev catch):', e);
+            sgqToast('⚠️ Sem conexão com o servidor. Dado salvo localmente.', 'warning');
+        });
 }
 
 async function excluirDev(id) {
