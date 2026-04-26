@@ -996,6 +996,50 @@
             /* Cards de resumo em 2 colunas */
             #aba-estoqueMateriais div[style*="grid-template-columns:repeat(auto-fit"],
             #aba-equipamentos div[style*="grid-template-columns:repeat(auto-fit"] { grid-template-columns: 1fr 1fr !important; }
+
+            /* ── MODAL CADASTRO MATÉRIA PRIMA — responsivo mobile ── */
+            #modalCadastroMP .modal-content {
+                max-width: 100% !important;
+                width: 100% !important;
+                margin: 0 !important;
+                border-radius: 8px 8px 0 0 !important;
+                max-height: 96vh !important;
+                overflow-y: auto !important;
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+            }
+            #modalCadastroMP {
+                align-items: flex-end !important;
+                padding: 0 !important;
+            }
+            #modalCadastroMP .form-wrapper { padding: 10px 12px !important; }
+            #modalCadastroMP .form-section { margin-bottom: 10px !important; }
+            /* Todos os grids viram 1 coluna */
+            #modalCadastroMP .form-grid-4,
+            #modalCadastroMP .form-grid-3,
+            #modalCadastroMP .form-grid-2,
+            #modalCadastroMP .form-grid { grid-template-columns: 1fr !important; gap: 6px !important; }
+            /* Grid de fornecedor (1fr 1fr inline style) */
+            #modalCadastroMP div[style*="grid-template-columns:1fr 1fr"],
+            #modalCadastroMP div[style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+            /* Inputs e selects confortáveis no toque */
+            #modalCadastroMP input,
+            #modalCadastroMP select,
+            #modalCadastroMP textarea { font-size: 14px !important; padding: 10px !important; height: auto !important; }
+            #modalCadastroMP label { font-size: 12px !important; margin-bottom: 3px !important; }
+            #modalCadastroMP h3 { font-size: 12px !important; }
+            /* Botão + de nova matéria prima ao lado do select */
+            #modalCadastroMP div[style*="display:flex"][style*="gap:4px"] { display: flex !important; }
+            #modalCadastroMP div[style*="display:flex"][style*="gap:4px"] select { flex: 1 !important; }
+            /* Botões de ação em coluna */
+            #modalCadastroMP .form-buttons { flex-direction: column !important; gap: 6px !important; padding: 10px 0 4px !important; }
+            #modalCadastroMP .btn-salvar,
+            #modalCadastroMP .btn-limpar-form,
+            #modalCadastroMP .btn-cancelar,
+            #modalCadastroMP .btn-delete { width: 100% !important; padding: 12px !important; font-size: 13px !important; margin: 0 !important; }
+            #modalCadastroMP .btn-delete { margin-top: 4px !important; }
         }
 
         @media (max-width: 400px) {
