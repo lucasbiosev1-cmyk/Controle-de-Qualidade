@@ -7954,7 +7954,7 @@ function atualizarKpisCapa() {
         const temValorMP = (r, campo) => {
             const v = r[campo];
             if (v === null || v === undefined) return false;
-            if (campo === 'ureatica' || campo === 'peroxido' || campo === 'rancidez') return true;
+            if (campo === 'ureatica' || campo === 'peroxido' || campo === 'rancidez' || campo === 'aflatoxinas' || campo === 'fumonisinas') return true;
             return parseFloat(v) > 0;
         };
         const camposMP   = ['proteina','solubil','umidade','densidade','mineral','acidez','ureatica','rancidez','peroxido','digestibilidade'];
@@ -7987,9 +7987,11 @@ function atualizarKpisCapa() {
         mpHoje.forEach(r    => { camposMP.forEach(c => { if(temValorMP(r,c)) analisesHoje++; }); });
         classHoje.forEach(r => { analisesHoje += contarClass(r); });
         let analisesMes = 0;
-        (producoes||[]).filter(isMesAtual).forEach(r => { analisesMes += contarProd(r); });
-        (materiasPrimas||[]).filter(isMesAtual).forEach(r => { camposMP.forEach(c => { if(temValorMP(r,c)) analisesMes++; }); });
-        (classificacoes||[]).filter(isMesAtual).forEach(r => { analisesMes += contarClass(r); });
+        let _contProd = 0, _contMP = 0, _contClass = 0;
+        (producoes||[]).filter(isMesAtual).forEach(r => { const v = contarProd(r); analisesMes += v; _contProd += v; });
+        (materiasPrimas||[]).filter(isMesAtual).forEach(r => { camposMP.forEach(c => { if(temValorMP(r,c)) { analisesMes++; _contMP++; } }); });
+        (classificacoes||[]).filter(isMesAtual).forEach(r => { const v = contarClass(r); analisesMes += v; _contClass += v; });
+        console.log('[KPI ANÁLISES] Produção:', _contProd, '| MP:', _contMP, '| Classificação:', _contClass, '| TOTAL:', analisesMes);
 
         // ── Helpers de status ──
         const _isConf   = s => (s.includes('CONFORME') && !s.includes('NÃO')) || (s.includes('>C<') && !s.includes('NC'));
