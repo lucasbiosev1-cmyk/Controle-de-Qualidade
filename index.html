@@ -18585,6 +18585,9 @@ function reagRenderTabela() {
         bannerNF.innerHTML = '';
     }
 
+    // ── Tema ─────────────────────────────────────────────────────
+    const _isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
     // ══════════════════════════════════════════════════════════════
     //  MODO AGRUPADO — soma estoque por nome de produto
     // ══════════════════════════════════════════════════════════════
@@ -18710,7 +18713,6 @@ function reagRenderTabela() {
         return;
     }
 
-    const _isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     tbody.innerHTML = lista.map(r => {
         const st   = _reagStatus(r);
         const dias = _reagDiasParaVencer(r.validade);
