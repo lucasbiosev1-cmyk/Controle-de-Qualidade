@@ -16219,8 +16219,8 @@ async function executarCorrecaoDefeitos() {
                         <input type="text" id="dev-produto" placeholder="Ex: Milho, Soja, Embalagem...">
                     </div>
                     <div class="nc-form-group">
-                        <label>Lote / Nº NF de Entrada</label>
-                        <input type="text" id="dev-lote" placeholder="Ex: LOTE-2025-001">
+                        <label>Lote / Nº NF de Entrada <span style="font-weight:400;font-size:11px;color:#8b949e;">(use <b>Ñ</b> se sem nota)</span></label>
+                        <input type="text" id="dev-lote" placeholder="Ex: 12345 ou Ñ (sem nota)">
                     </div>
                     <div class="nc-form-group">
                         <label>Fornecedor <span class="nc-req">*</span></label>
@@ -17123,7 +17123,9 @@ async function salvarDev() {
     const lote = document.getElementById('dev-lote').value.trim();
 
     // Bloqueia duplicata por NF/Lote + Fornecedor
-    if (lote) {
+    // "Ñ" significa "Sem Nota Fiscal" — não bloqueia duplicata neste caso
+    const _semNota = lote && lote.toUpperCase() === 'Ñ';
+    if (lote && !_semNota) {
         try {
             let _q = _sbClient.from('devolucoes').select('id,numero').ilike('fornecedor', fornecedor).eq('lote', lote);
             if (editId) _q = _q.neq('id', editId);
@@ -17229,7 +17231,7 @@ function renderizarDev(lista) {
         <td style="padding:7px 6px;text-align:center;">${ncFmtData(dev.data)}</td>
         <td style="padding:7px 6px;text-align:center;">${dev.produto||'-'}</td>
         <td style="padding:7px 6px;text-align:center;">${dev.fornecedor||'-'}</td>
-        <td style="padding:7px 6px;text-align:center;">${dev.lote||'-'}</td>
+        <td style="padding:7px 6px;text-align:center;">${(dev.lote||'').toUpperCase()==='Ñ' ? '<span title="Sem Nota Fiscal" style="color:#e67e22;font-weight:700;">Ñ</span>' : (dev.lote||'-')}</td>
         <td style="padding:7px 6px;text-align:center;">${dev.placa||'-'}</td>
         <td style="padding:7px 6px;text-align:left;">${dev.motivo||'-'}</td>
         <td style="padding:7px 6px;text-align:center;">${ncBadgeStatus(dev.status)}</td>
