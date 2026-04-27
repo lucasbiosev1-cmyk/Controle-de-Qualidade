@@ -11528,16 +11528,21 @@ function exibirTabelaEMP(lista) {
         const dataFmt = r.data ? new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR') : '-';
         let acoes = '';
         if (temAcao) {
-            if (podeAprovar && (r.status === 'EM ANÁLISE'))
-                acoes += `<button class="btn-action" style="background:#27ae60;color:white;" onclick="abrirModalAprovarEMP(${r.id})">✅ Apr/Rep</button> `;
-            if (podeAprovar && r.status === 'APROVADA')
-                acoes += `<button class="btn-action" style="background:#e67e22;color:white;" onclick="desfazerAprovacaoEMP(${r.id})" title="Desfazer aprovação">↩️ Desfazer</button> `;
-            if (podeEditar && r.status !== 'CONCLUÍDA')
-                acoes += `<button class="btn-action btn-edit" onclick="editarEntradaMP(${r.id})" title="Editar">✏️</button>`;
-            if (podeExcluir)
-                acoes += ` <button class="btn-action btn-delete" onclick="excluirEntradaMP(${r.id})" title="Excluir">🗑️</button>`;
+            const podeDesfazer = podeAprovar && (r.status === 'APROVADA' || r.status === 'REPROVADA');
+            const btnAprRep = (podeAprovar && r.status === 'EM ANÁLISE')
+                ? `<button class="btn-action" style="background:#27ae60;color:white;min-width:82px;" onclick="abrirModalAprovarEMP(${r.id})">✅ Apr/Rep</button>`
+                : podeDesfazer
+                    ? `<button class="btn-action" style="background:#e67e22;color:white;min-width:82px;" onclick="desfazerAprovacaoEMP(${r.id})" title="Desfazer">↩️ Desfazer</button>`
+                    : `<span style="display:inline-block;min-width:82px;"></span>`;
+            const btnDelete = podeExcluir
+                ? `<button class="btn-action btn-delete" style="min-width:28px;" onclick="excluirEntradaMP(${r.id})" title="Excluir">🗑️</button>`
+                : '';
+            acoes = `<div style="display:flex;align-items:center;gap:4px;justify-content:center;">${btnAprRep}${btnDelete}</div>`;
         }
-        return separador + `<tr style="background:${_empCoresGrupo[corIdx]};">
+        const podeEditarLinha = podeEditar && r.status !== 'CONCLUÍDA';
+        const dblclickAttr = podeEditarLinha ? `ondblclick="editarEntradaMP(${r.id})" title="Clique duplo para editar"` : '';
+        const cursorStyle = podeEditarLinha ? 'cursor:pointer;' : '';
+        return separador + `<tr style="background:${_empCoresGrupo[corIdx]};${cursorStyle}" ${dblclickAttr}>
             <td>${dataFmt}</td>
             <td>${r.hora||'-'}</td>
             <td style="text-align:center;font-weight:bold;">
@@ -11818,16 +11823,16 @@ async function acaoEntradaMP(novoStatus) {
 }
 
 async function desfazerAprovacaoEMP(id) {
-    if (!confirm('Deseja desfazer a aprovação desta carga e voltar para "EM ANÁLISE"?')) return;
+    if (!confirm('Deseja desfazer e voltar o status para "EM ANÁLISE"?')) return;
     const idx = entradasMP.findIndex(e => String(e.id) === String(id));
     if (idx < 0) return;
     entradasMP[idx].status = 'EM ANÁLISE';
     try {
         await dbUpsertOne('entradas_mp', entradasMP[idx]);
         exibirTabelaEMP();
-        mostrarMsgEMP('sucesso', '↩️ Aprovação desfeita. Status voltou para EM ANÁLISE.');
+        mostrarMsgEMP('sucesso', '↩️ Status voltou para EM ANÁLISE.');
     } catch(e) {
-        mostrarMsgEMP('erro', 'Erro ao desfazer aprovação: ' + e.message);
+        mostrarMsgEMP('erro', 'Erro ao desfazer: ' + e.message);
     }
 }
 
