@@ -11545,8 +11545,8 @@ function exibirTabelaEMP(lista) {
         return separador + `<tr style="background:${_empCoresGrupo[corIdx]};${cursorStyle}" ${dblclickAttr}>
             <td>${dataFmt}</td>
             <td>${r.hora||'-'}</td>
-            <td style="font-weight:bold;white-space:nowrap;text-align:center;">
-                <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:rgba(255,255,255,0.12);border-radius:50%;font-size:10px;font-weight:800;vertical-align:middle;margin-right:6px;">${seq}</span><span style="vertical-align:middle;">${r.materia_prima||'-'}</span>
+            <td style="font-weight:bold;text-align:center;">
+                <span style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap;"><span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;width:22px;height:22px;background:rgba(255,255,255,0.12);border-radius:50%;font-size:10px;font-weight:800;flex-shrink:0;">${seq}</span><span>${r.materia_prima||'-'}</span></span>
             </td>
             <td style="text-align:center;">${r.obs ? `<span class="obs-tooltip-wrap">${r.fornecedor||'-'}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span>` : (r.fornecedor||'-')}</td>
             <td>${r.nf||'-'}</td>
