@@ -6382,7 +6382,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>DATA</th><th>HORA</th><th>MATÉRIA PRIMA</th><th style="text-align:center;">FORNECEDOR</th><th>NOTA FISCAL</th>
+                            <th>DATA</th><th>HORA</th><th style="text-align:center;">MATÉRIA PRIMA</th><th style="text-align:center;">FORNECEDOR</th><th>NOTA FISCAL</th>
                             <th>PLACA</th><th>USUÁRIO</th><th>STATUS</th><th id="thAcaoEMP">AÇÃO</th>
                         </tr>
                     </thead>
@@ -11545,7 +11545,7 @@ function exibirTabelaEMP(lista) {
         return separador + `<tr style="background:${_empCoresGrupo[corIdx]};${cursorStyle}" ${dblclickAttr}>
             <td>${dataFmt}</td>
             <td>${r.hora||'-'}</td>
-            <td style="font-weight:bold;white-space:nowrap;">
+            <td style="font-weight:bold;white-space:nowrap;text-align:center;">
                 <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:rgba(255,255,255,0.12);border-radius:50%;font-size:10px;font-weight:800;vertical-align:middle;margin-right:6px;">${seq}</span><span style="vertical-align:middle;">${r.materia_prima||'-'}</span>
             </td>
             <td style="text-align:center;">${r.obs ? `<span class="obs-tooltip-wrap">${r.fornecedor||'-'}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span>` : (r.fornecedor||'-')}</td>
