@@ -6379,11 +6379,11 @@
                 <span class="emp-total-label">TOTAL DE REGISTROS: <span id="totalRegistrosEMP">0</span></span>
             </div>
             <div class="tabela-container" id="tabelaEMPContainer">
-                <table>
+                <table style="table-layout:fixed;width:100%;">
                     <thead>
                         <tr>
-                            <th>DATA</th><th>HORA</th><th style="text-align:left;padding-left:8px;">MATÉRIA PRIMA</th><th style="text-align:center;">FORNECEDOR</th><th>NOTA FISCAL</th>
-                            <th>PLACA</th><th>USUÁRIO</th><th>STATUS</th><th id="thAcaoEMP">AÇÃO</th>
+                            <th style="text-align:left;padding-left:8px;width:22%;">MATÉRIA PRIMA</th><th style="width:9%;">DATA</th><th style="width:6%;">HORA</th><th style="width:13%;">NOTA FISCAL</th>
+                            <th style="width:9%;">PLACA</th><th style="width:11%;">USUÁRIO</th><th style="width:12%;">STATUS</th><th id="thAcaoEMP" style="width:18%;">AÇÃO</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaEntradaMP"><tr><td colspan="8" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
@@ -11542,13 +11542,18 @@ function exibirTabelaEMP(lista) {
         const podeEditarLinha = podeEditar && r.status !== 'CONCLUÍDA';
         const dblclickAttr = podeEditarLinha ? `ondblclick="editarEntradaMP(${r.id})" title="Clique duplo para editar"` : '';
         const cursorStyle = podeEditarLinha ? 'cursor:pointer;' : '';
+        const fornecedorExib = r.obs
+            ? `<span class="obs-tooltip-wrap">${r.fornecedor||'-'}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span>`
+            : (r.fornecedor||'-');
         return separador + `<tr style="background:${_empCoresGrupo[corIdx]};${cursorStyle}" ${dblclickAttr}>
+            <td style="font-weight:bold;overflow:hidden;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;width:22px;height:22px;background:rgba(255,255,255,0.12);border-radius:50%;font-size:10px;font-weight:800;flex-shrink:0;">${seq}</span>
+                    <span style="font-size:11px;font-weight:500;color:var(--gh-fg-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${fornecedorExib}</span>
+                </div>
+            </td>
             <td>${dataFmt}</td>
             <td>${r.hora||'-'}</td>
-            <td style="font-weight:bold;">
-                <div style="display:flex;align-items:center;gap:8px;"><span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;width:22px;height:22px;background:rgba(255,255,255,0.12);border-radius:50%;font-size:10px;font-weight:800;flex-shrink:0;">${seq}</span><span>${r.materia_prima||'-'}</span></div>
-            </td>
-            <td style="text-align:center;">${r.obs ? `<span class="obs-tooltip-wrap">${r.fornecedor||'-'}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span>` : (r.fornecedor||'-')}</td>
             <td>${r.nf||'-'}</td>
             <td style="text-align:center;letter-spacing:1px;font-weight:bold;">${r.placa||'-'}</td>
             <td>${r.usuario||'-'}</td>
