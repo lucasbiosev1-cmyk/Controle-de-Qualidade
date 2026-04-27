@@ -11491,30 +11491,22 @@ function exibirTabelaEMP(lista) {
         return idxParcial >= 0 ? idxParcial : _EMP_ORDEM_MP.length;
     }
 
-    // Ordena: Prioridade máxima para o campo SEQUÊNCIA (crescente). 
-    // Registros com sequência vêm antes dos sem sequência.
+    // Ordena: Primeiro por GRUPO (Matéria Prima), e DENTRO do grupo pela SEQUÊNCIA manual
     dados.sort((a,b) => {
-        const temSeqA = a.seq != null && a.seq !== '';
-        const temSeqB = b.seq != null && b.seq !== '';
-        
-        if (temSeqA && temSeqB) {
-            if (Number(a.seq) !== Number(b.seq)) return Number(a.seq) - Number(b.seq);
-        } else if (temSeqA) {
-            return -1; 
-        } else if (temSeqB) {
-            return 1;
-        }
-
-        // Se sequências forem iguais ou inexistentes, ordena por Matéria Prima e depois Data/Hora
+        // 1. Prioridade Máxima: Agrupamento por Matéria Prima
         const ga = _empOrdemMP(a.materia_prima), gb = _empOrdemMP(b.materia_prima);
         if (ga !== gb) return ga - gb;
+
+        // 2. Dentro do mesmo grupo: Ordena pela SEQUÊNCIA manual (crescente)
+        // Garante comparação numérica forçada (previne erro de string "10" < "2")
+        const nA = (a.seq !== null && a.seq !== undefined && a.seq !== '') ? Number(a.seq) : 999999;
+        const nB = (b.seq !== null && b.seq !== undefined && b.seq !== '') ? Number(b.seq) : 999999;
+        if (nA !== nB) return nA - nB;
         
+        // 3. Se sequências forem iguais ou vazias: Data/Hora (mais recente primeiro)
         const d = (b.data||'').localeCompare(a.data||'');
         return d !== 0 ? d : (b.hora||'').localeCompare(a.hora||'');
     });
-
-    // Conta sequência por tipo de matéria-prima
-    const _empContadores = {};
 
     // Cores de fundo para cada grupo (alternando)
     const _empCoresGrupo = [
@@ -11525,26 +11517,26 @@ function exibirTabelaEMP(lista) {
         'rgba(231,76,60,0.08)',  // outros - vermelho
     ];
 
-    let ultimoGrupo = null;
-    let grupoIdx = -1;
+    // Conta sequência automática POR GRUPO para exibição visual (1, 2, 3...)
+    const _empContadores = {};
 
+    let ultimoGrupo = null;
     tbody.innerHTML = dados.map(r => {
         const mpKey = (r.materia_prima||'OUTROS').toUpperCase();
         const mpOrdem = _empOrdemMP(mpKey);
         const corIdx = mpOrdem < _empCoresGrupo.length ? mpOrdem : _empCoresGrupo.length - 1;
 
-        // Incrementa sequência por matéria-prima
+        // Incrementa sequência visual individual para cada matéria-prima
         if (!_empContadores[mpKey]) _empContadores[mpKey] = 0;
         _empContadores[mpKey]++;
-        const seq = _empContadores[mpKey];
+        const seqVisual = _empContadores[mpKey];
 
         // Verifica se mudou o grupo para inserir separador visual
         let separador = '';
         if (mpKey !== ultimoGrupo) {
             ultimoGrupo = mpKey;
-            grupoIdx++;
             separador = `<tr>
-                <td colspan="${temAcao ? 9 : 8}" style="
+                <td colspan="${temAcao ? 8 : 7}" style="
                     background: ${_empCoresGrupo[corIdx]};
                     border-top: 2px solid rgba(255,255,255,0.15);
                     border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -11584,7 +11576,7 @@ function exibirTabelaEMP(lista) {
         return separador + `<tr style="background:${_empCoresGrupo[corIdx]};${cursorStyle}" ${dblclickAttr}>
             <td style="font-weight:bold;overflow:hidden;">
                 <div style="display:flex;align-items:center;gap:8px;">
-                    <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;width:22px;height:22px;background:rgba(255,255,255,0.12);border-radius:50%;font-size:10px;font-weight:800;flex-shrink:0;">${seq}</span>
+                    <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;width:22px;height:22px;background:rgba(255,255,255,0.12);border-radius:50%;font-size:10px;font-weight:800;flex-shrink:0;">${seqVisual}</span>
                     <span style="font-size:11px;font-weight:500;color:var(--gh-fg-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${fornecedorExib}</span>
                 </div>
             </td>
@@ -11767,7 +11759,8 @@ async function salvarEntradaMP(event) {
     const obs         = (document.getElementById('cadObsEMP').value || '').trim();
     const placa       = (document.getElementById('cadPlacaEMP')?.value || '').trim().toUpperCase();
     const seqVal      = document.getElementById('cadSeqEMP')?.value;
-    const seq         = seqVal !== '' && seqVal != null ? parseInt(seqVal) : null;
+    // Garante que o valor seja salvo como número ou null se vazio
+    const seq         = (seqVal !== '' && seqVal != null && !isNaN(seqVal)) ? Number(seqVal) : null;
 
     if (!data)         { mostrarMsgEMP('erro','Informe a data.'); return; }
     if (!materia_prima){ mostrarMsgEMP('erro','Selecione a matéria prima.'); return; }
@@ -11815,7 +11808,10 @@ async function salvarEntradaMP(event) {
     }
 
     fecharModalEMP();
-    exibirTabelaEMP();
+    // Força um pequeno delay para garantir que o array global 'entradasMP' esteja atualizado antes de renderizar
+    setTimeout(() => {
+        exibirTabelaEMP();
+    }, 100);
 }
 
 function mostrarMsgEMP(tipo, msg) {
