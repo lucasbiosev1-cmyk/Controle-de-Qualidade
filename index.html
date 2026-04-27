@@ -6379,11 +6379,15 @@
                 <span class="emp-total-label">TOTAL DE REGISTROS: <span id="totalRegistrosEMP">0</span></span>
             </div>
             <div class="tabela-container" id="tabelaEMPContainer">
-                <table style="table-layout:fixed;width:100%;">
+                <table id="tabelaEMPMain" style="table-layout:fixed;width:100%;">
+                    <colgroup>
+                        <col id="colEMP0"><col id="colEMP1"><col id="colEMP2"><col id="colEMP3">
+                        <col id="colEMP4"><col id="colEMP5"><col id="colEMP6"><col id="colEMP7">
+                    </colgroup>
                     <thead id="theadEMP">
                         <tr>
-                            <th style="text-align:left;padding-left:8px;width:22%;">MATÉRIA PRIMA</th><th style="width:9%;">DATA</th><th style="width:6%;">HORA</th><th style="width:13%;">NOTA FISCAL</th>
-                            <th style="width:9%;">PLACA</th><th style="width:11%;">USUÁRIO</th><th style="width:12%;">STATUS</th><th id="thAcaoEMP" style="width:18%;">AÇÃO</th>
+                            <th style="text-align:left;padding-left:8px;">MATÉRIA PRIMA</th><th>DATA</th><th>HORA</th><th>NOTA FISCAL</th>
+                            <th>PLACA</th><th>USUÁRIO</th><th>STATUS</th><th id="thAcaoEMP">AÇÃO</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaEntradaMP"><tr><td colspan="8" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
@@ -7607,21 +7611,20 @@ function aplicarPermissoes() {
     // Botão de registrar entrada
     const btnEMP = document.getElementById('btnCadastroEMP');
     if (btnEMP) btnEMP.style.display = podeEntradaMP ? 'inline-block' : 'none';
-    // Coluna de ação — oculta e redistribui larguras se sem permissão
+    // Coluna de ação — oculta e redistribui larguras via <col> se sem permissão
     const thAcaoEMP = document.getElementById('thAcaoEMP');
     const _temAcaoEMP = isAdmin || perms.entrada_editar || perms.entrada_aprovar || perms.entrada_excluir;
-    if (thAcaoEMP) thAcaoEMP.style.display = _temAcaoEMP ? 'table-cell' : 'none';
     (function() {
-        const theadRow = document.querySelector('#theadEMP tr');
-        if (!theadRow) return;
-        const ths = theadRow.querySelectorAll('th');
-        if (_temAcaoEMP) {
-            const orig = ['22%','9%','6%','13%','9%','11%','12%','18%'];
-            ths.forEach((th, i) => { th.style.width = orig[i]; });
-        } else {
-            const semAcao = ['28%','11%','7%','16%','11%','13%','14%'];
-            ths.forEach((th, i) => { if (i < semAcao.length) th.style.width = semAcao[i]; });
-        }
+        // larguras com ação: MP 22%, Data 9%, Hora 6%, NF 13%, Placa 9%, Usuário 11%, Status 12%, Ação 18%
+        // larguras sem ação: redistribui os 18% da coluna Ação
+        const comAcao  = ['22%','9%','6%','13%','9%','11%','12%','18%'];
+        const semAcao  = ['28%','11%','7%','16%','11%','13%','14%','0%'];
+        const widths = _temAcaoEMP ? comAcao : semAcao;
+        widths.forEach((w, i) => {
+            const col = document.getElementById('colEMP' + i);
+            if (col) col.style.width = w;
+        });
+        if (thAcaoEMP) thAcaoEMP.style.display = _temAcaoEMP ? '' : 'none';
     })();
 
     // Aba Configurações — visível se tiver qualquer permissão de config
@@ -11460,23 +11463,15 @@ function exibirTabelaEMP(lista) {
     const podeAprovar  = isAdmin || perms.entrada_aprovar;
     const temAcao = podeEditar || podeAprovar || podeExcluir;
 
-    // Ajusta cabeçalho e larguras conforme permissão
+    // Ajusta larguras via <col> e oculta cabeçalho AÇÃO conforme permissão
     const thAcao = document.getElementById('thAcaoEMP');
-    const theadRow = document.querySelector('#theadEMP tr');
     if (thAcao) thAcao.style.display = temAcao ? '' : 'none';
-    if (theadRow) {
-        const ths = theadRow.querySelectorAll('th');
-        if (temAcao) {
-            // larguras originais: MP 22%, Data 9%, Hora 6%, NF 13%, Placa 9%, Usuário 11%, Status 12%, Ação 18%
-            const orig = ['22%','9%','6%','13%','9%','11%','12%','18%'];
-            ths.forEach((th, i) => { th.style.width = orig[i]; });
-        } else {
-            // redistribui os 18% da ação entre as colunas (sem ação)
-            // MP 28%, Data 11%, Hora 7%, NF 16%, Placa 11%, Usuário 13%, Status 14%
-            const semAcao = ['28%','11%','7%','16%','11%','13%','14%'];
-            ths.forEach((th, i) => { if (i < semAcao.length) th.style.width = semAcao[i]; });
-        }
-    }
+    (function(){
+        const comAcao = ['22%','9%','6%','13%','9%','11%','12%','18%'];
+        const semAcao = ['28%','11%','7%','16%','11%','13%','14%','0%'];
+        const widths = temAcao ? comAcao : semAcao;
+        widths.forEach((w, i) => { const col = document.getElementById('colEMP'+i); if(col) col.style.width = w; });
+    })();
 
     const tbody = document.getElementById('tabelaEntradaMP');
     if (!dados.length) {
