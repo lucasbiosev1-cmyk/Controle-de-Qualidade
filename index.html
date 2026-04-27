@@ -6439,7 +6439,7 @@
                                         placeholder="Digite para pesquisar..."
                                         style="width:100%;padding:5px 8px;border:1px solid #bdc3c7;border-radius:4px;font-size:11px;text-transform:uppercase;font-weight:bold;box-sizing:border-box;"
                                         oninput="sgqAutocompleteFiltrar(this,'cadMateriaPrimaEMP','emp_mp')"
-                                        onfocus="sgqAutocompleteFiltrar(this,'cadMateriaPrimaEMP','emp_mp')"
+                                        onfocus="if(this.value.trim())sgqAutocompleteFiltrar(this,'cadMateriaPrimaEMP','emp_mp')"
                                         onblur="setTimeout(()=>{const l=document.getElementById('cadMateriaPrimaEMP_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadMateriaPrimaEMP');},180)"
                                         onkeydown="sgqAutocompleteNavegar(event,'cadMateriaPrimaEMP')">
                                     <ul id="cadMateriaPrimaEMP_list" class="sgq-autocomplete-list"></ul>
@@ -11665,7 +11665,6 @@ function abrirModalEMP() {
     const _stEMP = document.getElementById('cadStatusEMP');
     if (_stEMP) { _stEMP.value = 'EM ANÁLISE'; _stEMP.style.background='#fff8e1'; _stEMP.style.color='#b7770d'; }
     document.getElementById('modalCadastroEMP').classList.add('show');
-    setTimeout(() => document.getElementById('cadMateriaPrimaEMP').focus(), 100);
 }
 
 function editarEntradaMP(id) {
