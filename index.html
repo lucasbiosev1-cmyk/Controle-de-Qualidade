@@ -6406,8 +6406,8 @@
                     <!-- ── SEÇÃO 1: DADOS DA ENTRADA ── -->
                     <div class="form-section">
                         <h3>📅 DADOS DA ENTRADA</h3>
-                        <!-- Data · Hora · Status em 3 colunas -->
-                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:4px;">
+                        <!-- Data · Hora · Sequência · Status em 4 colunas -->
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:4px;">
                             <div class="form-group required">
                                 <label>DATA</label>
                                 <input type="text" id="cadDataEMP" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)" style="text-align:center;">
@@ -6415,6 +6415,10 @@
                             <div class="form-group required">
                                 <label>HORA</label>
                                 <input type="text" id="cadHoraEMP" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" required oninput="mascaraHora(this)" style="text-align:center;">
+                            </div>
+                            <div class="form-group">
+                                <label>SEQUÊNCIA</label>
+                                <input type="number" id="cadSeqEMP" min="1" placeholder="Auto" style="text-align:center;" title="Ordem de exibição dentro do grupo de matéria-prima">
                             </div>
                             <div class="form-group required">
                                 <label>STATUS</label>
@@ -11460,11 +11464,15 @@ function exibirTabelaEMP(lista) {
         return idxParcial >= 0 ? idxParcial : _EMP_ORDEM_MP.length;
     }
 
-    // Ordena: primeiro por grupo de matéria-prima, depois data/hora decrescente dentro do grupo
+    // Ordena: primeiro por grupo de matéria-prima, depois por seq (se definido), depois data/hora decrescente
     dados.sort((a,b) => {
         const ga = _empOrdemMP(a.materia_prima), gb = _empOrdemMP(b.materia_prima);
         if (ga !== gb) return ga - gb;
-        // Mesmo grupo: ordena por data/hora decrescente
+        // Mesmo grupo: usa seq se ambos tiverem definido
+        const sa = a.seq != null ? a.seq : Infinity;
+        const sb = b.seq != null ? b.seq : Infinity;
+        if (sa !== sb) return sa - sb;
+        // Sem seq: ordena por data/hora decrescente
         const d = (b.data||'').localeCompare(a.data||'');
         return d !== 0 ? d : (b.hora||'').localeCompare(a.hora||'');
     });
@@ -11654,6 +11662,8 @@ function editarEntradaMP(id) {
     document.getElementById('cadIdEMP').value = id;
     document.getElementById('cadDataEMP').value = dataParaDisplay(entrada.data);
     document.getElementById('cadHoraEMP').value = entrada.hora || '';
+    const seqEMPEdit = document.getElementById('cadSeqEMP');
+    if (seqEMPEdit) seqEMPEdit.value = entrada.seq != null ? entrada.seq : '';
     _empPopularSelectMP(entrada.materia_prima || '');
     document.getElementById('cadFornecedorEMP').value = entrada.fornecedor || '';
     document.getElementById('cadNFEMP').value = entrada.nf || '';
@@ -11688,6 +11698,8 @@ function fecharModalEMP() {
 function limparFormularioEMP() {
     document.getElementById('cadDataEMP').value = dataHoje();
     document.getElementById('cadHoraEMP').value = '';
+    const seqElEMP = document.getElementById('cadSeqEMP');
+    if (seqElEMP) seqElEMP.value = '';
     _empPopularSelectMP('');
     document.getElementById('cadFornecedorEMP').value = '';
     document.getElementById('cadNFEMP').value = '';
@@ -11707,6 +11719,8 @@ async function salvarEntradaMP(event) {
     const usuario     = USUARIOS[usuarioAtual]?.nome || usuarioAtual || '';
     const obs         = (document.getElementById('cadObsEMP').value || '').trim();
     const placa       = (document.getElementById('cadPlacaEMP')?.value || '').trim().toUpperCase();
+    const seqVal      = document.getElementById('cadSeqEMP')?.value;
+    const seq         = seqVal !== '' && seqVal != null ? parseInt(seqVal) : null;
 
     if (!data)         { mostrarMsgEMP('erro','Informe a data.'); return; }
     if (!materia_prima){ mostrarMsgEMP('erro','Selecione a matéria prima.'); return; }
@@ -11722,7 +11736,7 @@ async function salvarEntradaMP(event) {
         }
         const idx = entradasMP.findIndex(e => e.id === _empEditandoId);
         if (idx >= 0) {
-            entradasMP[idx] = { ...entradasMP[idx], data, hora, materia_prima, fornecedor, nf, placa, obs };
+            entradasMP[idx] = { ...entradasMP[idx], data, hora, materia_prima, fornecedor, nf, placa, obs, seq };
             try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e){}
         }
         mostrarMsgEMP('sucesso','✅ Entrada atualizada com sucesso!');
@@ -11741,7 +11755,7 @@ async function salvarEntradaMP(event) {
         const novaEntrada = {
             id: Date.now(),
             data, hora, materia_prima, fornecedor, nf, placa,
-            usuario, obs,
+            usuario, obs, seq,
             status: statusInicial,
             criado_em: new Date().toISOString()
         };
