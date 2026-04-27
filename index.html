@@ -11449,10 +11449,69 @@ function exibirTabelaEMP(lista) {
         return;
     }
 
-    tbody.innerHTML = dados.sort((a,b)=>{
+    // Ordem de prioridade das matérias-primas
+    const _EMP_ORDEM_MP = ['MILHO','SOJA','FARELO DE SOJA','FARINHA DE CARNE E OSSO'];
+    function _empOrdemMP(mp) {
+        const idx = _EMP_ORDEM_MP.findIndex(o => (mp||'').toUpperCase().includes(o));
+        return idx >= 0 ? idx : _EMP_ORDEM_MP.length;
+    }
+
+    // Ordena: primeiro por grupo de matéria-prima, depois data/hora decrescente dentro do grupo
+    dados.sort((a,b) => {
+        const ga = _empOrdemMP(a.materia_prima), gb = _empOrdemMP(b.materia_prima);
+        if (ga !== gb) return ga - gb;
+        // Mesmo grupo: ordena por data/hora decrescente
         const d = (b.data||'').localeCompare(a.data||'');
         return d !== 0 ? d : (b.hora||'').localeCompare(a.hora||'');
-    }).map(r => {
+    });
+
+    // Conta sequência por tipo de matéria-prima
+    const _empContadores = {};
+
+    // Cores de fundo para cada grupo (alternando)
+    const _empCoresGrupo = [
+        'rgba(39,174,96,0.08)',   // MILHO - verde
+        'rgba(52,152,219,0.08)',  // SOJA - azul
+        'rgba(230,126,34,0.08)', // FARELO DE SOJA - laranja
+        'rgba(155,89,182,0.08)', // FARINHA DE CARNE E OSSO - roxo
+        'rgba(231,76,60,0.08)',  // outros - vermelho
+    ];
+
+    let ultimoGrupo = null;
+    let grupoIdx = -1;
+
+    tbody.innerHTML = dados.map(r => {
+        const mpKey = (r.materia_prima||'OUTROS').toUpperCase();
+        const mpOrdem = _empOrdemMP(mpKey);
+        const corIdx = mpOrdem < _empCoresGrupo.length ? mpOrdem : _empCoresGrupo.length - 1;
+
+        // Incrementa sequência por matéria-prima
+        if (!_empContadores[mpKey]) _empContadores[mpKey] = 0;
+        _empContadores[mpKey]++;
+        const seq = _empContadores[mpKey];
+
+        // Verifica se mudou o grupo para inserir separador visual
+        let separador = '';
+        if (mpKey !== ultimoGrupo) {
+            ultimoGrupo = mpKey;
+            grupoIdx++;
+            separador = `<tr>
+                <td colspan="${temAcao ? 9 : 8}" style="
+                    background: ${_empCoresGrupo[corIdx]};
+                    border-top: 2px solid rgba(255,255,255,0.15);
+                    border-bottom: 1px solid rgba(255,255,255,0.08);
+                    padding: 6px 12px;
+                    font-weight: 700;
+                    font-size: 11px;
+                    letter-spacing: 1.5px;
+                    color: var(--gh-fg-muted);
+                    text-transform: uppercase;
+                ">
+                    📦 ${mpKey}
+                </td>
+            </tr>`;
+        }
+
         const dataFmt = r.data ? new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR') : '-';
         let acoes = '';
         if (temAcao) {
@@ -11463,10 +11522,12 @@ function exibirTabelaEMP(lista) {
             if (podeExcluir)
                 acoes += ` <button class="btn-action btn-delete" onclick="excluirEntradaMP(${r.id})" title="Excluir">🗑️</button>`;
         }
-        return `<tr>
+        return separador + `<tr style="background:${_empCoresGrupo[corIdx]};">
             <td>${dataFmt}</td>
             <td>${r.hora||'-'}</td>
-            <td style="text-align:center;font-weight:bold;">${r.materia_prima||'-'}</td>
+            <td style="text-align:center;font-weight:bold;">
+                <span style="display:inline-block;min-width:22px;height:22px;line-height:22px;text-align:center;background:rgba(255,255,255,0.12);border-radius:50%;font-size:10px;font-weight:800;margin-right:5px;">${seq}</span>${r.materia_prima||'-'}
+            </td>
             <td style="text-align:center;">${r.obs ? `<span class="obs-tooltip-wrap">${r.fornecedor||'-'}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span>` : (r.fornecedor||'-')}</td>
             <td>${r.nf||'-'}</td>
             <td style="text-align:center;letter-spacing:1px;font-weight:bold;">${r.placa||'-'}</td>
