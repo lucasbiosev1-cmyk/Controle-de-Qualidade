@@ -11497,10 +11497,11 @@ function exibirTabelaEMP(lista) {
         const mpOrdem = _empOrdemMP(mpKey);
         const corIdx = mpOrdem < _empCoresGrupo.length ? mpOrdem : _empCoresGrupo.length - 1;
 
-        // Incrementa sequência por matéria-prima
+        // Incrementa sequência por matéria-prima (contador visual fallback)
         if (!_empContadores[mpKey]) _empContadores[mpKey] = 0;
         _empContadores[mpKey]++;
-        const seq = _empContadores[mpKey];
+        // Usa seq salvo no banco; se não tiver, usa contador automático
+        const seq = (r.seq != null && r.seq !== '') ? r.seq : _empContadores[mpKey];
 
         // Verifica se mudou o grupo para inserir separador visual
         let separador = '';
