@@ -7611,9 +7611,9 @@ function aplicarPermissoes() {
     // Botão de registrar entrada
     const btnEMP = document.getElementById('btnCadastroEMP');
     if (btnEMP) btnEMP.style.display = podeEntradaMP ? 'inline-block' : 'none';
-    // Coluna de ação — oculta e redistribui larguras via <col> se sem permissão
+    // Coluna de ação — visível somente para quem pode aprovar/reprovar entradas
     const thAcaoEMP = document.getElementById('thAcaoEMP');
-    const _temAcaoEMP = isAdmin || perms.entrada_editar || perms.entrada_aprovar || perms.entrada_excluir;
+    const _temAcaoEMP = isAdmin || perms.entrada_aprovar;
     (function() {
         // larguras com ação: MP 22%, Data 9%, Hora 6%, NF 13%, Placa 9%, Usuário 11%, Status 12%, Ação 18%
         // larguras sem ação: redistribui os 18% da coluna Ação
@@ -11461,7 +11461,8 @@ function exibirTabelaEMP(lista) {
     const podeExcluir  = isAdmin || perms.entrada_excluir;
     const podeEditar   = isAdmin || perms.entrada_editar;
     const podeAprovar  = isAdmin || perms.entrada_aprovar;
-    const temAcao = podeEditar || podeAprovar || podeExcluir;
+    // Coluna Ação visível somente para quem pode aprovar/reprovar entradas
+    const temAcao = podeAprovar;
 
     // Ajusta larguras via <col> e oculta cabeçalho AÇÃO conforme permissão
     const thAcao = document.getElementById('thAcaoEMP');
@@ -11490,17 +11491,24 @@ function exibirTabelaEMP(lista) {
         return idxParcial >= 0 ? idxParcial : _EMP_ORDEM_MP.length;
     }
 
-    // Ordena: primeiro por grupo de matéria-prima, depois por seq manual (menor→maior), registros sem seq vão ao final
+    // Ordena: Prioridade máxima para o campo SEQUÊNCIA (crescente). 
+    // Registros com sequência vêm antes dos sem sequência.
     dados.sort((a,b) => {
-        const ga = _empOrdemMP(a.materia_prima), gb = _empOrdemMP(b.materia_prima);
-        if (ga !== gb) return ga - gb;
-        // Mesmo grupo: sequência manual — menor número primeiro; sem seq vai ao final
         const temSeqA = a.seq != null && a.seq !== '';
         const temSeqB = b.seq != null && b.seq !== '';
-        if (temSeqA && temSeqB) return Number(a.seq) - Number(b.seq); // ambos têm seq: menor→maior
-        if (temSeqA) return -1; // só A tem seq: A vem antes
-        if (temSeqB) return 1;  // só B tem seq: B vem antes
-        // Nenhum tem seq: ordena por data/hora decrescente
+        
+        if (temSeqA && temSeqB) {
+            if (Number(a.seq) !== Number(b.seq)) return Number(a.seq) - Number(b.seq);
+        } else if (temSeqA) {
+            return -1; 
+        } else if (temSeqB) {
+            return 1;
+        }
+
+        // Se sequências forem iguais ou inexistentes, ordena por Matéria Prima e depois Data/Hora
+        const ga = _empOrdemMP(a.materia_prima), gb = _empOrdemMP(b.materia_prima);
+        if (ga !== gb) return ga - gb;
+        
         const d = (b.data||'').localeCompare(a.data||'');
         return d !== 0 ? d : (b.hora||'').localeCompare(a.hora||'');
     });
