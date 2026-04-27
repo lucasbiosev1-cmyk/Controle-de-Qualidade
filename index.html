@@ -11449,11 +11449,15 @@ function exibirTabelaEMP(lista) {
         return;
     }
 
-    // Ordem de prioridade das matérias-primas
-    const _EMP_ORDEM_MP = ['MILHO','SOJA','FARELO DE SOJA','FARINHA DE CARNE E OSSO'];
+    // Ordem de prioridade das matérias-primas (comparação EXATA para não misturar SOJA com FARELO DE SOJA)
+    const _EMP_ORDEM_MP = ['MILHO','SOJA','FARELO DE SOJA','FARELO DE TRIGO','FARINHA DE CARNE E OSSO'];
     function _empOrdemMP(mp) {
-        const idx = _EMP_ORDEM_MP.findIndex(o => (mp||'').toUpperCase().includes(o));
-        return idx >= 0 ? idx : _EMP_ORDEM_MP.length;
+        const mpUp = (mp||'').toUpperCase().trim();
+        const idxExato = _EMP_ORDEM_MP.indexOf(mpUp);
+        if (idxExato >= 0) return idxExato;
+        // fallback: verifica se começa com algum da lista (ex: "MILHO GRÃO")
+        const idxParcial = _EMP_ORDEM_MP.findIndex(o => mpUp.startsWith(o + ' '));
+        return idxParcial >= 0 ? idxParcial : _EMP_ORDEM_MP.length;
     }
 
     // Ordena: primeiro por grupo de matéria-prima, depois data/hora decrescente dentro do grupo
