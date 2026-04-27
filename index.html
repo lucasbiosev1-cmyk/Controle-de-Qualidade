@@ -6380,7 +6380,7 @@
             </div>
             <div class="tabela-container" id="tabelaEMPContainer">
                 <table style="table-layout:fixed;width:100%;">
-                    <thead>
+                    <thead id="theadEMP">
                         <tr>
                             <th style="text-align:left;padding-left:8px;width:22%;">MATÉRIA PRIMA</th><th style="width:9%;">DATA</th><th style="width:6%;">HORA</th><th style="width:13%;">NOTA FISCAL</th>
                             <th style="width:9%;">PLACA</th><th style="width:11%;">USUÁRIO</th><th style="width:12%;">STATUS</th><th id="thAcaoEMP" style="width:18%;">AÇÃO</th>
@@ -11447,9 +11447,27 @@ function exibirTabelaEMP(lista) {
     const podeAprovar  = isAdmin || perms.entrada_aprovar;
     const temAcao = podeEditar || podeAprovar || podeExcluir;
 
+    // Ajusta cabeçalho e larguras conforme permissão
+    const thAcao = document.getElementById('thAcaoEMP');
+    const theadRow = document.querySelector('#theadEMP tr');
+    if (thAcao) thAcao.style.display = temAcao ? '' : 'none';
+    if (theadRow) {
+        const ths = theadRow.querySelectorAll('th');
+        if (temAcao) {
+            // larguras originais: MP 22%, Data 9%, Hora 6%, NF 13%, Placa 9%, Usuário 11%, Status 12%, Ação 18%
+            const orig = ['22%','9%','6%','13%','9%','11%','12%','18%'];
+            ths.forEach((th, i) => { th.style.width = orig[i]; });
+        } else {
+            // redistribui os 18% da ação entre as colunas (sem ação)
+            // MP 28%, Data 11%, Hora 7%, NF 16%, Placa 11%, Usuário 13%, Status 14%
+            const semAcao = ['28%','11%','7%','16%','11%','13%','14%'];
+            ths.forEach((th, i) => { if (i < semAcao.length) th.style.width = semAcao[i]; });
+        }
+    }
+
     const tbody = document.getElementById('tabelaEntradaMP');
     if (!dados.length) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${temAcao ? 8 : 7}" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
         return;
     }
 
