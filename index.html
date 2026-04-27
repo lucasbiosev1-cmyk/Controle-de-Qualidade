@@ -11512,7 +11512,7 @@ function exibirTabelaEMP(lista) {
                     background: ${_empCoresGrupo[corIdx]};
                     border-top: 2px solid rgba(255,255,255,0.15);
                     border-bottom: 1px solid rgba(255,255,255,0.08);
-                    padding: 6px 12px;
+                    padding: 6px 12px 6px 36px;
                     font-weight: 700;
                     font-size: 11px;
                     letter-spacing: 1.5px;
@@ -11545,8 +11545,11 @@ function exibirTabelaEMP(lista) {
         return separador + `<tr style="background:${_empCoresGrupo[corIdx]};${cursorStyle}" ${dblclickAttr}>
             <td>${dataFmt}</td>
             <td>${r.hora||'-'}</td>
-            <td style="text-align:center;font-weight:bold;">
-                <span style="display:inline-block;min-width:22px;height:22px;line-height:22px;text-align:center;background:rgba(255,255,255,0.12);border-radius:50%;font-size:10px;font-weight:800;margin-right:5px;">${seq}</span>${r.materia_prima||'-'}
+            <td style="font-weight:bold;">
+                <div style="display:flex;align-items:center;gap:6px;padding:0 4px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-width:22px;height:22px;background:rgba(255,255,255,0.12);border-radius:50%;font-size:10px;font-weight:800;">${seq}</span>
+                    <span>${r.materia_prima||'-'}</span>
+                </div>
             </td>
             <td style="text-align:center;">${r.obs ? `<span class="obs-tooltip-wrap">${r.fornecedor||'-'}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span>` : (r.fornecedor||'-')}</td>
             <td>${r.nf||'-'}</td>
