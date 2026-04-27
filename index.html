@@ -6418,7 +6418,7 @@
                             </div>
                             <div class="form-group">
                                 <label>SEQUÊNCIA</label>
-                                <input type="number" id="cadSeqEMP" min="1" placeholder="Auto" style="text-align:center;" title="Ordem de exibição dentro do grupo de matéria-prima">
+                                <input type="number" id="cadSeqEMP" min="1" placeholder="Nº da seq." style="text-align:center;" title="Digite o número de sequência — o sistema ordena do menor para o maior">
                             </div>
                             <div class="form-group required">
                                 <label>STATUS</label>
@@ -11464,15 +11464,17 @@ function exibirTabelaEMP(lista) {
         return idxParcial >= 0 ? idxParcial : _EMP_ORDEM_MP.length;
     }
 
-    // Ordena: primeiro por grupo de matéria-prima, depois por seq (se definido), depois data/hora decrescente
+    // Ordena: primeiro por grupo de matéria-prima, depois por seq manual (menor→maior), registros sem seq vão ao final
     dados.sort((a,b) => {
         const ga = _empOrdemMP(a.materia_prima), gb = _empOrdemMP(b.materia_prima);
         if (ga !== gb) return ga - gb;
-        // Mesmo grupo: usa seq se ambos tiverem definido
-        const sa = a.seq != null ? a.seq : Infinity;
-        const sb = b.seq != null ? b.seq : Infinity;
-        if (sa !== sb) return sa - sb;
-        // Sem seq: ordena por data/hora decrescente
+        // Mesmo grupo: sequência manual — menor número primeiro; sem seq vai ao final
+        const temSeqA = a.seq != null && a.seq !== '';
+        const temSeqB = b.seq != null && b.seq !== '';
+        if (temSeqA && temSeqB) return Number(a.seq) - Number(b.seq); // ambos têm seq: menor→maior
+        if (temSeqA) return -1; // só A tem seq: A vem antes
+        if (temSeqB) return 1;  // só B tem seq: B vem antes
+        // Nenhum tem seq: ordena por data/hora decrescente
         const d = (b.data||'').localeCompare(a.data||'');
         return d !== 0 ? d : (b.hora||'').localeCompare(a.hora||'');
     });
