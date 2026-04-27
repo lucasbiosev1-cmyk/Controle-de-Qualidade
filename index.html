@@ -7607,9 +7607,22 @@ function aplicarPermissoes() {
     // Botão de registrar entrada
     const btnEMP = document.getElementById('btnCadastroEMP');
     if (btnEMP) btnEMP.style.display = podeEntradaMP ? 'inline-block' : 'none';
-    // Coluna de ação
+    // Coluna de ação — oculta e redistribui larguras se sem permissão
     const thAcaoEMP = document.getElementById('thAcaoEMP');
-    if (thAcaoEMP) thAcaoEMP.style.display = (isAdmin || perms.entrada_editar || perms.entrada_aprovar) ? 'table-cell' : 'none';
+    const _temAcaoEMP = isAdmin || perms.entrada_editar || perms.entrada_aprovar || perms.entrada_excluir;
+    if (thAcaoEMP) thAcaoEMP.style.display = _temAcaoEMP ? 'table-cell' : 'none';
+    (function() {
+        const theadRow = document.querySelector('#theadEMP tr');
+        if (!theadRow) return;
+        const ths = theadRow.querySelectorAll('th');
+        if (_temAcaoEMP) {
+            const orig = ['22%','9%','6%','13%','9%','11%','12%','18%'];
+            ths.forEach((th, i) => { th.style.width = orig[i]; });
+        } else {
+            const semAcao = ['28%','11%','7%','16%','11%','13%','14%'];
+            ths.forEach((th, i) => { if (i < semAcao.length) th.style.width = semAcao[i]; });
+        }
+    })();
 
     // Aba Configurações — visível se tiver qualquer permissão de config
     const temConfig = isAdmin || perms.backup || perms.memoria || perms.parametros || perms.whatsapp;
