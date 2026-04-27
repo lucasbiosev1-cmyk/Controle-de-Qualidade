@@ -11497,11 +11497,10 @@ function exibirTabelaEMP(lista) {
         const mpOrdem = _empOrdemMP(mpKey);
         const corIdx = mpOrdem < _empCoresGrupo.length ? mpOrdem : _empCoresGrupo.length - 1;
 
-        // Incrementa sequência por matéria-prima (contador visual fallback)
+        // Incrementa sequência por matéria-prima
         if (!_empContadores[mpKey]) _empContadores[mpKey] = 0;
         _empContadores[mpKey]++;
-        // Usa seq salvo no banco; se não tiver, usa contador automático
-        const seq = (r.seq != null && r.seq !== '') ? r.seq : _empContadores[mpKey];
+        const seq = _empContadores[mpKey];
 
         // Verifica se mudou o grupo para inserir separador visual
         let separador = '';
@@ -11531,6 +11530,8 @@ function exibirTabelaEMP(lista) {
         if (temAcao) {
             if (podeAprovar && (r.status === 'EM ANÁLISE'))
                 acoes += `<button class="btn-action" style="background:#27ae60;color:white;" onclick="abrirModalAprovarEMP(${r.id})">✅ Apr/Rep</button> `;
+            if (podeAprovar && r.status === 'APROVADA')
+                acoes += `<button class="btn-action" style="background:#e67e22;color:white;" onclick="desfazerAprovacaoEMP(${r.id})" title="Desfazer aprovação">↩️ Desfazer</button> `;
             if (podeEditar && r.status !== 'CONCLUÍDA')
                 acoes += `<button class="btn-action btn-edit" onclick="editarEntradaMP(${r.id})" title="Editar">✏️</button>`;
             if (podeExcluir)
@@ -11814,6 +11815,20 @@ async function acaoEntradaMP(novoStatus) {
     _empAprovarId = null;
     exibirTabelaEMP();
     mostrarMsgEMP('sucesso', novoStatus === 'APROVADA' ? '✅ Entrada aprovada!' : '❌ Entrada reprovada!');
+}
+
+async function desfazerAprovacaoEMP(id) {
+    if (!confirm('Deseja desfazer a aprovação desta carga e voltar para "EM ANÁLISE"?')) return;
+    const idx = entradasMP.findIndex(e => String(e.id) === String(id));
+    if (idx < 0) return;
+    entradasMP[idx].status = 'EM ANÁLISE';
+    try {
+        await dbUpsertOne('entradas_mp', entradasMP[idx]);
+        exibirTabelaEMP();
+        mostrarMsgEMP('sucesso', '↩️ Aprovação desfeita. Status voltou para EM ANÁLISE.');
+    } catch(e) {
+        mostrarMsgEMP('erro', 'Erro ao desfazer aprovação: ' + e.message);
+    }
 }
 
 // Hook: sempre que salvar classificação ou matéria prima, verifica conclusões de entradas
