@@ -6382,11 +6382,11 @@
                 <table id="tabelaEMPMain" style="table-layout:fixed;width:100%;">
                     <colgroup>
                         <col id="colEMP0"><col id="colEMP1"><col id="colEMP2"><col id="colEMP3">
-                        <col id="colEMP4"><col id="colEMP5"><col id="colEMP6"><col id="colEMP7"><col id="colEMP8">
+                        <col id="colEMP4"><col id="colEMP5"><col id="colEMP6"><col id="colEMP7">
                     </colgroup>
                     <thead id="theadEMP">
                         <tr>
-                            <th style="text-align:center;width:60px;">ORDEM</th><th style="text-align:left;padding-left:8px;">FORNECEDOR</th><th>DATA</th><th>HORA</th><th>NOTA FISCAL</th>
+                            <th style="text-align:left;padding-left:8px;">MATÉRIA PRIMA</th><th>DATA</th><th>HORA</th><th>NOTA FISCAL</th>
                             <th>PLACA</th><th>USUÁRIO</th><th>STATUS</th><th id="thAcaoEMP">AÇÃO</th>
                         </tr>
                     </thead>
@@ -6421,8 +6421,8 @@
                                 <input type="text" id="cadHoraEMP" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" required oninput="mascaraHora(this)" style="text-align:center;">
                             </div>
                             <div class="form-group">
-                                <label>ORDEM DE CHEGADA</label>
-                                <input type="number" id="cadSeqEMP" min="1" placeholder="Nº de chegada" style="text-align:center;" title="Digite a ordem de chegada — o sistema ordena do menor para o maior dentro de cada grupo">
+                                <label>SEQUÊNCIA</label>
+                                <input type="number" id="cadSeqEMP" min="1" placeholder="Nº da seq." style="text-align:center;" title="Digite o número de sequência — o sistema ordena do menor para o maior">
                             </div>
                             <div class="form-group required">
                                 <label>STATUS</label>
@@ -7617,8 +7617,8 @@ function aplicarPermissoes() {
     (function() {
         // larguras com ação: MP 22%, Data 9%, Hora 6%, NF 13%, Placa 9%, Usuário 11%, Status 12%, Ação 18%
         // larguras sem ação: redistribui os 18% da coluna Ação
-        const comAcao  = ['6%','20%','9%','6%','11%','9%','10%','11%','18%'];
-        const semAcao  = ['8%','24%','11%','7%','14%','11%','12%','13%','0%'];
+        const comAcao  = ['22%','9%','6%','13%','9%','11%','12%','18%'];
+        const semAcao  = ['28%','11%','7%','16%','11%','13%','14%','0%'];
         const widths = _temAcaoEMP ? comAcao : semAcao;
         widths.forEach((w, i) => {
             const col = document.getElementById('colEMP' + i);
@@ -11468,15 +11468,15 @@ function exibirTabelaEMP(lista) {
     const thAcao = document.getElementById('thAcaoEMP');
     if (thAcao) thAcao.style.display = temAcao ? '' : 'none';
     (function(){
-        const comAcao = ['6%','20%','9%','6%','11%','9%','10%','11%','18%'];
-        const semAcao = ['8%','24%','11%','7%','14%','11%','12%','13%','0%'];
+        const comAcao = ['22%','9%','6%','13%','9%','11%','12%','18%'];
+        const semAcao = ['28%','11%','7%','16%','11%','13%','14%','0%'];
         const widths = temAcao ? comAcao : semAcao;
         widths.forEach((w, i) => { const col = document.getElementById('colEMP'+i); if(col) col.style.width = w; });
     })();
 
     const tbody = document.getElementById('tabelaEntradaMP');
     if (!dados.length) {
-        tbody.innerHTML = `<tr><td colspan="${temAcao ? 9 : 8}" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${temAcao ? 8 : 7}" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
         return;
     }
 
@@ -11491,19 +11491,19 @@ function exibirTabelaEMP(lista) {
         return idxParcial >= 0 ? idxParcial : _EMP_ORDEM_MP.length;
     }
 
-    // Ordena: Primeiro por GRUPO (Matéria Prima), e DENTRO do grupo pela ORDEM DE CHEGADA manual
+    // Ordena: Primeiro por GRUPO (Matéria Prima), e DENTRO do grupo pela SEQUÊNCIA manual
     dados.sort((a,b) => {
         // 1. Prioridade Máxima: Agrupamento por Matéria Prima
         const ga = _empOrdemMP(a.materia_prima), gb = _empOrdemMP(b.materia_prima);
         if (ga !== gb) return ga - gb;
 
-        // 2. Dentro do mesmo grupo: Ordena pela ORDEM DE CHEGADA manual (crescente)
+        // 2. Dentro do mesmo grupo: Ordena pela SEQUÊNCIA manual (crescente)
         // Garante comparação numérica forçada (previne erro de string "10" < "2")
         const nA = (a.seq !== null && a.seq !== undefined && a.seq !== '') ? Number(a.seq) : 999999;
         const nB = (b.seq !== null && b.seq !== undefined && b.seq !== '') ? Number(b.seq) : 999999;
         if (nA !== nB) return nA - nB;
         
-        // 3. Se as ordens forem iguais ou vazias: Data/Hora (mais recente primeiro)
+        // 3. Se sequências forem iguais ou vazias: Data/Hora (mais recente primeiro)
         const d = (b.data||'').localeCompare(a.data||'');
         return d !== 0 ? d : (b.hora||'').localeCompare(a.hora||'');
     });
@@ -11523,7 +11523,7 @@ function exibirTabelaEMP(lista) {
         const mpOrdem = _empOrdemMP(mpKey);
         const corIdx = mpOrdem < _empCoresGrupo.length ? mpOrdem : _empCoresGrupo.length - 1;
 
-        // EXIBIÇÃO: Mostra apenas o número da ORDEM DE CHEGADA (r.seq)
+        // EXIBIÇÃO: Mostra apenas o número que o usuário digitou (r.seq)
         // Se estiver vazio, mostra um traço '-'
         const seqExibida = (r.seq !== null && r.seq !== undefined && r.seq !== '') ? r.seq : '-';
 
@@ -11532,7 +11532,7 @@ function exibirTabelaEMP(lista) {
         if (mpKey !== ultimoGrupo) {
             ultimoGrupo = mpKey;
             separador = `<tr>
-                <td colspan="${temAcao ? 9 : 8}" style="
+                <td colspan="${temAcao ? 8 : 7}" style="
                     background: ${_empCoresGrupo[corIdx]};
                     border-top: 2px solid rgba(255,255,255,0.15);
                     border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -11570,10 +11570,12 @@ function exibirTabelaEMP(lista) {
             ? `<span class="obs-tooltip-wrap">${r.fornecedor||'-'}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span>`
             : (r.fornecedor||'-');
         return separador + `<tr style="background:${_empCoresGrupo[corIdx]};${cursorStyle}" ${dblclickAttr}>
-            <td style="font-weight:bold;text-align:center;">
-                <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;width:22px;height:22px;background:rgba(255,255,255,0.12);border-radius:50%;font-size:10px;font-weight:800;">${seqExibida}</span>
+            <td style="font-weight:bold;overflow:hidden;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;width:22px;height:22px;background:rgba(255,255,255,0.12);border-radius:50%;font-size:10px;font-weight:800;flex-shrink:0;">${seqExibida}</span>
+                    <span style="font-size:11px;font-weight:500;color:var(--gh-fg-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${fornecedorExib}</span>
+                </div>
             </td>
-            <td style="font-size:11px;font-weight:500;color:var(--gh-fg-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${fornecedorExib}</td>
             <td>${dataFmt}</td>
             <td>${r.hora||'-'}</td>
             <td>${r.nf||'-'}</td>
