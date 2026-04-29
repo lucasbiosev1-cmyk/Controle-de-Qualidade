@@ -11412,9 +11412,17 @@ function _empStatusBadge(status) {
 function _empVerificarConclusao(entrada) {
     // Verifica se a NF existe em classificacoes ou materiasPrimas
     const nf = (entrada.nf || '').toString().trim().toUpperCase();
-    if (!nf) return false;
-    const emClass = classificacoes.some(r => (r.nf||'').toString().trim().toUpperCase() === nf);
-    const emMP    = materiasPrimas.some(r => (r.nf||'').toString().trim().toUpperCase() === nf);
+    // ✅ CORREÇÃO CRÍTICA: se a entrada não tem NF, nunca pode ser concluída automaticamente
+    if (!nf || nf === '-') return false;
+    // ✅ CORREÇÃO CRÍTICA: só compara com registros que realmente têm NF preenchida (evita '' === '' ou '-' === '-')
+    const emClass = classificacoes.some(r => {
+        const nfR = (r.nf||'').toString().trim().toUpperCase();
+        return nfR && nfR !== '-' && nfR === nf;
+    });
+    const emMP = materiasPrimas.some(r => {
+        const nfR = (r.nf||'').toString().trim().toUpperCase();
+        return nfR && nfR !== '-' && nfR === nf;
+    });
     return emClass || emMP;
 }
 
@@ -11800,11 +11808,18 @@ async function salvarEntradaMP(event) {
                 return;
             }
         }
-        // ✅ CORREÇÃO: só verifica NF se ela foi informada — placas se repetem e não devem influenciar o status
+        // ✅ CORREÇÃO: só verifica NF se ela foi informada e não é traço — placas se repetem e não devem influenciar o status
         let statusInicial = 'EM ANÁLISE';
-        if (nfUp) {
-            const emClass = classificacoes.some(r => (r.nf||'').toString().trim().toUpperCase() === nfUp);
-            const emMP    = materiasPrimas.some(r => (r.nf||'').toString().trim().toUpperCase() === nfUp);
+        if (nfUp && nfUp !== '-') {
+            // ✅ CORREÇÃO CRÍTICA: só cruza com registros que têm NF real (evita '' === '' ou '-' === '-')
+            const emClass = classificacoes.some(r => {
+                const nfR = (r.nf||'').toString().trim().toUpperCase();
+                return nfR && nfR !== '-' && nfR === nfUp;
+            });
+            const emMP = materiasPrimas.some(r => {
+                const nfR = (r.nf||'').toString().trim().toUpperCase();
+                return nfR && nfR !== '-' && nfR === nfUp;
+            });
             if (emClass || emMP) statusInicial = 'CONCLUÍDA';
         }
 
