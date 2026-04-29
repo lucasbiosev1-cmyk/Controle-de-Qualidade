@@ -6388,7 +6388,7 @@
                     <thead id="theadEMP">
                         <tr>
                             <th style="text-align:left;padding-left:8px;">MATÉRIA PRIMA</th><th>DATA</th><th>HORA</th><th>NOTA FISCAL</th>
-                            <th>PLACA</th><th>USUÁRIO</th><th>STATUS</th><th id="thDescargaEMP">DESCARGA</th><th id="thAcaoEMP">AÇÃO</th>
+                            <th>PLACA</th><th>USUÁRIO</th><th>ANÁLISE</th><th id="thDescargaEMP">DESCARGA</th><th id="thAcaoEMP">AÇÃO</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaEntradaMP"><tr><td colspan="8" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
@@ -11413,7 +11413,7 @@ function _empStatusBadge(status) {
         return '<span style="background:#d5f4e6;color:#27ae60;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">✅ APROVADA</span>';
     if (status === 'REPROVADA')
         return '<span style="background:#fadbd8;color:#e74c3c;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">❌ REPROVADA</span>';
-    return '<span style="background:#fff8e1;color:#b7770d;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">⏳ EM ANÁLISE</span>';
+    return '<span style="background:#fff8e1;color:#b7770d;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">⏳ Análise</span>';
 }
 
 function _empVerificarConclusao(entrada) {
@@ -11584,21 +11584,31 @@ function exibirTabelaEMP(lista) {
                 : '';
             acoes = `<div style="display:flex;align-items:center;gap:4px;justify-content:center;">${btnAprRep}${btnDelete}</div>`;
         }
-        // ── Lógica de DESCARGA — apenas badge visual, botões ficam no modal ──
+        // ── Lógica de DESCARGA — dropdown inline para alterar direto na tabela ──
         const statusDesc = r.status_descarga || '';
         let descargaCell = '';
         if (r.status === 'REPROVADA' || r.status === 'EM ANÁLISE') {
             descargaCell = `<span style="color:#666;font-size:11px;">—</span>`;
-        } else if (statusDesc === 'DESCARREGANDO') {
-            descargaCell = `<span style="display:inline-flex;align-items:center;gap:5px;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">
-                <span style="width:7px;height:7px;border-radius:50%;background:#e65100;animation:empPulse 1s infinite;display:inline-block;flex-shrink:0;"></span>DESCARREGANDO
-            </span>`;
-        } else if (statusDesc === 'CONCLUÍDA' || r.status === 'CONCLUÍDA') {
-            descargaCell = `<span style="background:#d5f4e6;color:#1a7a4a;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">✅ CONCLUÍDA</span>`;
-        } else if (statusDesc === 'NA FILA' || r.status === 'APROVADA') {
-            descargaCell = `<span style="background:#e8eaf6;color:#3949ab;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">⏳ NA FILA</span>`;
         } else {
-            descargaCell = `<span style="color:#666;font-size:11px;">—</span>`;
+            // Normaliza valor atual
+            let sdVal = statusDesc;
+            if (sdVal === 'NA FILA' || sdVal === '' ) sdVal = 'FILA';
+            // Estilos por valor
+            const sdStyles = {
+                'FILA':         'background:#e8eaf6;color:#3949ab;',
+                'DESCARREGANDO':'background:#fff3e0;color:#e65100;',
+                'CONCLUÍDA':    'background:#d5f4e6;color:#1a7a4a;'
+            };
+            const sdLabels = {
+                'FILA':         '⏳ Fila',
+                'DESCARREGANDO':'🟠 Descarregando',
+                'CONCLUÍDA':    '✅ Concluída'
+            };
+            const sdStyle = sdStyles[sdVal] || 'background:#eee;color:#555;';
+            const opts = ['FILA','DESCARREGANDO','CONCLUÍDA'].map(v =>
+                `<option value="${v}" ${v===sdVal?'selected':''}>${sdLabels[v]}</option>`
+            ).join('');
+            descargaCell = `<div style="display:flex;justify-content:center;align-items:center;"><select id="sel-desc-${r.id}" onchange="alterarStatusDescargaEMP(${r.id}, this.value)" onclick="event.stopPropagation()" style="${sdStyle}border:none;border-radius:12px;padding:3px 10px;font-size:10px;font-weight:bold;font-family:inherit;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;text-align:center;">${opts}</select></div>`;
         }
         const podeEditarLinha = podeEditar && r.status !== 'CONCLUÍDA';
         const dblclickAttr = podeEditarLinha ? `ondblclick="editarEntradaMP(${r.id})" title="Clique duplo para editar"` : '';
@@ -11625,6 +11635,42 @@ function exibirTabelaEMP(lista) {
     }).join('');
 }
 
+async function alterarStatusDescargaEMP(id, novoStatus) {
+    const idx = entradasMP.findIndex(e => String(e.id) === String(id));
+    if (idx < 0) return;
+    if (novoStatus === 'DESCARREGANDO') {
+        const jaDesc = entradasMP.find(e => e.status_descarga === 'DESCARREGANDO' && String(e.id) !== String(id));
+        if (jaDesc) {
+            sgqToast('⚠ Já existe uma carga descarregando: ' + (jaDesc.fornecedor || jaDesc.materia_prima) + '. Conclua antes de iniciar outra.', 'erro');
+            exibirTabelaEMP();
+            return;
+        }
+    }
+    entradasMP[idx].status_descarga = novoStatus;
+    if (novoStatus === 'CONCLUÍDA') {
+        entradasMP[idx].status = 'CONCLUÍDA';
+    } else if (novoStatus === 'FILA' || novoStatus === 'DESCARREGANDO') {
+        if (entradasMP[idx].status === 'CONCLUÍDA') entradasMP[idx].status = 'APROVADA';
+    }
+    // Atualiza cor do select imediatamente
+    const sdStyles = { 'FILA':'background:#e8eaf6;color:#3949ab;', 'DESCARREGANDO':'background:#fff3e0;color:#e65100;', 'CONCLUÍDA':'background:#d5f4e6;color:#1a7a4a;' };
+    const sel = document.getElementById('sel-desc-' + id);
+    if (sel) { sel.style.cssText = sel.style.cssText.replace(/background:[^;]+;color:[^;]+;/, sdStyles[novoStatus] || ''); }
+    try {
+        await dbUpsertOne('entradas_mp', entradasMP[idx]);
+    } catch(e) {
+        // Coluna status_descarga pode não existir ainda — tenta salvar só o status principal
+        try {
+            const { error } = await _sbClient.from('entradas_mp').update({ status: entradasMP[idx].status }).eq('id', id);
+            if (error) console.error(error);
+        } catch(e2) { console.error(e2); }
+    }
+    const labels = { 'FILA':'⏳ Voltou para Fila', 'DESCARREGANDO':'🚛 Descarregando!', 'CONCLUÍDA':'✅ Descarga concluída!' };
+    sgqToast(labels[novoStatus] || 'Status atualizado', 'sucesso');
+    exibirTabelaEMP();
+}
+
+
 async function iniciarDescargaEMP(id) {
     const jaDescarregando = entradasMP.find(e => e.status_descarga === 'DESCARREGANDO');
     if (jaDescarregando) {
@@ -11647,6 +11693,17 @@ async function concluirDescargaEMP(id) {
     entradasMP[idx].status = 'CONCLUÍDA';
     try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e) { console.error(e); }
     sgqToast('✅ Descarga concluída!', 'sucesso');
+    document.getElementById('modalAprovarEMP').style.display = 'none';
+    exibirTabelaEMP();
+}
+
+async function desfazerDescargaEMP(id) {
+    const idx = entradasMP.findIndex(e => String(e.id) === String(id));
+    if (idx < 0) return;
+    entradasMP[idx].status_descarga = 'FILA';
+    entradasMP[idx].status = 'APROVADA';
+    try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e) { console.error(e); }
+    sgqToast('↩️ Descarga revertida para Fila!', 'aviso');
     document.getElementById('modalAprovarEMP').style.display = 'none';
     exibirTabelaEMP();
 }
@@ -11940,7 +11997,7 @@ function abrirModalAprovarEMP(id) {
 
     if (entrada.status === 'APROVADA') {
         secDesc.style.display = 'block';
-        const sd = entrada.status_descarga || 'NA FILA';
+        const sd = entrada.status_descarga || 'FILA';
         const jaDescarregando = entradasMP.find(e => e.status_descarga === 'DESCARREGANDO' && String(e.id) !== String(id));
 
         if (sd === 'DESCARREGANDO') {
@@ -11955,10 +12012,15 @@ function abrirModalAprovarEMP(id) {
                 : '';
         } else if (sd === 'CONCLUÍDA') {
             divStatus.innerHTML = `<span style="background:#d5f4e6;color:#1a7a4a;padding:5px 14px;border-radius:12px;font-size:12px;font-weight:bold;">✅ DESCARGA CONCLUÍDA</span>`;
-            divBotoes.innerHTML = '';
+            divBotoes.innerHTML = podeDescarga
+                ? `<button onclick="desfazerDescargaEMP(${id})" style="background:#546e7a;color:white;padding:11px 16px;border:none;border-radius:6px;font-size:13px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:18px;">↩️</span>
+                    <div><div>Desfazer Descarga</div><div style="font-size:11px;font-weight:normal;opacity:0.85;">Volta o status para Fila</div></div>
+                   </button>`
+                : '';
         } else {
-            // NA FILA
-            divStatus.innerHTML = `<span style="background:#e8eaf6;color:#3949ab;padding:5px 14px;border-radius:12px;font-size:12px;font-weight:bold;">⏳ NA FILA — aguardando descarga</span>`;
+            // FILA
+            divStatus.innerHTML = `<span style="background:#e8eaf6;color:#3949ab;padding:5px 14px;border-radius:12px;font-size:12px;font-weight:bold;">⏳ Fila — aguardando descarga</span>`;
             if (jaDescarregando) {
                 divBotoes.innerHTML = `<p style="font-size:11px;color:#888;text-align:center;margin:4px 0;">⚠ Outra carga está descarregando agora:<br><strong>${jaDescarregando.fornecedor || jaDescarregando.materia_prima}</strong></p>`;
             } else {
@@ -11984,7 +12046,7 @@ async function acaoEntradaMP(novoStatus) {
     if (idx < 0) return;
     entradasMP[idx].status = novoStatus;
     if (novoStatus === 'APROVADA' && !entradasMP[idx].status_descarga) {
-        entradasMP[idx].status_descarga = 'NA FILA';
+        entradasMP[idx].status_descarga = 'FILA';
     }
     try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e){}
     _empAprovarId = null;
