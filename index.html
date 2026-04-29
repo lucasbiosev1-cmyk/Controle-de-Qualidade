@@ -11422,6 +11422,10 @@ async function _empAtualizarStatusConclusoes() {
     let alterou = false;
     for (let i = 0; i < entradasMP.length; i++) {
         const e = entradasMP[i];
+        // ✅ CORREÇÃO: entradas sem NF nunca têm o status alterado automaticamente
+        // Placas se repetem entre veículos diferentes — a conclusão só pode ser determinada pela NF
+        const nfEntrada = (e.nf || '').toString().trim().toUpperCase();
+        if (!nfEntrada) continue;
         if (e.status === 'EM ANÁLISE' || e.status === 'APROVADA') {
             if (_empVerificarConclusao(e)) {
                 entradasMP[i].status = 'CONCLUÍDA';
@@ -11796,9 +11800,13 @@ async function salvarEntradaMP(event) {
                 return;
             }
         }
-        const emClass = classificacoes.some(r => (r.nf||'').toString().trim().toUpperCase() === nfUp);
-        const emMP    = materiasPrimas.some(r => (r.nf||'').toString().trim().toUpperCase() === nfUp);
-        const statusInicial = (emClass || emMP) ? 'CONCLUÍDA' : 'EM ANÁLISE';
+        // ✅ CORREÇÃO: só verifica NF se ela foi informada — placas se repetem e não devem influenciar o status
+        let statusInicial = 'EM ANÁLISE';
+        if (nfUp) {
+            const emClass = classificacoes.some(r => (r.nf||'').toString().trim().toUpperCase() === nfUp);
+            const emMP    = materiasPrimas.some(r => (r.nf||'').toString().trim().toUpperCase() === nfUp);
+            if (emClass || emMP) statusInicial = 'CONCLUÍDA';
+        }
 
         const novaEntrada = {
             id: Date.now(),
