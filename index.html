@@ -7725,10 +7725,12 @@ function aplicarPermissoes() {
             const df = document.getElementById('filterDataFimEMP');
             if (df && !df.value) df.value = hoje;
             if (di && !di.value) {
-                // Data Início = data mais antiga entre registros com status_descarga FILA ou status EM ANÁLISE
+                // Data Início = data mais antiga entre registros REALMENTE pendentes:
+                // - status_descarga explicitamente 'FILA' ou 'NA FILA'
+                // - OU status = 'EM ANÁLISE' (sem aprovação, reprovação ou conclusão)
                 const _pendentes = entradasMP.filter(r =>
-                    (r.status_descarga === 'FILA' || r.status_descarga === 'NA FILA' || !r.status_descarga)
-                    || (r.status === 'EM ANÁLISE')
+                    (r.status_descarga === 'FILA' || r.status_descarga === 'NA FILA')
+                    || (r.status === 'EM ANÁLISE' && r.status !== 'APROVADA' && r.status !== 'REPROVADA' && r.status !== 'CONCLUÍDA')
                 );
                 const _datas = _pendentes.map(r => r.data || '').filter(d => !!d).sort();
                 di.value = _datas.length > 0 ? _datas[0] : hoje;
@@ -11472,22 +11474,6 @@ function exibirTabelaEMP(lista) {
 
     // ── Data Início: preenche automaticamente com a data mais antiga de registros pendentes ──
     // Pendente = status_descarga em Fila (ou vazio) OU status = 'EM ANÁLISE' (sem aprovação/reprovação)
-    const _elDI = document.getElementById('filterDataInicioEMP');
-    if (_elDI && !_elDI.value) {
-        const _pendentes = entradasMP.filter(r =>
-            (r.status_descarga === 'FILA' || r.status_descarga === 'NA FILA' || !r.status_descarga)
-            || (r.status === 'EM ANÁLISE')
-        );
-        const _datas = _pendentes.map(r => r.data || '').filter(d => !!d).sort();
-        if (_datas.length > 0) {
-            _elDI.value = _datas[0]; // menor data (YYYY-MM-DD ordena lexicograficamente)
-        } else {
-            // Fallback: dia 1 do mês atual
-            const _h = new Date();
-            _elDI.value = `${_h.getFullYear()}-${String(_h.getMonth()+1).padStart(2,'0')}-01`;
-        }
-    }
-
     // Filtra
     const nf       = (document.getElementById('filterNFEMP')?.value || '').trim().toUpperCase();
     const di       = document.getElementById('filterDataInicioEMP')?.value || '';
