@@ -7719,7 +7719,14 @@ function aplicarPermissoes() {
     // Carrega entradas ao logar
     if (podeEntradaMP) {
         carregarListaMP(); // ✅ Carrega lista de matérias-primas do Supabase
-        carregarEntradasMP().then(() => exibirTabelaEMP());
+        carregarEntradasMP().then(() => {
+            const hoje = new Date().toISOString().split('T')[0];
+            const di = document.getElementById('filterDataInicioEMP');
+            const df = document.getElementById('filterDataFimEMP');
+            if (di) di.value = hoje;
+            if (df) df.value = hoje;
+            exibirTabelaEMP();
+        });
     }
 
     // Ocultar cards da capa que o usuário não tem acesso
@@ -11587,7 +11594,9 @@ function exibirTabelaEMP(lista) {
         // ── Lógica de DESCARGA — dropdown inline para alterar direto na tabela ──
         const statusDesc = r.status_descarga || '';
         let descargaCell = '';
-        if (r.status === 'REPROVADA' || r.status === 'EM ANÁLISE') {
+        if (r.status === 'REPROVADA') {
+            descargaCell = `<span style="background:#fadbd8;color:#e74c3c;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">❌ Reprovada</span>`;
+        } else if (r.status === 'EM ANÁLISE') {
             descargaCell = `<span style="color:#666;font-size:11px;">—</span>`;
         } else {
             // Normaliza valor atual
