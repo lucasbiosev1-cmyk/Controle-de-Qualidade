@@ -6518,6 +6518,12 @@
             </div>
             <div style="padding:20px;">
                 <p style="font-size:13px;color:#444;margin-bottom:16px;">NF: <strong id="modalAprovarNF"></strong> — Fornecedor: <strong id="modalAprovarForn"></strong></p>
+                <!-- Seção Controle de Descarga (visível só quando APROVADA) -->
+                <div id="modalDescargaSection" style="display:none;background:#fff8f2;border:1px solid #f0a070;border-radius:8px;padding:14px;margin-bottom:14px;">
+                    <div style="font-size:11px;font-weight:bold;color:#e65100;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">🚛 Controle de Descarga</div>
+                    <div id="modalDescargaStatus" style="margin-bottom:10px;text-align:center;"></div>
+                    <div id="modalDescargaBotoes" style="display:flex;flex-direction:column;gap:8px;"></div>
+                </div>
                 <div style="display:flex;flex-direction:column;gap:10px;">
                     <button onclick="acaoEntradaMP('APROVADA')"
                         style="background:#27ae60;color:white;padding:12px 16px;border:none;border-radius:6px;font-size:13px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:10px;">
@@ -11404,15 +11410,10 @@ function _empStatusBadge(status) {
     if (status === 'CONCLUÍDA')
         return '<span style="background:#d5f4e6;color:#27ae60;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">✅ CONCLUÍDA</span>';
     if (status === 'APROVADA')
-        return `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;background:#fff3e0;color:#e65100;">
-            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#e65100;animation:empPulse 1s infinite;"></span>
-            DESCARREGANDO
-        </span>`;
+        return '<span style="background:#d5f4e6;color:#27ae60;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">✅ APROVADA</span>';
     if (status === 'REPROVADA')
         return '<span style="background:#fadbd8;color:#e74c3c;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">❌ REPROVADA</span>';
-    if (status === 'EM ANÁLISE')
-        return '<span style="background:#fef9e7;color:#b7770d;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">⏳ PENDENTE</span>';
-    return '<span style="background:#fef9e7;color:#b7770d;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">⏳ PENDENTE</span>';
+    return '<span style="background:#fff8e1;color:#b7770d;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">⏳ EM ANÁLISE</span>';
 }
 
 function _empVerificarConclusao(entrada) {
@@ -11583,41 +11584,21 @@ function exibirTabelaEMP(lista) {
                 : '';
             acoes = `<div style="display:flex;align-items:center;gap:4px;justify-content:center;">${btnAprRep}${btnDelete}</div>`;
         }
-        // ── Lógica de DESCARGA ──
-        const podeDescarga = isAdmin || (perms && perms.entrada_aprovar);
+        // ── Lógica de DESCARGA — apenas badge visual, botões ficam no modal ──
         const statusDesc = r.status_descarga || '';
-        const jaDescarregando = dados.some(x => x.status_descarga === 'DESCARREGANDO' && String(x.id) !== String(r.id));
         let descargaCell = '';
-        if (r.status === 'APROVADA' || r.status === 'DESCARREGANDO') {
-            if (statusDesc === 'DESCARREGANDO') {
-                descargaCell = podeDescarga
-                    ? `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-                        <span style="display:inline-flex;align-items:center;gap:4px;background:#fff3e0;color:#e65100;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;">
-                            <span style="width:7px;height:7px;border-radius:50%;background:#e65100;animation:empPulse 1s infinite;display:inline-block;"></span>DESCARREGANDO
-                        </span>
-                        <button onclick="concluirDescargaEMP(${r.id})" style="font-size:10px;padding:2px 8px;background:#27ae60;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">✔ Concluir</button>
-                       </div>`
-                    : `<span style="display:inline-flex;align-items:center;gap:4px;background:#fff3e0;color:#e65100;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;">
-                        <span style="width:7px;height:7px;border-radius:50%;background:#e65100;animation:empPulse 1s infinite;display:inline-block;"></span>DESCARREGANDO
-                       </span>`;
-            } else if (statusDesc === 'CONCLUÍDA') {
-                descargaCell = `<span style="background:#d5f4e6;color:#1a7a4a;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;">✅ CONCLUÍDA</span>`;
-            } else {
-                // NA FILA
-                const posicaoFila = dados.filter(x => x.status === 'APROVADA' && (!x.status_descarga || x.status_descarga === 'NA FILA') && x.id <= r.id).length;
-                descargaCell = podeDescarga && !jaDescarregando
-                    ? `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-                        <span style="background:#e8eaf6;color:#3949ab;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;">⏳ NA FILA</span>
-                        <button onclick="iniciarDescargaEMP(${r.id})" style="font-size:10px;padding:2px 8px;background:#1565c0;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">▶ Iniciar</button>
-                       </div>`
-                    : `<span style="background:#e8eaf6;color:#3949ab;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;">⏳ NA FILA</span>`;
-            }
-        } else if (r.status === 'REPROVADA') {
-            descargaCell = `<span style="color:#bbb;font-size:10px;">—</span>`;
-        } else if (r.status === 'CONCLUÍDA') {
-            descargaCell = `<span style="background:#d5f4e6;color:#1a7a4a;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;">✅ CONCLUÍDA</span>`;
+        if (r.status === 'REPROVADA' || r.status === 'EM ANÁLISE') {
+            descargaCell = `<span style="color:#666;font-size:11px;">—</span>`;
+        } else if (statusDesc === 'DESCARREGANDO') {
+            descargaCell = `<span style="display:inline-flex;align-items:center;gap:5px;background:#fff3e0;color:#e65100;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">
+                <span style="width:7px;height:7px;border-radius:50%;background:#e65100;animation:empPulse 1s infinite;display:inline-block;flex-shrink:0;"></span>DESCARREGANDO
+            </span>`;
+        } else if (statusDesc === 'CONCLUÍDA' || r.status === 'CONCLUÍDA') {
+            descargaCell = `<span style="background:#d5f4e6;color:#1a7a4a;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">✅ CONCLUÍDA</span>`;
+        } else if (statusDesc === 'NA FILA' || r.status === 'APROVADA') {
+            descargaCell = `<span style="background:#e8eaf6;color:#3949ab;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">⏳ NA FILA</span>`;
         } else {
-            descargaCell = `<span style="color:#bbb;font-size:10px;">—</span>`;
+            descargaCell = `<span style="color:#666;font-size:11px;">—</span>`;
         }
         const podeEditarLinha = podeEditar && r.status !== 'CONCLUÍDA';
         const dblclickAttr = podeEditarLinha ? `ondblclick="editarEntradaMP(${r.id})" title="Clique duplo para editar"` : '';
@@ -11654,7 +11635,8 @@ async function iniciarDescargaEMP(id) {
     if (idx < 0) return;
     entradasMP[idx].status_descarga = 'DESCARREGANDO';
     try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e) { console.error(e); }
-    sgqToast('▶ Descarga iniciada!', 'sucesso');
+    sgqToast('🚛 Descarga iniciada!', 'sucesso');
+    document.getElementById('modalAprovarEMP').style.display = 'none';
     exibirTabelaEMP();
 }
 
@@ -11665,6 +11647,7 @@ async function concluirDescargaEMP(id) {
     entradasMP[idx].status = 'CONCLUÍDA';
     try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e) { console.error(e); }
     sgqToast('✅ Descarga concluída!', 'sucesso');
+    document.getElementById('modalAprovarEMP').style.display = 'none';
     exibirTabelaEMP();
 }
 
@@ -11944,6 +11927,53 @@ function abrirModalAprovarEMP(id) {
     _empAprovarId = id;
     document.getElementById('modalAprovarNF').textContent = entrada.nf || '-';
     document.getElementById('modalAprovarForn').textContent = entrada.fornecedor || '-';
+
+    // Seção de descarga: visível apenas se APROVADA
+    const secDesc = document.getElementById('modalDescargaSection');
+    const divStatus = document.getElementById('modalDescargaStatus');
+    const divBotoes = document.getElementById('modalDescargaBotoes');
+    const isAdmin = perfilAtual === 'admin';
+    const user = USUARIOS[usuarioAtual] || {};
+    let perms = user.perms || {};
+    if (typeof perms === 'string') { try { perms = JSON.parse(perms); } catch(e) { perms = {}; } }
+    const podeDescarga = isAdmin || perms.entrada_aprovar;
+
+    if (entrada.status === 'APROVADA') {
+        secDesc.style.display = 'block';
+        const sd = entrada.status_descarga || 'NA FILA';
+        const jaDescarregando = entradasMP.find(e => e.status_descarga === 'DESCARREGANDO' && String(e.id) !== String(id));
+
+        if (sd === 'DESCARREGANDO') {
+            divStatus.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;background:#fff3e0;color:#e65100;padding:5px 14px;border-radius:12px;font-size:12px;font-weight:bold;">
+                <span style="width:9px;height:9px;border-radius:50%;background:#e65100;animation:empPulse 1s infinite;display:inline-block;"></span>DESCARREGANDO
+            </span>`;
+            divBotoes.innerHTML = podeDescarga
+                ? `<button onclick="concluirDescargaEMP(${id})" style="background:#27ae60;color:white;padding:11px 16px;border:none;border-radius:6px;font-size:13px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:18px;">✅</span>
+                    <div><div>Concluir Descarga</div><div style="font-size:11px;font-weight:normal;opacity:0.85;">Confirma que o descarregamento foi finalizado</div></div>
+                   </button>`
+                : '';
+        } else if (sd === 'CONCLUÍDA') {
+            divStatus.innerHTML = `<span style="background:#d5f4e6;color:#1a7a4a;padding:5px 14px;border-radius:12px;font-size:12px;font-weight:bold;">✅ DESCARGA CONCLUÍDA</span>`;
+            divBotoes.innerHTML = '';
+        } else {
+            // NA FILA
+            divStatus.innerHTML = `<span style="background:#e8eaf6;color:#3949ab;padding:5px 14px;border-radius:12px;font-size:12px;font-weight:bold;">⏳ NA FILA — aguardando descarga</span>`;
+            if (jaDescarregando) {
+                divBotoes.innerHTML = `<p style="font-size:11px;color:#888;text-align:center;margin:4px 0;">⚠ Outra carga está descarregando agora:<br><strong>${jaDescarregando.fornecedor || jaDescarregando.materia_prima}</strong></p>`;
+            } else {
+                divBotoes.innerHTML = podeDescarga
+                    ? `<button onclick="iniciarDescargaEMP(${id})" style="background:#e65100;color:white;padding:11px 16px;border:none;border-radius:6px;font-size:13px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:10px;">
+                        <span style="font-size:18px;">🚛</span>
+                        <div><div>Iniciar Descarga</div><div style="font-size:11px;font-weight:normal;opacity:0.85;">Libera o caminhão para descarregar</div></div>
+                       </button>`
+                    : '';
+            }
+        }
+    } else {
+        secDesc.style.display = 'none';
+    }
+
     document.getElementById('modalAprovarEMP').style.display = 'flex';
 }
 
