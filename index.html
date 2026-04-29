@@ -7723,8 +7723,16 @@ function aplicarPermissoes() {
             const hoje = new Date().toISOString().split('T')[0];
             const di = document.getElementById('filterDataInicioEMP');
             const df = document.getElementById('filterDataFimEMP');
-            if (di) di.value = hoje;
-            if (df) df.value = hoje;
+            if (df && !df.value) df.value = hoje;
+            if (di && !di.value) {
+                // Data Início = data mais antiga entre registros com status_descarga FILA ou status EM ANÁLISE
+                const _pendentes = entradasMP.filter(r =>
+                    (r.status_descarga === 'FILA' || r.status_descarga === 'NA FILA' || !r.status_descarga)
+                    || (r.status === 'EM ANÁLISE')
+                );
+                const _datas = _pendentes.map(r => r.data || '').filter(d => !!d).sort();
+                di.value = _datas.length > 0 ? _datas[0] : hoje;
+            }
             exibirTabelaEMP();
         });
     }
@@ -7928,35 +7936,6 @@ function preencherFiltrosMesAtual(aba) {
         // só preenche se estiver vazio (respeita filtro já definido pelo usuário)
         if (!el.value) el.value = el.type === 'month' ? mesStr : val;
     }
-
-    // ── Para Entrada MP: Data Início = data mais antiga com status pendente ──
-    if (aba === 'entradaMP') {
-        const elIni = document.getElementById(idIni);
-        const elFim = document.getElementById(idFim);
-        if (elIni && !elIni.value) {
-            // Registros pendentes: status_descarga === 'FILA' OU status === 'EM ANÁLISE'
-            const pendentes = (typeof entradasMP !== 'undefined' ? entradasMP : []).filter(r =>
-                (r.status_descarga === 'FILA' || r.status_descarga === 'NA FILA' || !r.status_descarga)
-                || (r.status === 'EM ANÁLISE')
-            );
-            if (pendentes.length > 0) {
-                const maisAntiga = pendentes
-                    .map(r => r.data || '')
-                    .filter(d => !!d)
-                    .sort()[0]; // menor data (YYYY-MM-DD ordena corretamente)
-                if (maisAntiga) {
-                    elIni.value = maisAntiga;
-                } else {
-                    elIni.value = inicio; // fallback: dia 1 do mês
-                }
-            } else {
-                elIni.value = inicio; // fallback: nenhum pendente → mês atual
-            }
-        }
-        if (elFim && !elFim.value) elFim.value = fim;
-        return;
-    }
-
     setVal(idIni, inicio);
     setVal(idFim,  fim);
 
@@ -11490,6 +11469,24 @@ async function _empAtualizarStatusConclusoes() {
 
 function exibirTabelaEMP(lista) {
     if (!lista) lista = entradasMP;
+
+    // ── Data Início: preenche automaticamente com a data mais antiga de registros pendentes ──
+    // Pendente = status_descarga em Fila (ou vazio) OU status = 'EM ANÁLISE' (sem aprovação/reprovação)
+    const _elDI = document.getElementById('filterDataInicioEMP');
+    if (_elDI && !_elDI.value) {
+        const _pendentes = entradasMP.filter(r =>
+            (r.status_descarga === 'FILA' || r.status_descarga === 'NA FILA' || !r.status_descarga)
+            || (r.status === 'EM ANÁLISE')
+        );
+        const _datas = _pendentes.map(r => r.data || '').filter(d => !!d).sort();
+        if (_datas.length > 0) {
+            _elDI.value = _datas[0]; // menor data (YYYY-MM-DD ordena lexicograficamente)
+        } else {
+            // Fallback: dia 1 do mês atual
+            const _h = new Date();
+            _elDI.value = `${_h.getFullYear()}-${String(_h.getMonth()+1).padStart(2,'0')}-01`;
+        }
+    }
 
     // Filtra
     const nf       = (document.getElementById('filterNFEMP')?.value || '').trim().toUpperCase();
