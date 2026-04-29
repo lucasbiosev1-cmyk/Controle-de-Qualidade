@@ -11595,7 +11595,7 @@ function exibirTabelaEMP(lista) {
         const statusDesc = r.status_descarga || '';
         let descargaCell = '';
         if (r.status === 'REPROVADA') {
-            descargaCell = `<span style="background:#fadbd8;color:#e74c3c;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">❌ Reprovada</span>`;
+            descargaCell = `<span style="background:#fadbd8;color:#e74c3c;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">❌ REPROVADA</span>`;
         } else if (r.status === 'EM ANÁLISE') {
             descargaCell = `<span style="color:#666;font-size:11px;">—</span>`;
         } else {
@@ -11609,9 +11609,9 @@ function exibirTabelaEMP(lista) {
                 'CONCLUÍDA':    'background:#d5f4e6;color:#1a7a4a;'
             };
             const sdLabels = {
-                'FILA':         '⏳ Fila',
-                'DESCARREGANDO':'🟠 Descarregando',
-                'CONCLUÍDA':    '✅ Concluída'
+                'FILA':         '⏳ FILA',
+                'DESCARREGANDO':'🟠 DESCARREGANDO',
+                'CONCLUÍDA':    '✅ CONCLUÍDA'
             };
             const sdStyle = sdStyles[sdVal] || 'background:#eee;color:#555;';
             const opts = ['FILA','DESCARREGANDO','CONCLUÍDA'].map(v =>
@@ -12029,7 +12029,7 @@ function abrirModalAprovarEMP(id) {
                 : '';
         } else {
             // FILA
-            divStatus.innerHTML = `<span style="background:#e8eaf6;color:#3949ab;padding:5px 14px;border-radius:12px;font-size:12px;font-weight:bold;">⏳ Fila — aguardando descarga</span>`;
+            divStatus.innerHTML = `<span style="background:#e8eaf6;color:#3949ab;padding:5px 14px;border-radius:12px;font-size:12px;font-weight:bold;">⏳ FILA — aguardando descarga</span>`;
             if (jaDescarregando) {
                 divBotoes.innerHTML = `<p style="font-size:11px;color:#888;text-align:center;margin:4px 0;">⚠ Outra carga está descarregando agora:<br><strong>${jaDescarregando.fornecedor || jaDescarregando.materia_prima}</strong></p>`;
             } else {
