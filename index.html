@@ -16637,8 +16637,8 @@ async function executarCorrecaoDefeitos() {
                         <thead>
                             <tr>
                                 <th style="width:38%;text-align:left;">Avaliados</th>
-                                <th style="width:25%;" id="thResultado">Resultado (%)</th>
-                                <th style="width:25%;" id="thParametro">Parâmetro (%)</th>
+                                <th style="width:25%;" id="thResultado">Resultado</th>
+                                <th style="width:25%;" id="thParametro">Parâmetro</th>
                                 <th style="width:12%;">Ação</th>
                             </tr>
                         </thead>
@@ -16741,6 +16741,26 @@ const ncStorage = {
 
 let listaNC  = JSON.parse(ncStorage.getItem('sgq_nc')  || '[]');
 let listaDev = JSON.parse(ncStorage.getItem('sgq_dev') || '[]');
+// Migração: corrige registros antigos de MILHO onde Densidade foi salva com unidade '%'
+let _migracaoFeita = false;
+listaDev = listaDev.map(dev => {
+    if (!dev.classificacao) return dev;
+    const classif = typeof dev.classificacao === 'string' ? JSON.parse(dev.classificacao || '[]') : (dev.classificacao || []);
+    const produto = (dev.produto || '').toUpperCase();
+    if (produto.includes('MILHO')) {
+        let changed = false;
+        const fixed = classif.map(c => {
+            if ((c.defeito || '').toLowerCase() === 'densidade' && (c.unidade || '%') === '%') {
+                changed = true;
+                return { ...c, unidade: 'g/L' };
+            }
+            return c;
+        });
+        if (changed) { _migracaoFeita = true; return { ...dev, classificacao: JSON.stringify(fixed) }; }
+    }
+    return dev;
+});
+if (_migracaoFeita) { try { ncStorage.setItem('sgq_dev', JSON.stringify(listaDev)); } catch(e){} }
 // Sequências por fornecedor: { "NUTRITINS": 3, "OUTRO": 1, ... }
 let ncSeqPorFornecedor = JSON.parse(ncStorage.getItem('sgq_nc_seq_forn') || '{}');
 let devIdSeq = parseInt(ncStorage.getItem('sgq_dev_seq') || '1');
@@ -17395,9 +17415,16 @@ function abrirModalDev(id = null) {
         document.getElementById('dev-edit-id').value = id;
         limparClassif();
         const classifDev = typeof dev.classificacao === 'string' ? JSON.parse(dev.classificacao || '[]') : (dev.classificacao || []);
-        if (classifDev && classifDev.length > 0)
-            classifDev.forEach(c => adicionarLinhaClassif(c.defeito, c.resultado, c.parametro));
-        else carregarClassifPadrao();
+        if (classifDev && classifDev.length > 0) {
+            classifDev.forEach(c => adicionarLinhaClassif(c.defeito, c.resultado, c.parametro, c.unidade));
+            // Ajusta cabeçalhos conforme o produto do registro
+            const _prod = (dev.produto || '').toUpperCase();
+            const _th1 = document.getElementById('thResultado');
+            const _th2 = document.getElementById('thParametro');
+            const _usaPct = !_prod.includes('MILHO') && !_prod.includes('FCO') && !_prod.includes('FARELO');
+            if (_th1) _th1.textContent = _usaPct ? 'Resultado (%)' : 'Resultado';
+            if (_th2) _th2.textContent = _usaPct ? 'Parâmetro (%)' : 'Parâmetro';
+        } else carregarClassifPadrao();
     }
     document.getElementById('modalDev').classList.add('show');
     // Scroll ao topo do body do modal para garantir que seção 1 apareça primeiro
@@ -17679,7 +17706,7 @@ const CLASSIF_MILHO = [
     { nome: 'Carunchados',    param: 3.00 },
     { nome: 'Impureza',       param: 1.50 },
     { nome: 'Umidade',        param: 14.00 },
-    { nome: 'Densidade',      param: 750.00 },
+    { nome: 'Densidade',      param: 750.00, unidade: 'g/L' },
 ];
 
 // Tabela de parâmetros para SOJA (MAPA/Embrapa)
@@ -17754,9 +17781,9 @@ function carregarClassifMilho() {
     _resetarBotoesClassif();
     const th1 = document.getElementById('thResultado');
     const th2 = document.getElementById('thParametro');
-    if (th1) th1.textContent = 'Resultado (%)';
-    if (th2) th2.textContent = 'Parâmetro (%)';
-    CLASSIF_MILHO.forEach(d => adicionarLinhaClassif(d.nome, '', d.param));
+    if (th1) th1.textContent = 'Resultado';
+    if (th2) th2.textContent = 'Parâmetro';
+    CLASSIF_MILHO.forEach(d => adicionarLinhaClassif(d.nome, '', d.param, d.unidade));
     const bm = document.getElementById('btnClassifMilho');
     if (bm) { bm.style.background='#e67e22'; bm.style.color='#fff'; }
 }
@@ -18189,7 +18216,10 @@ function visualizarNC(id) {
 function visualizarDev(id) {
     const dev = listaDev.find(d => String(d.id) === String(id));
     if (!dev) return;
-    const classif = typeof dev.classificacao === 'string' ? JSON.parse(dev.classificacao || '[]') : (dev.classificacao || []);
+    let classif = typeof dev.classificacao === 'string' ? JSON.parse(dev.classificacao || '[]') : (dev.classificacao || []);
+    // Correção em tempo real: Densidade do Milho sempre em g/L
+    const _isMilhoDev = (dev.produto || '').toUpperCase().includes('MILHO');
+    if (_isMilhoDev) classif = classif.map(c => ((c.defeito||'').toLowerCase()==='densidade' && (c.unidade||'%')==='%') ? {...c, unidade:'g/L'} : c);
     const imgs = typeof dev.imagens === 'string' ? JSON.parse(dev.imagens || '[]') : (dev.imagens || []);
     const imgsHtml = imgs.length
         ? `<div class="ncv-section-title">📷 Evidências Fotográficas</div>
@@ -18273,7 +18303,10 @@ function imprimirVisualizacao() {
     if (isDev && devObj) {
         // ===================== IMPRESSÃO RICA — DEVOLUÇÃO =====================
         const dev = devObj;
-        const classif = typeof dev.classificacao === 'string' ? JSON.parse(dev.classificacao || '[]') : (dev.classificacao || []);
+        let classif = typeof dev.classificacao === 'string' ? JSON.parse(dev.classificacao || '[]') : (dev.classificacao || []);
+        // Correção em tempo real: Densidade do Milho sempre em g/L (para registros antigos)
+        if ((dev.produto||'').toUpperCase().includes('MILHO'))
+            classif = classif.map(c => ((c.defeito||'').toLowerCase()==='densidade' && (c.unidade||'%')==='%') ? {...c, unidade:'g/L'} : c);
         const imgs    = typeof dev.imagens === 'string' ? JSON.parse(dev.imagens || '[]') : (dev.imagens || []);
 
         const fmtData = (d) => {
