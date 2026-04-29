@@ -114,6 +114,7 @@
             animation: sgq-spin 0.8s linear infinite;
         }
         @keyframes sgq-spin { to { transform: rotate(360deg); } }
+        @keyframes empPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
         .sgq-loading-text {
             color: rgba(255,255,255,0.4); font-size: 11px; font-weight: 600;
             letter-spacing: 2px; text-transform: uppercase;
@@ -6382,12 +6383,12 @@
                 <table id="tabelaEMPMain" style="table-layout:fixed;width:100%;">
                     <colgroup>
                         <col id="colEMP0"><col id="colEMP1"><col id="colEMP2"><col id="colEMP3">
-                        <col id="colEMP4"><col id="colEMP5"><col id="colEMP6"><col id="colEMP7">
+                        <col id="colEMP4"><col id="colEMP5"><col id="colEMP6"><col id="colEMP7"><col id="colEMP8">
                     </colgroup>
                     <thead id="theadEMP">
                         <tr>
                             <th style="text-align:left;padding-left:8px;">MATÉRIA PRIMA</th><th>DATA</th><th>HORA</th><th>NOTA FISCAL</th>
-                            <th>PLACA</th><th>USUÁRIO</th><th>STATUS</th><th id="thAcaoEMP">AÇÃO</th>
+                            <th>PLACA</th><th>USUÁRIO</th><th>STATUS</th><th id="thDescargaEMP">DESCARGA</th><th id="thAcaoEMP">AÇÃO</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaEntradaMP"><tr><td colspan="8" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
@@ -11403,10 +11404,15 @@ function _empStatusBadge(status) {
     if (status === 'CONCLUÍDA')
         return '<span style="background:#d5f4e6;color:#27ae60;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">✅ CONCLUÍDA</span>';
     if (status === 'APROVADA')
-        return '<span style="background:#d5f4e6;color:#27ae60;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">✅ APROVADA</span>';
+        return `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;background:#fff3e0;color:#e65100;">
+            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#e65100;animation:empPulse 1s infinite;"></span>
+            DESCARREGANDO
+        </span>`;
     if (status === 'REPROVADA')
         return '<span style="background:#fadbd8;color:#e74c3c;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">❌ REPROVADA</span>';
-    return '<span style="background:#fff8e1;color:#b7770d;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">⏳ EM ANÁLISE</span>';
+    if (status === 'EM ANÁLISE')
+        return '<span style="background:#fef9e7;color:#b7770d;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">⏳ PENDENTE</span>';
+    return '<span style="background:#fef9e7;color:#b7770d;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">⏳ PENDENTE</span>';
 }
 
 function _empVerificarConclusao(entrada) {
@@ -11479,16 +11485,18 @@ function exibirTabelaEMP(lista) {
     // Ajusta larguras via <col> e oculta cabeçalho AÇÃO conforme permissão
     const thAcao = document.getElementById('thAcaoEMP');
     if (thAcao) thAcao.style.display = temAcao ? '' : 'none';
+    const thDescarga = document.getElementById('thDescargaEMP');
+    if (thDescarga) thDescarga.style.display = '';
     (function(){
-        const comAcao = ['22%','9%','6%','13%','9%','11%','12%','18%'];
-        const semAcao = ['28%','11%','7%','16%','11%','13%','14%','0%'];
+        const comAcao = ['20%','8%','5%','11%','8%','10%','11%','12%','15%'];
+        const semAcao = ['24%','10%','6%','14%','10%','12%','12%','12%','0%'];
         const widths = temAcao ? comAcao : semAcao;
         widths.forEach((w, i) => { const col = document.getElementById('colEMP'+i); if(col) col.style.width = w; });
     })();
 
     const tbody = document.getElementById('tabelaEntradaMP');
     if (!dados.length) {
-        tbody.innerHTML = `<tr><td colspan="${temAcao ? 8 : 7}" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${temAcao ? 9 : 8}" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
         return;
     }
 
@@ -11544,7 +11552,7 @@ function exibirTabelaEMP(lista) {
         if (mpKey !== ultimoGrupo) {
             ultimoGrupo = mpKey;
             separador = `<tr>
-                <td colspan="${temAcao ? 8 : 7}" style="
+                <td colspan="${temAcao ? 9 : 8}" style="
                     background: ${_empCoresGrupo[corIdx]};
                     border-top: 2px solid rgba(255,255,255,0.15);
                     border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -11575,6 +11583,42 @@ function exibirTabelaEMP(lista) {
                 : '';
             acoes = `<div style="display:flex;align-items:center;gap:4px;justify-content:center;">${btnAprRep}${btnDelete}</div>`;
         }
+        // ── Lógica de DESCARGA ──
+        const podeDescarga = isAdmin || (perms && perms.entrada_aprovar);
+        const statusDesc = r.status_descarga || '';
+        const jaDescarregando = dados.some(x => x.status_descarga === 'DESCARREGANDO' && String(x.id) !== String(r.id));
+        let descargaCell = '';
+        if (r.status === 'APROVADA' || r.status === 'DESCARREGANDO') {
+            if (statusDesc === 'DESCARREGANDO') {
+                descargaCell = podeDescarga
+                    ? `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+                        <span style="display:inline-flex;align-items:center;gap:4px;background:#fff3e0;color:#e65100;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;">
+                            <span style="width:7px;height:7px;border-radius:50%;background:#e65100;animation:empPulse 1s infinite;display:inline-block;"></span>DESCARREGANDO
+                        </span>
+                        <button onclick="concluirDescargaEMP(${r.id})" style="font-size:10px;padding:2px 8px;background:#27ae60;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">✔ Concluir</button>
+                       </div>`
+                    : `<span style="display:inline-flex;align-items:center;gap:4px;background:#fff3e0;color:#e65100;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;">
+                        <span style="width:7px;height:7px;border-radius:50%;background:#e65100;animation:empPulse 1s infinite;display:inline-block;"></span>DESCARREGANDO
+                       </span>`;
+            } else if (statusDesc === 'CONCLUÍDA') {
+                descargaCell = `<span style="background:#d5f4e6;color:#1a7a4a;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;">✅ CONCLUÍDA</span>`;
+            } else {
+                // NA FILA
+                const posicaoFila = dados.filter(x => x.status === 'APROVADA' && (!x.status_descarga || x.status_descarga === 'NA FILA') && x.id <= r.id).length;
+                descargaCell = podeDescarga && !jaDescarregando
+                    ? `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+                        <span style="background:#e8eaf6;color:#3949ab;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;">⏳ NA FILA</span>
+                        <button onclick="iniciarDescargaEMP(${r.id})" style="font-size:10px;padding:2px 8px;background:#1565c0;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">▶ Iniciar</button>
+                       </div>`
+                    : `<span style="background:#e8eaf6;color:#3949ab;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;">⏳ NA FILA</span>`;
+            }
+        } else if (r.status === 'REPROVADA') {
+            descargaCell = `<span style="color:#bbb;font-size:10px;">—</span>`;
+        } else if (r.status === 'CONCLUÍDA') {
+            descargaCell = `<span style="background:#d5f4e6;color:#1a7a4a;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;">✅ CONCLUÍDA</span>`;
+        } else {
+            descargaCell = `<span style="color:#bbb;font-size:10px;">—</span>`;
+        }
         const podeEditarLinha = podeEditar && r.status !== 'CONCLUÍDA';
         const dblclickAttr = podeEditarLinha ? `ondblclick="editarEntradaMP(${r.id})" title="Clique duplo para editar"` : '';
         const cursorStyle = podeEditarLinha ? 'cursor:pointer;' : '';
@@ -11594,9 +11638,34 @@ function exibirTabelaEMP(lista) {
             <td style="text-align:center;letter-spacing:1px;font-weight:bold;">${r.placa||'-'}</td>
             <td>${r.usuario||'-'}</td>
             <td>${_empStatusBadge(r.status)}</td>
+            <td style="text-align:center;">${descargaCell}</td>
             ${temAcao ? `<td>${acoes}</td>` : ''}
         </tr>`;
     }).join('');
+}
+
+async function iniciarDescargaEMP(id) {
+    const jaDescarregando = entradasMP.find(e => e.status_descarga === 'DESCARREGANDO');
+    if (jaDescarregando) {
+        sgqToast('Já existe uma carga descarregando: ' + (jaDescarregando.fornecedor || jaDescarregando.materia_prima) + '. Conclua antes de iniciar outra.', 'erro');
+        return;
+    }
+    const idx = entradasMP.findIndex(e => String(e.id) === String(id));
+    if (idx < 0) return;
+    entradasMP[idx].status_descarga = 'DESCARREGANDO';
+    try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e) { console.error(e); }
+    sgqToast('▶ Descarga iniciada!', 'sucesso');
+    exibirTabelaEMP();
+}
+
+async function concluirDescargaEMP(id) {
+    const idx = entradasMP.findIndex(e => String(e.id) === String(id));
+    if (idx < 0) return;
+    entradasMP[idx].status_descarga = 'CONCLUÍDA';
+    entradasMP[idx].status = 'CONCLUÍDA';
+    try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e) { console.error(e); }
+    sgqToast('✅ Descarga concluída!', 'sucesso');
+    exibirTabelaEMP();
 }
 
 function aplicarFiltrosEMP() { exibirTabelaEMP(); }
@@ -11828,6 +11897,7 @@ async function salvarEntradaMP(event) {
             data, hora, materia_prima, fornecedor, nf, placa,
             usuario, obs, seq,
             status: statusInicial,
+            status_descarga: '',
             criado_em: new Date().toISOString()
         };
         entradasMP.push(novaEntrada);
@@ -11883,6 +11953,9 @@ async function acaoEntradaMP(novoStatus) {
     const idx = entradasMP.findIndex(e => e.id === _empAprovarId);
     if (idx < 0) return;
     entradasMP[idx].status = novoStatus;
+    if (novoStatus === 'APROVADA' && !entradasMP[idx].status_descarga) {
+        entradasMP[idx].status_descarga = 'NA FILA';
+    }
     try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e){}
     _empAprovarId = null;
     exibirTabelaEMP();
