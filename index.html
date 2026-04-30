@@ -6029,6 +6029,71 @@
                     </div>
                 </div>
 
+                <!-- ═══════════════════════════════════════════
+                     PAINEL DE EGRESS (TRÁFEGO DE DADOS)
+                     ═══════════════════════════════════════════ -->
+                <div style="margin-bottom:20px;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #dce3ef;">
+                        <span style="font-size:20px;">📡</span>
+                        <div>
+                            <div style="font-size:13px;font-weight:bold;color:#34495e;text-transform:uppercase;">Egress — Tráfego de Dados</div>
+                            <div style="font-size:11px;color:#777;">Dados transferidos via API REST este mês (limite: 5 GB)</div>
+                        </div>
+                    </div>
+
+                    <!-- BARRA EGRESS -->
+                    <div style="margin-bottom:14px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                            <span style="font-size:12px;font-weight:bold;color:#2c3e50;">Uso mensal estimado</span>
+                            <span id="memEgressLabel" style="font-size:12px;font-weight:bold;color:#2c3e50;">calculando...</span>
+                        </div>
+                        <div style="background:#ecf0f1;border-radius:8px;height:22px;position:relative;overflow:hidden;">
+                            <div id="memBarraEgress" style="height:100%;width:0%;background:linear-gradient(to right,#3ecf8e,#f39c12,#e74c3c);transition:width 0.9s ease;border-radius:8px;"></div>
+                            <div id="memBarraEgressPct" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:10px;font-weight:bold;color:#2c3e50;white-space:nowrap;">—</div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:3px;">
+                            <span>0 GB</span>
+                            <span style="font-weight:600;color:#888;">Limite Free: 5 GB/mês</span>
+                        </div>
+                    </div>
+
+                    <!-- CARDS EGRESS -->
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+                        <div style="background:#eaf4fb;border:1px solid #aed6f1;border-radius:6px;padding:12px;text-align:center;">
+                            <div style="font-size:10px;font-weight:bold;color:#1a5276;text-transform:uppercase;margin-bottom:5px;">Por Sessão</div>
+                            <div id="memEgressSessao" style="font-size:18px;font-weight:bold;color:#2980b9;">—</div>
+                            <div style="font-size:10px;color:#888;margin-top:2px;">KB / login</div>
+                        </div>
+                        <div style="background:#eafaf1;border:1px solid #a9dfbf;border-radius:6px;padding:12px;text-align:center;">
+                            <div style="font-size:10px;font-weight:bold;color:#1e8449;text-transform:uppercase;margin-bottom:5px;">Estimado/Mês</div>
+                            <div id="memEgressMes" style="font-size:18px;font-weight:bold;color:#27ae60;">—</div>
+                            <div style="font-size:10px;color:#888;margin-top:2px;">MB projetado</div>
+                        </div>
+                        <div style="background:#fef9e7;border:1px solid #f9e79f;border-radius:6px;padding:12px;text-align:center;">
+                            <div style="font-size:10px;font-weight:bold;color:#7d6608;text-transform:uppercase;margin-bottom:5px;">% do Limite</div>
+                            <div id="memEgressPct" style="font-size:18px;font-weight:bold;color:#d4ac0d;">—</div>
+                            <div style="font-size:10px;color:#888;margin-top:2px;">de 5 GB</div>
+                        </div>
+                        <div style="background:#f4f6f7;border:1px solid #ddd;border-radius:6px;padding:12px;text-align:center;">
+                            <div style="font-size:10px;font-weight:bold;color:#555;text-transform:uppercase;margin-bottom:5px;">Sessões/Mês</div>
+                            <div id="memEgressSessoes" style="font-size:18px;font-weight:bold;color:#555;">—</div>
+                            <div style="font-size:10px;color:#888;margin-top:2px;">logins estimados</div>
+                        </div>
+                    </div>
+
+                    <!-- ALERTA EGRESS -->
+                    <div id="memAlertaEgress" style="display:none;background:#fadbd8;border:1px solid #e74c3c;border-radius:6px;padding:12px;margin-bottom:12px;border-left:5px solid #e74c3c;">
+                        <div style="font-size:13px;font-weight:bold;color:#c0392b;">⚠️ Egress elevado — risco de atingir o limite!</div>
+                        <div id="memAlertaEgressTxt" style="font-size:11px;color:#c0392b;margin-top:4px;"></div>
+                    </div>
+
+                    <!-- INFO EGRESS -->
+                    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px;font-size:11px;color:#166534;line-height:1.7;">
+                        <strong>ℹ️ Como é calculado:</strong> Estimativa baseada no volume de registros em cada tabela × tamanho médio por registro × número de sessões/mês.
+                        Cache em memória reduz drasticamente o Egress — dados são buscados <strong>apenas uma vez por login</strong>.
+                    </div>
+                </div>
+
                 <!-- DETALHES por tabela (registros) -->
                 <div style="margin-bottom:16px;">
                     <div style="font-size:13px;font-weight:bold;color:#34495e;margin-bottom:10px;text-transform:uppercase;">📦 Registros no Banco (Supabase)</div>
@@ -11150,7 +11215,7 @@ function confirmarImportExcel() {
         if (novosM.length) ops.push(dbPutAll('materias_primas',salvarM));
 
         Promise.all(ops).then(() => {
-            carregarTodosAsync().then(() => {
+            carregarTodosAsync(true).then(() => { // ✅ forcar=true após importação em massa
                 exibirTabelaProd();
                 exibirTabelaClass();
                 exibirTabelaMP();
@@ -11369,7 +11434,7 @@ function confirmarImport() {
         if (novosM.length) ops.push(dbPutAll('materias_primas',salvarM));
 
         Promise.all(ops).then(() => {
-            carregarTodosAsync().then(() => {
+            carregarTodosAsync(true).then(() => { // ✅ forcar=true após importação em massa
                 exibirTabelaProd();
                 exibirTabelaClass();
                 exibirTabelaMP();
@@ -11386,25 +11451,24 @@ function confirmarImport() {
 
 function limparNovos(chave, label) {
     dbGetAll(chave).then(atual => {
-        if (!atual.length) {
-            const raw = localStorage.getItem(chave);
-            atual = raw ? JSON.parse(raw) : [];
-        }
         if (atual.length === 0) {
             bkShowMsg('bkMsgLimpar', `⚠️ Não há registros novos de ${label} para remover.`, '#e67e22');
             return;
         }
         if (!confirm(`Remover ${atual.length} registro(s) novo(s) de ${label}? Esta ação não pode ser desfeita.`)) return;
         dbClear(chave).then(() => {
-            localStorage.removeItem(chave);
-            carregarTodosAsync().then(() => {
+            carregarTodosAsync(true).then(() => { // ✅ forcar=true após limpeza
                 exibirTabelaProd();
                 exibirTabelaClass();
                 exibirTabelaMP();
                 inicializarBackup();
                 bkShowMsg('bkMsgLimpar', `✅ ${atual.length} registro(s) de ${label} removido(s) com sucesso.`);
             });
+        }).catch(e => {
+            bkShowMsg('bkMsgLimpar', `❌ Erro ao remover registros: ${e.message}`, '#e74c3c');
         });
+    }).catch(e => {
+        bkShowMsg('bkMsgLimpar', `❌ Erro ao carregar registros: ${e.message}`, '#e74c3c');
     });
 }
 
@@ -11416,11 +11480,8 @@ let _empEditandoId = null;
 let _empAprovarId = null;
 
 async function carregarEntradasMP() {
-    try {
-        entradasMP = await dbGetAll('entradas_mp');
-    } catch(e) {
-        entradasMP = JSON.parse(localStorage.getItem('entradas_mp') || '[]');
-    }
+    // ✅ MELHORIA: erro propaga corretamente — sem fallback silencioso para localStorage
+    entradasMP = await dbGetAll('entradas_mp');
 }
 
 function _empStatusBadge(status) {
@@ -12362,56 +12423,48 @@ _sbClient.auth.onAuthStateChange((event, session) => {
     }
 });
 
-// ✅ Função auxiliar interna — usa o cliente Supabase com autenticação real
-async function sbFetch(table, method='GET', body=null, params='') {
-    try {
-        let result;
-        const baseQuery = _sbClient.from(table);
+// ── sbFetch removido: era uma camada legada sobre o SDK que não era mais chamada.
+//    Todas as operações de banco usam diretamente _sbClient via dbGetAll, dbUpsertOne,
+//    dbDeleteOne, dbPutAll, dbClear e dbCount.
 
-        if (method === 'GET') {
-            // params como string: '?order=id.asc&limit=1000' → parseado internamente
-            result = await baseQuery.select('*').order('id', { ascending: true }).limit(1000);
-        } else if (method === 'POST') {
-            const opts = body && Array.isArray(body) ? body : (body ? [body] : []);
-            result = await baseQuery.upsert(opts, { onConflict: 'id' });
-        } else if (method === 'PATCH') {
-            result = await baseQuery.upsert(body, { onConflict: 'id' });
-        } else if (method === 'DELETE') {
-            // params contém o filtro ex: '?id=eq.5'
-            const match = params.match(/\?(\w+)=eq\.(.+)/);
-            if (match) result = await baseQuery.delete().eq(match[1], match[2]);
-            else result = await baseQuery.delete().neq('id', -1);
+// ✅ MELHORIA: Carrega TODOS os registros de uma tabela com paginação automática
+// — sem fallback silencioso; usa colunas específicas quando disponível (menos Egress)
+async function dbGetAll(tabela) {
+    const POR_PAGINA = 1000; // limite seguro abaixo do max do Supabase (1000)
+    const colunas = _COLUNAS_TABELA[tabela] || '*'; // ✅ select seletivo reduz Egress
+    let todos = [];
+    let pagina = 0;
+
+    try {
+        while (true) {
+            const from = pagina * POR_PAGINA;
+            const to   = from + POR_PAGINA - 1;
+
+            const { data, error } = await _sbClient
+                .from(tabela)
+                .select(colunas)
+                .order('id', { ascending: true })
+                .range(from, to);
+
+            if (error) throw new Error(error.message);
+
+            const registros = data || [];
+            todos = todos.concat(registros);
+
+            // Se retornou menos que o limite, chegamos ao fim
+            if (registros.length < POR_PAGINA) break;
+            pagina++;
         }
 
-        if (result?.error) throw new Error(result.error.message);
-        return result?.data || [];
+        return todos;
     } catch(e) {
         // ✅ Detecta sessão expirada
         if (e.message && (e.message.includes('JWT') || e.message.includes('401') || e.message.includes('token'))) {
             document.getElementById('sgq-session-banner').classList.add('show');
         }
-        throw e;
-    }
-}
-
-// ✅ Carrega todos os registros de uma tabela (com paginação de segurança)
-async function dbGetAll(tabela, pagina = 0, porPagina = 2000) {
-    try {
-        const from = pagina * porPagina;
-        const to   = from + porPagina - 1;
-        const { data, error } = await _sbClient
-            .from(tabela)
-            .select('*')
-            .order('id', { ascending: true })
-            .range(from, to);
-
-        if (error) throw new Error(error.message);
-        return data || [];
-    } catch(e) {
-        sgqToast('Erro ao carregar ' + tabela + ': ' + e.message, 'error');
-        // fallback localStorage somente para leitura
-        const raw = localStorage.getItem(tabela);
-        return raw ? JSON.parse(raw) : [];
+        // ✅ Erro real visível — sem fallback silencioso
+        sgqToast('Erro ao carregar "' + tabela + '": ' + e.message, 'error');
+        throw e; // propaga para o chamador tratar se necessário
     }
 }
 
@@ -12446,23 +12499,26 @@ async function dbDeleteOne(tabela, id) {
     }
 }
 
-// ✅ Upsert em massa via SDK seguro
+// ✅ MELHORIA: Upsert em massa via SDK seguro — sem fallback silencioso para localStorage
+// Envia em lotes de 500 para evitar payloads muito grandes
 async function dbPutAll(tabela, items) {
     if (!items || items.length === 0) return;
+    const LOTE = 500;
     try {
-        const { error } = await _sbClient
-            .from(tabela)
-            .upsert(items, { onConflict: 'id' });
-
-        if (error) throw new Error(error.message);
+        for (let i = 0; i < items.length; i += LOTE) {
+            const lote = items.slice(i, i + LOTE);
+            const { error } = await _sbClient
+                .from(tabela)
+                .upsert(lote, { onConflict: 'id' });
+            if (error) throw new Error(error.message);
+        }
     } catch(e) {
-        sgqToast('Erro ao salvar lote em ' + tabela + ': ' + e.message, 'error');
-        // fallback localStorage
-        localStorage.setItem(tabela, JSON.stringify(items));
+        sgqToast('Erro ao salvar lote em "' + tabela + '": ' + e.message, 'error');
+        throw e; // propaga para o chamador exibir feedback adequado
     }
 }
 
-// ✅ Limpa uma tabela via SDK seguro
+// ✅ MELHORIA: Limpa uma tabela via SDK seguro — sem fallback silencioso para localStorage
 async function dbClear(tabela) {
     try {
         const { error } = await _sbClient
@@ -12472,8 +12528,8 @@ async function dbClear(tabela) {
 
         if (error) throw new Error(error.message);
     } catch(e) {
-        sgqToast('Erro ao limpar ' + tabela + ': ' + e.message, 'error');
-        localStorage.removeItem(tabela);
+        sgqToast('Erro ao limpar "' + tabela + '": ' + e.message, 'error');
+        throw e; // propaga para o chamador tratar
     }
 }
 
@@ -12490,7 +12546,22 @@ async function dbCount(tabela) {
 }
 
 // Versões assíncronas das funções de leitura/gravação
-async function carregarTodosAsync() {
+// ✅ MELHORIA: Flag de cache — evita rebuscar dados já carregados ao trocar de aba
+let _dadosCarregados = false;
+
+// ✅ MELHORIA: Colunas mínimas por tabela — evita select * e reduz Egress
+const _COLUNAS_TABELA = {
+    producoes:       'id,data,hora,racao,lote,dgm,dpg,extrato,proteina,fibra,solubil,umidade,densidade,mineral,calcio,fosforo,granulo1,granulo2,granulo3,fundo,obs',
+    classificacoes:  'id,data,hora,produto,fornecedor,nf,local,queimado,ardido,mofado,esverdeado,fermentando,chocho,picado,gessado,quebrado,germinado,carunchado,impureza,umidade,densidade,aflatoxinas,fumonisinas,zearalenona,don,obs',
+    materias_primas: 'id,data,hora,produto,fornecedor,nf,umidade,densidade,extrato,proteina,fibra,solubil,mineral,acidez,ureatica,rancidez,peroxido,digestibilidade,granulo1,granulo2,granulo3,granulo4,tempResfriador,tempCanhao,alimentacaoHz,calcio,fosforo,obs',
+    entradas_mp:     'id,data,hora,fornecedor,materia_prima,nf,quantidade,unidade,status,status_descarga,obs',
+};
+
+// forcar=true → ignora cache e busca tudo do servidor (usado após importações em massa)
+async function carregarTodosAsync(forcar = false) {
+    // ✅ CACHE: se já carregou e não foi forçado, reutiliza dados em memória
+    if (_dadosCarregados && !forcar) return;
+
     // Busca tudo direto do Supabase — sem mesclagem com planilha
     // Os dados no Supabase já estão em percentual (ex: 6.45 = 6.45%).
     // A migração exportou classificacoes já com normClass aplicada (em %),
@@ -12545,16 +12616,15 @@ async function carregarTodosAsync() {
             dbGetAll('materias_primas')
         ]);
     } catch(e) {
-        // ✅ MELHORIA: feedback visual ao usuário em vez de console.error silencioso
-        sgqToast('Erro ao carregar dados do servidor. Exibindo cache local.', 'warning');
-        rawP = JSON.parse(localStorage.getItem('producoes') || '[]');
-        rawC = JSON.parse(localStorage.getItem('classificacoes') || '[]');
-        rawM = JSON.parse(localStorage.getItem('materias_primas') || '[]');
+        // ✅ MELHORIA: erro visível — sem dados desatualizados sendo exibidos silenciosamente
+        sgqToast('Falha ao carregar dados do servidor. Verifique sua conexão e recarregue a página.', 'error');
+        rawP = []; rawC = []; rawM = [];
     }
 
     producoes      = rawP;
     classificacoes = rawC.map(normClass);
     materiasPrimas = rawM.map(normMat);
+    _dadosCarregados = true; // ✅ marca cache como válido
 
     // Ao carregar dados, auto-registra rações que existem nas produções mas não estão nos selects
     // (ex: rações cadastradas antes deste sistema de persistência)
@@ -12618,7 +12688,7 @@ async function _corrigirDecimaisNoBanco() {
         localStorage.setItem('correcaoDecimal_v2', 'ok-' + afetados.length);
 
         // Recarrega para refletir os valores corretos
-        await carregarTodosAsync();
+        await carregarTodosAsync(true); // ✅ forcar=true após correção em massa
         exibirTabelaClass();
         sgqToast(`Correção: ${afetados.length} registro(s) corrigidos com sucesso.`, 'success');
     } catch(e) {
@@ -12650,6 +12720,9 @@ async function atualizarMemoria() {
     if (el('memNProd'))  el('memNProd').textContent  = nP;
     if (el('memNClass')) el('memNClass').textContent = nC;
     if (el('memNMP'))    el('memNMP').textContent    = nM;
+
+    // ✅ Atualiza painel de Egress com base nos registros reais
+    _atualizarEgress(nP, nC, nM);
 
     // Limites reais do Supabase Free Plan
     const LIMITE_DB_MB = 500;
@@ -12698,6 +12771,55 @@ async function atualizarMemoria() {
         }
     } catch(e) {
         _memFallbackDisplay();
+    }
+}
+
+// ✅ Calcula e exibe estimativa de Egress baseada em registros reais no banco
+function _atualizarEgress(nProd, nClass, nMP) {
+    const el = id => document.getElementById(id);
+
+    // Bytes médios por registro (após select seletivo de colunas)
+    const BYTES = { producoes: 350, classificacoes: 400, materias_primas: 450, entradas_mp: 250 };
+    const SESSOES_DIA = 8;   // estimativa: 4 usuários × 2 logins/dia
+    const DIAS_MES    = 22;  // dias úteis por mês
+    const LIMITE_GB   = 5;
+
+    // Tamanho da carga por sessão (login)
+    const bytesEntradas = 150 * BYTES.entradas_mp;
+    const bytesSessao   = (nProd * BYTES.producoes) + (nClass * BYTES.classificacoes) + (nMP * BYTES.materias_primas) + bytesEntradas;
+    const kbSessao      = bytesSessao / 1024;
+
+    // Projeção mensal
+    const sessoesMes  = SESSOES_DIA * DIAS_MES;
+    const escritasMes = 20 * DIAS_MES * 450; // ~20 upserts/dia × 450 bytes médios
+    const outrosMes   = 2 * 1024 * 1024;     // auth, RPC, realtime
+    const totalBytes  = (bytesSessao * sessoesMes) + escritasMes + outrosMes;
+    const totalMB     = totalBytes / 1024 / 1024;
+    const totalGB     = totalMB / 1024;
+    const pctLimite   = Math.min(100, (totalGB / LIMITE_GB) * 100);
+
+    const fmtMB = mb => mb >= 1000 ? (mb/1024).toFixed(2)+' GB' : mb.toFixed(0)+' MB';
+
+    if (el('memEgressSessao'))  el('memEgressSessao').textContent  = kbSessao.toFixed(0)+' KB';
+    if (el('memEgressMes'))     el('memEgressMes').textContent     = fmtMB(totalMB);
+    if (el('memEgressPct'))     el('memEgressPct').textContent     = pctLimite.toFixed(1)+'%';
+    if (el('memEgressSessoes')) el('memEgressSessoes').textContent = sessoesMes;
+    if (el('memEgressLabel'))   el('memEgressLabel').textContent   = fmtMB(totalMB)+' / 5 GB';
+    if (el('memBarraEgress'))   el('memBarraEgress').style.width   = Math.max(0.5, pctLimite).toFixed(1)+'%';
+    if (el('memBarraEgressPct')) el('memBarraEgressPct').textContent = fmtMB(totalMB)+' / 5 GB ('+pctLimite.toFixed(1)+'%)';
+
+    // Cor da barra conforme % uso
+    const cor = pctLimite < 50 ? '#3ecf8e' : pctLimite < 80 ? '#f39c12' : '#e74c3c';
+    if (el('memBarraEgress')) el('memBarraEgress').style.background = cor;
+    if (el('memBarraEgressPct')) el('memBarraEgressPct').style.color = pctLimite > 30 ? '#fff' : '#2c3e50';
+
+    // Alerta se acima de 70%
+    if (pctLimite >= 70) {
+        if (el('memAlertaEgress')) el('memAlertaEgress').style.display = 'block';
+        if (el('memAlertaEgressTxt')) el('memAlertaEgressTxt').textContent =
+            'Projeção de '+fmtMB(totalMB)+' ('+pctLimite.toFixed(1)+'% do limite de 5 GB). Reduza sessões ou otimize queries.';
+    } else {
+        if (el('memAlertaEgress')) el('memAlertaEgress').style.display = 'none';
     }
 }
 
@@ -16101,7 +16223,7 @@ async function executarCorrecaoDefeitos() {
 
     try {
         await Promise.all(promises);
-        await carregarTodosAsync();
+        await carregarTodosAsync(true); // ✅ forcar=true após correção em massa
         exibirTabelaClass();
         msgEl.innerHTML = `✅ Correção aplicada com sucesso em <strong>${corrigidos}</strong> registro(s). Os valores agora estão em percentual correto.`;
         msgEl.style.color = '#27ae60';
