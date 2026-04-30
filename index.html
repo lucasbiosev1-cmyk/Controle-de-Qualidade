@@ -10026,7 +10026,7 @@ function aplicarFiltrosRelClass() {
             produtosParaGrafico = grupo;
         }
     }
-    renderRCGraficoLinha(di, df, base, produtosParaGrafico, false, produtosAlvo);
+    renderRCGraficoLinha(di, df, base, produtosParaGrafico, false, ['MILHO']);
 
     // Gráfico comparativo barras (só com múltiplos produtos)
     const prods = produtosAlvo && produtosAlvo.length > 1
@@ -10073,7 +10073,6 @@ function rcConstruirCheckboxes(prods, produtosMarcados) {
                     onmouseout="this.style.background='transparent'">
                 <input type="checkbox" ${checked} data-idx="${i}" data-cor="${cor}"
                     onchange="rcFiltrarGrafico()" style="width:14px;height:14px;cursor:pointer;accent-color:${cor};">
-                <span style="width:10px;height:10px;border-radius:50%;background:${cor};display:inline-block;flex-shrink:0;"></span>
                 ${p}
             </label>`;
     }).join('');
@@ -10150,8 +10149,9 @@ function renderRCGraficoLinha(di, df, dados, produtosAlvo, _semRebuildarChk, pro
     // Constrói os checkboxes na primeira chamada (não quando filtro já chamou de volta)
     if (!_semRebuildarChk && prods && prods.length > 1) {
         _rcGrafProds = prods;
-        rcConstruirCheckboxes(prods, produtosMarcados);
         document.getElementById('rcGraficoFiltros').style.display = 'flex';
+        rcConstruirCheckboxes(prods, produtosMarcados);
+        return; // rcConstruirCheckboxes já chama rcFiltrarGrafico com apenas MILHO
     } else if (!_semRebuildarChk) {
         document.getElementById('rcGraficoFiltros').style.display = 'none';
     }
@@ -10204,15 +10204,7 @@ function renderRCGraficoLinha(di, df, dados, produtosAlvo, _semRebuildarChk, pro
             responsive:true, maintainAspectRatio:true,
             interaction:{ mode:'index', intersect:false },
             plugins:{
-                legend:{
-                    display:true,
-                    labels:{
-                        font:{ size:12, weight:'bold' },
-                        padding:16,
-                        usePointStyle:true,
-                        pointStyleWidth:12
-                    }
-                },
+                legend:{ display:false },
                 tooltip:{
                     backgroundColor:'rgba(0,0,0,0.78)',
                     titleFont:{ size:12, weight:'bold' },
