@@ -11733,9 +11733,14 @@ async function alterarStatusDescargaEMP(id, novoStatus) {
     const idx = entradasMP.findIndex(e => String(e.id) === String(id));
     if (idx < 0) return;
     if (novoStatus === 'DESCARREGANDO') {
-        const jaDesc = entradasMP.find(e => e.status_descarga === 'DESCARREGANDO' && String(e.id) !== String(id));
+        const mpAtual = (entradasMP[idx].materia_prima || '').trim().toUpperCase();
+        const jaDesc = entradasMP.find(e =>
+            e.status_descarga === 'DESCARREGANDO' &&
+            String(e.id) !== String(id) &&
+            (e.materia_prima || '').trim().toUpperCase() === mpAtual
+        );
         if (jaDesc) {
-            sgqToast('⚠ Já existe uma carga descarregando: ' + (jaDesc.fornecedor || jaDesc.materia_prima) + '. Conclua antes de iniciar outra.', 'erro');
+            sgqToast('⚠ Já existe uma carga de ' + mpAtual + ' descarregando (' + (jaDesc.fornecedor || jaDesc.materia_prima) + '). Conclua antes de iniciar outra do mesmo tipo.', 'erro');
             exibirTabelaEMP();
             return;
         }
@@ -11766,13 +11771,18 @@ async function alterarStatusDescargaEMP(id, novoStatus) {
 
 
 async function iniciarDescargaEMP(id) {
-    const jaDescarregando = entradasMP.find(e => e.status_descarga === 'DESCARREGANDO');
-    if (jaDescarregando) {
-        sgqToast('Já existe uma carga descarregando: ' + (jaDescarregando.fornecedor || jaDescarregando.materia_prima) + '. Conclua antes de iniciar outra.', 'erro');
-        return;
-    }
     const idx = entradasMP.findIndex(e => String(e.id) === String(id));
     if (idx < 0) return;
+    const mpAtual = (entradasMP[idx].materia_prima || '').trim().toUpperCase();
+    const jaDescarregando = entradasMP.find(e =>
+        e.status_descarga === 'DESCARREGANDO' &&
+        String(e.id) !== String(id) &&
+        (e.materia_prima || '').trim().toUpperCase() === mpAtual
+    );
+    if (jaDescarregando) {
+        sgqToast('Já existe uma carga de ' + mpAtual + ' descarregando (' + (jaDescarregando.fornecedor || jaDescarregando.materia_prima) + '). Conclua antes de iniciar outra do mesmo tipo.', 'erro');
+        return;
+    }
     entradasMP[idx].status_descarga = 'DESCARREGANDO';
     try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e) { console.error(e); }
     sgqToast('🚛 Descarga iniciada!', 'sucesso');
@@ -12092,7 +12102,12 @@ function abrirModalAprovarEMP(id) {
     if (entrada.status === 'APROVADA') {
         secDesc.style.display = 'block';
         const sd = entrada.status_descarga || 'FILA';
-        const jaDescarregando = entradasMP.find(e => e.status_descarga === 'DESCARREGANDO' && String(e.id) !== String(id));
+        const mpEntrada = (entrada.materia_prima || '').trim().toUpperCase();
+        const jaDescarregando = entradasMP.find(e =>
+            e.status_descarga === 'DESCARREGANDO' &&
+            String(e.id) !== String(id) &&
+            (e.materia_prima || '').trim().toUpperCase() === mpEntrada
+        );
 
         if (sd === 'DESCARREGANDO') {
             divStatus.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;background:#fff3e0;color:#e65100;padding:5px 14px;border-radius:12px;font-size:12px;font-weight:bold;">
@@ -12116,7 +12131,7 @@ function abrirModalAprovarEMP(id) {
             // FILA
             divStatus.innerHTML = `<span style="background:#e8eaf6;color:#3949ab;padding:5px 14px;border-radius:12px;font-size:12px;font-weight:bold;">⏳ FILA — aguardando descarga</span>`;
             if (jaDescarregando) {
-                divBotoes.innerHTML = `<p style="font-size:11px;color:#888;text-align:center;margin:4px 0;">⚠ Outra carga está descarregando agora:<br><strong>${jaDescarregando.fornecedor || jaDescarregando.materia_prima}</strong></p>`;
+                divBotoes.innerHTML = `<p style="font-size:11px;color:#888;text-align:center;margin:4px 0;">⚠ Já há uma carga de <strong>${mpEntrada}</strong> descarregando agora:<br><strong>${jaDescarregando.fornecedor || jaDescarregando.materia_prima}</strong><br><em style="font-size:10px;">Conclua antes de iniciar outra do mesmo tipo</em></p>`;
             } else {
                 divBotoes.innerHTML = podeDescarga
                     ? `<button onclick="iniciarDescargaEMP(${id})" style="background:#e65100;color:white;padding:11px 16px;border:none;border-radius:6px;font-size:13px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:10px;">
