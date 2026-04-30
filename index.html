@@ -7349,6 +7349,7 @@ const PERMS_DISPONIVEIS = [
     { key: 'estoque_quimicos', label: 'Produtos Químicos',        icon: '🧫',  desc: 'Acessar e gerenciar estoque de produtos químicos' },
     { key: 'estoque_materiais',label: 'Materiais',                icon: '📦',  desc: 'Acessar e gerenciar estoque de materiais' },
     { key: 'equipamentos',     label: 'Equipamentos',             icon: '🔬',  desc: 'Acessar e gerenciar cadastro de equipamentos e calibrações' },
+    { key: 'agenda',           label: 'Agenda',                   icon: '📅',  desc: 'Acessar a Agenda de Compromissos pessoal' },
     // ── Restrições específicas ──────────────────────────────────────────
     { key: 'somente_ver_nc',   label: 'Somente visualizar NC/Dev', icon: '👁️', desc: 'Impede criar/editar/excluir NC e Devoluções', restricao: true },
 ];
@@ -7744,7 +7745,7 @@ function aplicarPermissoes() {
 
     // ── Agenda — somente Admin ──
     const tabAgenda = document.getElementById('tabAgenda');
-    if (tabAgenda) tabAgenda.style.display = isAdmin ? 'inline-block' : 'none';
+    if (tabAgenda) tabAgenda.style.display = (isAdmin || perms.agenda) ? 'inline-block' : 'none';
 
     // ── Mobile: mostrar/ocultar itens de menu ──
     const _mob = (id, visivel) => { const el = document.getElementById(id); if (el) el.style.display = visivel ? 'block' : 'none'; };
@@ -7777,7 +7778,7 @@ function aplicarPermissoes() {
     if (mobSecEst) mobSecEst.style.display = (isAdmin || podeQuimicos || podeMateriais) ? '' : 'none';
     // Equipamentos e Agenda
     _mob('mobBtnEquipamentos',  isAdmin || podeEquipamentos);
-    _mob('mobBtnAgenda',        isAdmin);
+    _mob('mobBtnAgenda',        isAdmin || perms.agenda);
     // Configurações
     _mob('mobBtnConfiguracoes', isAdmin);
 
@@ -24736,15 +24737,23 @@ document.addEventListener('DOMContentLoaded', function() {
     function _setDispensado(c) { localStorage.setItem(_chaveDisp(c), '1'); }
 
     // ── Supabase ─────────────────────────────────────────────────────
+    function _getUserId() {
+        return (USUARIOS[usuarioAtual] && USUARIOS[usuarioAtual].id) || null;
+    }
     async function _carregar() {
         try {
-            const { data, error } = await _sbClient.from(TABELA).select('*').order('hora',{ascending:true});
+            const uid = _getUserId();
+            let query = _sbClient.from(TABELA).select('*').order('hora',{ascending:true});
+            if (uid) query = query.eq('user_id', uid);
+            const { data, error } = await query;
             if (error) throw error;
             _compromissos = data || [];
         } catch(e) { _compromissos = []; }
     }
     async function _salvar(obj) {
-        const { data, error } = await _sbClient.from(TABELA).upsert([obj],{onConflict:'id'}).select();
+        const uid = _getUserId();
+        const payload = uid ? { ...obj, user_id: uid } : obj;
+        const { data, error } = await _sbClient.from(TABELA).upsert([payload],{onConflict:'id'}).select();
         if (error) throw error;
         return data[0];
     }
@@ -24863,9 +24872,21 @@ document.addEventListener('DOMContentLoaded', function() {
         sgqToast('Aviso desativado para hoje.', 'info');
     };
 
+    // ── Verifica permissão de agenda (admin ou perms.agenda) ─────────
+    function _podeAgenda() {
+        if (typeof perfilAtual === 'undefined') return false;
+        if (perfilAtual === 'admin') return true;
+        try {
+            const u = USUARIOS[usuarioAtual] || {};
+            let p = u.perms || {};
+            if (typeof p === 'string') p = JSON.parse(p);
+            return !!p.agenda;
+        } catch(e) { return false; }
+    }
+
     // ── Tick principal — verifica candidatos ─────────────────────────
     async function _tick() {
-        if (typeof perfilAtual === 'undefined' || perfilAtual !== 'admin') return;
+        if (!_podeAgenda()) return;
 
         await _carregar();
         agendaRenderizarLista();
@@ -24916,7 +24937,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window._agendaInicializar     = _iniciar;
     window._agendaCarregarEExibir = async function() {
-        if (typeof perfilAtual === 'undefined' || perfilAtual !== 'admin') return;
+        if (!_podeAgenda()) return;
         await _carregar();
         agendaRenderizarLista();
     };
