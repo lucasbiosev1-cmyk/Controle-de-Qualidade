@@ -21861,9 +21861,7 @@ document.addEventListener('DOMContentLoaded', function() {
     color:#58a6ff!important;
   }
   html[data-theme="dark"] #relMensalIA_conteudo p,
-  html[data-theme="dark"] #relMensalIA_conteudo li,
-  html[data-theme="dark"] #relMensalIA_conteudo span,
-  html[data-theme="dark"] #relMensalIA_conteudo div {
+  html[data-theme="dark"] #relMensalIA_conteudo li {
     color:#e6edf3!important;
   }
   html[data-theme="dark"] #relMensalIA_conteudo strong,
@@ -21882,23 +21880,53 @@ document.addEventListener('DOMContentLoaded', function() {
   html[data-theme="dark"] #relMensalIA_conteudo tr:nth-child(even) td {
     background:#1c2128!important;
   }
-  html[data-theme="dark"] #relMensalIA_conteudo [style*="color:#"] {
-    color:#e6edf3!important;
+  /* KPI cards e cards DGM — escurece o fundo que era claro */
+  html[data-theme="dark"] #relMensalIA_conteudo .rml-kpi,
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="background:#eaf3fb"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="background:#fef9ec"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="background:#f8faff"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="background:#fff"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="background: #fff"] {
+    background:#0d1117!important; border-color:#30363d!important;
   }
-  html[data-theme="dark"] #relMensalIA_conteudo [style*="color: #"] {
-    color:#e6edf3!important;
+  /* Títulos dentro de cards DGM */
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="color:#1a5276"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="color:#1f618d"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="color:#2471a3"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="color:#7d6608"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="color:#9a7d0a"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="color:#b7950b"] {
+    color:#8b949e!important;
   }
-  /* exceções: badges coloridos e status mantêm cor própria */
-  html[data-theme="dark"] #relMensalIA_conteudo [style*="background:#e74c3c"],
-  html[data-theme="dark"] #relMensalIA_conteudo [style*="background:#27ae60"],
-  html[data-theme="dark"] #relMensalIA_conteudo [style*="background:#e67e22"],
-  html[data-theme="dark"] #relMensalIA_conteudo [style*="background:#2980b9"] {
-    color:#fff!important;
+  /* Título principal da análise */
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="color:#0a1e7f"] { color:#58a6ff!important; }
+  /* Texto muted */
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="color:#888"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="color: #888"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="color:#2c3e50"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="color: #2c3e50"] {
+    color:#c9d1d9!important;
   }
   /* placeholder do estado vazio */
   html[data-theme="dark"] #relMensalIA_conteudo [style*="color:#bdc3c7"],
   html[data-theme="dark"] #relMensalIA_conteudo [style*="color:#95a5a6"] {
     color:#8b949e!important;
+  }
+  /* Bordas de separação */
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="border-bottom:2px solid #eef2ff"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="border-bottom: 2px solid #eef2ff"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="border-bottom:1px solid #dce4f5"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="border-bottom: 1px solid #dce4f5"] {
+    border-bottom-color:#30363d!important;
+  }
+  /* Texto genérico aaa */
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="color:#aaa"] { color:#6e7681!important; }
+  /* exceções: badges coloridos e status mantêm cor própria (texto branco) */
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="background:#e74c3c"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="background:#27ae60"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="background:#e67e22"],
+  html[data-theme="dark"] #relMensalIA_conteudo [style*="background:#2980b9"] {
+    color:#fff!important;
   }
 
   /* ── BOTÃO MAXIMIZAR ── */
@@ -22047,6 +22075,17 @@ document.addEventListener('DOMContentLoaded', function() {
 @keyframes pulse { 0%,100%{opacity:.7} 50%{opacity:1} }
 .cia-insert-btn { margin-top:8px;background:linear-gradient(135deg,#27ae60,#1e8449);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:10px;font-weight:700;cursor:pointer; }
 /* Relatório Mensal IA */
+/* === Resultado gerado IA === */
+.rml-cabecalho-resultado { display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #eef2ff; }
+.rml-titulo-resultado { font-size:17px;font-weight:900;color:#0a1e7f; }
+.rml-subtitulo-resultado { font-size:11px;color:#888;margin-top:3px; }
+.rml-caixa-texto { background:#f8faff;border:1px solid #dce4f5;border-radius:8px;padding:18px 20px; }
+.rml-texto-ia { font-size:12px;line-height:1.8;color:#2c3e50;white-space:pre-wrap; }
+.rml-rodape-aviso { margin-top:14px;font-size:10px;color:#bdc3c7;text-align:right; }
+.rml-ia-heading { font-size:13px;font-weight:900;color:#0a1e7f;margin:16px 0 6px;border-bottom:1px solid #dce4f5;padding-bottom:4px; }
+.rml-ia-item { margin-left:12px;margin-bottom:3px;color:#2c3e50; }
+
+/* === Seções e KPIs === */
 .rml-section { border-left:4px solid #0a1e7f;background:#f8faff;border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:18px; }
 .rml-section h3 { font-size:13px;font-weight:900;color:#0a1e7f;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px; }
 .rml-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px; }
@@ -22059,6 +22098,27 @@ document.addEventListener('DOMContentLoaded', function() {
 .rml-norma { font-size:10px;color:#7f8c8d;margin-top:4px;font-style:italic; }
 .rml-loading { text-align:center;padding:40px;color:#888;font-style:italic; }
 .rml-loading .spinner { width:40px;height:40px;border:4px solid #ddd;border-top-color:#0a1e7f;border-radius:50%;animation:sgq-spin 0.8s linear infinite;margin:0 auto 14px; }
+
+/* === DARK MODE — componentes do resultado === */
+html[data-theme="dark"] .rml-cabecalho-resultado { border-bottom-color:#30363d!important; }
+html[data-theme="dark"] .rml-titulo-resultado { color:#58a6ff!important; }
+html[data-theme="dark"] .rml-subtitulo-resultado { color:#8b949e!important; }
+html[data-theme="dark"] .rml-caixa-texto { background:#0d1117!important;border-color:#30363d!important; }
+html[data-theme="dark"] .rml-texto-ia { color:#e6edf3!important; }
+html[data-theme="dark"] .rml-rodape-aviso { color:#6e7681!important; }
+html[data-theme="dark"] .rml-ia-heading { color:#58a6ff!important;border-bottom-color:#30363d!important; }
+html[data-theme="dark"] .rml-ia-item { color:#c9d1d9!important; }
+html[data-theme="dark"] .rml-section { background:#161b22!important;border-left-color:#388bfd!important; }
+html[data-theme="dark"] .rml-section h3 { color:#58a6ff!important; }
+html[data-theme="dark"] .rml-kpi { background:#0d1117!important;border-color:#30363d!important; }
+html[data-theme="dark"] .rml-kpi-val { color:#58a6ff!important; }
+html[data-theme="dark"] .rml-kpi-lbl { color:#8b949e!important; }
+html[data-theme="dark"] .rml-alerta { background:#1f1508!important;color:#e6edf3!important; }
+html[data-theme="dark"] .rml-critico { background:#1f0808!important; }
+html[data-theme="dark"] .rml-ok { background:#081f0f!important; }
+html[data-theme="dark"] .rml-norma { color:#8b949e!important; }
+html[data-theme="dark"] .rml-loading { color:#8b949e!important; }
+html[data-theme="dark"] .rml-loading .spinner { border-color:#30363d!important;border-top-color:#388bfd!important; }
 </style>
 
 <script>
@@ -23903,17 +23963,17 @@ Use linguagem executiva clara e técnica. Cite valores exatos dos dados. Inclua 
         </div>` : '';
 
         const kpiHtml = `${badgeComparacaoHtml}<div class="rml-grid" style="margin-bottom:12px;">${_kpiItems.join('')}</div>${kpiDgmFaseHtml}`;
-        const textoHtml = `<div style="font-size:12px;line-height:1.8;color:#2c3e50;white-space:pre-wrap;">${_formatIATextoRelatorio(respTexto)}</div>`;
+        const textoHtml = `<div class="rml-texto-ia">${_formatIATextoRelatorio(respTexto)}</div>`;
 
         const tituloRel = temComparacao
             ? `📊 Análise Comparativa — ${nomeMes.charAt(0).toUpperCase()+nomeMes.slice(1)} vs ${nomeMesAnt.charAt(0).toUpperCase()+nomeMesAnt.slice(1)}`
             : `📊 Relatório de Qualidade — ${nomeMes.charAt(0).toUpperCase()+nomeMes.slice(1)}`;
 
         conteudoEl.innerHTML = `
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #eef2ff;">
+            <div class="rml-cabecalho-resultado">
                 <div>
-                    <div style="font-size:17px;font-weight:900;color:#0a1e7f;">${tituloRel}</div>
-                    <div style="font-size:11px;color:#888;margin-top:3px;">Gerado por IA com base nas normas Embrapa e Compêndio Brasileiro de Nutrição Animal • ${new Date().toLocaleString('pt-BR')}</div>
+                    <div class="rml-titulo-resultado">${tituloRel}</div>
+                    <div class="rml-subtitulo-resultado">Gerado por IA com base nas normas Embrapa e Compêndio Brasileiro de Nutrição Animal • ${new Date().toLocaleString('pt-BR')}</div>
                     <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;">
                         ${_anAtivos.map(k => {
                             const icones = {cq:'🔬',nut:'🌿',vet:'🩺'};
@@ -23925,10 +23985,10 @@ Use linguagem executiva clara e técnica. Cite valores exatos dos dados. Inclua 
                 </div>
             </div>
             ${kpiHtml}
-            <div style="background:#f8faff;border:1px solid #dce4f5;border-radius:8px;padding:18px 20px;">
+            <div class="rml-caixa-texto">
                 ${textoHtml}
             </div>
-            <div style="margin-top:14px;font-size:10px;color:#bdc3c7;text-align:right;">
+            <div class="rml-rodape-aviso">
                 ⚠️ Este relatório foi gerado por inteligência artificial com base nos dados cadastrados no sistema. Sempre valide com o responsável técnico antes de tomar decisões.
             </div>`;
 
@@ -24146,8 +24206,8 @@ function _formatIATextoRelatorio(t) {
     return _escapeHtml(t)
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/^#+\s(.+)$/gm, '<div style="font-size:13px;font-weight:900;color:#0a1e7f;margin:16px 0 6px;border-bottom:1px solid #dce4f5;padding-bottom:4px;">$1</div>')
-        .replace(/^- (.+)$/gm, '<div style="margin-left:12px;margin-bottom:3px;">• $1</div>')
+        .replace(/^#+\s(.+)$/gm, '<div class="rml-ia-heading">$1</div>')
+        .replace(/^- (.+)$/gm, '<div class="rml-ia-item">• $1</div>')
         .replace(/\n\n/g, '<br><br>')
         .replace(/\n/g, '<br>');
 }
