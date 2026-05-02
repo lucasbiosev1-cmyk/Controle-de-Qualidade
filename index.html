@@ -8865,6 +8865,8 @@ function abrirModalEdicaoMP(id) {
     document.getElementById('cadIdMP').value                      = id;
     document.getElementById('cadDataMP').value                    = dataParaDisplay(r.data);
     document.getElementById('cadHoraMP').value                    = r.hora;
+    // Garante que o produto do registro exista no select (pode ter sido adicionado dinamicamente)
+    if (r.produto) _mpInjetarProdutoNosSelects(r.produto.trim().toUpperCase());
     document.getElementById('cadProdutoMP').value                 = r.produto;
     document.getElementById('cadFornecedorMP').value              = r.fornecedor;
     mpProdutoAutoFill(r.produto);
@@ -8974,10 +8976,21 @@ function salvarMateriaPrima(event) {
 function _mpAplicarRegraAgronor(isAgronor) {
     const campNF = document.getElementById('cadNFMP');
     if (!campNF) return;
-    // Campo NF sempre visível e editável, independente do fornecedor ser AGRONOR ou não
     campNF.style.display = '';
-    campNF.readOnly = false;
-    if (campNF.value === '-') campNF.value = '';
+    if (isAgronor) {
+        // Fornecedor AGRONOR → NF sempre "-", campo bloqueado
+        campNF.value    = '-';
+        campNF.readOnly = true;
+        campNF.style.background  = '#eaf4fb';
+        campNF.style.color       = '#1a5276';
+        campNF.style.fontWeight  = '700';
+    } else {
+        campNF.readOnly = false;
+        campNF.style.background = '';
+        campNF.style.color      = '';
+        campNF.style.fontWeight = '';
+        if (campNF.value === '-') campNF.value = '';
+    }
     const placeholder = document.getElementById('cadNFMP_placeholder');
     if (placeholder) placeholder.style.display = 'none';
 }
@@ -9102,18 +9115,71 @@ function abrirModalNovaMateria() {
 function fecharModalNovaMateria() {
     document.getElementById('modalNovaMateria').classList.remove('show');
 }
-function adicionarNovaMateria() {
+// -------------------------------------------------------
+// Injeta um produto no select de cadastro e no filtro,
+// evitando duplicatas. Retorna true se foi inserido.
+// -------------------------------------------------------
+function _mpInjetarProdutoNosSelects(nome) {
+    let inserido = false;
+    const selectCad  = document.getElementById('cadProdutoMP');
+    const selectFilt = document.getElementById('filterProdutoMP');
+    if (selectCad) {
+        const existe = Array.from(selectCad.options).some(o => o.value === nome);
+        if (!existe) {
+            const opt = document.createElement('option');
+            opt.value = nome; opt.text = nome;
+            selectCad.appendChild(opt);
+            inserido = true;
+        }
+    }
+    if (selectFilt) {
+        const existe = Array.from(selectFilt.options).some(o => o.value === nome);
+        if (!existe) {
+            const opt = document.createElement('option');
+            opt.value = nome; opt.text = nome;
+            selectFilt.appendChild(opt);
+        }
+    }
+    return inserido;
+}
+
+// Sincroniza os selects com produtos que existem nos registros do banco
+// mas não estão na lista estática. Chamado após carregar materiasPrimas.
+function _mpSincronizarProdutosSelects() {
+    const produtosDoBanco = [...new Set((materiasPrimas || []).map(r => (r.produto || '').trim().toUpperCase()).filter(Boolean))];
+    produtosDoBanco.forEach(nome => _mpInjetarProdutoNosSelects(nome));
+}
+
+async function adicionarNovaMateria() {
     const nome = document.getElementById('novoMateriaNome').value.trim().toUpperCase();
     if (!nome) { mostrarErroMP('❌ PREENCHA O NOME DA MATÉRIA PRIMA!'); return; }
     const select = document.getElementById('cadProdutoMP');
     for (let o of select.options) { if (o.value === nome) { mostrarErroMP('❌ ESTA MATÉRIA PRIMA JÁ EXISTE!'); return; } }
-    const opt1 = document.createElement('option'); opt1.value = nome; opt1.text = nome; select.appendChild(opt1);
-    const filt = document.getElementById('filterProdutoMP');
-    const opt2 = document.createElement('option'); opt2.value = nome; opt2.text = nome; filt.appendChild(opt2);
+
+    // Salva no Supabase como registro placeholder (sem dados analíticos)
+    // para que todos os usuários vejam o produto na lista em qualquer máquina
+    const placeholder = {
+        id:        Date.now(),
+        data:      dataHojeISO(),
+        hora:      '',
+        produto:   nome,
+        fornecedor:'',
+        nf:        '',
+    };
+    try {
+        await dbUpsertOne('materias_primas', placeholder);
+        materiasPrimas.push(placeholder);
+    } catch(e) {
+        mostrarErroMP('❌ Erro ao salvar produto: ' + e.message);
+        return;
+    }
+
+    _mpInjetarProdutoNosSelects(nome);
     select.value = nome;
     mostrarSucessoMP('✓ MATÉRIA PRIMA ADICIONADA COM SUCESSO!');
     fecharModalNovaMateria();
 }
+
 
 // ===================================================
 // RELATÓRIO DE PRODUÇÃO POR FASE
@@ -12644,6 +12710,10 @@ async function carregarTodosAsync(forcar = false) {
     classificacoes = rawC.map(normClass);
     materiasPrimas = rawM.map(normMat);
     _dadosCarregados = true; // ✅ marca cache como válido
+
+    // Sincroniza o select de Produto do cadastro MP com produtos que existem
+    // nos registros do banco mas não estão na lista estática do HTML
+    try { _mpSincronizarProdutosSelects(); } catch(e) {}
 
     // Ao carregar dados, auto-registra rações que existem nas produções mas não estão nos selects
     // (ex: rações cadastradas antes deste sistema de persistência)
