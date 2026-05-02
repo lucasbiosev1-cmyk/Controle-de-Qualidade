@@ -9117,58 +9117,41 @@ function fecharModalNovaMateria() {
 }
 // -------------------------------------------------------
 // Injeta um produto no select de cadastro e no filtro,
-// evitando duplicatas. Retorna true se foi inserido.
+// evitando duplicatas.
 // -------------------------------------------------------
 function _mpInjetarProdutoNosSelects(nome) {
-    let inserido = false;
     const selectCad  = document.getElementById('cadProdutoMP');
     const selectFilt = document.getElementById('filterProdutoMP');
-    if (selectCad) {
-        const existe = Array.from(selectCad.options).some(o => o.value === nome);
-        if (!existe) {
-            const opt = document.createElement('option');
-            opt.value = nome; opt.text = nome;
-            selectCad.appendChild(opt);
-            inserido = true;
-        }
+    if (selectCad && !Array.from(selectCad.options).some(o => o.value === nome)) {
+        const opt = document.createElement('option'); opt.value = nome; opt.text = nome;
+        selectCad.appendChild(opt);
     }
-    if (selectFilt) {
-        const existe = Array.from(selectFilt.options).some(o => o.value === nome);
-        if (!existe) {
-            const opt = document.createElement('option');
-            opt.value = nome; opt.text = nome;
-            selectFilt.appendChild(opt);
-        }
+    if (selectFilt && !Array.from(selectFilt.options).some(o => o.value === nome)) {
+        const opt = document.createElement('option'); opt.value = nome; opt.text = nome;
+        selectFilt.appendChild(opt);
     }
-    return inserido;
 }
 
-// Sincroniza os selects com produtos que existem nos registros do banco
-// mas não estão na lista estática. Chamado após carregar materiasPrimas.
-function _mpSincronizarProdutosSelects() {
-    const produtosDoBanco = [...new Set((materiasPrimas || []).map(r => (r.produto || '').trim().toUpperCase()).filter(Boolean))];
-    produtosDoBanco.forEach(nome => _mpInjetarProdutoNosSelects(nome));
+// Carrega produtos customizados da tabela mp_produtos_custom e injeta nos selects.
+// Chamado ao inicializar — separado dos registros de materias_primas para não misturar.
+async function _mpCarregarProdutosCustom() {
+    try {
+        const rows = await dbGetAll('mp_produtos_custom');
+        (rows || []).forEach(r => { if (r.nome) _mpInjetarProdutoNosSelects(r.nome.trim().toUpperCase()); });
+    } catch(e) {
+        // Tabela pode não existir ainda — ignora silenciosamente
+    }
 }
 
 async function adicionarNovaMateria() {
     const nome = document.getElementById('novoMateriaNome').value.trim().toUpperCase();
     if (!nome) { mostrarErroMP('❌ PREENCHA O NOME DA MATÉRIA PRIMA!'); return; }
     const select = document.getElementById('cadProdutoMP');
-    for (let o of select.options) { if (o.value === nome) { mostrarErroMP('❌ ESTA MATÉRIA PRIMA JÁ EXISTE!'); return; } }
+    if (Array.from(select.options).some(o => o.value === nome)) { mostrarErroMP('❌ ESTA MATÉRIA PRIMA JÁ EXISTE!'); return; }
 
-    // Salva no Supabase como registro placeholder (sem dados analíticos)
-    // para que todos os usuários vejam o produto na lista em qualquer máquina
-    const placeholder = {
-        id:        Date.now(),
-        data:      dataHojeISO(),
-        hora:      '',
-        produto:   nome,
-        fornecedor:'',
-        nf:        '',
-    };
+    // Persiste na tabela mp_produtos_custom — disponível em qualquer máquina
     try {
-        await dbUpsertOne('materias_primas', placeholder);
-        materiasPrimas.push(placeholder);
+        await dbUpsertOne('mp_produtos_custom', { id: Date.now(), nome });
     } catch(e) {
         mostrarErroMP('❌ Erro ao salvar produto: ' + e.message);
         return;
@@ -12636,10 +12619,11 @@ let _dadosCarregados = false;
 
 // ✅ MELHORIA: Colunas mínimas por tabela — evita select * e reduz Egress
 const _COLUNAS_TABELA = {
-    producoes:       'id,data,hora,racao,lote,dgm,dpg,extrato,proteina,fibra,solubil,umidade,densidade,mineral,calcio,fosforo,granulo1,granulo2,granulo3,fundo,obs',
-    classificacoes:  'id,data,hora,produto,fornecedor,nf,local,queimado,ardido,mofado,esverdeado,fermentando,chocho,picado,gessado,quebrado,germinado,carunchado,impureza,umidade,densidade,aflatoxinas,fumonisinas,zearalenona,don,obs',
-    materias_primas: 'id,data,hora,produto,fornecedor,nf,umidade,densidade,extrato,proteina,fibra,solubil,mineral,acidez,ureatica,rancidez,peroxido,digestibilidade,granulo1,granulo2,granulo3,granulo4,tempResfriador,tempCanhao,alimentacaoHz,calcio,fosforo,obs',
-    entradas_mp:     'id,data,hora,fornecedor,materia_prima,nf,usuario,status,status_descarga,criado_em,placa,seq,obs',
+    producoes:          'id,data,hora,racao,lote,dgm,dpg,extrato,proteina,fibra,solubil,umidade,densidade,mineral,calcio,fosforo,granulo1,granulo2,granulo3,fundo,obs',
+    classificacoes:     'id,data,hora,produto,fornecedor,nf,local,queimado,ardido,mofado,esverdeado,fermentando,chocho,picado,gessado,quebrado,germinado,carunchado,impureza,umidade,densidade,aflatoxinas,fumonisinas,zearalenona,don,obs',
+    materias_primas:    'id,data,hora,produto,fornecedor,nf,umidade,densidade,extrato,proteina,fibra,solubil,mineral,acidez,ureatica,rancidez,peroxido,digestibilidade,granulo1,granulo2,granulo3,granulo4,tempResfriador,tempCanhao,alimentacaoHz,calcio,fosforo,obs',
+    entradas_mp:        'id,data,hora,fornecedor,materia_prima,nf,usuario,status,status_descarga,criado_em,placa,seq,obs',
+    mp_produtos_custom: 'id,nome',
 };
 
 // forcar=true → ignora cache e busca tudo do servidor (usado após importações em massa)
@@ -12713,7 +12697,7 @@ async function carregarTodosAsync(forcar = false) {
 
     // Sincroniza o select de Produto do cadastro MP com produtos que existem
     // nos registros do banco mas não estão na lista estática do HTML
-    try { _mpSincronizarProdutosSelects(); } catch(e) {}
+    try { await _mpCarregarProdutosCustom(); } catch(e) {}
 
     // Ao carregar dados, auto-registra rações que existem nas produções mas não estão nos selects
     // (ex: rações cadastradas antes deste sistema de persistência)
