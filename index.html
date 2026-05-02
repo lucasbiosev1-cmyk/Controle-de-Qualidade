@@ -3152,6 +3152,13 @@
                     <div class="capa-welcome-date" id="capaDataHoje"></div>
                 </div>
 
+                <!-- Navegação de Mês -->
+                <div id="kpiNavMes" style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                    <button onclick="kpiNavegar(-1)" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:inherit;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700;">◀</button>
+                    <span id="kpiNavLabel" style="font-size:13px;font-weight:700;letter-spacing:1px;min-width:140px;text-align:center;"></span>
+                    <button onclick="kpiNavegar(+1)" id="kpiBtnProximo" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:inherit;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700;">▶</button>
+                </div>
+
                 <!-- KPIs -->
                 <div class="capa-kpis">
                     <!-- Card 1: Conformidade Produção -->
@@ -8059,15 +8066,29 @@ let materiasPrimas = [];
 // ✅ FUNÇÃO CENTRALIZADA: Atualiza os KPI cards da tela inicial (capa)
 // Chamada após login E após restauração de sessão
 // =====================================================================
+
+// Estado de navegação do dashboard (offset em meses a partir do mês atual)
+let _kpiMesOffset = 0;
+
+function kpiNavegar(delta) {
+    const agora = new Date();
+    const minOffset = -(agora.getMonth() + (agora.getFullYear() - 2020) * 12); // não vai antes de 2020
+    _kpiMesOffset = Math.min(0, _kpiMesOffset + delta); // não passa do mês atual
+    _kpiMesOffset = Math.max(minOffset, _kpiMesOffset);
+    atualizarKpisCapa();
+}
+
 function atualizarKpisCapa() {
     try {
         const agora      = new Date();
-        const anoAtual   = agora.getFullYear();
-        const mesAtual   = agora.getMonth() + 1;
+        // Aplica offset de navegação
+        const refData    = new Date(agora.getFullYear(), agora.getMonth() + _kpiMesOffset, 1);
+        const anoAtual   = refData.getFullYear();
+        const mesAtual   = refData.getMonth() + 1;
         const prefixoMes = anoAtual + '-' + String(mesAtual).padStart(2,'0');
-        const hojeISO    = prefixoMes + '-' + String(agora.getDate()).padStart(2,'0');
+        const hojeISO    = new Date().toISOString().slice(0,10);
 
-        // Mês anterior
+        // Mês anterior ao de referência
         const mesAntNum  = mesAtual === 1 ? 12 : mesAtual - 1;
         const anoAnt     = mesAtual === 1 ? anoAtual - 1 : anoAtual;
         const prefixoAnt = anoAnt + '-' + String(mesAntNum).padStart(2,'0');
@@ -8076,7 +8097,14 @@ function atualizarKpisCapa() {
         const isMesAnt   = r => r.data && r.data.startsWith(prefixoAnt);
         const isHoje     = r => r.data && r.data.slice(0,10) === hojeISO;
         const meses2 = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-        const nomeMes = meses2[agora.getMonth()];
+        const nomeMes = meses2[refData.getMonth()];
+
+        // Atualiza label e botão ▶ de navegação
+        const navLabel = document.getElementById('kpiNavLabel');
+        const btnProx  = document.getElementById('kpiBtnProximo');
+        if (navLabel) navLabel.textContent = nomeMes + ' ' + anoAtual + (_kpiMesOffset === 0 ? ' (atual)' : '');
+        if (btnProx)  btnProx.disabled = (_kpiMesOffset === 0);
+        if (btnProx)  btnProx.style.opacity = (_kpiMesOffset === 0) ? '0.35' : '1';
 
         const temValorMP = (r, campo) => {
             const v = r[campo];
