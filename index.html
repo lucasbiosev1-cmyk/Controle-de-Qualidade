@@ -9136,10 +9136,16 @@ function _mpInjetarProdutoNosSelects(nome) {
 // Chamado ao inicializar — separado dos registros de materias_primas para não misturar.
 async function _mpCarregarProdutosCustom() {
     try {
-        const rows = await dbGetAll('mp_produtos_custom');
-        (rows || []).forEach(r => { if (r.nome) _mpInjetarProdutoNosSelects(r.nome.trim().toUpperCase()); });
+        // Consulta direta sem toast de erro (tabela pode não existir ainda)
+        const colunas = _COLUNAS_TABELA['mp_produtos_custom'] || 'id,nome';
+        const { data, error } = await _sbClient
+            .from('mp_produtos_custom')
+            .select(colunas)
+            .order('id', { ascending: true });
+        if (error) return; // tabela não existe ou outro erro — ignora silenciosamente
+        (data || []).forEach(r => { if (r.nome) _mpInjetarProdutoNosSelects(r.nome.trim().toUpperCase()); });
     } catch(e) {
-        // Tabela pode não existir ainda — ignora silenciosamente
+        // ignora silenciosamente
     }
 }
 
