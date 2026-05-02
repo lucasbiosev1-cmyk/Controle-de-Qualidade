@@ -7122,19 +7122,25 @@
 
 <!-- MODAL NOVA MATÉRIA PRIMA -->
 <div id="modalNovaMateria" class="modal">
-    <div class="modal-content" style="max-width:400px;">
+    <div class="modal-content" style="max-width:420px;">
         <div class="modal-header">
-            <h2>NOVA MATÉRIA PRIMA</h2>
+            <h2>GERENCIAR MATÉRIAS PRIMAS</h2>
             <button class="close" onclick="fecharModalNovaMateria()">&times;</button>
         </div>
         <div class="form-wrapper">
             <div class="form-group required">
-                <label>NOME DA MATÉRIA PRIMA</label>
-                <input type="text" id="novoMateriaNome" placeholder="EX: ÓLEO DE SOJA" style="padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;text-transform:uppercase;">
+                <label>ADICIONAR NOVA MATÉRIA PRIMA</label>
+                <input type="text" id="novoMateriaNome" placeholder="EX: ÓLEO DE SOJA" style="padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;text-transform:uppercase;width:100%;">
             </div>
             <div class="form-buttons">
-                <button type="button" class="btn-salvar" onclick="adicionarNovaMateria()">Adicionar</button>
+                <button type="button" class="btn-salvar" onclick="adicionarNovaMateria()">➕ Adicionar</button>
                 <button type="button" class="btn-cancelar" onclick="fecharModalNovaMateria()">Cancelar</button>
+            </div>
+            <hr style="margin:16px 0;border:none;border-top:1px solid #444;">
+            <div>
+                <label style="font-size:11px;font-weight:700;color:#e74c3c;letter-spacing:1px;">REMOVER MATÉRIA PRIMA CUSTOMIZADA</label>
+                <div id="listaMPCustomRemover" style="margin-top:8px;max-height:180px;overflow-y:auto;"></div>
+                <div id="msgListaMPCustom" style="font-size:11px;color:#888;margin-top:6px;display:none;">Nenhuma matéria prima customizada cadastrada.</div>
             </div>
         </div>
     </div>
@@ -9108,12 +9114,54 @@ function mostrarSucessoMP(t) { showMsg('msgSucessoMP', t, 3000); }
 function mostrarErroMP(t)    { showMsg('msgErroMP', t, 4000); }
 
 // NOVA MATÉRIA PRIMA
-function abrirModalNovaMateria() {
+async function abrirModalNovaMateria() {
     document.getElementById('novoMateriaNome').value = '';
     document.getElementById('modalNovaMateria').classList.add('show');
+    await _mpRenderizarListaCustom();
 }
 function fecharModalNovaMateria() {
     document.getElementById('modalNovaMateria').classList.remove('show');
+}
+async function _mpRenderizarListaCustom() {
+    const div = document.getElementById('listaMPCustomRemover');
+    const msg = document.getElementById('msgListaMPCustom');
+    if (!div) return;
+    div.innerHTML = '<span style="font-size:11px;color:#888;">Carregando...</span>';
+    try {
+        const { data, error } = await _sbClient.from('mp_produtos_custom').select('id,nome').order('nome', { ascending: true });
+        if (error || !data || data.length === 0) {
+            div.innerHTML = '';
+            msg.style.display = '';
+            return;
+        }
+        msg.style.display = 'none';
+        div.innerHTML = data.map(r => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;margin-bottom:4px;background:rgba(231,76,60,0.08);border-radius:4px;border:1px solid rgba(231,76,60,0.2);">
+                <span style="font-size:12px;font-weight:600;text-transform:uppercase;">${r.nome}</span>
+                <button type="button" onclick="removerMPCustom(${r.id},'${r.nome.replace(/'/g,"\'")}')"
+                    style="background:#e74c3c;color:white;border:none;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;font-weight:700;">
+                    🗑 Remover
+                </button>
+            </div>`).join('');
+    } catch(e) {
+        div.innerHTML = '<span style="font-size:11px;color:#e74c3c;">Erro ao carregar lista.</span>';
+    }
+}
+async function removerMPCustom(id, nome) {
+    if (!confirm('Remover "' + nome + '" da lista de matérias primas?')) return;
+    try {
+        const { error } = await _sbClient.from('mp_produtos_custom').delete().eq('id', id);
+        if (error) throw new Error(error.message);
+        // Remove do select de cadastro e do filtro
+        ['cadProdutoMP','filterProdutoMP'].forEach(selId => {
+            const sel = document.getElementById(selId);
+            if (sel) { const opt = Array.from(sel.options).find(o => o.value === nome); if (opt) opt.remove(); }
+        });
+        sgqToast('✓ "' + nome + '" removida da lista.', 'success');
+        await _mpRenderizarListaCustom();
+    } catch(e) {
+        sgqToast('Erro ao remover: ' + e.message, 'error');
+    }
 }
 // -------------------------------------------------------
 // Injeta um produto no select de cadastro e no filtro,
