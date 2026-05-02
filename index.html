@@ -9017,7 +9017,9 @@ function mpProdutoAutoFill(produto) {
         campForn.style.background = '';
         campForn.style.color = '';
         campForn.style.fontWeight = '';
-        if (campForn.value === 'AGRONOR') campForn.value = '';
+        // Só limpa o fornecedor se vier de um autofill anterior (cadastro novo),
+        // nunca durante edição onde o valor já foi preenchido manualmente
+        if (campForn.value === 'AGRONOR' && !idEdicaoMP) campForn.value = '';
         _mpAplicarRegraAgronor(false);
     }
 }
