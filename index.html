@@ -14767,7 +14767,7 @@ function imprimirBoletim() {
 
     // ── CAPA: preservada 100% intacta ─────────────────────────────────────────
     const capaHTML = `
-    <div style="width:210mm;min-height:297mm;background:#fff;display:flex;flex-direction:column;font-family:Arial,sans-serif;box-sizing:border-box;page-break-after:always;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+    <div style="width:210mm;height:296mm;background:#fff;display:flex;flex-direction:column;font-family:Arial,sans-serif;box-sizing:border-box;page-break-after:always;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
       <div style="background:linear-gradient(135deg,#0a1e7f 0%,#0d2b9e 55%,#061060 100%);padding:18mm 20mm 14mm;display:flex;align-items:center;justify-content:space-between;position:relative;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
         <div style="position:absolute;right:0;top:0;bottom:0;width:28mm;background:repeating-linear-gradient(-55deg,transparent,transparent 5px,rgba(255,255,255,0.045) 5px,rgba(255,255,255,0.045) 10px);pointer-events:none;"></div>
         <div style="display:flex;align-items:center;gap:5mm;">
@@ -14891,9 +14891,9 @@ function imprimirBoletim() {
 
     // Usa valores fixos se a extração por regex não funcionar (dados vêm do conteudo já renderizado)
     const resumoHTML = `
-    <div style="width:210mm;min-height:297mm;background:#fff;display:flex;flex-direction:column;font-family:Arial,sans-serif;box-sizing:border-box;page-break-after:always;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+    <div style="width:210mm;max-height:296mm;background:#fff;display:block;font-family:Arial,sans-serif;box-sizing:border-box;page-break-after:always;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
       <!-- Cabeçalho da página 2 -->
-      <div style="background:#fff;border-bottom:2px solid #e5e9f2;padding:10mm 20mm 8mm;display:flex;align-items:center;justify-content:space-between;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+      <div style="background:#fff;border-bottom:2px solid #e5e9f2;padding:10mm 20mm 8mm;display:flex;align-items:center;justify-content:space-between;page-break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
         <div style="display:flex;align-items:center;gap:4mm;">
           <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg" style="width:36mm;flex-shrink:0;">
             <text x="0" y="44" font-family="Arial" font-weight="900" font-size="32" fill="#0a1e7f" letter-spacing="1.5">AGRONOR</text>
@@ -14913,7 +14913,7 @@ function imprimirBoletim() {
       </div>
 
       <!-- Corpo principal -->
-      <div style="flex:1;padding:14mm 20mm 10mm;display:flex;flex-direction:column;">
+      <div style="padding:14mm 20mm 10mm;display:block;page-break-inside:avoid;">
 
         <!-- Título da seção -->
         <div style="margin-bottom:8mm;">
@@ -14988,6 +14988,8 @@ function imprimirBoletim() {
             .bol-capa { display:none !important; }
             /* ── Seções de conteúdo ── */
             .bol-secao-header { background:#0B3C5D; color:white; padding:9px 20px; font-size:11px; font-weight:bold; text-transform:uppercase; letter-spacing:1px; page-break-before:always; page-break-after:avoid; break-before:always; break-after:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact; display:flex; align-items:center; gap:8px; border-left:5px solid #C0392B; }
+            /* Primeira seção não precisa quebrar — o resumo já termina com page-break-after:always */
+            .bol-conteudo-wrap .bol-secao-header:first-child { page-break-before:avoid !important; break-before:avoid !important; }
             .bol-secao-sub { background:#1a4a6a; color:rgba(255,255,255,0.85); padding:4px 20px; font-size:8.5px; display:flex; justify-content:space-between; -webkit-print-color-adjust:exact; print-color-adjust:exact; flex-wrap:wrap; gap:3px; page-break-before:avoid; page-break-after:avoid; break-before:avoid; break-after:avoid; }
             .bol-grupo-header { background:#eef3fa; border-left:3px solid #0B3C5D; padding:6px 16px; font-size:9.5px; font-weight:bold; color:#0B3C5D; text-transform:uppercase; margin-top:10px; page-break-inside:avoid; page-break-after:avoid; break-inside:avoid; break-after:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact; display:flex; align-items:center; gap:8px; }
             /* Cabeçalho de fase inline: não deixar isolado no final da página */
@@ -15035,23 +15037,18 @@ function imprimirBoletim() {
             /* ── Fases de produção ── */
             div[style*="border-left:6px"] { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
             /* ── Layout geral ── */
-            @page { margin:8mm 7mm 10mm 7mm; size:A4 portrait; }
+            @page { margin:0; size:A4 portrait; }
             @media print {
-                html, body { width:210mm; overflow:visible; }
+                html, body { width:210mm; margin:0; padding:0; overflow:hidden; }
                 * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-                .print-footer { display:block !important; }
+                .print-footer { display:block !important; position: relative; top: -1mm; }
                 .no-print { display:none !important; }
+                br { display: none; }
             }
             .print-footer { display:none; background:#0B3C5D; color:white; font-size:7px; padding:3px 14px; text-align:center; border-top:2px solid #C0392B; margin-top:6px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
         </style>
     </head><body>
-    ${capaHTML}
-    ${resumoHTML}
-    ${conteudo.innerHTML}
-    <div class="print-footer">
-        <strong>AGRONOR ALIMENTOS</strong> &nbsp;&bull;&nbsp; Boletim Industrial Analítico &nbsp;&bull;&nbsp; Controle de Qualidade &nbsp;&bull;&nbsp; Emitido em: ${dataEmissao} às ${horaEmissao}
-    </div>
-</body></html>`);
+    ${capaHTML}${resumoHTML}<div class="bol-conteudo-wrap">${conteudo.innerHTML}</div><div class="print-footer"><strong>AGRONOR ALIMENTOS</strong> &nbsp;&bull;&nbsp; Boletim Industrial Analítico &nbsp;&bull;&nbsp; Controle de Qualidade &nbsp;&bull;&nbsp; Emitido em: ${dataEmissao} às ${horaEmissao}</div></body></html>`.replace(/>\s+</g, '><'));
     janela.document.close();
     setTimeout(() => { janela.focus(); janela.print(); }, 600);
 }
