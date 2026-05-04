@@ -13496,13 +13496,11 @@ async function carregarParametros() {
 }
 
 function getParamDefault(modulo, campo, racaKey) {
-    // Para produção e campo DGM: usa o default específico por ração, se existir
-    if (modulo === 'prod' && campo === 'dgm' && racaKey) {
-        const dgmEsp = DEFAULTS_DGM_POR_RACAO[racaKey];
-        if (dgmEsp) return dgmEsp;
-    }
-    const m = { prod:DEFAULTS_PROD, class:DEFAULTS_CLASS, mp:DEFAULTS_MP }[modulo];
-    return m ? (m[campo] || {min:0,max:9999,ativo:false}) : {min:0,max:9999,ativo:false};
+    // u2705 REGRA: A tela de Paru00e2metros u00e9 a u00danica fonte de verdade.
+    // Se nao ha snapshot salvo pelo usuario, nenhum campo e avaliado (tudo inativo).
+    // DEFAULTS_* e DEFAULTS_DGM_POR_RACAO existem apenas para pre-popular
+    // os valores sugeridos na tela de Parametros — NUNCA influenciam NC/C/td-fora.
+    return { min: 0, max: 9999, ativo: false };
 }
 
 // Retorna o snapshot de campos vigente para uma data (ou o mais recente se não informada)
@@ -13715,44 +13713,48 @@ function diagnosticoChavesParametros() {
     w.document.close();
 }
 
-// Corrige o DPG (e outros campos problemáticos) forçando ativo:false em todos os snapshots de Produção
+// Corrige o DPG cirurgicamente — desativa APENAS quando tem limite real (max < 9999)
+// Preserva granulo1/2/3/fundo que podem estar ativos intencionalmente com max:9999
 window.corrigirDPGForcar = async function(btn) {
-    if (!confirm('Isso vai desativar o DPG em TODOS os snapshots de Produção e salvar no banco.\n\nConfirmar?')) return;
+    if (!confirm('Isso vai desativar o DPG (somente onde tem limite real definido) em todos os snapshots de Produção e salvar no banco.\n\nConfirmar?')) return;
     btn.disabled = true;
     btn.textContent = '⏳ Corrigindo...';
-    // Campos de produção que por padrão devem ser inativos
-    const CAMPOS_FORCAR_INATIVO = ['dpg','densidade','proteina','fibra','mineral','calcio','fosforo','granulo1','granulo2','granulo3','fundo','extrato','solubil'];
     let alterados = 0;
     const prod = PARAMETROS['prod'] || {};
     Object.keys(prod).forEach(racaKey => {
         const hist = prod[racaKey];
         if (!hist) return;
         hist.forEach(snap => {
-            if (!snap.campos) return;
-            CAMPOS_FORCAR_INATIVO.forEach(campo => {
-                if (snap.campos[campo] && snap.campos[campo].ativo === true) {
-                    // Só corrige se o usuário explicitamente ativou (ativo:true)
-                    snap.campos[campo].ativo = false;
-                    alterados++;
-                }
-            });
+            if (!snap.campos || !snap.campos['dpg']) return;
+            const dpg = snap.campos['dpg'];
+            // Só desativa se estiver ativo E tiver limite real (max < 9999)
+            // Preserva DPG ativo com max:9999 (sem efeito prático) e calcários que usam DPG legitimamente
+            // EXCEÇÃO: calcários (BEPEL) podem ter DPG ativo com limite real — preserva
+            const ehCalcario = racaKey.toUpperCase().includes('CALC') || racaKey.toUpperCase().includes('BEPEL');
+            if (dpg.ativo === true && dpg.max < 9999 && !ehCalcario) {
+                dpg.ativo = false;
+                alterados++;
+                console.log(`[FIX] DPG desativado: ${racaKey} snap ${snap.vigencia} (era max:${dpg.max})`);
+            }
         });
     });
+    if (alterados === 0) {
+        btn.textContent = 'ℹ️ Nenhum DPG problemático encontrado. Verifique manualmente.';
+        btn.disabled = false;
+        return;
+    }
     try {
-        // Salva no banco
         const { error } = await _sbClient
             .from('parametros')
             .upsert({ chave: 'sistema_parametros_v3', valor: JSON.stringify(PARAMETROS) }, { onConflict: 'chave' });
         if (error) throw new Error(error.message);
-        btn.textContent = `✅ Corrigido! ${alterados} campo(s) desativado(s). Feche e recarregue o sistema.`;
+        btn.textContent = `✅ ${alterados} DPG(s) corrigido(s)! Feche esta janela e recarregue o sistema.`;
         btn.style.background = '#27ae60';
-        // Atualiza as tabelas na janela principal
         if (window.opener) {
             window.opener.exibirTabelaProd && window.opener.exibirTabelaProd();
-            window.opener.exibirTabelaClass && window.opener.exibirTabelaClass();
         }
     } catch(e) {
-        btn.textContent = '❌ Erro: ' + e.message;
+        btn.textContent = '❌ Erro ao salvar: ' + e.message;
         btn.style.background = '#e74c3c';
         btn.disabled = false;
     }
