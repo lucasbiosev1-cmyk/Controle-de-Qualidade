@@ -13636,15 +13636,127 @@ function diagnosticarClass() {
 
 // Para exibição na tela de parâmetros (usa snapshot selecionado ou mais recente)
 function diagnosticoChavesParametros() {
-    const resultado = {};
+    // Monta diagnóstico completo mostrando campos ATIVOS com seus limites
+    let html = `<html><head><style>
+        body{font-family:monospace;font-size:12px;padding:20px;background:#0d1117;color:#e6edf3;}
+        h2{color:#58a6ff;} h3{color:#e6edf3;margin-top:16px;}
+        table{border-collapse:collapse;width:100%;margin-bottom:12px;}
+        th{background:#1a2a6e;color:white;padding:6px 10px;text-align:left;}
+        td{padding:5px 10px;border-bottom:1px solid #30363d;}
+        .ativo{color:#3fb950;font-weight:bold;}
+        .inativo{color:#8b949e;}
+        .problema{background:#2e0d0d;color:#f85149;font-weight:bold;}
+        .ok{background:#0a2a1a;}
+        button{background:#e74c3c;color:white;border:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:bold;cursor:pointer;margin:10px 0;}
+        .fix-btn{background:#27ae60;}
+        pre{background:#161b22;padding:12px;border-radius:6px;font-size:11px;overflow:auto;}
+    </style></head><body>`;
+    html += `<h2>🔍 Diagnóstico de Parâmetros Salvos</h2>`;
+    html += `<p style="color:#8b949e;">Parâmetros armazenados no banco (Supabase). Campos com <span style="color:#f85149">fundo vermelho</span> estão ATIVOS com limites reais definidos.</p>`;
+
+    let problemasEncontrados = [];
+
     Object.keys(PARAMETROS).forEach(modulo => {
-        resultado[modulo] = Object.keys(PARAMETROS[modulo] || {});
+        const racas = PARAMETROS[modulo] || {};
+        if (!Object.keys(racas).length) return;
+        html += `<h3>Módulo: ${modulo.toUpperCase()}</h3>`;
+        Object.keys(racas).forEach(racaKey => {
+            const hist = racas[racaKey];
+            if (!hist || !hist.length) return;
+            html += `<div style="margin-bottom:20px;border:1px solid #30363d;border-radius:6px;overflow:hidden;">`;
+            html += `<div style="background:#161b22;padding:8px 12px;font-weight:bold;color:#58a6ff;">📦 ${racaKey.replace(/_/g,' ')} — ${hist.length} snapshot(s)</div>`;
+            hist.forEach((snap, i) => {
+                html += `<div style="padding:6px 12px;background:#0d1117;font-size:11px;color:#8b949e;">Snapshot ${i+1}: vigência <strong style="color:#e6edf3">${snap.vigencia}</strong>${snap._temporario?' <em>(temporário)</em>':''}</div>`;
+                html += `<table><tr><th>Campo</th><th>Ativo</th><th>Mín</th><th>Máx</th><th>Observação</th></tr>`;
+                const campos = snap.campos || {};
+                Object.keys(campos).forEach(campo => {
+                    const c = campos[campo];
+                    const ativoReal = c.ativo && !(c.min === 0 && c.max >= 9999);
+                    const cls = ativoReal ? 'problema' : 'ok';
+                    const obs = ativoReal ? '⚠️ ATIVO com limite real' : 'ok';
+                    if (ativoReal) {
+                        problemasEncontrados.push({ modulo, racaKey, snap: snap.vigencia, campo, cfg: c });
+                    }
+                    html += `<tr class="${cls}">
+                        <td>${campo}</td>
+                        <td class="${c.ativo?'ativo':'inativo'}">${c.ativo?'✅ SIM':'❌ NÃO'}</td>
+                        <td>${c.min}</td>
+                        <td>${c.max}</td>
+                        <td>${obs}</td>
+                    </tr>`;
+                });
+                html += `</table>`;
+            });
+            html += `</div>`;
+        });
     });
-    const txt = JSON.stringify(resultado, null, 2);
-    const w = window.open('', '_blank', 'width=700,height=500');
-    w.document.write('<pre style="font-size:13px;padding:20px;">' + txt + '</pre>');
+
+    // Seção de correção rápida
+    if (problemasEncontrados.length > 0) {
+        html += `<div style="border:2px solid #e74c3c;border-radius:8px;padding:16px;margin-top:20px;">`;
+        html += `<h3 style="color:#f85149;margin-top:0;">⚠️ ${problemasEncontrados.length} campo(s) com possível problema encontrado(s):</h3>`;
+        html += `<ul>`;
+        problemasEncontrados.forEach(p => {
+            html += `<li style="margin-bottom:4px;"><strong>${p.campo}</strong> em <strong>${p.racaKey.replace(/_/g,' ')}</strong> (${p.modulo}) — vigência ${p.snap} — min:${p.cfg.min} max:${p.cfg.max}</li>`;
+        });
+        html += `</ul>`;
+        html += `<p>Para corrigir, use o botão abaixo. Ele vai <strong>desativar (ativo:false)</strong> o DPG em todos os snapshots de Produção e salvar no banco.</p>`;
+        html += `<button class="fix-btn" onclick="window.opener && window.opener.corrigirDPGForcar && window.opener.corrigirDPGForcar(this)">🔧 CORRIGIR: Desativar DPG em todos os snapshots de Produção</button>`;
+        html += `</div>`;
+    } else {
+        html += `<p style="color:#3fb950;font-size:14px;">✅ Nenhum campo ativo com limite problemático encontrado.</p>`;
+    }
+
+    html += `<details style="margin-top:20px;"><summary style="cursor:pointer;color:#8b949e;">Ver JSON completo dos parâmetros</summary><pre>${JSON.stringify(PARAMETROS, null, 2)}</pre></details>`;
+    html += `</body></html>`;
+
+    const w = window.open('', '_blank', 'width=900,height=700');
+    w.document.write(html);
     w.document.close();
 }
+
+// Corrige o DPG (e outros campos problemáticos) forçando ativo:false em todos os snapshots de Produção
+window.corrigirDPGForcar = async function(btn) {
+    if (!confirm('Isso vai desativar o DPG em TODOS os snapshots de Produção e salvar no banco.\n\nConfirmar?')) return;
+    btn.disabled = true;
+    btn.textContent = '⏳ Corrigindo...';
+    // Campos de produção que por padrão devem ser inativos
+    const CAMPOS_FORCAR_INATIVO = ['dpg','densidade','proteina','fibra','mineral','calcio','fosforo','granulo1','granulo2','granulo3','fundo','extrato','solubil'];
+    let alterados = 0;
+    const prod = PARAMETROS['prod'] || {};
+    Object.keys(prod).forEach(racaKey => {
+        const hist = prod[racaKey];
+        if (!hist) return;
+        hist.forEach(snap => {
+            if (!snap.campos) return;
+            CAMPOS_FORCAR_INATIVO.forEach(campo => {
+                if (snap.campos[campo] && snap.campos[campo].ativo === true) {
+                    // Só corrige se o usuário explicitamente ativou (ativo:true)
+                    snap.campos[campo].ativo = false;
+                    alterados++;
+                }
+            });
+        });
+    });
+    try {
+        // Salva no banco
+        const { error } = await _sbClient
+            .from('parametros')
+            .upsert({ chave: 'sistema_parametros_v3', valor: JSON.stringify(PARAMETROS) }, { onConflict: 'chave' });
+        if (error) throw new Error(error.message);
+        btn.textContent = `✅ Corrigido! ${alterados} campo(s) desativado(s). Feche e recarregue o sistema.`;
+        btn.style.background = '#27ae60';
+        // Atualiza as tabelas na janela principal
+        if (window.opener) {
+            window.opener.exibirTabelaProd && window.opener.exibirTabelaProd();
+            window.opener.exibirTabelaClass && window.opener.exibirTabelaClass();
+        }
+    } catch(e) {
+        btn.textContent = '❌ Erro: ' + e.message;
+        btn.style.background = '#e74c3c';
+        btn.disabled = false;
+    }
+};
 
 function getParam(modulo, racaKey, campo, dataRegistro) {
     const snap = getSnapshotVigente(modulo, racaKey, dataRegistro);
