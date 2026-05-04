@@ -5733,6 +5733,7 @@
                         <button onclick="atualizarParametros()" style="background:#2980b9;color:white;padding:9px 20px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;" title="Aplica os valores editados nas tabelas sem salvar permanentemente">🔃 Atualizar</button>
                         <button onclick="resetarParametros()" style="background:#e74c3c;color:white;padding:9px 18px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;">🔄 Padrões</button>
                         <button onclick="diagnosticoChavesParametros()" style="background:#8e44ad;color:white;padding:9px 18px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;" title="Ver chaves salvas no banco">🔍 Diagnóstico</button>
+                        <button onclick="corrigirDPGForcar(this)" id="btnCorrigirDPG" style="background:#c0392b;color:white;padding:9px 18px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;" title="Desativa DPG incorretamente ativo no banco">🔧 Corrigir DPG</button>
                     </div>
                 </div>
                 <div id="msgSucessoParam" class="msg-sucesso"></div>
@@ -13698,8 +13699,6 @@ function diagnosticoChavesParametros() {
             html += `<li style="margin-bottom:4px;"><strong>${p.campo}</strong> em <strong>${p.racaKey.replace(/_/g,' ')}</strong> (${p.modulo}) — vigência ${p.snap} — min:${p.cfg.min} max:${p.cfg.max}</li>`;
         });
         html += `</ul>`;
-        html += `<p>Para corrigir, use o botão abaixo. Ele vai <strong>desativar (ativo:false)</strong> o DPG em todos os snapshots de Produção e salvar no banco.</p>`;
-        html += `<button class="fix-btn" onclick="window.opener && window.opener.corrigirDPGForcar && window.opener.corrigirDPGForcar(this)">🔧 CORRIGIR: Desativar DPG em todos os snapshots de Produção</button>`;
         html += `</div>`;
     } else {
         html += `<p style="color:#3fb950;font-size:14px;">✅ Nenhum campo ativo com limite problemático encontrado.</p>`;
@@ -13713,10 +13712,9 @@ function diagnosticoChavesParametros() {
     w.document.close();
 }
 
-// Corrige o DPG cirurgicamente — desativa APENAS quando tem limite real (max < 9999)
-// Preserva granulo1/2/3/fundo que podem estar ativos intencionalmente com max:9999
-window.corrigirDPGForcar = async function(btn) {
-    if (!confirm('Isso vai desativar o DPG (somente onde tem limite real definido) em todos os snapshots de Produção e salvar no banco.\n\nConfirmar?')) return;
+// Corrige o DPG cirurgicamente — roda na janela principal, sem popup
+async function corrigirDPGForcar(btn) {
+    if (!confirm('Isso vai desativar o DPG (somente onde tem limite real) em todos os snapshots de Produção e salvar no banco.\n\nConfirmar?')) return;
     btn.disabled = true;
     btn.textContent = '⏳ Corrigindo...';
     let alterados = 0;
@@ -13727,20 +13725,17 @@ window.corrigirDPGForcar = async function(btn) {
         hist.forEach(snap => {
             if (!snap.campos || !snap.campos['dpg']) return;
             const dpg = snap.campos['dpg'];
-            // Só desativa se estiver ativo E tiver limite real (max < 9999)
-            // Preserva DPG ativo com max:9999 (sem efeito prático) e calcários que usam DPG legitimamente
-            // EXCEÇÃO: calcários (BEPEL) podem ter DPG ativo com limite real — preserva
             const ehCalcario = racaKey.toUpperCase().includes('CALC') || racaKey.toUpperCase().includes('BEPEL');
             if (dpg.ativo === true && dpg.max < 9999 && !ehCalcario) {
                 dpg.ativo = false;
                 alterados++;
-                console.log(`[FIX] DPG desativado: ${racaKey} snap ${snap.vigencia} (era max:${dpg.max})`);
             }
         });
     });
     if (alterados === 0) {
-        btn.textContent = 'ℹ️ Nenhum DPG problemático encontrado. Verifique manualmente.';
+        showMsg('msgSucessoParam', 'ℹ️ Nenhum DPG problemático encontrado no banco.', 5000);
         btn.disabled = false;
+        btn.textContent = '🔧 Corrigir DPG';
         return;
     }
     try {
@@ -13748,17 +13743,17 @@ window.corrigirDPGForcar = async function(btn) {
             .from('parametros')
             .upsert({ chave: 'sistema_parametros_v3', valor: JSON.stringify(PARAMETROS) }, { onConflict: 'chave' });
         if (error) throw new Error(error.message);
-        btn.textContent = `✅ ${alterados} DPG(s) corrigido(s)! Feche esta janela e recarregue o sistema.`;
+        showMsg('msgSucessoParam', '✅ ' + alterados + ' DPG(s) corrigido(s) no banco! Recarregando tabelas...', 6000);
+        btn.textContent = '✅ Corrigido!';
         btn.style.background = '#27ae60';
-        if (window.opener) {
-            window.opener.exibirTabelaProd && window.opener.exibirTabelaProd();
-        }
+        exibirTabelaProd && exibirTabelaProd();
     } catch(e) {
-        btn.textContent = '❌ Erro ao salvar: ' + e.message;
-        btn.style.background = '#e74c3c';
+        showMsg('msgErroParam', '❌ Erro ao salvar no banco: ' + e.message, 6000);
         btn.disabled = false;
+        btn.textContent = '🔧 Corrigir DPG';
     }
-};
+}
+window.corrigirDPGForcar = corrigirDPGForcar;
 
 function getParam(modulo, racaKey, campo, dataRegistro) {
     const snap = getSnapshotVigente(modulo, racaKey, dataRegistro);
