@@ -9999,23 +9999,71 @@ function _gerarJanelaImpressao(titulo, capaHTML, conteudoHTML) {
     </body></html>`;
 }
 
+// ── Captura canvas com cores adequadas para fundo branco (impressão/PDF) ─────
+function _canvasParaImgBranco(originais) {
+    var COR_PRINT  = '#222222';
+    var GRID_PRINT = 'rgba(0,0,0,0.10)';
+    var instancias = Object.values(Chart.instances || {});
+    var defaultColorOrig = Chart.defaults.color;
+    // 1. Guarda e troca cores em todas instâncias
+    var backups = instancias.map(function(ch) {
+        var bk = { scales: {}, legendColor: undefined };
+        Object.entries(ch.options.scales || {}).forEach(function(entry) {
+            var id = entry[0]; var sc = entry[1];
+            bk.scales[id] = {};
+            if (sc.ticks)  { bk.scales[id].ticksColor = sc.ticks.color;  sc.ticks.color  = COR_PRINT; }
+            if (sc.title)  { bk.scales[id].titleColor = sc.title.color;  sc.title.color  = COR_PRINT; }
+            if (sc.grid && sc.grid.drawOnChartArea !== false) { bk.scales[id].gridColor = sc.grid.color; sc.grid.color = GRID_PRINT; }
+        });
+        var leg = ch.options.plugins && ch.options.plugins.legend && ch.options.plugins.legend.labels;
+        if (leg) { bk.legendColor = leg.color; leg.color = COR_PRINT; }
+        var dl = ch.options.plugins && ch.options.plugins.datalabels;
+        if (dl) { bk.datalabelsColor = dl.color; dl.color = COR_PRINT; }
+        ch.update('none');
+        return bk;
+    });
+    Chart.defaults.color = COR_PRINT;
+    // 2. Captura imagens
+    var imgs = Array.from(originais).map(function(cv) {
+        try {
+            var img = document.createElement('img');
+            img.src = cv.toDataURL('image/png');
+            img.style.maxWidth = '100%'; img.style.display = 'block';
+            img.style.width  = (cv.offsetWidth  || cv.width)  + 'px';
+            img.style.height = (cv.offsetHeight || cv.height) + 'px';
+            return img;
+        } catch(e) { return null; }
+    });
+    // 3. Restaura cores originais
+    Chart.defaults.color = defaultColorOrig;
+    instancias.forEach(function(ch, idx) {
+        var bk = backups[idx];
+        Object.entries(ch.options.scales || {}).forEach(function(entry) {
+            var id = entry[0]; var sc = entry[1];
+            var bks = bk.scales[id]; if (!bks) return;
+            if (sc.ticks  && bks.ticksColor !== undefined) sc.ticks.color  = bks.ticksColor;
+            if (sc.title  && bks.titleColor !== undefined) sc.title.color  = bks.titleColor;
+            if (sc.grid   && bks.gridColor  !== undefined) sc.grid.color   = bks.gridColor;
+        });
+        var leg = ch.options.plugins && ch.options.plugins.legend && ch.options.plugins.legend.labels;
+        if (leg && bk.legendColor !== undefined) leg.color = bk.legendColor;
+        var dl = ch.options.plugins && ch.options.plugins.datalabels;
+        if (dl && bk.datalabelsColor !== undefined) dl.color = bk.datalabelsColor;
+        ch.update('none');
+    });
+    return imgs;
+}
+
 function imprimirRelatorio() {
     const conteudo = document.getElementById('relatorioConteudo');
     if (!conteudo) { alert('Nenhum conteúdo para imprimir.'); return; }
 
-    // Clona para não alterar o DOM original, converte canvas → img
+    // Clona para não alterar o DOM original, converte canvas → img com cores para fundo branco
     const clone = conteudo.cloneNode(true);
-    // Copia dados dos canvas originais para o clone
     const originais = conteudo.querySelectorAll('canvas');
+    const imgs = _canvasParaImgBranco(originais);
     clone.querySelectorAll('canvas').forEach((cv, i) => {
-        try {
-            const img = document.createElement('img');
-            img.src = originais[i].toDataURL('image/png');
-            img.style.maxWidth = '100%'; img.style.display = 'block';
-            img.style.width  = (originais[i].offsetWidth  || originais[i].width)  + 'px';
-            img.style.height = (originais[i].offsetHeight || originais[i].height) + 'px';
-            cv.parentNode.replaceChild(img, cv);
-        } catch(e) {}
+        if (imgs[i]) cv.parentNode.replaceChild(imgs[i], cv);
     });
 
     const dataEmissao = new Date().toLocaleDateString('pt-BR');
@@ -10510,15 +10558,9 @@ function imprimirRelClass() {
 
     const clone = conteudo.cloneNode(true);
     const originais = conteudo.querySelectorAll('canvas');
+    const imgs = _canvasParaImgBranco(originais);
     clone.querySelectorAll('canvas').forEach((cv, i) => {
-        try {
-            const img = document.createElement('img');
-            img.src = originais[i].toDataURL('image/png');
-            img.style.maxWidth = '100%'; img.style.display = 'block';
-            img.style.width  = (originais[i].offsetWidth  || originais[i].width)  + 'px';
-            img.style.height = (originais[i].offsetHeight || originais[i].height) + 'px';
-            cv.parentNode.replaceChild(img, cv);
-        } catch(e) {}
+        if (imgs[i]) cv.parentNode.replaceChild(imgs[i], cv);
     });
 
     const dataEmissao = new Date().toLocaleDateString('pt-BR');
@@ -10773,13 +10815,13 @@ function aplicarFiltrosRanking() {
     const totalReg = base.length;
     const totalConf = base.filter(r => { const s=statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data); return !s.includes('NÃO') && !s.includes('>NC<'); }).length;
 
-    // Só mostra "FORNECEDOR NÃO ATENDE" se houver mais de 1 fornecedor E o pior for diferente do melhor
+    // Só mostra "ATENÇÃO" se houver mais de 1 fornecedor E o pior for diferente do melhor
     const mostrarPior = stats.length > 1 && pior && melhor && pior.fornecedor !== melhor.fornecedor;
 
     const cardsBase = [
         { icon:'🏆', label:'MELHOR FORNECEDOR',  value: melhor ? melhor.fornecedor : '-',      sub: melhor ? getRkNome(criterio)+': '+melhor.media.toFixed(2)+'%' : '', cor:'#27ae60' },
         mostrarPior
-            ? { icon:'⚠️', label:'FORNECEDOR NÃO ATENDE', value: pior.fornecedor, sub: getRkNome(criterio)+': '+pior.media.toFixed(2)+'%', cor:'#e74c3c' }
+            ? { icon:'⚠️', label:'ATENÇÃO', value: pior.fornecedor, sub: getRkNome(criterio)+': '+pior.media.toFixed(2)+'%', cor:'#e74c3c' }
             : { icon:'✅', label:'ÚNICO FORNECEDOR', value: melhor ? melhor.fornecedor : '-', sub: 'Apenas 1 fornecedor no período', cor:'#27ae60' },
         { icon:'🏢', label:'FORNECEDORES',        value: stats.length,                          sub: 'avaliados no período',    cor:'#3498db' },
         { icon:'✅', label:'CONFORMIDADE GERAL',  value: totalReg ? (totalConf/totalReg*100).toFixed(1)+'%' : '-', sub: totalConf+' de '+totalReg+' registros OK', cor: totalConf===totalReg?'#27ae60':'#e67e22' },
@@ -10855,8 +10897,8 @@ function aplicarFiltrosRanking() {
                         const realVal = valoresG[ctx.dataIndex];
                         return realVal === 0 ? '0.00% ✔' : realVal.toFixed(2) + '%';
                     },
-                    color: (ctx) => { const dark = document.documentElement.getAttribute('data-theme') === 'dark'; return valoresG[ctx.dataIndex] === 0 ? '#3fb950' : (dark ? '#e6edf3' : '#333'); },
-                    font: (ctx) => ({ size: 10, weight: valoresG[ctx.dataIndex] === 0 ? 'bold' : 'bold' }),
+                    color: (ctx) => { const dark = document.documentElement.getAttribute('data-theme') === 'dark'; return valoresG[ctx.dataIndex] === 0 ? '#3fb950' : (dark ? '#ffffff' : '#333'); },
+                    font: { size: 10, weight: 'bold' },
                     padding: { left: 4 }
                 }
             },
@@ -12337,16 +12379,12 @@ function imprimirRanking() {
     const conteudo = document.getElementById('rankingConteudo');
     if (!conteudo) { alert('Nenhum conteúdo para imprimir.'); return; }
 
-    // Clona e converte canvas → img
+    // Clona e converte canvas → img com cores adequadas para fundo branco
     const clone = conteudo.cloneNode(true);
     const originais = conteudo.querySelectorAll('canvas');
+    const imgs = _canvasParaImgBranco(originais);
     clone.querySelectorAll('canvas').forEach((cv, i) => {
-        try {
-            const img = document.createElement('img');
-            img.src = originais[i].toDataURL('image/png');
-            img.style.cssText = 'max-width:100%;display:block;width:' + (originais[i].offsetWidth||originais[i].width) + 'px;height:' + (originais[i].offsetHeight||originais[i].height) + 'px;';
-            cv.parentNode.replaceChild(img, cv);
-        } catch(e) {}
+        if (imgs[i]) cv.parentNode.replaceChild(imgs[i], cv);
     });
 
     const dataEmissao = new Date().toLocaleDateString('pt-BR');
