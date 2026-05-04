@@ -13515,9 +13515,10 @@ function getSnapshotVigente(modulo, racaKey, dataRegistro) {
     // Pega o último snapshot com vigência <= dataRegistro
     let snap = null;
     for (const s of ord) { if (s.vigencia <= dataRegistro) snap = s; else break; }
-    // Se nenhum snapshot é anterior ou igual à data do registro,
-    // usa o mais recente disponível (parâmetros valem retroativamente)
-    return snap || ord[ord.length-1];
+    // ✅ FIX: retorna apenas snap encontrado (ou null se nenhuma vigência cobre a data).
+    // Sem fallback para o snapshot mais recente — isso causava DPG/outros campos
+    // marcados como NC mesmo desativados, quando o parâmetro foi salvo com data futura.
+    return snap;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
