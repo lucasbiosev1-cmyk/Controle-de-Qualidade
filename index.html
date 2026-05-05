@@ -11319,8 +11319,8 @@ function renderRCTabelaProd(dados) {
             impureza:    med(dd.map(r=>r.impureza||0)),
             umidade:     med(dd.map(r=>r.umidade||0)),
             densidade:   med(dd.map(r=>r.densidade||0)),
-            aflatoxinas: med(dd.map(r=>r.aflatoxinas||0)),
-            fumonisinas: med(dd.map(r=>r.fumonisinas||0)),
+            aflatoxinas: (()=>{ const v=dd.filter(r=>(r.aflatoxinas||0)>0).map(r=>r.aflatoxinas); return v.length?v.reduce((a,b)=>a+b,0)/v.length:0; })(),
+            fumonisinas: (()=>{ const v=dd.filter(r=>(r.fumonisinas||0)>0).map(r=>r.fumonisinas); return v.length?v.reduce((a,b)=>a+b,0)/v.length:0; })(),
             zearalenona: med(dd.map(r=>r.zearalenona||0)),
             don:         med(dd.map(r=>r.don||0)),
         };
@@ -11343,8 +11343,8 @@ function renderRCTabelaProd(dados) {
             <td style="padding:7px;text-align:center;">${f('impureza')}</td>
             <td style="padding:7px;text-align:center;">${f('umidade',2)}</td>
             <td style="padding:7px;text-align:center;">${med(dd.map(r=>r.densidade||0)).toFixed(0)}</td>
-            <td style="padding:7px;text-align:center;">${(()=>{const v=med(dd.map(r=>r.aflatoxinas||0));return v>0?v.toFixed(2):'-';})()}</td>
-            <td style="padding:7px;text-align:center;">${(()=>{const v=med(dd.map(r=>r.fumonisinas||0));return v>0?v.toFixed(0):'-';})()}</td>
+            <td style="padding:7px;text-align:center;">${(()=>{const vv=dd.filter(r=>(r.aflatoxinas||0)>0).map(r=>r.aflatoxinas);const v=vv.length?vv.reduce((a,b)=>a+b,0)/vv.length:0;return v>0?v.toFixed(2):'-';})()}</td>
+            <td style="padding:7px;text-align:center;">${(()=>{const vv=dd.filter(r=>(r.fumonisinas||0)>0).map(r=>r.fumonisinas);const v=vv.length?vv.reduce((a,b)=>a+b,0)/vv.length:0;return v>0?v.toFixed(0):'-';})()}</td>
             <td style="padding:7px;text-align:center;">${status}</td>
         </tr>`;
     }).join('');
