@@ -3030,6 +3030,362 @@
             background: #1c2333; border-color: #30363d; color: #e6edf3;
         }
         html[data-theme="dark"] .sgq-autocomplete-list li { color: #e6edf3; border-color: #21262d; }
+
+        /* ========== ORDEM DE SERVIÇO ========== */
+        #aba-ordemServico { padding:0; }
+        #abaOS { padding: 20px; }
+
+        .os-header {
+            display:flex; align-items:center; justify-content:space-between;
+            margin-bottom:20px; padding-bottom:14px;
+            border-bottom:2px solid #e0e0e0; flex-wrap:wrap; gap:10px;
+        }
+        html[data-theme="dark"] .os-header { border-bottom-color:#30363d; }
+        .os-header-left { display:flex; align-items:center; gap:12px; }
+        .os-header-left h2 { font-size:18px; font-weight:800; color:#2c3e50; text-transform:uppercase; margin:0; }
+        html[data-theme="dark"] .os-header-left h2 { color:#e6edf3; }
+        .os-badge-total {
+            background:#eaf4fb; color:#2980b9; border:1px solid #aed6f1;
+            font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px;
+        }
+        html[data-theme="dark"] .os-badge-total { background:#0d2137; color:#58a6ff; border-color:#1a3a5e; }
+
+        .os-btn-novo {
+            background:linear-gradient(135deg,#27ae60,#2ecc71); color:white;
+            border:none; border-radius:6px; padding:10px 20px;
+            font-size:12px; font-weight:700; cursor:pointer;
+            text-transform:uppercase; letter-spacing:.5px;
+            box-shadow:0 2px 8px rgba(39,174,96,.3); transition:all .2s;
+        }
+        .os-btn-novo:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(39,174,96,.4); }
+
+        /* KPIs */
+        .os-kpis {
+            display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr));
+            gap:12px; margin-bottom:20px;
+        }
+        .os-kpi-card {
+            background:white; border-radius:10px; padding:14px;
+            text-align:center; border-left:4px solid #bbb;
+            box-shadow:0 2px 8px rgba(0,0,0,.06);
+        }
+        html[data-theme="dark"] .os-kpi-card { background:#161b22; box-shadow:0 2px 8px rgba(0,0,0,.3); }
+        .os-kpi-card.os-kpi-aguard { border-color:#f39c12; }
+        .os-kpi-card.os-kpi-aprov  { border-color:#27ae60; }
+        .os-kpi-card.os-kpi-exec   { border-color:#3498db; }
+        .os-kpi-card.os-kpi-conc   { border-color:#8e44ad; }
+        .os-kpi-card.os-kpi-rej    { border-color:#e74c3c; }
+        .os-kpi-valor { font-size:24px; font-weight:900; color:#2c3e50; }
+        html[data-theme="dark"] .os-kpi-valor { color:#e6edf3; }
+        .os-kpi-label { font-size:10px; font-weight:700; color:#aaa; text-transform:uppercase; margin-top:2px; }
+
+        /* Filtros */
+        .os-filtros {
+            display:flex; gap:10px; margin-bottom:18px;
+            flex-wrap:wrap; align-items:flex-end;
+        }
+        .os-filtro-grupo { display:flex; flex-direction:column; gap:4px; }
+        .os-filtro-grupo label { font-size:10px; font-weight:700; color:#888; text-transform:uppercase; }
+        .os-filtro-grupo select,
+        .os-filtro-grupo input {
+            border:1.5px solid #ddd; border-radius:6px; padding:7px 10px;
+            font-size:12px; color:#333; background:#fafafa; outline:none;
+            min-width:140px;
+        }
+        html[data-theme="dark"] .os-filtro-grupo select,
+        html[data-theme="dark"] .os-filtro-grupo input {
+            background:#0d1117; color:#e6edf3; border-color:#30363d;
+        }
+        .os-btn-limpar-filtro {
+            background:#f0f0f0; color:#666; border:none; border-radius:6px;
+            padding:7px 14px; font-size:11px; font-weight:700; cursor:pointer;
+            align-self:flex-end;
+        }
+        html[data-theme="dark"] .os-btn-limpar-filtro { background:#21262d; color:#8b949e; }
+
+        /* Cards de OS */
+        .os-lista { display:flex; flex-direction:column; gap:10px; }
+        .os-card {
+            background:white; border-radius:10px; padding:16px 20px;
+            border-left:5px solid #3498db; box-shadow:0 2px 8px rgba(0,0,0,.07);
+            display:flex; align-items:flex-start; justify-content:space-between;
+            gap:12px; transition:box-shadow .2s; cursor:default;
+        }
+        html[data-theme="dark"] .os-card { background:#161b22; box-shadow:0 2px 8px rgba(0,0,0,.3); }
+        .os-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.12); }
+        .os-card.os-status-aguard  { border-color:#f39c12; }
+        .os-card.os-status-aprovada { border-color:#27ae60; }
+        .os-card.os-status-exec    { border-color:#3498db; }
+        .os-card.os-status-conc    { border-color:#8e44ad; }
+        .os-card.os-status-rej     { border-color:#e74c3c; opacity:.7; }
+
+        .os-card-info { flex:1; min-width:0; }
+        .os-card-top { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
+        .os-card-numero { font-size:11px; font-weight:700; color:#888; font-family:monospace; }
+        .os-card-titulo { font-size:14px; font-weight:800; color:#2c3e50; }
+        html[data-theme="dark"] .os-card-titulo { color:#e6edf3; }
+        .os-card-desc { font-size:12px; color:#666; margin-bottom:8px; line-height:1.4; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:600px; }
+        html[data-theme="dark"] .os-card-desc { color:#8b949e; }
+        .os-card-meta { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+
+        /* Badges */
+        .os-badge {
+            display:inline-flex; align-items:center; gap:4px;
+            font-size:10px; font-weight:700; padding:3px 8px;
+            border-radius:12px; text-transform:uppercase;
+        }
+        .os-badge-setor   { background:#eaf4fb; color:#2980b9; }
+        .os-badge-tipo    { background:#f5eeff; color:#8e44ad; }
+        .os-badge-resp    { background:#eafaf1; color:#27ae60; }
+        .os-badge-dias    { background:#fdf2e9; color:#e67e22; font-weight:900; }
+        .os-badge-prio-normal  { background:#eee; color:#555; }
+        .os-badge-prio-alta    { background:#fef9e7; color:#d68910; }
+        .os-badge-prio-urgente { background:#fdecea; color:#e74c3c; font-weight:900; }
+
+        .os-status-badge {
+            display:inline-flex; align-items:center; gap:4px;
+            font-size:10px; font-weight:800; padding:4px 10px;
+            border-radius:20px; text-transform:uppercase; letter-spacing:.5px;
+        }
+        .os-status-badge.aguard  { background:#fef3e2; color:#e67e22; border:1px solid #f5cba7; }
+        .os-status-badge.aprovada { background:#eafaf1; color:#27ae60; border:1px solid #a9dfbf; }
+        .os-status-badge.exec    { background:#eaf4fb; color:#2980b9; border:1px solid #aed6f1; }
+        .os-status-badge.conc    { background:#f5eeff; color:#8e44ad; border:1px solid #d2b4de; }
+        .os-status-badge.rej     { background:#fdecea; color:#e74c3c; border:1px solid #f1948a; }
+
+        html[data-theme="dark"] .os-badge-setor   { background:#0d2137; color:#58a6ff; }
+        html[data-theme="dark"] .os-badge-tipo    { background:#1e0f2e; color:#bc8cff; }
+        html[data-theme="dark"] .os-badge-resp    { background:#0a2a1a; color:#3fb950; }
+        html[data-theme="dark"] .os-badge-dias    { background:#2e1a08; color:#e67e22; }
+        html[data-theme="dark"] .os-status-badge.aguard  { background:#2e1a08; color:#e67e22; border-color:#935116; }
+        html[data-theme="dark"] .os-status-badge.aprovada { background:#0a2a1a; color:#3fb950; border-color:#196932; }
+        html[data-theme="dark"] .os-status-badge.exec    { background:#0d2137; color:#58a6ff; border-color:#1a3a5e; }
+        html[data-theme="dark"] .os-status-badge.conc    { background:#1e0f2e; color:#bc8cff; border-color:#5b2c6f; }
+        html[data-theme="dark"] .os-status-badge.rej     { background:#2e0d0d; color:#f85149; border-color:#7b241c; }
+
+        .os-card-acoes { display:flex; gap:6px; flex-shrink:0; }
+        .os-btn-acao {
+            width:32px; height:32px; border-radius:6px; border:none;
+            cursor:pointer; font-size:14px; display:flex; align-items:center;
+            justify-content:center; transition:all .2s;
+        }
+        .os-btn-ver    { background:#eaf4fb; color:#2980b9; }
+        .os-btn-edit   { background:#eafaf1; color:#27ae60; }
+        .os-btn-aprov  { background:#fef3e2; color:#e67e22; }
+        html[data-theme="dark"] .os-btn-ver   { background:#0d2137; color:#58a6ff; }
+        html[data-theme="dark"] .os-btn-edit  { background:#0a2a1a; color:#3fb950; }
+        html[data-theme="dark"] .os-btn-aprov { background:#2e1a08; color:#e67e22; }
+        .os-btn-acao:hover { transform:scale(1.1); }
+
+        .os-empty { text-align:center; padding:60px 20px; color:#aaa; font-size:13px; font-weight:600; }
+        .os-empty-icon { font-size:48px; margin-bottom:12px; }
+
+        /* Modal OS */
+        .os-modal-box {
+            background:white; border-radius:12px; width:680px; max-width:95vw;
+            max-height:92vh; overflow-y:auto;
+            box-shadow:0 24px 60px rgba(0,0,0,.25);
+        }
+        html[data-theme="dark"] .os-modal-box { background:#161b22; border:1px solid #30363d; }
+        .os-modal-header {
+            background:linear-gradient(135deg,#1a252f,#2c3e50); color:white;
+            padding:18px 24px; display:flex; align-items:flex-start;
+            justify-content:space-between; border-radius:12px 12px 0 0; position:sticky; top:0; z-index:2;
+        }
+        .os-modal-header h3 { font-size:15px; font-weight:800; text-transform:uppercase; margin:0; letter-spacing:.5px; }
+        .os-modal-close {
+            background:rgba(255,255,255,.15); border:none; color:white;
+            width:30px; height:30px; border-radius:50%; cursor:pointer;
+            font-size:16px; display:flex; align-items:center; justify-content:center;
+        }
+        .os-modal-close:hover { background:rgba(255,255,255,.3); }
+        .os-modal-body { padding:0; display:flex; flex-direction:column; gap:0; }
+
+        /* ── Abas do modal OS ── */
+        .os-tab-nav {
+            display:flex; gap:0; border-bottom:2px solid #e0e0e0;
+            background:#f8f9fa; padding:0 16px; position:sticky; top:64px; z-index:2;
+        }
+        html[data-theme="dark"] .os-tab-nav { background:#0d1117; border-color:#30363d; }
+        .os-tab-btn {
+            padding:11px 20px; font-size:12px; font-weight:700; text-transform:uppercase;
+            letter-spacing:.5px; border:none; background:none; cursor:pointer;
+            color:#888; border-bottom:3px solid transparent; margin-bottom:-2px;
+            transition:all .2s; display:flex; align-items:center; gap:6px; white-space:nowrap;
+        }
+        html[data-theme="dark"] .os-tab-btn { color:#8b949e; }
+        .os-tab-btn:hover { color:#2c3e50; background:rgba(44,62,80,.06); }
+        html[data-theme="dark"] .os-tab-btn:hover { color:#e6edf3; background:rgba(255,255,255,.05); }
+        .os-tab-btn.ativo { color:#2c3e50; border-bottom-color:#2c3e50; }
+        html[data-theme="dark"] .os-tab-btn.ativo { color:#58a6ff; border-bottom-color:#58a6ff; }
+        .os-tab-btn .os-tab-badge {
+            background:#e74c3c; color:white; border-radius:99px;
+            font-size:9px; padding:1px 5px; font-weight:800;
+        }
+        .os-tab-pane { display:none; padding:20px 24px; flex-direction:column; gap:14px; }
+        .os-tab-pane.ativo { display:flex; }
+        .os-modal-footer {
+            padding:14px 24px; border-top:1px solid #eee;
+            display:flex; justify-content:flex-end; gap:10px;
+            position:sticky; bottom:0; background:white; border-radius:0 0 12px 12px; z-index:2;
+        }
+        html[data-theme="dark"] .os-modal-footer { background:#161b22; border-color:#30363d; }
+
+        .os-form-row { display:flex; gap:14px; flex-wrap:wrap; }
+        .os-form-group { display:flex; flex-direction:column; gap:5px; flex:1; min-width:160px; }
+        .os-form-group label { font-size:11px; font-weight:700; color:#555; text-transform:uppercase; letter-spacing:.5px; }
+        html[data-theme="dark"] .os-form-group label { color:#8b949e; }
+        .os-req { color:#e74c3c; }
+        .os-form-group input,
+        .os-form-group select,
+        .os-form-group textarea {
+            border:1.5px solid #ddd; border-radius:6px; padding:9px 12px;
+            font-size:13px; color:#333; background:#fafafa;
+            transition:border-color .2s; outline:none; width:100%; font-family:inherit;
+        }
+        html[data-theme="dark"] .os-form-group input,
+        html[data-theme="dark"] .os-form-group select,
+        html[data-theme="dark"] .os-form-group textarea {
+            background:#0d1117; color:#e6edf3; border-color:#30363d;
+        }
+        .os-form-group input:focus,
+        .os-form-group select:focus,
+        .os-form-group textarea:focus { border-color:#2980b9; }
+        .os-form-group textarea { resize:vertical; min-height:80px; }
+
+        .os-aprovacao-area {
+            background:#fffbf0; border:2px solid #f39c12; border-radius:8px; padding:16px;
+        }
+        html[data-theme="dark"] .os-aprovacao-area { background:#1f1508; border-color:#935116; }
+        .os-aprovacao-titulo { font-size:12px; font-weight:800; color:#d35400; margin-bottom:10px; text-transform:uppercase; }
+        html[data-theme="dark"] .os-aprovacao-titulo { color:#e67e22; }
+
+        /* ── ABA EXECUÇÃO — dark mode ── */
+        .os-execucao-box {
+            background: linear-gradient(135deg,#eaf4fb,#f0fff4);
+            border: 2px solid #27ae60;
+            border-radius: 10px;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        html[data-theme="dark"] .os-execucao-box {
+            background: linear-gradient(135deg,#0d1e2b,#0a1f14);
+            border-color: #196932;
+        }
+        .os-execucao-header-titulo {
+            font-size: 13px; font-weight: 800; color: #1a7a45;
+            text-transform: uppercase; letter-spacing: .5px;
+        }
+        html[data-theme="dark"] .os-execucao-header-titulo { color: #3fb950; }
+        .os-execucao-header-sub {
+            font-size: 10px; color: #27ae60; margin-top: 1px;
+        }
+        html[data-theme="dark"] .os-execucao-header-sub { color: #2ea043; }
+        .os-execucao-header-divider {
+            display: flex; align-items: center; gap: 8px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(39,174,96,.25);
+        }
+        html[data-theme="dark"] .os-execucao-header-divider {
+            border-bottom-color: rgba(63,185,80,.2);
+        }
+        .os-execucao-textarea {
+            background: #ffffff;
+            border-color: #27ae60;
+        }
+        html[data-theme="dark"] .os-execucao-textarea {
+            background: #0d1117 !important;
+            border-color: #196932 !important;
+            color: #e6edf3 !important;
+        }
+
+        .os-btn-salvar {
+            background:linear-gradient(135deg,#27ae60,#2ecc71); color:white;
+            border:none; border-radius:6px; padding:10px 22px;
+            font-size:12px; font-weight:700; cursor:pointer; text-transform:uppercase;
+        }
+        .os-btn-cancelar {
+            background:#f0f0f0; color:#555; border:none; border-radius:6px;
+            padding:10px 18px; font-size:12px; font-weight:700; cursor:pointer;
+        }
+        html[data-theme="dark"] .os-btn-cancelar { background:#21262d; color:#8b949e; }
+        .os-btn-excluir {
+            background:#e74c3c; color:white; border:none; border-radius:6px;
+            padding:10px 16px; font-size:12px; font-weight:700; cursor:pointer;
+        }
+        .os-contador-dias {
+            background:#fdf2e9; border:1.5px solid #f5cba7; border-radius:6px;
+            padding:8px 14px; font-size:12px; font-weight:800; color:#d35400;
+            white-space:nowrap;
+        }
+        html[data-theme="dark"] .os-contador-dias { background:#2e1a08; border-color:#935116; color:#e67e22; }
+        .os-contador-dias span { font-size:20px; display:block; line-height:1.1; }
+
+        .os-btn-imprimir {
+            background:#3498db; color:white; border:none; border-radius:6px;
+            padding:9px 16px; font-size:12px; font-weight:700; cursor:pointer;
+            text-transform:uppercase; letter-spacing:.4px;
+            box-shadow:0 2px 6px rgba(52,152,219,.3); transition:all .2s;
+        }
+        .os-btn-imprimir:hover { background:#2980b9; transform:translateY(-1px); }
+        .os-btn-imprimir-pend { background:#e67e22; box-shadow:0 2px 6px rgba(230,126,34,.3); }
+        .os-btn-imprimir-pend:hover { background:#d35400; }
+
+        .os-btn-toggle-view {
+            background:#8e44ad; color:white; border:none; border-radius:6px;
+            padding:7px 14px; font-size:11px; font-weight:700; cursor:pointer;
+            align-self:flex-end; transition:all .2s; white-space:nowrap;
+        }
+        .os-btn-toggle-view:hover { background:#7d3c98; }
+        .os-btn-toggle-view.ativo { background:#3498db; }
+
+        /* ── Tabela OS ── */
+        .os-tabela-wrap { overflow-x:auto; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.07); }
+        html[data-theme="dark"] .os-tabela-wrap { box-shadow:0 2px 8px rgba(0,0,0,.3); }
+        .os-tabela { text-transform: uppercase;
+            width:100%; border-collapse:collapse; font-size:12px;
+            background:white; border-radius:10px; overflow:hidden;
+        }
+        html[data-theme="dark"] .os-tabela { text-transform: uppercase; background:#161b22; }
+        .os-tabela thead tr {
+            background:linear-gradient(135deg,#1a252f,#2c3e50);
+            -webkit-print-color-adjust:exact; print-color-adjust:exact;
+        }
+        .os-tabela thead th {
+            padding:11px 12px; color:white; font-size:10px; font-weight:800;
+            text-transform:uppercase; letter-spacing:.5px; text-align:left;
+            white-space:nowrap;
+        }
+        .os-tabela thead th:last-child { text-align:center; }
+        .os-tabela tbody tr {
+            border-bottom:1px solid #f0f0f0; transition:background .15s; cursor:default;
+        }
+        html[data-theme="dark"] .os-tabela tbody tr { border-bottom-color:#21262d; }
+        .os-tabela tbody tr:hover { background:#f8fbff; }
+        html[data-theme="dark"] .os-tabela tbody tr:hover { background:#1c2333; }
+        .os-tabela tbody tr:last-child { border-bottom:none; }
+        .os-tabela td { padding:10px 12px; vertical-align:middle; }
+        .os-tabela td:last-child { text-align:center; }
+        .os-tabela .os-td-numero { font-family:monospace; font-size:10px; color:#888; font-weight:700; white-space:nowrap; }
+        .os-tabela .os-td-titulo { font-weight:700; color:#2c3e50; max-width:220px; }
+        html[data-theme="dark"] .os-tabela .os-td-titulo { color:#e6edf3; }
+        .os-tabela .os-td-desc { font-size:11px; color:#888; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        html[data-theme="dark"] .os-tabela .os-td-desc { color:#6e7681; }
+        .os-tabela .os-td-dias { font-weight:800; font-size:11px; white-space:nowrap; }
+        .os-tabela .os-td-acoes { display:flex; gap:5px; justify-content:center; }
+        .os-tabela-barra-status {
+            display:block; width:4px; height:36px; border-radius:3px;
+            -webkit-print-color-adjust:exact; print-color-adjust:exact;
+        }
+
+        /* Linha de rejeição no card */
+        .os-card-rejeicao {
+            font-size:11px; color:#e74c3c; font-style:italic; margin-top:4px;
+            background:#fdecea; border-radius:4px; padding:4px 8px; display:inline-block;
+        }
+        html[data-theme="dark"] .os-card-rejeicao { background:#2e0d0d; color:#f85149; }
 </style>
 </head>
 <body>
@@ -3165,6 +3521,7 @@
             <button class="mob-item" id="mobBtnProducao"      onclick="mobNav('producao','Produção')">🌾 Produção</button>
             <button class="mob-item" id="mobBtnMateriaPrima"  onclick="mobNav('materiaPrima','Matéria Prima')">🧪 Matéria Prima</button>
             <button class="mob-item" id="mobBtnClassificacao" onclick="mobNav('classificacao','Classificação')">🌽 Classificação</button>
+            <button class="mob-item" id="mobBtnEntradaMP"     onclick="mobNav('entradaMP','Entradas Mat. Prima')">📥 Ent. Matéria Prima</button>
         </div>
         <div class="mob-section" id="mobSecRelatorios">
             <div class="mob-section-label">Relatórios</div>
@@ -3173,9 +3530,6 @@
             <button class="mob-item" id="mobBtnRelMP"         onclick="mobNav('relMP','Rel. Mat. Prima')">🧪 Rel. Mat. Prima</button>
             <button class="mob-item" id="mobBtnRanking"       onclick="mobNav('ranking','Ranking')">🏆 Ranking</button>
             <button class="mob-item" id="mobBtnBoletim"       onclick="mobNav('boletim','Boletim Industrial')">📋 Boletim Industrial</button>
-        </div>
-        <div class="mob-section">
-            <button class="mob-item" id="mobBtnEntradaMP" onclick="mobNav('entradaMP','Entradas Mat. Prima')">📥 Entradas Mat. Prima</button>
         </div>
         <div class="mob-section" id="mobSecNC">
             <div class="mob-section-label">Não Conformidade</div>
@@ -3194,6 +3548,9 @@
             <button class="mob-item" id="mobBtnAgenda" onclick="mobNav('agenda','Agenda')">📅 Agenda</button>
         </div>
         <div class="mob-section">
+            <button class="mob-item" id="mobBtnOrdemServico" onclick="mobNav('ordemServico','Ordem de Serviço')">🔧 Ordem de Serviço</button>
+        </div>
+        <div class="mob-section">
             <button class="mob-item" id="mobBtnConfiguracoes" onclick="mobNav('configuracoes','Configurações')">⚙️ Configurações</button>
         </div>
     </div>
@@ -3210,6 +3567,7 @@
                 <button class="nav-dropdown-item" id="tabProducao" onclick="trocarAba('producao', this);closeDropdowns()">🌾 Produção</button>
                 <button class="nav-dropdown-item" id="tabMateriaPrima" onclick="trocarAba('materiaPrima', this);closeDropdowns()">🧪 Matéria Prima</button>
                 <button class="nav-dropdown-item" id="tabClassificacao" onclick="trocarAba('classificacao', this);closeDropdowns()">🌽 Classificação</button>
+                <button class="nav-dropdown-item" id="tabEntradaMP" onclick="trocarAba('entradaMP', this);closeDropdowns()">📥 Ent. Matéria Prima</button>
             </div>
         </div>
         <!-- RELATÓRIOS dropdown -->
@@ -3226,8 +3584,6 @@
                 <button class="nav-dropdown-item" id="tabRelMensalIA" onclick="abrirRelatorioMensalIA_seguro();closeDropdowns()" style="display:none;border-top:1px solid rgba(255,255,255,0.15);background:linear-gradient(135deg,rgba(26,58,159,0.4),rgba(41,128,185,0.3));color:#a8d4f5;">📋 Análise Técnica <span style="font-size:9px;background:#c0392b;color:#fff;border-radius:3px;padding:1px 5px;margin-left:4px;vertical-align:middle;">ADMIN</span></button>
             </div>
         </div>
-        <!-- ENTRADAS (cadastro MP) -->
-        <button class="nav-tab" id="tabEntradaMP" onclick="trocarAba('entradaMP', this)">📥 Entradas Mat. Prima</button>
         <!-- NÃO CONFORMIDADE / DEVOLUÇÃO dropdown -->
         <div class="nav-dropdown" id="ndNaoConformidade">
             <button class="nav-tab nav-dropdown-btn" id="tabNaoConformidade" onclick="toggleDropdown('ndNaoConformidade', event)">
@@ -3252,6 +3608,8 @@
         <button class="nav-tab" id="tabEquipamentos" onclick="trocarAba('equipamentos', this)">🔬 Equipamentos</button>
         <!-- AGENDA -->
         <button class="nav-tab" id="tabAgenda" onclick="trocarAba('agenda', this)">📅 Agenda</button>
+        <!-- ORDEM DE SERVIÇO -->
+        <button class="nav-tab" id="tabOrdemServico" onclick="trocarAba('ordemServico', this)">🔧 Ordem de Serviço</button>
         <!-- CONFIGURAÇÕES -->
         <button class="nav-tab" id="tabConfiguracoes" onclick="trocarAba('configuracoes', this)">⚙️ Configurações</button>
     </div>
@@ -3517,7 +3875,7 @@
                             <th>Cálcio %</th><th>Fósforo %</th>
                             <th>Granulo 1 (4mm)</th><th>Granulo 2 (2mm)</th>
                             <th>Granulo 3 (0,60mm)</th><th>Fundo</th>
-                            <th>Status</th>
+                            <th style="text-align:center;">Status</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaProducoes"><tr><td colspan="20" style="text-align:center;color:#999;">Nenhum registro encontrado</td></tr></tbody>
@@ -3564,7 +3922,7 @@
                             <th style="background:#e67e22;color:white;white-space:nowrap;">AVARIADO TOTAL %</th>
                             <th>Umidade %</th><th>Densidade</th>
                             <th>Aflatoxinas PPB</th><th>Fumonisinas PPB</th><th>Zearalenona PPB</th><th>Don PPB</th>
-                            <th>Local</th><th>Status</th>
+                            <th>Local</th><th style="text-align:center;">Status</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaClassificacoes"><tr><td colspan="26" style="text-align:center;color:#999;">Nenhum registro encontrado</td></tr></tbody>
@@ -5703,6 +6061,352 @@
         </div>
     </div>
 
+    <!-- ===== ABA ORDEM DE SERVIÇO ===== -->
+    <div id="aba-ordemServico" class="tab-content">
+        <div id="abaOS" style="padding:20px;">
+
+            <!-- Cabeçalho -->
+            <div class="os-header">
+                <div class="os-header-left">
+                    <h2>🔧 Ordens de Serviço</h2>
+                    <span class="os-badge-total" id="osBadgeTotal">0 OS</span>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                    <button class="os-btn-imprimir" onclick="imprimirOS('mes')">🖨️ OS do Mês</button>
+                    <button class="os-btn-imprimir os-btn-imprimir-pend" onclick="imprimirOS('pendentes')">📋 Pendentes</button>
+                    <button class="os-btn-novo" onclick="osAbrirModal()">＋ Nova OS</button>
+                </div>
+            </div>
+
+            <!-- KPIs rápidos -->
+            <div class="os-kpis" id="osKpis">
+                <div class="os-kpi-card">
+                    <div class="os-kpi-valor" id="osKpiTotal">0</div>
+                    <div class="os-kpi-label">Total</div>
+                </div>
+                <div class="os-kpi-card os-kpi-aguard">
+                    <div class="os-kpi-valor" id="osKpiAguard">0</div>
+                    <div class="os-kpi-label">Aguardando</div>
+                </div>
+                <div class="os-kpi-card os-kpi-aprov">
+                    <div class="os-kpi-valor" id="osKpiAprov">0</div>
+                    <div class="os-kpi-label">Aprovadas</div>
+                </div>
+                <div class="os-kpi-card os-kpi-exec">
+                    <div class="os-kpi-valor" id="osKpiExec">0</div>
+                    <div class="os-kpi-label">Em Execução</div>
+                </div>
+                <div class="os-kpi-card os-kpi-conc">
+                    <div class="os-kpi-valor" id="osKpiConc">0</div>
+                    <div class="os-kpi-label">Concluídas</div>
+                </div>
+                <div class="os-kpi-card os-kpi-rej">
+                    <div class="os-kpi-valor" id="osKpiRej">0</div>
+                    <div class="os-kpi-label">Rejeitadas</div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="os-filtros">
+                <div class="os-filtro-grupo">
+                    <label>Status</label>
+                    <select id="osFiltroStatus" onchange="osRenderizar()">
+                        <option value="">Todos</option>
+                        <option value="Aguardando Aprovação">Aguardando</option>
+                        <option value="Aprovada">Aprovadas</option>
+                        <option value="Em Execução">Em Execução</option>
+                        <option value="Concluída">Concluídas</option>
+                        <option value="Rejeitada">Rejeitadas</option>
+                    </select>
+                </div>
+                <div class="os-filtro-grupo">
+                    <label>Setor</label>
+                    <select id="osFiltroSetor" onchange="osRenderizar()">
+                        <option value="">Todos</option>
+                        <option>Laboratório</option>
+                        <option>Produção</option>
+                        <option>Manutenção</option>
+                        <option>Qualidade</option>
+                        <option>Almoxarifado</option>
+                        <option>Administrativo</option>
+                    </select>
+                </div>
+                <div class="os-filtro-grupo">
+                    <label>Tipo</label>
+                    <select id="osFiltroTipo" onchange="osRenderizar()">
+                        <option value="">Todos</option>
+                        <option>Manutenção Preventiva</option>
+                        <option>Manutenção Corretiva</option>
+                        <option>Calibração</option>
+                        <option>Limpeza</option>
+                        <option>Inspeção</option>
+                        <option>Outro</option>
+                    </select>
+                </div>
+                <div class="os-filtro-grupo" style="flex:1;">
+                    <label>Busca</label>
+                    <input type="text" id="osFiltroTexto" placeholder="Buscar por título ou responsável..." oninput="osRenderizar()">
+                </div>
+                <button class="os-btn-limpar-filtro" onclick="osLimparFiltros()">✕ Limpar</button>
+                <button class="os-btn-toggle-view os-btn-toggle-view ativo" id="osBtnToggleView" onclick="osToggleView()" title="Alternar visualização">▦ Tabela</button>
+            </div>
+
+            <!-- Lista de OS -->
+            <div class="os-lista" id="osLista">
+                <div class="os-empty"><div class="os-empty-icon">🔧</div><div>Nenhuma OS encontrada.</div></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== MODAL NOVA/EDITAR OS ===== -->
+    <div id="modalOS" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.55);align-items:center;justify-content:center;">
+        <div class="os-modal-box">
+            <div class="os-modal-header">
+                <div>
+                    <h3 id="modalOSTitulo">Nova Ordem de Serviço</h3>
+                    <div id="modalOSNumero" style="font-size:11px;opacity:.6;margin-top:2px;"></div>
+                </div>
+                <button class="os-modal-close" onclick="osFecharModal()">✕</button>
+            </div>
+            <div class="os-modal-body">
+                <input type="hidden" id="osEditId">
+
+                <!-- ── Navegação de Abas ── -->
+                <nav class="os-tab-nav" id="osTabNav">
+                    <button class="os-tab-btn ativo" id="osTabBtnAbertura" onclick="osMudarAba('abertura')">
+                        📋 Abertura
+                    </button>
+                    <button class="os-tab-btn" id="osTabBtnAprovacao" onclick="osMudarAba('aprovacao')" style="display:none;">
+                        ✅ Aprovação
+                    </button>
+                    <button class="os-tab-btn" id="osTabBtnExecucao" onclick="osMudarAba('execucao')">
+                        🔧 Execução
+                    </button>
+                </nav>
+
+                <!-- ══════════════════════════════════
+                     ABA 1 — ABERTURA
+                ══════════════════════════════════ -->
+                <div class="os-tab-pane ativo" id="osTabAbertura">
+
+                    <!-- Linha 1: Título + Tipo -->
+                    <div class="os-form-row">
+                        <div class="os-form-group" style="flex:2;">
+                            <label>Título da OS <span class="os-req">*</span></label>
+                            <input type="text" id="osTitulo" placeholder="Descreva brevemente o serviço...">
+                        </div>
+                        <div class="os-form-group">
+                            <label>Tipo de Serviço <span class="os-req">*</span></label>
+                            <select id="osTipo">
+                                <option value="">Selecione...</option>
+                                <option>Manutenção Preventiva</option>
+                                <option>Manutenção Corretiva</option>
+                                <option>Calibração</option>
+                                <option>Limpeza</option>
+                                <option>Inspeção</option>
+                                <option>Outro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Linha 2: Setor + Responsável -->
+                    <div class="os-form-row">
+                        <div class="os-form-group">
+                            <label>Setor <span class="os-req">*</span></label>
+                            <select id="osSetor">
+                                <option value="">Selecione...</option>
+                                <option>Laboratório</option>
+                                <option>Produção</option>
+                                <option>Manutenção</option>
+                                <option>Qualidade</option>
+                                <option>Almoxarifado</option>
+                                <option>Administrativo</option>
+                            </select>
+                        </div>
+                        <div class="os-form-group" style="flex:1.5;">
+                            <label>Responsável pela Execução <span class="os-req">*</span></label>
+                            <input type="text" id="osResponsavel" placeholder="Nome de quem irá executar...">
+                        </div>
+                    </div>
+
+                    <!-- Linha 3: Data de Abertura + Data de Encerramento -->
+                    <div class="os-form-row">
+                        <div class="os-form-group">
+                            <label>Data de Abertura</label>
+                            <input type="date" id="osDataAbertura" onchange="osAtualizarContador()">
+                        </div>
+                        <div class="os-form-group">
+                            <label>Data de Encerramento</label>
+                            <input type="date" id="osDataEnceramentoVis" onchange="osSincronizarEncerramento(this.value)">
+                        </div>
+                        <div id="osContadorDias" class="os-contador-dias" style="display:none;">
+                            <span id="osContadorValor">0</span> <span id="osContadorLabel">dias em aberto</span>
+                        </div>
+                    </div>
+
+                    <!-- Descrição -->
+                    <div class="os-form-group">
+                        <label>Descrição Detalhada <span class="os-req">*</span></label>
+                        <textarea id="osDescricao" placeholder="Descreva em detalhes o serviço a ser realizado..." rows="4"></textarea>
+                    </div>
+
+                    <!-- Observações -->
+                    <div class="os-form-group">
+                        <label>Observações</label>
+                        <textarea id="osObs" placeholder="Informações adicionais, materiais necessários, local exato..." rows="3"></textarea>
+                    </div>
+
+                </div><!-- /osTabAbertura -->
+
+                <!-- ══════════════════════════════════
+                     ABA 2 — APROVAÇÃO
+                ══════════════════════════════════ -->
+                <div class="os-tab-pane" id="osTabAprovacao">
+
+                    <!-- Info: só visível para gerente em OS existente -->
+                    <div id="osAprovacaoAreaTab" style="display:none;">
+                        <div style="background:linear-gradient(135deg,#eaf4fb,#eaf9f0);border:2px solid #27ae60;border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:14px;">
+                            <div style="display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:2px solid rgba(39,174,96,.2);">
+                                <span style="font-size:20px;">✅</span>
+                                <div>
+                                    <div style="font-size:13px;font-weight:800;color:#1a7a45;text-transform:uppercase;letter-spacing:.5px;">Decisão do Gerente</div>
+                                    <div style="font-size:10px;color:#27ae60;margin-top:2px;">Aprovação, rejeição ou encaminhamento para execução</div>
+                                </div>
+                            </div>
+                            <div class="os-form-row">
+                                <div class="os-form-group">
+                                    <label>Status da Aprovação</label>
+                                    <select id="osStatusAprovacao" onchange="osToggleJustificativa()">
+                                        <option value="Aguardando Aprovação">⏳ Aguardando Aprovação</option>
+                                        <option value="Aprovada">✅ Aprovar</option>
+                                        <option value="Em Execução">🔨 Colocar em Execução</option>
+                                        <option value="Concluída">✔ Concluída</option>
+                                        <option value="Rejeitada">❌ Rejeitar</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="os-form-group" id="osJustificativaGrupo" style="display:none;">
+                                <label>Justificativa da Rejeição <span class="os-req">*</span></label>
+                                <textarea id="osJustificativa" placeholder="Informe o motivo da rejeição..." rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mensagem para quem não é gerente ou OS ainda não existe -->
+                    <div id="osAprovacaoMsg" style="display:none;text-align:center;padding:40px 20px;color:#888;">
+                        <div style="font-size:40px;margin-bottom:12px;">🔒</div>
+                        <div style="font-size:13px;font-weight:600;">Área restrita ao gerente</div>
+                        <div style="font-size:12px;margin-top:6px;opacity:.7;">A aprovação só é disponibilizada após a criação da OS e para usuários com perfil de gerente.</div>
+                    </div>
+
+                    <!-- Mensagem de OS nova (ainda não salva) -->
+                    <div id="osAprovacaoNovaMsg" style="display:none;text-align:center;padding:40px 20px;color:#888;">
+                        <div style="font-size:40px;margin-bottom:12px;">📋</div>
+                        <div style="font-size:13px;font-weight:600;">Salve a OS primeiro</div>
+                        <div style="font-size:12px;margin-top:6px;opacity:.7;">A aprovação estará disponível após salvar a nova OS.</div>
+                    </div>
+
+                </div><!-- /osTabAprovacao -->
+
+                <!-- ══════════════════════════════════
+                     ABA 3 — EXECUÇÃO
+                ══════════════════════════════════ -->
+                <div class="os-tab-pane" id="osTabExecucao">
+
+                    <!-- Área para quem tem permissão os_executar -->
+                    <div id="osExecucaoAreaTab" class="os-execucao-box" style="display:none;">
+                        <div class="os-execucao-header-divider">
+                            <span style="font-size:20px;">🔧</span>
+                            <div>
+                                <div class="os-execucao-header-titulo">Execução — Preenchido pelo Executor</div>
+                                <div class="os-execucao-header-sub">Área, prioridade, data de finalização e relatório técnico</div>
+                            </div>
+                        </div>
+
+                        <!-- Linha: Área + Prioridade -->
+                        <div class="os-form-row">
+                            <div class="os-form-group">
+                                <label>Área da Manutenção <span class="os-req">*</span></label>
+                                <select id="osAreaManutencao">
+                                    <option value="">Selecione...</option>
+                                    <option value="Mecânica">🔩 Mecânica</option>
+                                    <option value="Elétrica">⚡ Elétrica</option>
+                                    <option value="Operação">🎛️ Operação</option>
+                                </select>
+                            </div>
+                            <div class="os-form-group">
+                                <label>Prioridade de Execução</label>
+                                <select id="osPrioridade">
+                                    <option value="Normal">Normal</option>
+                                    <option value="Alta">Alta</option>
+                                    <option value="Urgente">Urgente</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Status restrito ao executante -->
+                        <div class="os-form-group">
+                            <label>Status da Execução</label>
+                            <select id="osStatusExecucao" style="font-weight:700;">
+                                <option value="Aguardando Aprovação">⏳ Aguardando</option>
+                                <option value="Em Execução">🔨 Em Execução</option>
+                            </select>
+                            <div style="font-size:11px;color:#8b949e;margin-top:4px;">⚠️ O status <strong>Concluído</strong> é definido automaticamente quando quem abriu a OS preencher a Data de Encerramento.</div>
+                        </div>
+
+                        <!-- Data de Fechamento (hidden, gerenciado pela aba Abertura) -->
+                        <input type="hidden" id="osDataFechamento">
+
+                        <!-- Anexo textual -->
+                        <div class="os-form-group">
+                            <label>📎 Relatório / Laudos / Observações Técnicas</label>
+                            <textarea id="osAnexoTextual" class="os-execucao-textarea" placeholder="Descreva laudos, relatórios técnicos, peças utilizadas, procedimentos realizados..." rows="5"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Mensagem para quem não tem permissão -->
+                    <div id="osExecucaoMsg" style="display:none;text-align:center;padding:40px 20px;color:#888;">
+                        <div style="font-size:40px;margin-bottom:12px;">🔒</div>
+                        <div style="font-size:13px;font-weight:600;">Sem permissão de executor</div>
+                        <div style="font-size:12px;margin-top:6px;opacity:.7;">Esta área é reservada para usuários com perfil de execução de OS.</div>
+                    </div>
+
+                </div><!-- /osTabExecucao -->
+
+                <!-- Hidden fields for backward compat – keep osExecucaoArea/osAprovacaoArea as inert refs -->
+                <div id="osExecucaoArea" style="display:none;"></div>
+                <div id="osAprovacaoArea" class="os-aprovacao-area" style="display:none;"></div>
+
+            </div>
+            <div class="os-modal-footer">
+                <button class="os-btn-cancelar" onclick="osFecharModal()">Cancelar</button>
+                <button id="btnExcluirOS" class="os-btn-excluir" style="display:none;" onclick="osExcluir()">🗑️ Excluir</button>
+                <button class="os-btn-salvar" onclick="osSalvar()">💾 Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL VISUALIZAR OS ===== -->
+    <div id="modalOSView" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.55);align-items:center;justify-content:center;">
+        <div class="os-modal-box" style="max-width:680px;">
+            <div class="os-modal-header">
+                <div>
+                    <h3 id="osViewTitulo">Ordem de Serviço</h3>
+                    <div id="osViewNumero" style="font-size:11px;opacity:.6;margin-top:2px;"></div>
+                </div>
+                <button class="os-modal-close" onclick="document.getElementById('modalOSView').style.display='none'">✕</button>
+            </div>
+            <div class="os-modal-body" id="osViewBody"></div>
+            <div class="os-modal-footer">
+                <button class="os-btn-cancelar" onclick="document.getElementById('modalOSView').style.display='none'">Fechar</button>
+                <button class="os-btn-salvar" id="osViewBtnAprovar" style="display:none;" onclick="osAbrirModalAprovacao()">✅ Aprovar / Rejeitar</button>
+                <button class="os-btn-salvar" style="background:#27ae60;display:none;" id="osViewBtnExecutar" onclick="osEditarDaView()">🔧 Preencher Execução</button>
+                <button class="os-btn-salvar" style="background:#3498db;" id="osViewBtnEditar" onclick="osEditarDaView()">✏️ Editar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== ABA CONFIGURAÇÕES (agrupa: Parâmetros, Backup, Memória, Usuários, Alerta WhatsApp) ===== -->
     <div id="aba-configuracoes" class="tab-content">
         <div style="width:100%;padding:10px 0;">
@@ -6603,7 +7307,7 @@
     <div id="modalCadastroEMP" class="modal">
         <div class="modal-content" style="max-width:640px;">
             <div class="modal-header">
-                <h2 id="modalTituloEMP">📥 Registrar Entrada de Matéria Prima</h2>
+                <h2 id="modalTituloEMP">📥 Registrar Ent. Matéria Prima</h2>
                 <button class="close" onclick="fecharModalEMP()">&times;</button>
             </div>
             <div class="form-wrapper">
@@ -7493,6 +8197,9 @@ const PERMS_DISPONIVEIS = [
     { key: 'estoque_materiais',label: 'Materiais',                icon: '📦',  desc: 'Acessar e gerenciar estoque de materiais' },
     { key: 'equipamentos',     label: 'Equipamentos',             icon: '🔬',  desc: 'Acessar e gerenciar cadastro de equipamentos e calibrações' },
     { key: 'agenda',           label: 'Agenda',                   icon: '📅',  desc: 'Acessar a Agenda de Compromissos pessoal' },
+    { key: 'ordem_servico',    label: 'Ordem de Serviço',          icon: '🔧',  desc: 'Criar e acompanhar Ordens de Serviço' },
+    { key: 'os_aprovar',       label: 'Aprovar Ordem de Serviço',  icon: '✅',  desc: 'Aprovar ou rejeitar Ordens de Serviço (papel de gerente)' },
+    { key: 'os_executar',      label: 'Executar Ordem de Serviço', icon: '🔧',  desc: 'Definir prioridade, área (Mecânica/Elétrica/Operação), data de finalização e anexo textual das OS' },
     // ── Restrições específicas ──────────────────────────────────────────
     { key: 'somente_ver_nc',   label: 'Somente visualizar NC/Dev', icon: '👁️', desc: 'Impede criar/editar/excluir NC e Devoluções', restricao: true },
 ];
@@ -7780,6 +8487,10 @@ async function fazerLogin() {
             if (typeof _agendaInicializar === 'function') {
                 setTimeout(_agendaInicializar, 800);
             }
+            // ── Ordem de Serviço: carrega dados ──
+            if (typeof _osInicializar === 'function') {
+                setTimeout(_osInicializar, 1000);
+            }
         }).catch(() => sgqOcultarLoading());
 
     } catch(e) {
@@ -7890,6 +8601,13 @@ function aplicarPermissoes() {
     const tabAgenda = document.getElementById('tabAgenda');
     if (tabAgenda) tabAgenda.style.display = (isAdmin || perms.agenda) ? 'inline-block' : 'none';
 
+    // ── Ordem de Serviço ──
+    const podeOS = isAdmin || perms.ordem_servico;
+    const tabOS = document.getElementById('tabOrdemServico');
+    if (tabOS) tabOS.style.display = podeOS ? 'inline-block' : 'none';
+    const mobBtnOS = document.getElementById('mobBtnOrdemServico');
+    if (mobBtnOS) mobBtnOS.style.display = podeOS ? 'block' : 'none';
+
     // ── Mobile: mostrar/ocultar itens de menu ──
     const _mob = (id, visivel) => { const el = document.getElementById(id); if (el) el.style.display = visivel ? 'block' : 'none'; };
     // Lançamentos
@@ -7922,6 +8640,7 @@ function aplicarPermissoes() {
     // Equipamentos e Agenda
     _mob('mobBtnEquipamentos',  isAdmin || podeEquipamentos);
     _mob('mobBtnAgenda',        isAdmin || perms.agenda);
+    _mob('mobBtnOrdemServico',  isAdmin || perms.ordem_servico);
     // Configurações
     _mob('mobBtnConfiguracoes', isAdmin);
 
@@ -7956,6 +8675,7 @@ function aplicarPermissoes() {
     _cv('capaCardRelatorio',    isAdmin || podeRel);
     _cv('capaCardRelMP',        isAdmin || podeRel);
     _cv('capaCardEntradaMP',    isAdmin || podeEntradaMP);
+    _cv('capaCardOrdemServico', isAdmin || podeOS);
 
     // ✅ SEMPRE inicia na tela Início (capa) independente do perfil
     const tabCapaEl = document.getElementById('tabCapa');
@@ -8111,6 +8831,17 @@ function trocarAba(aba, btn) {
     if (aba === 'estoqueMateriais') { try { matCarregarDados(); } catch(e){} }
     if (aba === 'equipamentos') { try { eqCarregarDados(); } catch(e){} }
     if (aba === 'agenda') { try { _agendaCarregarEExibir(); } catch(e){} }
+    if (aba === 'ordemServico') {
+        // Bloqueia acesso se não tiver permissão
+        const _u = USUARIOS[usuarioAtual] || {};
+        let _p = _u.perms || {};
+        if (typeof _p === 'string') { try { _p = JSON.parse(_p); } catch(e) { _p = {}; } }
+        if (perfilAtual !== 'admin' && !_p.ordem_servico) {
+            sgqToast('⛔ Você não tem permissão para acessar Ordem de Serviço.', 'warning');
+            return;
+        }
+        try { _osCarregarEExibir(); } catch(e){}
+    }
 }
 
 // ── Preenche os filtros de data do mês atual (início e fim) para cada relatório ──
@@ -25501,6 +26232,922 @@ document.addEventListener('DOMContentLoaded', function() {
     // (login manual em fazerLogin() e login automático no DOMContentLoaded do sistema)
 
 })(); /* fim módulo agenda */
+</script>
+
+<script>
+// ============================================================
+// MÓDULO ORDEM DE SERVIÇO (OS)
+// ============================================================
+(function() {
+    'use strict';
+
+    let _listaOS = [];
+    let _osViewId = null;
+    const TABELA = 'ordens_servico';
+
+    // ── Helpers ──────────────────────────────────────────────
+    function _hoje() {
+        return new Date().toISOString().slice(0,10);
+    }
+    function _sbC() { return (typeof _sbClient !== 'undefined') ? _sbClient : null; }
+    function _isGerente() {
+        if (typeof perfilAtual === 'undefined') return false;
+        if (perfilAtual === 'admin') return true;
+        const u = (typeof USUARIOS !== 'undefined' && typeof usuarioAtual !== 'undefined')
+            ? (USUARIOS[usuarioAtual] || {}) : {};
+        let p = u.perms || {};
+        if (typeof p === 'string') { try { p = JSON.parse(p); } catch(e) { p = {}; } }
+        return !!p.os_aprovar;
+    }
+    function _calcDias(abertura, fechamento) {
+        if (!abertura) return 0;
+        const fim = fechamento ? new Date(fechamento) : new Date();
+        const ini = new Date(abertura);
+        return Math.max(0, Math.round((fim - ini) / 86400000));
+    }
+    function _fmtData(d) {
+        if (!d) return '—';
+        const [y,m,dia] = d.split('-');
+        return `${dia}/${m}/${y}`;
+    }
+    function _proximoNumero() {
+        if (!_listaOS.length) return 'OS-0001';
+        const maxSeq = _listaOS.reduce((mx, os) => {
+            const m = (os.numero||'').match(/OS-(\d+)/);
+            return m ? Math.max(mx, parseInt(m[1], 10)) : mx;
+        }, 0);
+        return 'OS-' + String(maxSeq + 1).padStart(4, '0');
+    }
+    function _statusClass(st) {
+        const m = { 'Aguardando Aprovação':'aguard','Aprovada':'aprovada','Em Execução':'exec','Concluída':'conc','Rejeitada':'rej' };
+        return m[st] || 'aguard';
+    }
+    function _statusEmoji(st) {
+        const m = { 'Aguardando Aprovação':'⏳','Aprovada':'✅','Em Execução':'🔨','Concluída':'✔','Rejeitada':'❌' };
+        return (m[st]||'❓') + ' ' + (st||'—');
+    }
+    function _prioClass(p) {
+        if (p === 'Urgente') return 'os-badge-prio-urgente';
+        if (p === 'Alta') return 'os-badge-prio-alta';
+        return 'os-badge-prio-normal';
+    }
+
+    // ── Supabase CRUD ─────────────────────────────────────────
+    async function _carregar() {
+        const sb = _sbC(); if (!sb) return;
+        try {
+            const { data, error } = await sb.from(TABELA).select('*').order('created_at', { ascending: false });
+            if (error) throw error;
+            _listaOS = data || [];
+        } catch(e) {
+            console.warn('OS: erro ao carregar', e.message);
+            _listaOS = JSON.parse(localStorage.getItem('sgq_os') || '[]');
+        }
+    }
+    async function _salvarBanco(obj) {
+        const sb = _sbC();
+        if (sb) {
+            try {
+                const { data, error } = await sb.from(TABELA).upsert(obj, { onConflict: 'id' }).select().single();
+                if (error) throw error;
+                return data;
+            } catch(e) { console.warn('OS: erro ao salvar no Supabase', e.message); }
+        }
+        // Fallback localStorage
+        const lista = JSON.parse(localStorage.getItem('sgq_os') || '[]');
+        const idx = lista.findIndex(x => x.id === obj.id);
+        if (idx >= 0) lista[idx] = obj; else lista.unshift(obj);
+        localStorage.setItem('sgq_os', JSON.stringify(lista));
+        return obj;
+    }
+    async function _excluirBanco(id) {
+        const sb = _sbC();
+        if (sb) {
+            try {
+                await sb.from(TABELA).delete().eq('id', id);
+            } catch(e) { console.warn('OS excluir:', e.message); }
+        }
+        const lista = JSON.parse(localStorage.getItem('sgq_os') || '[]');
+        localStorage.setItem('sgq_os', JSON.stringify(lista.filter(x => x.id !== id)));
+    }
+
+    // ── Inicialização ─────────────────────────────────────────
+    async function _iniciar() {
+        await _carregar();
+        osRenderizar();
+        osAtualizarKPIs();
+    }
+    window._osInicializar = _iniciar;
+    window._osCarregarEExibir = async function() {
+        await _carregar();
+        osRenderizar();
+        osAtualizarKPIs();
+    };
+
+    // ── KPIs ──────────────────────────────────────────────────
+    function osAtualizarKPIs() {
+        const total = _listaOS.length;
+        const aguard = _listaOS.filter(o => o.status === 'Aguardando Aprovação').length;
+        const aprov  = _listaOS.filter(o => o.status === 'Aprovada').length;
+        const exec   = _listaOS.filter(o => o.status === 'Em Execução').length;
+        const conc   = _listaOS.filter(o => o.status === 'Concluída').length;
+        const rej    = _listaOS.filter(o => o.status === 'Rejeitada').length;
+        const set = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
+        set('osKpiTotal', total); set('osKpiAguard', aguard);
+        set('osKpiAprov', aprov); set('osKpiExec', exec);
+        set('osKpiConc', conc);   set('osKpiRej', rej);
+        const badge = document.getElementById('osBadgeTotal');
+        if (badge) badge.textContent = total + ' OS';
+    }
+
+    // ── Renderizar lista ──────────────────────────────────────
+    let _osViewMode = 'tabela'; // 'cards' | 'tabela'
+
+    window.osToggleView = function() {
+        _osViewMode = _osViewMode === 'cards' ? 'tabela' : 'cards';
+        const btn = document.getElementById('osBtnToggleView');
+        if (btn) {
+            btn.textContent = _osViewMode === 'tabela' ? '▦ Tabela' : '☰ Cards';
+            btn.classList.toggle('ativo', _osViewMode === 'tabela');
+        }
+        osRenderizar();
+    };
+
+    window.osRenderizar = function() {
+        const lista = document.getElementById('osLista'); if (!lista) return;
+        const fStatus = (document.getElementById('osFiltroStatus')||{}).value || '';
+        const fSetor  = (document.getElementById('osFiltroSetor')||{}).value  || '';
+        const fTipo   = (document.getElementById('osFiltroTipo')||{}).value   || '';
+        const fTexto  = ((document.getElementById('osFiltroTexto')||{}).value || '').toLowerCase();
+
+        let dados = _listaOS.filter(o => {
+            if (fStatus && o.status !== fStatus) return false;
+            if (fSetor  && o.setor  !== fSetor)  return false;
+            if (fTipo   && o.tipo   !== fTipo)    return false;
+            if (fTexto  && !(
+                (o.titulo||'').toLowerCase().includes(fTexto) ||
+                (o.responsavel||'').toLowerCase().includes(fTexto)
+            )) return false;
+            return true;
+        });
+
+        osAtualizarKPIs();
+
+        if (!dados.length) {
+            lista.innerHTML = '<div class="os-empty"><div class="os-empty-icon">🔧</div><div>Nenhuma OS encontrada.</div></div>';
+            return;
+        }
+
+        if (_osViewMode === 'tabela') {
+            _osRenderTabela(lista, dados);
+        } else {
+            _osRenderCards(lista, dados);
+        }
+    };
+
+    function _osRenderCards(lista, dados) {
+        lista.innerHTML = dados.map(o => {
+            const dias = _calcDias(o.data_abertura, o.data_fechamento || null);
+            const diasLabel = o.data_fechamento
+                ? `⏱️ ${dias} dia(s) — Aberta: ${_fmtData(o.data_abertura)} → ${_fmtData(o.data_fechamento)}`
+                : `📅 Aberta: ${_fmtData(o.data_abertura)} • ${dias} dia(s) em aberto`;
+            const stCls = _statusClass(o.status);
+            const rejHtml = o.status === 'Rejeitada' && o.justificativa
+                ? `<div class="os-card-rejeicao">❌ Rejeição: ${o.justificativa}</div>` : '';
+            const canAprov = _isGerente() && (o.status === 'Aguardando Aprovação');
+            const aprovBtn = canAprov
+                ? `<button class="os-btn-acao os-btn-aprov" title="Aprovar/Rejeitar" onclick="osAbrirAprovacao('${o.id}')">✅</button>` : '';
+            return `<div class="os-card os-status-${stCls}">
+                <div class="os-card-info">
+                    <div class="os-card-top">
+                        <span class="os-card-numero">${o.numero||'—'}</span>
+                        <span class="os-status-badge ${stCls}">${_statusEmoji(o.status)}</span>
+                        <span class="os-badge ${_prioClass(o.prioridade)}">${o.prioridade||'Normal'}</span>
+                    </div>
+                    <div class="os-card-titulo">${o.titulo||'—'}</div>
+                    <div class="os-card-desc">${o.descricao||'—'}</div>
+                    <div class="os-card-meta">
+                        ${o.setor?`<span class="os-badge os-badge-setor">🏢 ${o.setor}</span>`:''}
+                        ${o.tipo?`<span class="os-badge os-badge-tipo">🔧 ${o.tipo}</span>`:''}
+                        ${o.area_manutencao?`<span class="os-badge" style="background:#eaf4fb;color:#1a5276;border:1px solid #aed6f1;font-weight:800;">${o.area_manutencao==='Mecânica'?'🔩':o.area_manutencao==='Elétrica'?'⚡':'🎛️'} ${o.area_manutencao}</span>`:''}
+                        ${o.responsavel?`<span class="os-badge os-badge-resp">👷 ${o.responsavel}</span>`:''}
+                        <span class="os-badge os-badge-dias">${diasLabel}</span>
+                        ${o.data_fechamento?`<span class="os-badge" style="background:#eafaf1;color:#1e8449;">✔ Finalizada: ${_fmtData(o.data_fechamento)}</span>`:''}
+                        ${o.criado_por?`<span class="os-badge" style="background:#f0f0f0;color:#888;">👤 Criada por: ${o.criado_por}</span>`:''}
+                        ${o.aprovado_por && o.status !== 'Rejeitada'?`<span class="os-badge" style="background:#eafaf1;color:#1e8449;border:1px solid #a9dfbf;">✅ Aprovado por: ${o.aprovado_por}</span>`:''}
+                        ${o.aprovado_por && o.status === 'Rejeitada'?`<span class="os-badge" style="background:#fdecea;color:#c0392b;border:1px solid #f1948a;">❌ Rejeitado por: ${o.aprovado_por}</span>`:''}
+                    </div>
+                    ${rejHtml}
+                </div>
+                <div class="os-card-acoes">
+                    <button class="os-btn-acao os-btn-ver" title="Visualizar" onclick="osVisualizar('${o.id}')">👁️</button>
+                    <button class="os-btn-acao os-btn-edit" title="Editar" onclick="osAbrirModal('${o.id}')">✏️</button>
+                    ${aprovBtn}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    const _corStatus = { 'Aguardando Aprovação':'#f39c12','Aprovada':'#27ae60','Em Execução':'#3498db','Concluída':'#8e44ad','Rejeitada':'#e74c3c' };
+
+    function _osRenderTabela(lista, dados) {
+        const canAprovGlobal = _isGerente();
+
+        const linhas = dados.map((o, idx) => {
+            // ✅ CORREÇÃO: respeita o status real salvo no banco; não deriva automaticamente de data_fechamento
+            const isConcluida = o.status === 'Concluída';
+            const statusEfetivo = o.status;
+
+            const dias      = _calcDias(o.data_abertura, isConcluida ? (o.data_fechamento || null) : null);
+            const corBarra  = _corStatus[statusEfetivo] || _corStatus[o.status] || '#bbb';
+
+            // ── Coluna APROVAÇÃO (apenas Aprovada ou Reprovada) ──
+            const aprovTxt = {
+                'Aprovada':   { txt: '✅ Aprovada',  cor: '#27ae60', bg: '#eafaf1' },
+                'Em Execução':{ txt: '✅ Aprovada',  cor: '#27ae60', bg: '#eafaf1' },
+                'Concluída':  { txt: '✅ Aprovada',  cor: '#27ae60', bg: '#eafaf1' },
+                'Rejeitada':  { txt: '❌ Reprovada', cor: '#e74c3c', bg: '#fdecea' },
+            }[o.status] || { txt: '—', cor: '#aaa', bg: '#f0f0f0' };
+
+            // ── Coluna STATUS (exibe o status real da OS) ──
+            const _mapStatus = {
+                'Concluída':           { txt: '✔ Concluída',     cor: '#8e44ad', bg: '#f5eeff' },
+                'Em Execução':         { txt: '🔨 Em Execução',   cor: '#3498db', bg: '#eaf4fb' },
+                'Aprovada':            { txt: '✅ Aprovada',      cor: '#27ae60', bg: '#eafaf1' },
+                'Aguardando Aprovação':{ txt: '⏳ Ag. Aprovação', cor: '#e67e22', bg: '#fef3e2' },
+                'Rejeitada':           { txt: '❌ Rejeitada',     cor: '#e74c3c', bg: '#fdecea' },
+            };
+            const concStatusTxt = _mapStatus[o.status] || { txt: '⏳ Pendente', cor: '#e67e22', bg: '#fef3e2' };
+
+            // ── Linha ativa ou desativada ──
+            const ativa = o.status === 'Aprovada' || o.status === 'Em Execução';
+            const rowStyle = ativa
+                ? (idx % 2 === 0 ? 'background:white;' : 'background:#f8f9fa;')
+                : (idx % 2 === 0 ? 'background:white;opacity:.45;filter:grayscale(.4);' : 'background:#f8f9fa;opacity:.45;filter:grayscale(.4);');
+
+            const dblClick = ativa ? `ondblclick="osAbrirModal('${o.id}')" title="Duplo clique para editar"` : `title="OS não ativa — aguardando aprovação"`;
+            const cursor   = ativa ? 'cursor:pointer;' : 'cursor:default;';
+
+            // ── Dias em aberto ──
+            const diasCor = isConcluida ? '#8e44ad' : (dias > 7 ? '#e74c3c' : '#e67e22');
+            const diasLabel = isConcluida ? `${dias}d` : `${dias}d em aberto`;
+
+            // ── Data de fechamento ──
+            const fechamentoCell = isConcluida
+                ? `<div style="font-size:11px;color:#27ae60;font-weight:700;white-space:nowrap;">${_fmtData(o.data_fechamento)}</div>${o.concluido_por ? `<div style="font-size:9px;color:#888;">${o.concluido_por}</div>` : ''}`
+                : `<span style="color:#ccc;font-size:11px;">—</span>`;
+
+            // ── Área ──
+            const areaCell = o.area_manutencao
+                ? `<span style="background:#eaf4fb;color:#1a5276;border-radius:10px;padding:2px 8px;font-weight:800;font-size:10px;">${o.area_manutencao==='Mecânica'?'🔩':o.area_manutencao==='Elétrica'?'⚡':'🎛️'} ${o.area_manutencao}</span>`
+                : '—';
+
+            return `<tr style="${rowStyle}${cursor}" ${dblClick}>
+                <td style="padding:8px 4px 8px 10px;width:5px;">
+                    <span class="os-tabela-barra-status" style="background:${corBarra};"></span>
+                </td>
+                <td class="os-td-numero" style="font-size:10px;text-align:center;">${o.numero||'—'}</td>
+                <td style="font-size:11px;white-space:nowrap;color:#666;text-align:center;">${_fmtData(o.data_abertura)}</td>
+                <td style="font-size:11px;text-align:center;">${fechamentoCell}</td>
+                <td style="text-align:center;">
+                    <div class="os-td-titulo" style="font-size:12px;text-align:center;">${o.titulo||'—'}</div>
+                </td>
+                <td style="font-size:11px;white-space:nowrap;text-align:center;">${o.setor||'—'}</td>
+                <td style="font-size:11px;white-space:nowrap;text-align:center;">${o.criado_por||"—"}</td>
+                <td style="text-align:center;">
+                    <span
+                        style="display:inline-block;background:${aprovTxt.bg};color:${aprovTxt.cor};border-radius:20px;padding:3px 10px;font-size:10px;font-weight:800;white-space:nowrap;-webkit-print-color-adjust:exact;${!isConcluida && canAprovGlobal ? 'cursor:pointer;text-decoration:underline dotted;' : ''}"
+                        ${!isConcluida && canAprovGlobal ? `onclick="event.stopPropagation();osPopupAprovacao('${o.id}',this)" title="Clique para aprovar ou reprovar"` : ''}
+                    >${aprovTxt.txt}</span>
+                </td>
+                <td style="font-size:11px;white-space:nowrap;text-align:center;">${o.responsavel||'—'}</td>
+                <td style="font-size:11px;white-space:nowrap;text-align:center;">${areaCell}</td>
+                <td style="font-size:11px;white-space:nowrap;color:${diasCor};font-weight:700;text-align:center;">${diasLabel}</td>
+                <td style="text-align:center;">
+                    <span style="display:inline-block;background:${concStatusTxt.bg};color:${concStatusTxt.cor};border-radius:20px;padding:3px 10px;font-size:10px;font-weight:800;white-space:nowrap;-webkit-print-color-adjust:exact;">
+                        ${concStatusTxt.txt}
+                    </span>
+                </td>
+            </tr>`;
+        }).join('');
+
+        lista.innerHTML = `<div class="os-tabela-wrap">
+            <table class="os-tabela">
+                <thead>
+                    <tr>
+                        <th style="width:5px;padding:10px 0;"></th>
+                        <th style="text-align:center;">Nº OS</th>
+                        <th style="text-align:center;">Abertura</th>
+                        <th style="text-align:center;">Fechamento</th>
+                        <th style="text-align:center;">Título</th>
+                        <th style="text-align:center;">Setor</th>
+                        <th style="text-align:center;">Criado por</th>
+                        <th style="text-align:center;">Aprovação</th>
+                        <th style="text-align:center;">Responsável</th>
+                        <th style="text-align:center;">Área</th>
+                        <th style="text-align:center;">Dias em Aberto</th>
+                        <th style="text-align:center;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>${linhas}</tbody>
+            </table>
+            <div style="font-size:10px;color:#aaa;padding:8px 12px;font-style:italic;">
+                💡 Duplo clique na linha para editar (somente OS aprovadas/em execução) · A data de fechamento conclui a OS automaticamente
+            </div>
+        </div>`;
+    }
+
+    // ── Modal Criar/Editar ────────────────────────────────────
+    // Verifica se o usuário logado é o responsável pela execução da OS
+    function _isResponsavelExecucao(os) {
+        // Admin sempre pode
+        if (typeof perfilAtual !== 'undefined' && perfilAtual === 'admin') return true;
+        // Usuário com permissão os_executar pode preencher os campos de execução
+        const u = (typeof USUARIOS !== 'undefined' && typeof usuarioAtual !== 'undefined')
+            ? (USUARIOS[usuarioAtual] || {}) : {};
+        let p = u.perms || {};
+        if (typeof p === 'string') { try { p = JSON.parse(p); } catch(e) { p = {}; } }
+        return !!p.os_executar;
+    }
+
+    window.osMudarAba = function(aba) {
+        // Botões
+        document.getElementById('osTabBtnAbertura').classList.toggle('ativo', aba==='abertura');
+        document.getElementById('osTabBtnAprovacao').classList.toggle('ativo', aba==='aprovacao');
+        document.getElementById('osTabBtnExecucao').classList.toggle('ativo', aba==='execucao');
+        // Painéis
+        document.getElementById('osTabAbertura').classList.toggle('ativo', aba==='abertura');
+        document.getElementById('osTabAprovacao').classList.toggle('ativo', aba==='aprovacao');
+        document.getElementById('osTabExecucao').classList.toggle('ativo', aba==='execucao');
+    };
+
+    window.osAbrirModal = function(id) {
+        const os = id ? _listaOS.find(x => String(x.id) === String(id)) : null;
+        document.getElementById('osEditId').value = os ? os.id : '';
+        document.getElementById('osTitulo').value = os ? (os.titulo||'') : '';
+        document.getElementById('osTipo').value = os ? (os.tipo||'') : '';
+        document.getElementById('osSetor').value = os ? (os.setor||'') : '';
+        document.getElementById('osResponsavel').value = os ? (os.responsavel||'') : '';
+        const _dataAbertura = os ? (os.data_abertura||_hoje()) : _hoje();
+        document.getElementById('osDataAbertura').value = _dataAbertura;
+        document.getElementById('osDescricao').value = os ? (os.descricao||'') : '';
+        document.getElementById('osObs').value = os ? (os.obs||'') : '';
+        document.getElementById('modalOSTitulo').textContent = os ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço';
+        document.getElementById('modalOSNumero').textContent = os ? os.numero : 'Novo registro';
+        document.getElementById('btnExcluirOS').style.display = os ? 'inline-block' : 'none';
+
+        // ── ABA EXECUÇÃO ──
+        const podeExecucao = _isResponsavelExecucao(os);
+        const execAreaTab = document.getElementById('osExecucaoAreaTab');
+        const execMsg     = document.getElementById('osExecucaoMsg');
+        if (podeExecucao) {
+            execAreaTab.style.display = 'flex';
+            execMsg.style.display = 'none';
+            document.getElementById('osAreaManutencao').value = os ? (os.area_manutencao || '') : '';
+            document.getElementById('osPrioridade').value = os ? (os.prioridade || 'Normal') : 'Normal';
+            document.getElementById('osDataFechamento').value = os ? (os.data_fechamento || '') : _dataAbertura;
+            const fcVis = document.getElementById('osDataEnceramentoVis');
+            if (fcVis) fcVis.value = os ? (os.data_fechamento || '') : _dataAbertura;
+            document.getElementById('osAnexoTextual').value = os ? (os.anexo_textual || '') : '';
+            // Preenche status restrito do executante (apenas Aguardando/Em Execução)
+            const stExecEl = document.getElementById('osStatusExecucao');
+            if (stExecEl) {
+                const stAtual = os ? (os.status || 'Aguardando Aprovação') : 'Aguardando Aprovação';
+                // ✅ CORREÇÃO: preserva "Em Execução" se já estava nesse status;
+                // se status atual é "Aprovada", inicia em "Aguardando Aprovação" (executante não pode regredir de Aprovada)
+                // mas nunca sobrescreve para Aguardando se já estava Em Execução
+                stExecEl.value = stAtual === 'Em Execução' ? 'Em Execução' : 'Aguardando Aprovação';
+            }
+        } else {
+            execAreaTab.style.display = 'none';
+            execMsg.style.display = 'block';
+        }
+        // mantém osExecucaoArea como proxy para osSalvar (compat)
+        document.getElementById('osExecucaoArea').style.display = podeExecucao ? 'block' : 'none';
+
+        // ── ABA APROVAÇÃO ──
+        const aprovAreaTab  = document.getElementById('osAprovacaoAreaTab');
+        const aprovMsg      = document.getElementById('osAprovacaoMsg');
+        const aprovNovaMsg  = document.getElementById('osAprovacaoNovaMsg');
+        const isGer = _isGerente();
+        if (isGer && os) {
+            aprovAreaTab.style.display = 'block';
+            aprovMsg.style.display = 'none';
+            aprovNovaMsg.style.display = 'none';
+            document.getElementById('osStatusAprovacao').value = os.status || 'Aguardando Aprovação';
+            document.getElementById('osJustificativa').value = os.justificativa || '';
+            osToggleJustificativa();
+        } else if (isGer && !os) {
+            aprovAreaTab.style.display = 'none';
+            aprovMsg.style.display = 'none';
+            aprovNovaMsg.style.display = 'block';
+        } else {
+            aprovAreaTab.style.display = 'none';
+            aprovMsg.style.display = 'block';
+            aprovNovaMsg.style.display = 'none';
+        }
+        // mantém osAprovacaoArea como proxy para osSalvar (compat)
+        document.getElementById('osAprovacaoArea').style.display = (isGer && os) ? 'block' : 'none';
+
+        osAtualizarContador();
+        osMudarAba('abertura'); // sempre abre na aba Abertura
+        document.getElementById('modalOS').style.display = 'flex';
+    };
+    window.osFecharModal = function() {
+        document.getElementById('modalOS').style.display = 'none';
+    };
+    window.osToggleJustificativa = function() {
+        const st = (document.getElementById('osStatusAprovacao')||{}).value;
+        const grp = document.getElementById('osJustificativaGrupo');
+        if (grp) grp.style.display = st === 'Rejeitada' ? 'block' : 'none';
+    };
+    window.osAtualizarContador = function() {
+        // Contador de "dias em aberto" removido do modal de abertura por solicitação
+        const el = document.getElementById('osContadorDias');
+        if (el) el.style.display = 'none';
+        // Sincroniza o campo visual de encerramento com osDataFechamento
+        const fcReal = document.getElementById('osDataFechamento');
+        const fcVis  = document.getElementById('osDataEnceramentoVis');
+        if (fcVis && fcReal) fcVis.value = fcReal.value;
+    };
+    window.osSincronizarEncerramento = function(val) {
+        // Atualiza o campo real de fechamento quando o usuário edita pelo campo da aba Abertura
+        const fcReal = document.getElementById('osDataFechamento');
+        if (fcReal) { fcReal.value = val; osAtualizarContador(); }
+    };
+    // Listeners de data
+    document.addEventListener('DOMContentLoaded', function() {
+        const abEl = document.getElementById('osDataAbertura');
+        const fcEl = document.getElementById('osDataFechamento');
+        const stEl = document.getElementById('osStatusAprovacao');
+        if (abEl) abEl.addEventListener('change', osAtualizarContador);
+        if (fcEl) fcEl.addEventListener('change', osAtualizarContador);
+        if (stEl) stEl.addEventListener('change', osToggleJustificativa);
+
+        // ✅ AUTO-SAVE: ao mudar status de execução de "Aguardando" para "Em Execução", salva automaticamente
+        const stExecEl = document.getElementById('osStatusExecucao');
+        if (stExecEl) {
+            stExecEl.addEventListener('change', async function() {
+                const novoVal = this.value;
+                const id = document.getElementById('osEditId').value;
+                if (!id) return; // só age em OS já existentes
+                if (novoVal !== 'Em Execução') return; // só dispara ao mudar para Em Execução
+                if (!_isResponsavelExecucao(_listaOS.find(x => String(x.id) === String(id)) || null)) return;
+
+                const osAtual = _listaOS.find(x => String(x.id) === String(id)) || {};
+                if (osAtual.status === 'Em Execução') return; // já está em execução, não faz nada
+
+                try {
+                    const osAtualizada = Object.assign({}, osAtual, { status: 'Em Execução' });
+                    const salvo = await _salvarBanco(osAtualizada);
+                    const idx = _listaOS.findIndex(x => String(x.id) === String(id));
+                    if (idx >= 0) _listaOS[idx] = salvo; else _listaOS.unshift(salvo);
+                    osRenderizar();
+                    sgqToast('🔨 Status atualizado para Em Execução!', 'success');
+                } catch(e) {
+                    sgqToast('❌ Erro ao atualizar status: ' + e.message, 'error');
+                    // Reverte o select para o valor anterior em caso de erro
+                    this.value = 'Aguardando Aprovação';
+                }
+            });
+        }
+    });
+
+    window.osSalvar = async function() {
+        const titulo = document.getElementById('osTitulo').value.trim();
+        const tipo   = document.getElementById('osTipo').value;
+        const setor  = document.getElementById('osSetor').value;
+        const resp   = document.getElementById('osResponsavel').value.trim();
+        const desc   = document.getElementById('osDescricao').value.trim();
+        if (!titulo || !tipo || !setor || !resp || !desc) {
+            sgqToast('Preencha todos os campos obrigatórios (*)','warning'); return;
+        }
+        const id = document.getElementById('osEditId').value;
+        const statusAprov = document.getElementById('osStatusAprovacao');
+        const justEl = document.getElementById('osJustificativa');
+
+        let novoStatus = 'Aguardando Aprovação';
+        let justificativa = '';
+        let aprovadoPor = '';
+        if (_isGerente() && id && statusAprov) {
+            novoStatus = statusAprov.value;
+            if (novoStatus === 'Rejeitada') {
+                justificativa = (justEl ? justEl.value.trim() : '');
+                if (!justificativa) { sgqToast('Informe a justificativa da rejeição.','warning'); return; }
+            }
+            aprovadoPor = typeof usuarioAtual !== 'undefined' ? usuarioAtual : '';
+        } else if (_isResponsavelExecucao(id ? (_listaOS.find(x=>String(x.id)===String(id))||null) : null)) {
+            // Executante pode mudar apenas entre Aguardando e Em Execução
+            const stExec = document.getElementById('osStatusExecucao');
+            if (stExec) novoStatus = stExec.value;
+        }
+
+        // ── Data de fechamento: quem abriu a OS preenche ──
+        const osAnterior = id ? (_listaOS.find(x=>String(x.id)===String(id))||{}) : {};
+        const novaDataFechamento = (document.getElementById('osExecucaoArea').style.display !== 'none')
+            ? (document.getElementById('osDataFechamento').value || null)
+            : (osAnterior.data_fechamento || null);
+
+        // Se data de fechamento foi preenchida agora (não existia antes), registra quem concluiu
+        const jaTinhaFechamento = !!(osAnterior.data_fechamento);
+        const agora_tem_fechamento = !!(novaDataFechamento);
+        let concluidoPor = osAnterior.concluido_por || null;
+        if (agora_tem_fechamento && !jaTinhaFechamento) {
+            // Quem abriu a OS registra a conclusão (criado_por ou usuário atual)
+            concluidoPor = osAnterior.criado_por || (typeof usuarioAtual !== 'undefined' ? usuarioAtual : '');
+        } else if (!agora_tem_fechamento) {
+            concluidoPor = null; // data removida, limpa conclusão
+        }
+
+        // Status automático: data de fechamento preenchida = Concluída
+        // ✅ CORREÇÃO: não sobrescreve se o usuário escolheu "Em Execução" explicitamente
+        if (agora_tem_fechamento && novoStatus !== 'Rejeitada' && novoStatus !== 'Em Execução') {
+            novoStatus = 'Concluída';
+        }
+
+        const osObj = {
+            id: id ? id : (Date.now() + '_' + Math.random().toString(36).slice(2)),
+            numero: id ? (osAnterior.numero || _proximoNumero()) : _proximoNumero(),
+            titulo,
+            tipo,
+            setor,
+            responsavel: resp,
+            prioridade: (document.getElementById('osPrioridade') && document.getElementById('osExecucaoArea').style.display !== 'none')
+                ? document.getElementById('osPrioridade').value
+                : (osAnterior.prioridade || 'Normal'),
+            area_manutencao: (document.getElementById('osExecucaoArea').style.display !== 'none')
+                ? (document.getElementById('osAreaManutencao').value || null)
+                : (osAnterior.area_manutencao || null),
+            data_abertura: document.getElementById('osDataAbertura').value,
+            data_fechamento: novaDataFechamento,
+            descricao: desc,
+            obs: document.getElementById('osObs').value.trim() || null,
+            anexo_textual: (document.getElementById('osExecucaoArea').style.display !== 'none')
+                ? (document.getElementById('osAnexoTextual').value.trim() || null)
+                : (osAnterior.anexo_textual || null),
+            status: novoStatus,
+            justificativa: justificativa || null,
+            aprovado_por: aprovadoPor || null,
+            concluido_por: concluidoPor,
+            criado_por: id ? (osAnterior.criado_por || (typeof usuarioAtual !== 'undefined' ? usuarioAtual : '')) : (typeof usuarioAtual !== 'undefined' ? usuarioAtual : ''),
+            created_at: id ? (osAnterior.created_at || new Date().toISOString()) : new Date().toISOString(),
+        };
+
+        try {
+            const salvo = await _salvarBanco(osObj);
+            if (id) {
+                const idx = _listaOS.findIndex(x => String(x.id) === String(id));
+                if (idx >= 0) _listaOS[idx] = salvo; else _listaOS.unshift(salvo);
+            } else {
+                _listaOS.unshift(salvo);
+            }
+            osFecharModal();
+            osRenderizar();
+            sgqToast(id ? '✅ OS atualizada!' : '✅ OS criada com sucesso!', 'success');
+
+            if (novoStatus === 'Aprovada')    sgqToast('✅ OS Aprovada pelo gerente!', 'success');
+            if (novoStatus === 'Rejeitada')   sgqToast('❌ OS Rejeitada: ' + justificativa, 'warning');
+            if (novoStatus === 'Em Execução') sgqToast('🔨 OS marcada como Em Execução!', 'success');
+            if (novoStatus === 'Concluída' && agora_tem_fechamento && !jaTinhaFechamento) sgqToast('✔ OS concluída automaticamente pela data de fechamento!', 'success');
+        } catch(e) {
+            sgqToast('❌ Erro ao salvar OS: ' + e.message, 'error');
+        }
+    };
+
+    window.osExcluir = async function() {
+        const id = document.getElementById('osEditId').value;
+        if (!id) return;
+        if (!confirm('Deseja excluir esta Ordem de Serviço?')) return;
+        await _excluirBanco(id);
+        _listaOS = _listaOS.filter(x => String(x.id) !== String(id));
+        osFecharModal();
+        osRenderizar();
+        sgqToast('🗑️ OS excluída.', 'success');
+    };
+
+    window.osLimparFiltros = function() {
+        ['osFiltroStatus','osFiltroSetor','osFiltroTipo'].forEach(id => {
+            const el = document.getElementById(id); if(el) el.selectedIndex = 0;
+        });
+        const t = document.getElementById('osFiltroTexto'); if(t) t.value = '';
+        osRenderizar();
+    };
+
+    // ── Visualizar OS ─────────────────────────────────────────
+    window.osVisualizar = function(id) {
+        const o = _listaOS.find(x => String(x.id) === String(id));
+        if (!o) return;
+        _osViewId = id;
+        document.getElementById('osViewTitulo').textContent = o.titulo || '—';
+        document.getElementById('osViewNumero').textContent = o.numero || '';
+
+        const dias = _calcDias(o.data_abertura, o.data_fechamento || null);
+        const diasTxt = o.data_fechamento
+            ? `⏱️ ${dias} dia(s) para finalizar`
+            : `📅 ${dias} dia(s) em aberto`;
+        const stCls = _statusClass(o.status);
+
+        const body = document.getElementById('osViewBody');
+        body.innerHTML = `
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+                <span class="os-status-badge ${stCls}" style="font-size:12px;">${_statusEmoji(o.status)}</span>
+                <span class="os-badge ${_prioClass(o.prioridade)}">${o.prioridade||'Normal'}</span>
+                <span class="os-badge os-badge-dias">${diasTxt}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+                <div><div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:3px;">Tipo de Serviço</div><div style="font-size:13px;font-weight:700;">${o.tipo||'—'}</div></div>
+                <div><div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:3px;">Setor</div><div style="font-size:13px;font-weight:700;">${o.setor||'—'}</div></div>
+                <div><div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:3px;">Responsável</div><div style="font-size:13px;font-weight:700;">${o.responsavel||'—'}</div></div>
+                <div><div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:3px;">Criada por</div><div style="font-size:13px;">${o.criado_por||'—'}</div></div>
+                <div><div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:3px;">Data de Abertura</div><div style="font-size:13px;">${_fmtData(o.data_abertura)}</div></div>
+                <div><div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:3px;">Data de Finalização</div><div style="font-size:13px;font-weight:${o.data_fechamento?'700':'400'};color:${o.data_fechamento?'#27ae60':'#aaa'};">${o.data_fechamento ? _fmtData(o.data_fechamento) + ` <span style="font-size:11px;background:#eafaf1;color:#1e8449;border-radius:10px;padding:2px 8px;">${dias} dia(s)</span>` : '—'}</div></div>
+            </div>
+            <div style="margin-bottom:12px;">
+                <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:5px;">Descrição</div>
+                <div style="font-size:13px;line-height:1.6;background:#f8f9fa;border-radius:6px;padding:12px;">${(o.descricao||'').replace(/\n/g,'<br>')}</div>
+            </div>
+            ${o.obs ? `<div style="margin-bottom:12px;">
+                <div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:5px;">Observações</div>
+                <div style="font-size:12px;line-height:1.5;background:#f8f9fa;border-radius:6px;padding:10px;font-style:italic;">${(o.obs||'').replace(/\n/g,'<br>')}</div>
+            </div>` : ''}
+            ${(o.area_manutencao || o.prioridade || o.anexo_textual) ? `
+            <div style="background:linear-gradient(135deg,#eaf4fb,#f0fff4);border:2px solid #27ae60;border-radius:10px;padding:14px 16px;margin-bottom:12px;">
+                <div style="font-size:10px;font-weight:800;color:#1a7a45;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">🔧 Dados do Responsável pela Execução</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:${o.anexo_textual?'12px':'0'};">
+                    <div><div style="font-size:10px;font-weight:700;color:#27ae60;text-transform:uppercase;margin-bottom:3px;">Área</div><div style="font-size:13px;font-weight:700;">${o.area_manutencao||'—'}</div></div>
+                    <div><div style="font-size:10px;font-weight:700;color:#27ae60;text-transform:uppercase;margin-bottom:3px;">Prioridade</div><div style="font-size:13px;font-weight:700;">${o.prioridade||'Normal'}</div></div>
+                    <div><div style="font-size:10px;font-weight:700;color:#27ae60;text-transform:uppercase;margin-bottom:3px;">Finalização Prevista</div><div style="font-size:13px;font-weight:700;">${o.data_fechamento ? _fmtData(o.data_fechamento) : '—'}</div></div>
+                </div>
+                ${o.anexo_textual ? `<div><div style="font-size:10px;font-weight:700;color:#27ae60;text-transform:uppercase;margin-bottom:5px;">📎 Anexo Textual</div><div style="font-size:12px;line-height:1.6;background:#ffffff;border:1px solid #a9dfbf;border-radius:6px;padding:10px;">${(o.anexo_textual||'').replace(/\n/g,'<br>')}</div></div>` : ''}
+            </div>` : ''}
+            ${o.status === 'Rejeitada' && o.justificativa ? `<div style="background:#fdecea;border-left:4px solid #e74c3c;border-radius:0 6px 6px 0;padding:10px 14px;margin-top:8px;">
+                <div style="font-size:10px;font-weight:800;color:#e74c3c;margin-bottom:4px;">❌ MOTIVO DA REJEIÇÃO</div>
+                <div style="font-size:12px;color:#c0392b;">${o.justificativa}</div>
+                ${o.aprovado_por?`<div style="font-size:10px;color:#aaa;margin-top:4px;">Gerente: ${o.aprovado_por}</div>`:''}
+            </div>` : ''}
+            ${o.status === 'Aprovada' && o.aprovado_por ? `<div style="background:#eafaf1;border-left:4px solid #27ae60;border-radius:0 6px 6px 0;padding:10px 14px;margin-top:8px;">
+                <div style="font-size:10px;font-weight:800;color:#27ae60;margin-bottom:2px;">✅ APROVADA</div>
+                <div style="font-size:11px;color:#1e8449;">Gerente: ${o.aprovado_por}</div>
+            </div>` : ''}
+        `;
+
+        const btnAprov = document.getElementById('osViewBtnAprovar');
+        if (btnAprov) btnAprov.style.display = (_isGerente() && o.status === 'Aguardando Aprovação') ? 'inline-block' : 'none';
+        // Botão "Preencher Execução" só para quem tem permissão os_executar
+        const btnExec = document.getElementById('osViewBtnExecutar');
+        if (btnExec) btnExec.style.display = _isResponsavelExecucao(o) ? 'inline-block' : 'none';
+
+        document.getElementById('modalOSView').style.display = 'flex';
+    };
+
+    window.osEditarDaView = function() {
+        document.getElementById('modalOSView').style.display = 'none';
+        if (_osViewId) osAbrirModal(_osViewId);
+    };
+    window.osAbrirModalAprovacao = function() {
+        document.getElementById('modalOSView').style.display = 'none';
+        if (_osViewId) osAbrirModal(_osViewId);
+    };
+
+    // ── Popup rápido Aprovar / Reprovar ──────────────────────
+    window.osPopupAprovacao = function(id, anchorEl) {
+        // Remove popup anterior se existir
+        const old = document.getElementById('osPopupAcao');
+        if (old) { old.remove(); if (old._osId === id) return; }
+
+        const o = _listaOS.find(x => String(x.id) === String(id));
+        if (!o) return;
+
+        const popup = document.createElement('div');
+        popup.id = 'osPopupAcao';
+        popup._osId = id;
+        popup.innerHTML = `
+            <div style="font-size:11px;font-weight:800;color:#555;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #eee;">
+                🔧 ${o.numero} — ${o.titulo}
+            </div>
+            <button id="osPopupBtnAprovar" style="width:100%;margin-bottom:8px;padding:10px;border:none;border-radius:8px;background:linear-gradient(135deg,#27ae60,#2ecc71);color:white;font-size:12px;font-weight:800;cursor:pointer;text-align:left;">
+                ✅ Aprovada
+            </button>
+            <button id="osPopupBtnReprovar" style="width:100%;margin-bottom:10px;padding:10px;border:none;border-radius:8px;background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;font-size:12px;font-weight:800;cursor:pointer;text-align:left;">
+                ❌ Reprovada
+            </button>
+            <div id="osPopupJustArea" style="display:none;">
+                <textarea id="osPopupJust" placeholder="Motivo da reprovação (obrigatório)..." rows="3"
+                    style="width:100%;border:1.5px solid #e74c3c;border-radius:6px;padding:8px;font-size:12px;resize:none;font-family:inherit;box-sizing:border-box;"></textarea>
+                <button id="osPopupBtnConfReprovar" style="width:100%;margin-top:6px;padding:9px;border:none;border-radius:8px;background:#e74c3c;color:white;font-size:12px;font-weight:800;cursor:pointer;">
+                    Confirmar Reprovação
+                </button>
+            </div>`;
+
+        Object.assign(popup.style, {
+            position: 'fixed', zIndex: '9900',
+            background: 'white', borderRadius: '12px',
+            boxShadow: '0 12px 40px rgba(0,0,0,.25)',
+            padding: '16px', width: '260px',
+            border: '1px solid #e0e0e0',
+        });
+
+        // Posiciona próximo ao elemento clicado
+        document.body.appendChild(popup);
+        const rect = anchorEl.getBoundingClientRect();
+        const top  = Math.min(rect.bottom + 6, window.innerHeight - popup.offsetHeight - 12);
+        const left = Math.min(rect.left, window.innerWidth - 276);
+        popup.style.top  = top  + 'px';
+        popup.style.left = left + 'px';
+
+        async function _aplicar(novoStatus, justificativa) {
+            popup.remove();
+            const os = _listaOS.find(x => String(x.id) === String(id));
+            if (!os) return;
+            os.status       = novoStatus;
+            os.aprovado_por = typeof usuarioAtual !== 'undefined' ? usuarioAtual : '';
+            if (justificativa) os.justificativa = justificativa;
+            if (novoStatus === 'Concluída' && !os.data_fechamento) {
+                os.data_fechamento = new Date().toISOString().slice(0,10);
+            }
+            await _salvarBanco(os);
+            osRenderizar();
+            const msgs = { 'Aprovada':'✅ OS Aprovada!', 'Em Execução':'🔨 OS em Execução!', 'Concluída':'✔ OS Concluída!', 'Rejeitada':'❌ OS Reprovada.' };
+            sgqToast(msgs[novoStatus] || 'OS atualizada.', novoStatus === 'Rejeitada' ? 'warning' : 'success');
+        }
+
+        popup.querySelector('#osPopupBtnAprovar').onclick  = () => _aplicar('Aprovada');
+        popup.querySelector('#osPopupBtnReprovar').onclick = () => {
+            popup.querySelector('#osPopupJustArea').style.display = 'block';
+            popup.querySelector('#osPopupBtnReprovar').style.display = 'none';
+        };
+        popup.querySelector('#osPopupBtnConfReprovar').onclick = () => {
+            const just = popup.querySelector('#osPopupJust').value.trim();
+            if (!just) { popup.querySelector('#osPopupJust').style.borderColor='#e74c3c'; popup.querySelector('#osPopupJust').focus(); return; }
+            _aplicar('Rejeitada', just);
+        };
+
+        // Fecha ao clicar fora
+        setTimeout(() => {
+            document.addEventListener('click', function _fora(e) {
+                if (!popup.contains(e.target)) { popup.remove(); document.removeEventListener('click', _fora); }
+            });
+        }, 50);
+    };
+
+    // ── Aprovação rápida direto do card ──────────────────────
+    window.osAbrirAprovacao = function(id) {
+        osAbrirModal(id);
+    };
+
+    // ── Impressão de OS ───────────────────────────────────────
+    window.imprimirOS = function(modo) {
+        const agora = new Date();
+        const mesAtual = agora.getMonth();
+        const anoAtual = agora.getFullYear();
+
+        let lista, titulo, subtitulo;
+
+        if (modo === 'mes') {
+            lista = _listaOS.filter(o => {
+                if (!o.data_abertura) return false;
+                const d = new Date(o.data_abertura + 'T00:00:00');
+                return d.getMonth() === mesAtual && d.getFullYear() === anoAtual;
+            });
+            const nomeMes = agora.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+            titulo    = 'ORDENS DE SERVIÇO — ' + nomeMes.toUpperCase();
+            subtitulo = 'Todas as OS abertas no mês de ' + nomeMes;
+        } else {
+            lista = _listaOS.filter(o =>
+                o.status === 'Aguardando Aprovação' || o.status === 'Aprovada' || o.status === 'Em Execução'
+            );
+            titulo    = 'ORDENS DE SERVIÇO — PENDENTES';
+            subtitulo = 'OS aguardando aprovação, aprovadas ou em execução';
+        }
+
+        if (!lista.length) {
+            sgqToast('Nenhuma OS encontrada para impressão.', 'warning');
+            return;
+        }
+
+        // Agrupa por status para o relatório
+        const grupos = [
+            { label: '⏳ Aguardando Aprovação', cls: '#f39c12', bg: '#fef3e2', items: lista.filter(o => o.status === 'Aguardando Aprovação') },
+            { label: '✅ Aprovadas',             cls: '#27ae60', bg: '#eafaf1', items: lista.filter(o => o.status === 'Aprovada') },
+            { label: '🔨 Em Execução',           cls: '#3498db', bg: '#eaf4fb', items: lista.filter(o => o.status === 'Em Execução') },
+            { label: '✔ Concluídas',             cls: '#8e44ad', bg: '#f5eeff', items: lista.filter(o => o.status === 'Concluída') },
+            { label: '❌ Rejeitadas',            cls: '#e74c3c', bg: '#fdecea', items: lista.filter(o => o.status === 'Rejeitada') },
+        ].filter(g => g.items.length > 0);
+
+        // KPI resumo
+        const totalOS    = lista.length;
+        const concluidas = lista.filter(o => o.status === 'Concluída').length;
+        const pendentes  = lista.filter(o => ['Aguardando Aprovação','Aprovada','Em Execução'].includes(o.status)).length;
+        const rejeitadas = lista.filter(o => o.status === 'Rejeitada').length;
+
+        const dataEmissao = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+
+        const kpiHtml = `
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0 24px;">
+            <div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:14px;text-align:center;border-top:4px solid #2c3e50;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+                <div style="font-size:26px;font-weight:900;color:#2c3e50;">${totalOS}</div>
+                <div style="font-size:10px;color:#888;text-transform:uppercase;font-weight:700;margin-top:2px;">Total</div>
+            </div>
+            <div style="background:#eafaf1;border:1px solid #a9dfbf;border-radius:8px;padding:14px;text-align:center;border-top:4px solid #27ae60;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+                <div style="font-size:26px;font-weight:900;color:#27ae60;">${concluidas}</div>
+                <div style="font-size:10px;color:#1a8a4a;text-transform:uppercase;font-weight:700;margin-top:2px;">Concluídas</div>
+            </div>
+            <div style="background:#fef3e2;border:1px solid #f5cba7;border-radius:8px;padding:14px;text-align:center;border-top:4px solid #e67e22;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+                <div style="font-size:26px;font-weight:900;color:#e67e22;">${pendentes}</div>
+                <div style="font-size:10px;color:#935116;text-transform:uppercase;font-weight:700;margin-top:2px;">Pendentes</div>
+            </div>
+            <div style="background:#fdecea;border:1px solid #f1948a;border-radius:8px;padding:14px;text-align:center;border-top:4px solid #e74c3c;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+                <div style="font-size:26px;font-weight:900;color:#e74c3c;">${rejeitadas}</div>
+                <div style="font-size:10px;color:#922b21;text-transform:uppercase;font-weight:700;margin-top:2px;">Rejeitadas</div>
+            </div>
+        </div>`;
+
+        const gruposHtml = grupos.map(g => {
+            const linhas = g.items.map((o, idx) => {
+                const dias = _calcDias(o.data_abertura, o.data_fechamento || null);
+                const diasLabel = o.data_fechamento
+                    ? `${dias} dia(s) — finalizada em ${_fmtData(o.data_fechamento)}`
+                    : `${dias} dia(s) em aberto`;
+                const rejRow = o.justificativa
+                    ? `<tr><td colspan="7" style="background:#fdecea;color:#c0392b;font-style:italic;font-size:9px;padding:4px 8px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">❌ Rejeição: ${o.justificativa}</td></tr>`
+                    : '';
+                return `
+                <tr style="background:${idx%2===0?'#ffffff':'#f9f9f9'};-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+                    <td style="padding:6px 8px;font-family:monospace;font-size:9px;color:#666;">${o.numero||'—'}</td>
+                    <td style="padding:6px 8px;font-weight:700;font-size:10px;">${o.titulo||'—'}</td>
+                    <td style="padding:6px 8px;font-size:9px;">${o.setor||'—'}</td>
+                    <td style="padding:6px 8px;font-size:9px;">${o.tipo||'—'}</td>
+                    <td style="padding:6px 8px;font-size:9px;">${o.responsavel||'—'}</td>
+                    <td style="padding:6px 8px;font-size:9px;text-align:center;">${_fmtData(o.data_abertura)}</td>
+                    <td style="padding:6px 8px;font-size:9px;text-align:center;font-weight:700;color:${o.data_fechamento?'#1e8449':'#935116'};">${diasLabel}</td>
+                </tr>${rejRow}`;
+            }).join('');
+
+            return `
+            <div style="margin-bottom:24px;page-break-inside:avoid;">
+                <div style="background:${g.cls};color:white;padding:8px 14px;font-size:11px;font-weight:800;text-transform:uppercase;border-radius:6px 6px 0 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+                    ${g.label} &nbsp;(${g.items.length})
+                </div>
+                <table style="width:100%;border-collapse:collapse;font-size:10px;">
+                    <thead>
+                        <tr style="background:#34495e;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+                            <th style="padding:6px 8px;color:white;text-align:left;font-size:9px;">Nº OS</th>
+                            <th style="padding:6px 8px;color:white;text-align:left;font-size:9px;">Título</th>
+                            <th style="padding:6px 8px;color:white;text-align:left;font-size:9px;">Setor</th>
+                            <th style="padding:6px 8px;color:white;text-align:left;font-size:9px;">Tipo</th>
+                            <th style="padding:6px 8px;color:white;text-align:left;font-size:9px;">Responsável</th>
+                            <th style="padding:6px 8px;color:white;text-align:center;font-size:9px;">Abertura</th>
+                            <th style="padding:6px 8px;color:white;text-align:center;font-size:9px;">Duração</th>
+                        </tr>
+                    </thead>
+                    <tbody>${linhas}</tbody>
+                </table>
+            </div>`;
+        }).join('');
+
+        const conteudoHTML = `
+        <div style="padding:24px 28px;font-family:Arial,sans-serif;background:white;">
+            <div style="text-align:center;border-bottom:3px solid #2c3e50;padding-bottom:16px;margin-bottom:8px;">
+                <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Relatório gerado em ${dataEmissao}</div>
+                <div style="font-size:20px;font-weight:900;color:#2c3e50;text-transform:uppercase;letter-spacing:.5px;">${titulo}</div>
+                <div style="font-size:11px;color:#666;margin-top:4px;">${subtitulo}</div>
+            </div>
+            ${kpiHtml}
+            ${gruposHtml}
+            <div style="text-align:center;font-size:9px;color:#bbb;margin-top:20px;padding-top:10px;border-top:1px solid #eee;">
+                Documento gerado automaticamente pelo Sistema SGQ
+            </div>
+        </div>`;
+
+        const janela = window.open('', '_blank', 'width=960,height=750');
+        janela.document.write(`<!DOCTYPE html><html lang="pt-BR"><head>
+            <meta charset="UTF-8"><title>${titulo}</title>
+            <style>
+                *{margin:0;padding:0;box-sizing:border-box;}
+                body{background:#ccc;font-family:Arial,sans-serif;}
+                @page{size:A4 portrait;margin:12mm 10mm;}
+                @media print{
+                    html,body{background:white;margin:0;}
+                    *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+                    .no-print{display:none!important;}
+                }
+                .print-page{background:white;max-width:794px;margin:20px auto;box-shadow:0 4px 20px rgba(0,0,0,.2);}
+                .no-print{text-align:center;padding:14px;background:#2c3e50;}
+                .no-print button{background:#27ae60;color:white;border:none;border-radius:6px;padding:10px 28px;font-size:13px;font-weight:700;cursor:pointer;margin:0 6px;}
+                .no-print button.fechar{background:#e74c3c;}
+            </style>
+        </head><body>
+            <div class="no-print">
+                <button onclick="window.print()">🖨️ IMPRIMIR / SALVAR PDF</button>
+                <button class="fechar" onclick="window.close()">✕ Fechar</button>
+            </div>
+            <div class="print-page">${conteudoHTML}</div>
+        </body></html>`);
+        janela.document.close();
+        setTimeout(() => janela.focus(), 300);
+    };
+
+})(); /* fim módulo OS */
 </script>
 
 </body>
