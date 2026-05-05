@@ -8527,14 +8527,14 @@ function aplicarPermissoes() {
     if (_tabClass) _tabClass.style.display = podeCadastro ? 'inline-block' : 'none';
     if (_tabMP)    _tabMP.style.display    = podeCadastro ? 'inline-block' : 'none';
 
-    // Dropdown pai "Lançamentos" — só aparece se tiver ao menos uma aba filha visível
-    const ndLancamentos = document.getElementById('ndLancamentos');
-    if (ndLancamentos) ndLancamentos.style.display = podeCadastro ? 'inline-flex' : 'none';
-
-    // Aba Entrada de Matéria Prima
+    // Aba Entrada de Matéria Prima (declarada antes do dropdown pai para uso na condição)
     const podeEntradaMP = isAdmin || perms.entrada_mp;
     const tabEMP = document.getElementById('tabEntradaMP');
     if (tabEMP) tabEMP.style.display = podeEntradaMP ? 'inline-block' : 'none';
+
+    // Dropdown pai "Lançamentos" — aparece se tiver ao menos uma aba filha visível
+    const ndLancamentos = document.getElementById('ndLancamentos');
+    if (ndLancamentos) ndLancamentos.style.display = (podeCadastro || podeEntradaMP) ? 'inline-flex' : 'none';
     // Botão de registrar entrada
     const btnEMP = document.getElementById('btnCadastroEMP');
     if (btnEMP) btnEMP.style.display = podeEntradaMP ? 'inline-block' : 'none';
