@@ -11665,14 +11665,31 @@ function aplicarFiltrosRanking() {
     const totalReg = base.length;
     const totalConf = base.filter(r => { const s=statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data); return !s.includes('NÃO') && !s.includes('>NC<'); }).length;
 
-    // Só mostra "ATENÇÃO" se houver mais de 1 fornecedor E o pior for diferente do melhor
+    // Só mostra "ATENÇÃO" se houver mais de 1 fornecedor, o pior for diferente do melhor
+    // E o pior fornecedor estiver realmente FORA do limite cadastrado para o critério
     const mostrarPior = stats.length > 1 && pior && melhor && pior.fornecedor !== melhor.fornecedor;
+
+    // Verifica se o pior fornecedor está fora do limite configurado para o critério atual
+    const piorForaDoLimite = (() => {
+        if (!pior) return false;
+        if (criterio === 'avariados') {
+            // avForaDeLimite já foi calculado em calcStats com base nos limites reais por produto
+            return pior.avForaDeLimite === true;
+        }
+        // Para outros critérios, verifica campo a campo
+        if (pior.campoFora && pior.campoFora[criterio] === true) return true;
+        // Fallback: compara média com limite do produto dominante
+        const pk = (pior.produtoDominante || '').replace(/ /g, '_');
+        const cfg = pk ? getParam('class', pk, criterio, null) : null;
+        if (cfg && cfg.ativo && cfg.max < 9999) return pior.media > cfg.max;
+        return false;
+    })();
 
     const cardsBase = [
         { icon:'🏆', label:'MELHOR FORNECEDOR',  value: melhor ? melhor.fornecedor : '-',      sub: melhor ? getRkNome(criterio)+': '+melhor.media.toFixed(2)+'%' : '', cor:'#27ae60' },
-        mostrarPior
+        (mostrarPior && piorForaDoLimite)
             ? { icon:'⚠️', label:'ATENÇÃO', value: pior.fornecedor, sub: getRkNome(criterio)+': '+pior.media.toFixed(2)+'%', cor:'#e74c3c' }
-            : { icon:'✅', label:'ÚNICO FORNECEDOR', value: melhor ? melhor.fornecedor : '-', sub: 'Apenas 1 fornecedor no período', cor:'#27ae60' },
+            : { icon:'✅', label:'TODOS DENTRO DO LIMITE', value: melhor ? melhor.fornecedor : '-', sub: stats.length > 1 ? 'Todos fornecedores dentro do limite' : 'Apenas 1 fornecedor no período', cor:'#27ae60' },
         { icon:'🏢', label:'FORNECEDORES',        value: stats.length,                          sub: 'avaliados no período',    cor:'#3498db' },
         { icon:'✅', label:'CONFORMIDADE GERAL',  value: totalReg ? (totalConf/totalReg*100).toFixed(1)+'%' : '-', sub: totalConf+' de '+totalReg+' registros OK', cor: totalConf===totalReg?'#27ae60':'#e67e22' },
     ];
@@ -14488,21 +14505,15 @@ window.corrigirDPGForcar = corrigirDPGForcar;
 
 function getParam(modulo, racaKey, campo, dataRegistro) {
     const snap = getSnapshotVigente(modulo, racaKey, dataRegistro);
-    // Se há snapshot salvo para esta ração/produto mas o campo não está nele,
-    // significa que o usuário configurou os parâmetros e esse campo estava inativo.
-    // Nesse caso NÃO usa o default (que pode ter ativo:true), retorna inativo.
+    // Se há snapshot salvo para este produto/ração, usa exclusivamente ele
     if (snap && snap.campos) {
         const cfg = snap.campos[campo];
+        // Campo não cadastrado no snapshot → inativo, sem limite
         if (!cfg) return { min: 0, max: 9999, ativo: false };
         return cfg;
     }
-    // Sem snapshot algum → usa defaults
-    const cfg = getParamDefault(modulo, campo, racaKey);
-    // Proteção: se não há snapshot salvo pelo usuário E max=0 E min=0, trata como 9999 (padrão vazio)
-    if (cfg && cfg.ativo && cfg.max === 0 && cfg.min === 0) {
-        return { ...cfg, max: 9999 };
-    }
-    return cfg;
+    // Sem cadastro no Supabase → NÃO usa defaults do código, retorna inativo/sem limite
+    return { min: 0, max: 9999, ativo: false };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
