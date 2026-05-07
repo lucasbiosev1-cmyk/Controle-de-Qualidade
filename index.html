@@ -26601,7 +26601,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const _dataAbertura = os ? (os.data_abertura||_hoje()) : _hoje();
         document.getElementById('osDataAbertura').value = _dataAbertura;
         document.getElementById('osDescricao').value = os ? (os.descricao||'') : '';
-        document.getElementById('osObs').value = os ? (os.obs||'') : '';
+        const _osObsEl = document.getElementById('osObs');
+        if (_osObsEl) _osObsEl.value = os ? (os.obs||'') : '';
         document.getElementById('modalOSTitulo').textContent = os ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço';
         document.getElementById('modalOSNumero').textContent = os ? os.numero : 'Novo registro';
         document.getElementById('btnExcluirOS').style.display = os ? 'inline-block' : 'none';
