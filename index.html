@@ -3077,7 +3077,7 @@
         .os-kpi-card.os-kpi-rej    { border-color:#e74c3c; }
         .os-kpi-valor { font-size:24px; font-weight:900; color:#2c3e50; }
         html[data-theme="dark"] .os-kpi-valor { color:#e6edf3; }
-        .os-kpi-label { font-size:10px; font-weight:700; color:#aaa; text-transform:uppercase; margin-top:2px; }
+        .os-kpi-label { font-size:9px; font-weight:700; color:#aaa; text-transform:uppercase; margin-top:2px; text-align:center; line-height:1.3; letter-spacing:0.3px; }
 
         /* Filtros */
         .os-filtros {
@@ -3114,7 +3114,7 @@
         html[data-theme="dark"] .os-card { background:#161b22; box-shadow:0 2px 8px rgba(0,0,0,.3); }
         .os-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.12); }
         .os-card.os-status-aguard  { border-color:#f39c12; }
-        .os-card.os-status-aprovada { border-color:#27ae60; }
+        .os-card.os-status-aprovada { border-color:#f0c040; }
         .os-card.os-status-exec    { border-color:#3498db; }
         .os-card.os-status-conc    { border-color:#8e44ad; }
         .os-card.os-status-rej     { border-color:#e74c3c; opacity:.7; }
@@ -3148,7 +3148,7 @@
             border-radius:20px; text-transform:uppercase; letter-spacing:.5px;
         }
         .os-status-badge.aguard  { background:#fef3e2; color:#e67e22; border:1px solid #f5cba7; }
-        .os-status-badge.aprovada { background:#eafaf1; color:#27ae60; border:1px solid #a9dfbf; }
+        .os-status-badge.aprovada { background:#fef9e7; color:#d4a017; border:1px solid #f7dc6f; }
         .os-status-badge.exec    { background:#eaf4fb; color:#2980b9; border:1px solid #aed6f1; }
         .os-status-badge.conc    { background:#f5eeff; color:#8e44ad; border:1px solid #d2b4de; }
         .os-status-badge.rej     { background:#fdecea; color:#e74c3c; border:1px solid #f1948a; }
@@ -3158,7 +3158,7 @@
         html[data-theme="dark"] .os-badge-resp    { background:#0a2a1a; color:#3fb950; }
         html[data-theme="dark"] .os-badge-dias    { background:#2e1a08; color:#e67e22; }
         html[data-theme="dark"] .os-status-badge.aguard  { background:#2e1a08; color:#e67e22; border-color:#935116; }
-        html[data-theme="dark"] .os-status-badge.aprovada { background:#0a2a1a; color:#3fb950; border-color:#196932; }
+        html[data-theme="dark"] .os-status-badge.aprovada { background:#2e2600; color:#f0c040; border-color:#8a7200; }
         html[data-theme="dark"] .os-status-badge.exec    { background:#0d2137; color:#58a6ff; border-color:#1a3a5e; }
         html[data-theme="dark"] .os-status-badge.conc    { background:#1e0f2e; color:#bc8cff; border-color:#5b2c6f; }
         html[data-theme="dark"] .os-status-badge.rej     { background:#2e0d0d; color:#f85149; border-color:#7b241c; }
@@ -6082,27 +6082,27 @@
             <div class="os-kpis" id="osKpis">
                 <div class="os-kpi-card">
                     <div class="os-kpi-valor" id="osKpiTotal">0</div>
-                    <div class="os-kpi-label">Total</div>
+                    <div class="os-kpi-label">TOTAL</div>
                 </div>
                 <div class="os-kpi-card os-kpi-aguard">
                     <div class="os-kpi-valor" id="osKpiAguard">0</div>
-                    <div class="os-kpi-label">Aguardando</div>
+                    <div class="os-kpi-label">AGUARDANDO APROVAÇÃO</div>
                 </div>
                 <div class="os-kpi-card os-kpi-aprov">
                     <div class="os-kpi-valor" id="osKpiAprov">0</div>
-                    <div class="os-kpi-label">Ag. Execução</div>
+                    <div class="os-kpi-label">AGUARDANDO EXECUÇÃO</div>
                 </div>
                 <div class="os-kpi-card os-kpi-exec">
                     <div class="os-kpi-valor" id="osKpiExec">0</div>
-                    <div class="os-kpi-label">Em Execução</div>
+                    <div class="os-kpi-label">EM EXECUÇÃO</div>
                 </div>
                 <div class="os-kpi-card os-kpi-conc">
                     <div class="os-kpi-valor" id="osKpiConc">0</div>
-                    <div class="os-kpi-label">Concluídas</div>
+                    <div class="os-kpi-label">CONCLUÍDAS</div>
                 </div>
                 <div class="os-kpi-card os-kpi-rej">
                     <div class="os-kpi-valor" id="osKpiRej">0</div>
-                    <div class="os-kpi-label">Rejeitadas</div>
+                    <div class="os-kpi-label">REJEITADAS</div>
                 </div>
             </div>
 
@@ -6273,11 +6273,11 @@
                                 <div class="os-form-group">
                                     <label>Status da Aprovação</label>
                                     <select id="osStatusAprovacao" onchange="osToggleJustificativa()">
-                                        <option value="Aguardando Aprovação">⏳ Aguardando Aprovação</option>
-                                        <option value="Aprovada">✅ Aprovar</option>
+                                        <option value="Aguardando Aprovação">⏳ Pendente (Aguardando Aprovação)</option>
+                                        <option value="Aguardando Execução">✅ Aprovar (Liberar para Execução)</option>
                                         <option value="Em Execução">🔨 Colocar em Execução</option>
                                         <option value="Concluída">✔ Concluída</option>
-                                        <option value="Rejeitada">❌ Rejeitar</option>
+                                        <option value="Rejeitada">❌ Reprovar</option>
                                     </select>
                                 </div>
                             </div>
@@ -6344,7 +6344,7 @@
                         <div class="os-form-group">
                             <label>Status da Execução</label>
                             <select id="osStatusExecucao" style="font-weight:700;">
-                                <option value="Aguardando Aprovação">⏳ Aguardando</option>
+                                <option value="Aguardando Execução">🟡 Aguardando Execução</option>
                                 <option value="Em Execução">🔨 Em Execução</option>
                             </select>
                             <div style="font-size:11px;color:#8b949e;margin-top:4px;">⚠️ O status <strong>Concluído</strong> é definido automaticamente quando quem abriu a OS preencher a Data de Encerramento.</div>
@@ -26458,7 +26458,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }).join('');
     }
 
-    const _corStatus = { 'Aguardando Aprovação':'#f39c12','Aguardando Execução':'#27ae60','Em Execução':'#3498db','Concluída':'#8e44ad','Rejeitada':'#e74c3c' };
+    const _corStatus = { 'Aguardando Aprovação':'#f39c12','Aguardando Execução':'#d4a017','Em Execução':'#3498db','Concluída':'#8e44ad','Rejeitada':'#e74c3c' };
 
     function _osRenderTabela(lista, dados) {
         const canAprovGlobal = _isGerente();
@@ -26471,32 +26471,38 @@ document.addEventListener('DOMContentLoaded', function() {
             const dias      = _calcDias(o.data_abertura, isConcluida ? (o.data_fechamento || null) : null);
             const corBarra  = _corStatus[statusEfetivo] || _corStatus[o.status] || '#bbb';
 
-            // ── Coluna APROVAÇÃO (apenas Aprovada ou Reprovada) ──
-            const aprovTxt = {
-                'Aguardando Execução':   { txt: '✅ Ag. Execução',  cor: '#27ae60', bg: '#eafaf1' },
-                'Em Execução':{ txt: '✅ Ag. Execução',  cor: '#27ae60', bg: '#eafaf1' },
-                'Concluída':  { txt: '✅ Ag. Execução',  cor: '#27ae60', bg: '#eafaf1' },
-                'Rejeitada':  { txt: '❌ Reprovada', cor: '#e74c3c', bg: '#fdecea' },
-            }[o.status] || { txt: '—', cor: '#aaa', bg: '#f0f0f0' };
+            // ── Coluna APROVAÇÃO: Pendente / Aprovada / Reprovada ──
+            const foiAprovada  = o.status === 'Aguardando Execução' || o.status === 'Em Execução' || o.status === 'Concluída';
+            const foiReprovada = o.status === 'Rejeitada';
+            const aprovTxt = foiReprovada
+                ? { txt: '❌ Reprovada',  cor: '#e74c3c', bg: '#fdecea' }
+                : foiAprovada
+                    ? { txt: '✅ Aprovada', cor: '#27ae60', bg: '#eafaf1' }
+                    : { txt: '⏳ Pendente', cor: '#b7860b', bg: '#fef9e7' };
 
-            // ── Coluna STATUS (exibe o status real da OS) ──
+            // ── Coluna STATUS: reflete o status real da OS ──
             const _mapStatus = {
-                'Concluída':           { txt: '✔ Concluída',     cor: '#8e44ad', bg: '#f5eeff' },
-                'Em Execução':         { txt: '🔨 Em Execução',   cor: '#3498db', bg: '#eaf4fb' },
-                'Aguardando Execução':            { txt: '✅ Ag. Execução',      cor: '#27ae60', bg: '#eafaf1' },
-                'Aguardando Aprovação':{ txt: '⏳ Ag. Aprovação', cor: '#e67e22', bg: '#fef3e2' },
-                'Rejeitada':           { txt: '❌ Rejeitada',     cor: '#e74c3c', bg: '#fdecea' },
+                'Concluída':           { txt: '✔ Concluída',          cor: '#8e44ad', bg: '#f5eeff' },
+                'Em Execução':         { txt: '🔨 Em Execução',        cor: '#3498db', bg: '#eaf4fb' },
+                'Aguardando Execução': { txt: '🟡 Ag. Execução',       cor: '#d4a017', bg: '#fef9e7' },
+                'Aguardando Aprovação':{ txt: '⏳ Ag. Aprovação',      cor: '#e67e22', bg: '#fef3e2' },
+                'Rejeitada':           { txt: '❌ Rejeitada',          cor: '#e74c3c', bg: '#fdecea' },
             };
             const concStatusTxt = _mapStatus[o.status] || { txt: '⏳ Pendente', cor: '#e67e22', bg: '#fef3e2' };
 
-            // ── Linha ativa ou desativada ──
+            // ── Linha: OS Concluída e Rejeitada ficam bloqueadas para duplo-clique,
+            // mas NÃO aparecem com visual de "desativado" (sem opacity nem grayscale).
+            // Apenas OS aguardando aprovação ficam com visual levemente atenuado.
             const ativa = o.status === 'Aguardando Execução' || o.status === 'Em Execução';
-            const rowStyle = ativa
-                ? (idx % 2 === 0 ? 'background:white;' : 'background:#f8f9fa;')
-                : (idx % 2 === 0 ? 'background:white;opacity:.45;filter:grayscale(.4);' : 'background:#f8f9fa;opacity:.45;filter:grayscale(.4);');
+            const isAguardandoAprovacao = o.status === 'Aguardando Aprovação';
+            const rowStyle = isAguardandoAprovacao
+                ? (idx % 2 === 0 ? 'background:white;opacity:.55;filter:grayscale(.3);' : 'background:#f8f9fa;opacity:.55;filter:grayscale(.3);')
+                : (idx % 2 === 0 ? 'background:white;' : 'background:#f8f9fa;');
 
-            const dblClick = ativa ? `ondblclick="osAbrirModal('${o.id}')" title="Duplo clique para editar"` : `title="OS não ativa — aguardando aprovação"`;
-            const cursor   = ativa ? 'cursor:pointer;' : 'cursor:default;';
+            // Duplo clique: OS ativas, aguardando aprovação (gerente pode abrir para aprovar), ou admin
+            const podeEditar = ativa || isAguardandoAprovacao || (typeof perfilAtual !== 'undefined' && perfilAtual === 'admin');
+            const dblClick = podeEditar ? `ondblclick="osAbrirModal('${o.id}')" title="Duplo clique para editar"` : `title="OS bloqueada para edição"`;
+            const cursor   = podeEditar ? 'cursor:pointer;' : 'cursor:default;';
 
             // ── Dias em aberto ──
             const diasCor = isConcluida ? '#8e44ad' : (dias > 7 ? '#e74c3c' : '#e67e22');
@@ -26607,6 +26613,10 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('modalOSNumero').textContent = os ? os.numero : 'Novo registro';
         document.getElementById('btnExcluirOS').style.display = os ? 'inline-block' : 'none';
 
+        // ── Popula campo visual de encerramento (aba Abertura) para TODOS os perfis ──
+        const _fcVisModal = document.getElementById('osDataEnceramentoVis');
+        if (_fcVisModal) _fcVisModal.value = os ? (os.data_fechamento || '') : '';
+
         // ── ABA EXECUÇÃO ──
         const podeExecucao = _isResponsavelExecucao(os);
         const execAreaTab = document.getElementById('osExecucaoAreaTab');
@@ -26623,11 +26633,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // Preenche status restrito do executante (apenas Aguardando/Em Execução)
             const stExecEl = document.getElementById('osStatusExecucao');
             if (stExecEl) {
-                const stAtual = os ? (os.status || 'Aguardando Aprovação') : 'Aguardando Aprovação';
-                // ✅ CORREÇÃO: preserva "Em Execução" se já estava nesse status;
-                // se status atual é "Aprovada", inicia em "Aguardando Aprovação" (executante não pode regredir de Aprovada)
-                // mas nunca sobrescreve para Aguardando se já estava Em Execução
-                stExecEl.value = stAtual === 'Em Execução' ? 'Em Execução' : 'Aguardando Aprovação';
+                const stAtual = os ? (os.status || 'Aguardando Execução') : 'Aguardando Execução';
+                // Preserva o status atual se for Aguardando Execução ou Em Execução
+                if (stAtual === 'Em Execução') {
+                    stExecEl.value = 'Em Execução';
+                } else if (stAtual === 'Aguardando Execução') {
+                    stExecEl.value = 'Aguardando Execução';
+                } else {
+                    stExecEl.value = 'Aguardando Execução';
+                }
             }
         } else {
             execAreaTab.style.display = 'none';
@@ -26645,8 +26659,29 @@ document.addEventListener('DOMContentLoaded', function() {
             aprovAreaTab.style.display = 'block';
             aprovMsg.style.display = 'none';
             aprovNovaMsg.style.display = 'none';
-            document.getElementById('osStatusAprovacao').value = os.status || 'Aguardando Aprovação';
+            // ✅ FIX: O select de aprovação reflete o status atual, mas NUNCA inicializa
+            // automaticamente como "Aprovada" — o gerente deve mudar ativamente.
+            // Se a OS já está Concluída ou Rejeitada, exibe somente leitura (bloqueado pelo osSalvar).
+            // Se status for "Aprovada" (valor legado), converte para "Aguardando Execução".
+            const _statusParaSelect = (os.status === 'Aprovada') ? 'Aguardando Execução' : (os.status || 'Aguardando Aprovação');
+            document.getElementById('osStatusAprovacao').value = _statusParaSelect;
             document.getElementById('osJustificativa').value = os.justificativa || '';
+            // ✅ FIX: Bloqueia o select de aprovação se a OS está Concluída e o usuário não é admin.
+            // Admin pode alterar; demais perfis veem bloqueado.
+            const selectAprov = document.getElementById('osStatusAprovacao');
+            const _osConcluida = (os.status === 'Concluída');
+            const _isAdminUser = (typeof perfilAtual !== 'undefined' && perfilAtual === 'admin');
+            if (_osConcluida && !_isAdminUser) {
+                selectAprov.disabled = true;
+                selectAprov.title = 'OS Concluída — somente o Administrador pode alterar o status';
+                selectAprov.style.opacity = '0.6';
+                selectAprov.style.cursor = 'not-allowed';
+            } else {
+                selectAprov.disabled = false;
+                selectAprov.title = '';
+                selectAprov.style.opacity = '';
+                selectAprov.style.cursor = '';
+            }
             osToggleJustificativa();
         } else if (isGer && !os) {
             aprovAreaTab.style.display = 'none';
@@ -26694,34 +26729,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (abEl) abEl.addEventListener('change', osAtualizarContador);
         if (fcEl) fcEl.addEventListener('change', osAtualizarContador);
         if (stEl) stEl.addEventListener('change', osToggleJustificativa);
-
-        // ✅ AUTO-SAVE: ao mudar status de execução de "Aguardando" para "Em Execução", salva automaticamente
-        const stExecEl = document.getElementById('osStatusExecucao');
-        if (stExecEl) {
-            stExecEl.addEventListener('change', async function() {
-                const novoVal = this.value;
-                const id = document.getElementById('osEditId').value;
-                if (!id) return; // só age em OS já existentes
-                if (novoVal !== 'Em Execução') return; // só dispara ao mudar para Em Execução
-                if (!_isResponsavelExecucao(_listaOS.find(x => String(x.id) === String(id)) || null)) return;
-
-                const osAtual = _listaOS.find(x => String(x.id) === String(id)) || {};
-                if (osAtual.status === 'Em Execução') return; // já está em execução, não faz nada
-
-                try {
-                    const osAtualizada = Object.assign({}, osAtual, { status: 'Em Execução' });
-                    const salvo = await _salvarBanco(osAtualizada);
-                    const idx = _listaOS.findIndex(x => String(x.id) === String(id));
-                    if (idx >= 0) _listaOS[idx] = salvo; else _listaOS.unshift(salvo);
-                    osRenderizar();
-                    sgqToast('🔨 Status atualizado para Em Execução!', 'success');
-                } catch(e) {
-                    sgqToast('❌ Erro ao atualizar status: ' + e.message, 'error');
-                    // Reverte o select para o valor anterior em caso de erro
-                    this.value = 'Aguardando Aprovação';
-                }
-            });
-        }
+        // Status de execução é salvo apenas ao clicar em Salvar (sem auto-save)
     });
 
     window.osSalvar = async function() {
@@ -26737,27 +26745,78 @@ document.addEventListener('DOMContentLoaded', function() {
         const statusAprov = document.getElementById('osStatusAprovacao');
         const justEl = document.getElementById('osJustificativa');
 
+        // ✅ FIX: OS Concluída só pode ser alterada pelo admin.
+        // Qualquer outro perfil que tente salvar uma OS já Concluída recebe bloqueio.
+        if (id) {
+            const _osParaVerif = _listaOS.find(x => String(x.id) === String(id));
+            if (_osParaVerif && _osParaVerif.status === 'Concluída') {
+                if (typeof perfilAtual === 'undefined' || perfilAtual !== 'admin') {
+                    sgqToast('⛔ OS Concluída — somente o Administrador pode alterar o status.', 'error');
+                    return;
+                }
+            }
+        }
+
         let novoStatus = 'Aguardando Aprovação';
         let justificativa = '';
         let aprovadoPor = '';
-        if (_isGerente() && id && statusAprov) {
+
+        // ✅ REGRA OBRIGATÓRIA: Nova OS SEMPRE nasce como "Aguardando Aprovação".
+        // Nenhum perfil (incluindo gerente) pode criar uma OS já aprovada.
+        // A aprovação só é possível em OS EXISTENTE (id preenchido).
+        if (!id) {
+            // Nova OS: status fixo em Aguardando Aprovação, sem exceções.
+            novoStatus = 'Aguardando Aprovação';
+        } else if (_isGerente() && id && statusAprov) {
             novoStatus = statusAprov.value;
+            // ✅ Verificação: se a OS anterior estava "Aguardando Aprovação" e o gerente
+            // está salvando ainda como "Aguardando Aprovação", é permitido (pode estar editando
+            // outros campos). O bloqueio ocorre apenas se tentar avançar o fluxo sem aprovar.
+            // ✅ Se o gerente também é executante e mudou o status de execução,
+            // o osStatusExecucao tem precedência quando osStatusAprovacao está num status genérico
+            const stExecGer = document.getElementById('osStatusExecucao');
+            if (stExecGer && (novoStatus === 'Aguardando Execução' || novoStatus === 'Aguardando Aprovação')) {
+                if (stExecGer.value === 'Em Execução') novoStatus = 'Em Execução';
+            }
             if (novoStatus === 'Rejeitada') {
                 justificativa = (justEl ? justEl.value.trim() : '');
                 if (!justificativa) { sgqToast('Informe a justificativa da rejeição.','warning'); return; }
             }
             aprovadoPor = typeof usuarioAtual !== 'undefined' ? usuarioAtual : '';
         } else if (_isResponsavelExecucao(id ? (_listaOS.find(x=>String(x.id)===String(id))||null) : null)) {
-            // Executante pode mudar apenas entre Aguardando e Em Execução
+            // Executante pode mudar apenas entre Aguardando Execução e Em Execução
             const stExec = document.getElementById('osStatusExecucao');
-            if (stExec) novoStatus = stExec.value;
+            const osAnteriorStatus = id ? ((_listaOS.find(x=>String(x.id)===String(id))||{}).status || 'Aguardando Execução') : 'Aguardando Execução';
+            if (stExec) {
+                novoStatus = stExec.value;
+            } else {
+                // Sem select visível, preserva status atual (nunca regride)
+                novoStatus = osAnteriorStatus;
+            }
+            // Segurança: executante não pode regredir para Aguardando Aprovação
+            if (novoStatus === 'Aguardando Aprovação') novoStatus = osAnteriorStatus;
+            // ✅ BLOQUEIO: executante não pode avançar OS que ainda está Aguardando Aprovação
+            if (osAnteriorStatus === 'Aguardando Aprovação') {
+                sgqToast('⛔ Esta OS ainda está Pendente de Aprovação. Aguarde a aprovação do gerente para iniciar a execução.', 'error');
+                return;
+            }
         }
 
-        // ── Data de fechamento: quem abriu a OS preenche ──
+        // ── Data de fechamento: quem abriu a OS preenche via osDataEnceramentoVis (sincronizado com osDataFechamento) ──
         const osAnterior = id ? (_listaOS.find(x=>String(x.id)===String(id))||{}) : {};
-        const novaDataFechamento = (document.getElementById('osExecucaoArea').style.display !== 'none')
-            ? (document.getElementById('osDataFechamento').value || null)
-            : (osAnterior.data_fechamento || null);
+        // Verifica se quem está salvando é exclusivamente executante (sem ser gerente/admin)
+        const _somenteExecutante = _isResponsavelExecucao(id ? (_listaOS.find(x=>String(x.id)===String(id))||null) : null) && !_isGerente() && (typeof perfilAtual === 'undefined' || perfilAtual !== 'admin');
+        // Executante NÃO pode alterar a data de encerramento — preserva o valor do banco
+        let novaDataFechamento;
+        if (_somenteExecutante) {
+            novaDataFechamento = osAnterior.data_fechamento || null;
+        } else {
+            // Admin/gerente ou criador: lê o campo visual (aba Abertura) já sincronizado com osDataFechamento
+            const _fcVis  = document.getElementById('osDataEnceramentoVis');
+            const _fcReal = document.getElementById('osDataFechamento');
+            const _fcVal  = (_fcVis && _fcVis.value) ? _fcVis.value : ((_fcReal && _fcReal.value) ? _fcReal.value : null);
+            novaDataFechamento = _fcVal || null;
+        }
 
         // Se data de fechamento foi preenchida agora (não existia antes), registra quem concluiu
         const jaTinhaFechamento = !!(osAnterior.data_fechamento);
@@ -26771,8 +26830,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Status automático: data de fechamento preenchida = Concluída
-        // ✅ CORREÇÃO: não sobrescreve se o usuário escolheu "Em Execução" explicitamente
-        if (agora_tem_fechamento && novoStatus !== 'Rejeitada' && novoStatus !== 'Em Execução') {
+        // Quem abriu a OS (não exclusivamente executante) preenche a data → sempre vira Concluída
+        // Executante puro não pode alterar data_fechamento (preservado acima), então não aciona essa regra
+        // ✅ BLOQUEIO: não pode concluir automaticamente OS que ainda está Aguardando Aprovação
+        if (agora_tem_fechamento && novoStatus === 'Aguardando Aprovação' && !_somenteExecutante && id) {
+            sgqToast('⛔ Não é possível concluir uma OS que ainda está Pendente de Aprovação. O gerente deve aprovar antes.', 'error');
+            return;
+        }
+        if (agora_tem_fechamento && novoStatus !== 'Rejeitada' && novoStatus !== 'Aguardando Aprovação' && !_somenteExecutante) {
             novoStatus = 'Concluída';
         }
 
