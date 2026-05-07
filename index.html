@@ -6222,6 +6222,7 @@
                                 <option>Qualidade</option>
                                 <option>Almoxarifado</option>
                                 <option>Administrativo</option>
+                                <option>Segurança</option>
                             </select>
                         </div>
                         <div class="os-form-group" style="flex:1.5;">
@@ -6249,12 +6250,6 @@
                     <div class="os-form-group">
                         <label>Descrição Detalhada <span class="os-req">*</span></label>
                         <textarea id="osDescricao" placeholder="Descreva em detalhes o serviço a ser realizado..." rows="4"></textarea>
-                    </div>
-
-                    <!-- Observações -->
-                    <div class="os-form-group">
-                        <label>Observações</label>
-                        <textarea id="osObs" placeholder="Informações adicionais, materiais necessários, local exato..." rows="3"></textarea>
                     </div>
 
                 </div><!-- /osTabAbertura -->
@@ -6360,7 +6355,7 @@
 
                         <!-- Anexo textual -->
                         <div class="os-form-group">
-                            <label>📎 Relatório / Laudos / Observações Técnicas</label>
+                            <label>📎 Relatório Técnico</label>
                             <textarea id="osAnexoTextual" class="os-execucao-textarea" placeholder="Descreva laudos, relatórios técnicos, peças utilizadas, procedimentos realizados..." rows="5"></textarea>
                         </div>
                     </div>
@@ -26620,9 +26615,9 @@ document.addEventListener('DOMContentLoaded', function() {
             execMsg.style.display = 'none';
             document.getElementById('osAreaManutencao').value = os ? (os.area_manutencao || '') : '';
             document.getElementById('osPrioridade').value = os ? (os.prioridade || 'Normal') : 'Normal';
-            document.getElementById('osDataFechamento').value = os ? (os.data_fechamento || '') : _dataAbertura;
+            document.getElementById('osDataFechamento').value = os ? (os.data_fechamento || '') : '';
             const fcVis = document.getElementById('osDataEnceramentoVis');
-            if (fcVis) fcVis.value = os ? (os.data_fechamento || '') : _dataAbertura;
+            if (fcVis) fcVis.value = os ? (os.data_fechamento || '') : '';
             document.getElementById('osAnexoTextual').value = os ? (os.anexo_textual || '') : '';
             // Preenche status restrito do executante (apenas Aguardando/Em Execução)
             const stExecEl = document.getElementById('osStatusExecucao');
