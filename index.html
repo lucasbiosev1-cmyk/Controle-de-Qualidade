@@ -6090,7 +6090,7 @@
                 </div>
                 <div class="os-kpi-card os-kpi-aprov">
                     <div class="os-kpi-valor" id="osKpiAprov">0</div>
-                    <div class="os-kpi-label">Aprovadas</div>
+                    <div class="os-kpi-label">Ag. Execução</div>
                 </div>
                 <div class="os-kpi-card os-kpi-exec">
                     <div class="os-kpi-valor" id="osKpiExec">0</div>
@@ -6113,7 +6113,7 @@
                     <select id="osFiltroStatus" onchange="osRenderizar()">
                         <option value="">Todos</option>
                         <option value="Aguardando Aprovação">Aguardando</option>
-                        <option value="Aprovada">Aprovadas</option>
+                        <option value="Aguardando Execução">Ag. Execução</option>
                         <option value="Em Execução">Em Execução</option>
                         <option value="Concluída">Concluídas</option>
                         <option value="Rejeitada">Rejeitadas</option>
@@ -26289,11 +26289,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return 'OS-' + String(maxSeq + 1).padStart(4, '0');
     }
     function _statusClass(st) {
-        const m = { 'Aguardando Aprovação':'aguard','Aprovada':'aprovada','Em Execução':'exec','Concluída':'conc','Rejeitada':'rej' };
+        const m = { 'Aguardando Aprovação':'aguard','Aguardando Execução':'aprovada','Em Execução':'exec','Concluída':'conc','Rejeitada':'rej' };
         return m[st] || 'aguard';
     }
     function _statusEmoji(st) {
-        const m = { 'Aguardando Aprovação':'⏳','Aprovada':'✅','Em Execução':'🔨','Concluída':'✔','Rejeitada':'❌' };
+        const m = { 'Aguardando Aprovação':'⏳','Aguardando Execução':'✅','Em Execução':'🔨','Concluída':'✔','Rejeitada':'❌' };
         return (m[st]||'❓') + ' ' + (st||'—');
     }
     function _prioClass(p) {
@@ -26358,7 +26358,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function osAtualizarKPIs() {
         const total = _listaOS.length;
         const aguard = _listaOS.filter(o => o.status === 'Aguardando Aprovação').length;
-        const aprov  = _listaOS.filter(o => o.status === 'Aprovada').length;
+        const aprov  = _listaOS.filter(o => o.status === 'Aguardando Execução').length;
         const exec   = _listaOS.filter(o => o.status === 'Em Execução').length;
         const conc   = _listaOS.filter(o => o.status === 'Concluída').length;
         const rej    = _listaOS.filter(o => o.status === 'Rejeitada').length;
@@ -26458,7 +26458,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }).join('');
     }
 
-    const _corStatus = { 'Aguardando Aprovação':'#f39c12','Aprovada':'#27ae60','Em Execução':'#3498db','Concluída':'#8e44ad','Rejeitada':'#e74c3c' };
+    const _corStatus = { 'Aguardando Aprovação':'#f39c12','Aguardando Execução':'#27ae60','Em Execução':'#3498db','Concluída':'#8e44ad','Rejeitada':'#e74c3c' };
 
     function _osRenderTabela(lista, dados) {
         const canAprovGlobal = _isGerente();
@@ -26473,9 +26473,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // ── Coluna APROVAÇÃO (apenas Aprovada ou Reprovada) ──
             const aprovTxt = {
-                'Aprovada':   { txt: '✅ Aprovada',  cor: '#27ae60', bg: '#eafaf1' },
-                'Em Execução':{ txt: '✅ Aprovada',  cor: '#27ae60', bg: '#eafaf1' },
-                'Concluída':  { txt: '✅ Aprovada',  cor: '#27ae60', bg: '#eafaf1' },
+                'Aguardando Execução':   { txt: '✅ Ag. Execução',  cor: '#27ae60', bg: '#eafaf1' },
+                'Em Execução':{ txt: '✅ Ag. Execução',  cor: '#27ae60', bg: '#eafaf1' },
+                'Concluída':  { txt: '✅ Ag. Execução',  cor: '#27ae60', bg: '#eafaf1' },
                 'Rejeitada':  { txt: '❌ Reprovada', cor: '#e74c3c', bg: '#fdecea' },
             }[o.status] || { txt: '—', cor: '#aaa', bg: '#f0f0f0' };
 
@@ -26483,14 +26483,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const _mapStatus = {
                 'Concluída':           { txt: '✔ Concluída',     cor: '#8e44ad', bg: '#f5eeff' },
                 'Em Execução':         { txt: '🔨 Em Execução',   cor: '#3498db', bg: '#eaf4fb' },
-                'Aprovada':            { txt: '✅ Aprovada',      cor: '#27ae60', bg: '#eafaf1' },
+                'Aguardando Execução':            { txt: '✅ Ag. Execução',      cor: '#27ae60', bg: '#eafaf1' },
                 'Aguardando Aprovação':{ txt: '⏳ Ag. Aprovação', cor: '#e67e22', bg: '#fef3e2' },
                 'Rejeitada':           { txt: '❌ Rejeitada',     cor: '#e74c3c', bg: '#fdecea' },
             };
             const concStatusTxt = _mapStatus[o.status] || { txt: '⏳ Pendente', cor: '#e67e22', bg: '#fef3e2' };
 
             // ── Linha ativa ou desativada ──
-            const ativa = o.status === 'Aprovada' || o.status === 'Em Execução';
+            const ativa = o.status === 'Aguardando Execução' || o.status === 'Em Execução';
             const rowStyle = ativa
                 ? (idx % 2 === 0 ? 'background:white;' : 'background:#f8f9fa;')
                 : (idx % 2 === 0 ? 'background:white;opacity:.45;filter:grayscale(.4);' : 'background:#f8f9fa;opacity:.45;filter:grayscale(.4);');
@@ -26816,7 +26816,7 @@ document.addEventListener('DOMContentLoaded', function() {
             osRenderizar();
             sgqToast(id ? '✅ OS atualizada!' : '✅ OS criada com sucesso!', 'success');
 
-            if (novoStatus === 'Aprovada')    sgqToast('✅ OS Aprovada pelo gerente!', 'success');
+            if (novoStatus === 'Aguardando Execução')    sgqToast('✅ OS aprovada — Aguardando Execução!', 'success');
             if (novoStatus === 'Rejeitada')   sgqToast('❌ OS Rejeitada: ' + justificativa, 'warning');
             if (novoStatus === 'Em Execução') sgqToast('🔨 OS marcada como Em Execução!', 'success');
             if (novoStatus === 'Concluída' && agora_tem_fechamento && !jaTinhaFechamento) sgqToast('✔ OS concluída automaticamente pela data de fechamento!', 'success');
@@ -26896,7 +26896,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div style="font-size:12px;color:#c0392b;">${o.justificativa}</div>
                 ${o.aprovado_por?`<div style="font-size:10px;color:#aaa;margin-top:4px;">Gerente: ${o.aprovado_por}</div>`:''}
             </div>` : ''}
-            ${o.status === 'Aprovada' && o.aprovado_por ? `<div style="background:#eafaf1;border-left:4px solid #27ae60;border-radius:0 6px 6px 0;padding:10px 14px;margin-top:8px;">
+            ${o.status === 'Aguardando Execução' && o.aprovado_por ? `<div style="background:#eafaf1;border-left:4px solid #27ae60;border-radius:0 6px 6px 0;padding:10px 14px;margin-top:8px;">
                 <div style="font-size:10px;font-weight:800;color:#27ae60;margin-bottom:2px;">✅ APROVADA</div>
                 <div style="font-size:11px;color:#1e8449;">Gerente: ${o.aprovado_por}</div>
             </div>` : ''}
@@ -26937,7 +26937,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 🔧 ${o.numero} — ${o.titulo}
             </div>
             <button id="osPopupBtnAprovar" style="width:100%;margin-bottom:8px;padding:10px;border:none;border-radius:8px;background:linear-gradient(135deg,#27ae60,#2ecc71);color:white;font-size:12px;font-weight:800;cursor:pointer;text-align:left;">
-                ✅ Aprovada
+                ✅ Aguardando Execução
             </button>
             <button id="osPopupBtnReprovar" style="width:100%;margin-bottom:10px;padding:10px;border:none;border-radius:8px;background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;font-size:12px;font-weight:800;cursor:pointer;text-align:left;">
                 ❌ Reprovada
@@ -26978,11 +26978,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             await _salvarBanco(os);
             osRenderizar();
-            const msgs = { 'Aprovada':'✅ OS Aprovada!', 'Em Execução':'🔨 OS em Execução!', 'Concluída':'✔ OS Concluída!', 'Rejeitada':'❌ OS Reprovada.' };
+            const msgs = { 'Aguardando Execução':'✅ OS Aguardando Execução!', 'Em Execução':'🔨 OS em Execução!', 'Concluída':'✔ OS Concluída!', 'Rejeitada':'❌ OS Reprovada.' };
             sgqToast(msgs[novoStatus] || 'OS atualizada.', novoStatus === 'Rejeitada' ? 'warning' : 'success');
         }
 
-        popup.querySelector('#osPopupBtnAprovar').onclick  = () => _aplicar('Aprovada');
+        popup.querySelector('#osPopupBtnAprovar').onclick  = () => _aplicar('Aguardando Execução');
         popup.querySelector('#osPopupBtnReprovar').onclick = () => {
             popup.querySelector('#osPopupJustArea').style.display = 'block';
             popup.querySelector('#osPopupBtnReprovar').style.display = 'none';
@@ -27025,7 +27025,7 @@ document.addEventListener('DOMContentLoaded', function() {
             subtitulo = 'Todas as OS abertas no mês de ' + nomeMes;
         } else {
             lista = _listaOS.filter(o =>
-                o.status === 'Aguardando Aprovação' || o.status === 'Aprovada' || o.status === 'Em Execução'
+                o.status === 'Aguardando Aprovação' || o.status === 'Aguardando Execução' || o.status === 'Em Execução'
             );
             titulo    = 'ORDENS DE SERVIÇO — PENDENTES';
             subtitulo = 'OS aguardando aprovação, aprovadas ou em execução';
@@ -27039,7 +27039,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Agrupa por status para o relatório
         const grupos = [
             { label: '⏳ Aguardando Aprovação', cls: '#f39c12', bg: '#fef3e2', items: lista.filter(o => o.status === 'Aguardando Aprovação') },
-            { label: '✅ Aprovadas',             cls: '#27ae60', bg: '#eafaf1', items: lista.filter(o => o.status === 'Aprovada') },
+            { label: '✅ Ag. Execução',             cls: '#27ae60', bg: '#eafaf1', items: lista.filter(o => o.status === 'Aguardando Execução') },
             { label: '🔨 Em Execução',           cls: '#3498db', bg: '#eaf4fb', items: lista.filter(o => o.status === 'Em Execução') },
             { label: '✔ Concluídas',             cls: '#8e44ad', bg: '#f5eeff', items: lista.filter(o => o.status === 'Concluída') },
             { label: '❌ Rejeitadas',            cls: '#e74c3c', bg: '#fdecea', items: lista.filter(o => o.status === 'Rejeitada') },
@@ -27048,7 +27048,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // KPI resumo
         const totalOS    = lista.length;
         const concluidas = lista.filter(o => o.status === 'Concluída').length;
-        const pendentes  = lista.filter(o => ['Aguardando Aprovação','Aprovada','Em Execução'].includes(o.status)).length;
+        const pendentes  = lista.filter(o => ['Aguardando Aprovação','Aguardando Execução','Em Execução'].includes(o.status)).length;
         const rejeitadas = lista.filter(o => o.status === 'Rejeitada').length;
 
         const dataEmissao = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
