@@ -16369,36 +16369,18 @@ async function renderizarListaUsuarios() {
 }
 
 function _buildPermGrid(perms, isAdmin) {
-    const grupos = [
-        {
-            titulo: '📊 Relatórios & Configurações',
-            cor: '#3498db',
-            keys: ['relatorios', 'boletim', 'parametros', 'backup', 'memoria', 'whatsapp', 'agenda']
-        },
-        {
-            titulo: '📥 Matéria Prima',
-            cor: '#27ae60',
-            keys: ['entrada_mp', 'entrada_editar', 'entrada_excluir', 'entrada_aprovar']
-        },
-        {
-            titulo: '⚠️ Qualidade & Estoque',
-            cor: '#e67e22',
-            keys: ['nao_conformidade', 'estoque_quimicos', 'estoque_materiais', 'equipamentos']
-        },
-        {
-            titulo: '🔧 Ordem de Serviço',
-            cor: '#8e44ad',
-            keys: ['ordem_servico', 'os_aprovar', 'os_executar']
-        },
-    ];
-    const restricoes = PERMS_DISPONIVEIS.filter(pd => pd.restricao);
+    const normais     = PERMS_DISPONIVEIS.filter(pd => !pd.restricao);
+    const restricoes  = PERMS_DISPONIVEIS.filter(pd =>  pd.restricao);
 
     const buildItem = pd => {
+        // Restrições: marcado = restrito (invertido visualmente)
         const checked = isAdmin
-            ? (pd.restricao ? false : true)
+            ? (pd.restricao ? false : true)   // admin: permissões on, restrições off
             : (perms && perms[pd.key]);
         const disabledAttr = isAdmin ? 'disabled' : '';
-        const styleItem = pd.restricao ? `border-left:3px solid #e74c3c;` : '';
+        const styleItem = pd.restricao
+            ? `border-left:3px solid #e74c3c;`
+            : '';
         return `
         <div class="perm-modal-item ${checked ? 'checked' : ''}" id="perm-item-${pd.key}"
              style="${styleItem}"
@@ -16410,26 +16392,13 @@ function _buildPermGrid(perms, isAdmin) {
         </div>`;
     };
 
-    let html = '';
-    for (const grupo of grupos) {
-        const itens = grupo.keys.map(k => PERMS_DISPONIVEIS.find(p => p.key === k)).filter(Boolean);
-        html += `
-        <div style="grid-column:1/-1; margin-top:10px; margin-bottom:2px;">
-            <div style="font-size:10px; font-weight:800; color:${grupo.cor}; text-transform:uppercase; letter-spacing:.6px; padding:4px 8px; background:${grupo.cor}18; border-left:3px solid ${grupo.cor}; border-radius:0 4px 4px 0;">
-                ${grupo.titulo}
-            </div>
-        </div>
-        ${itens.map(buildItem).join('')}`;
-    }
-
-    html += `
-        <div style="grid-column:1/-1;margin-top:14px;margin-bottom:4px;padding:6px 10px;background:#fdf2f2;border:1px solid #f5b7b1;border-radius:4px;">
+    return `
+        ${normais.map(buildItem).join('')}
+        <div style="grid-column:1/-1;margin-top:10px;margin-bottom:4px;padding:6px 10px;background:#fdf2f2;border:1px solid #f5b7b1;border-radius:4px;">
             <span style="font-size:10px;font-weight:bold;color:#c0392b;text-transform:uppercase;letter-spacing:.5px;">🚫 Restrições — marque para BLOQUEAR o acesso</span>
         </div>
         ${restricoes.map(buildItem).join('')}
     `;
-
-    return html;
 }
 
 function togglePermModal(key) {
