@@ -26424,9 +26424,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const stCls = _statusClass(o.status);
             const rejHtml = o.status === 'Rejeitada' && o.justificativa
                 ? `<div class="os-card-rejeicao">❌ Rejeição: ${o.justificativa}</div>` : '';
-            const canAprov = _isGerente() && (o.status === 'Aguardando Aprovação');
+            const canAprov = _isGerente() && (o.status !== 'Concluída') && (o.status !== 'Em Execução');
+            const aprovBtnIcon = o.status === 'Aguardando Aprovação' ? '✅' : '🔄';
+            const aprovBtnTitle = o.status === 'Aguardando Aprovação' ? 'Aprovar/Rejeitar' : 'Alterar Status';
             const aprovBtn = canAprov
-                ? `<button class="os-btn-acao os-btn-aprov" title="Aprovar/Rejeitar" onclick="osAbrirAprovacao('${o.id}')">✅</button>` : '';
+                ? `<button class="os-btn-acao os-btn-aprov" title="${aprovBtnTitle}" onclick="osAbrirAprovacao('${o.id}')">${aprovBtnIcon}</button>` : '';
             return `<div class="os-card os-status-${stCls}">
                 <div class="os-card-info">
                     <div class="os-card-top">
@@ -26531,10 +26533,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td style="font-size:11px;white-space:nowrap;text-align:center;">${o.setor||'—'}</td>
                 <td style="font-size:11px;white-space:nowrap;text-align:center;">${o.criado_por||"—"}</td>
                 <td style="text-align:center;">
-                    <span
-                        style="display:inline-block;background:${aprovTxt.bg};color:${aprovTxt.cor};border-radius:20px;padding:3px 10px;font-size:10px;font-weight:800;white-space:nowrap;-webkit-print-color-adjust:exact;${!isConcluida && canAprovGlobal ? 'cursor:pointer;text-decoration:underline dotted;' : ''}"
-                        ${!isConcluida && canAprovGlobal ? `onclick="event.stopPropagation();osPopupAprovacao('${o.id}',this)" title="Clique para aprovar ou reprovar"` : ''}
-                    >${aprovTxt.txt}</span>
+                    ${(canAprovGlobal && !isConcluida && o.status !== 'Em Execução') ? (() => {
+                        // Select inline igual ao padrão EMP
+                        const _osAprovOpts = [
+                            { v:'Aguardando Aprovação', l:'⏳ Aguardando', bg:'#fef3e2', cor:'#e67e22' },
+                            { v:'Aguardando Execução',  l:'✅ Aprovada',   bg:'#eafaf1', cor:'#27ae60' },
+                            { v:'Rejeitada',            l:'❌ Reprovada',  bg:'#fdecea', cor:'#e74c3c' },
+                        ];
+                        const _selAtual = foiReprovada ? 'Rejeitada' : foiAprovada ? 'Aguardando Execução' : 'Aguardando Aprovação';
+                        const _selStyle = _osAprovOpts.find(x=>x.v===_selAtual) || _osAprovOpts[0];
+                        const _opts = _osAprovOpts.map(x=>`<option value="${x.v}" ${x.v===_selAtual?'selected':''}>${x.l}</option>`).join('');
+                        return `<select id="sel-aprov-${o.id}" onchange="osAlterarStatusAprovacao('${o.id}',this)" onclick="event.stopPropagation()"
+                            style="background:${_selStyle.bg};color:${_selStyle.cor};border:none;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:800;font-family:inherit;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;text-align:center;-webkit-print-color-adjust:exact;"
+                            title="Alterar status de aprovação">${_opts}</select>`;
+                    })() : `<span style="display:inline-block;background:${aprovTxt.bg};color:${aprovTxt.cor};border-radius:20px;padding:3px 10px;font-size:10px;font-weight:800;white-space:nowrap;-webkit-print-color-adjust:exact;">${aprovTxt.txt}</span>`}
                 </td>
                 <td style="font-size:11px;white-space:nowrap;text-align:center;">${o.responsavel||'—'}</td>
                 <td style="font-size:11px;white-space:nowrap;text-align:center;">${areaCell}</td>
@@ -26696,7 +26708,21 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('osAprovacaoArea').style.display = (isGer && os) ? 'block' : 'none';
 
         osAtualizarContador();
-        osMudarAba('abertura'); // sempre abre na aba Abertura
+
+        // ── Visibilidade aba Abertura: oculta se o usuário logado não é o responsável ──
+        const _nomeUsuario = (typeof USUARIOS !== 'undefined' && typeof usuarioAtual !== 'undefined')
+            ? (USUARIOS[usuarioAtual]?.nome || usuarioAtual || '') : '';
+        const _responsavelOS = os ? (os.responsavel || '') : '';
+        const _isResponsavel = !os
+            || !_responsavelOS
+            || _responsavelOS.toLowerCase() === (usuarioAtual||'').toLowerCase()
+            || _responsavelOS.toLowerCase() === _nomeUsuario.toLowerCase()
+            || (typeof perfilAtual !== 'undefined' && perfilAtual === 'admin');
+
+        const _btnAbertura = document.getElementById('osTabBtnAbertura');
+        _btnAbertura.style.display = _isResponsavel ? '' : 'none';
+
+        osMudarAba(_isResponsavel ? 'abertura' : 'execucao');
         document.getElementById('modalOS').style.display = 'flex';
     };
     window.osFecharModal = function() {
@@ -26968,7 +26994,12 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         const btnAprov = document.getElementById('osViewBtnAprovar');
-        if (btnAprov) btnAprov.style.display = (_isGerente() && o.status === 'Aguardando Aprovação') ? 'inline-block' : 'none';
+        // Gerente pode alterar status em qualquer fase (aprovar, rejeitar ou voltar para aguardando)
+        if (btnAprov) {
+            const _podeGerir = _isGerente() && o.status !== 'Concluída' && o.status !== 'Em Execução';
+            btnAprov.style.display = _podeGerir ? 'inline-block' : 'none';
+            btnAprov.textContent = o.status === 'Aguardando Aprovação' ? '✅ Aprovar / Rejeitar' : '🔄 Alterar Status';
+        }
         // Botão "Preencher Execução" só para quem tem permissão os_executar
         const btnExec = document.getElementById('osViewBtnExecutar');
         if (btnExec) btnExec.style.display = _isResponsavelExecucao(o) ? 'inline-block' : 'none';
@@ -26997,16 +27028,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const popup = document.createElement('div');
         popup.id = 'osPopupAcao';
         popup._osId = id;
+
+        // Monta os botões de ação conforme status atual
+        const _statusAtualOS = o.status || 'Aguardando Aprovação';
+        const _btnAprovar  = _statusAtualOS !== 'Aguardando Execução' && _statusAtualOS !== 'Em Execução' && _statusAtualOS !== 'Concluída'
+            ? `<button id="osPopupBtnAprovar" style="width:100%;margin-bottom:8px;padding:10px;border:none;border-radius:8px;background:linear-gradient(135deg,#27ae60,#2ecc71);color:white;font-size:12px;font-weight:800;cursor:pointer;text-align:left;">✅ Aprovar</button>` : '';
+        const _btnReprovar = _statusAtualOS !== 'Rejeitada'
+            ? `<button id="osPopupBtnReprovar" style="width:100%;margin-bottom:8px;padding:10px;border:none;border-radius:8px;background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;font-size:12px;font-weight:800;cursor:pointer;text-align:left;">❌ Reprovar</button>` : '';
+        const _btnVoltarAguard = _statusAtualOS !== 'Aguardando Aprovação'
+            ? `<button id="osPopupBtnVoltarAguard" style="width:100%;margin-bottom:8px;padding:10px;border:1.5px solid #e67e22;border-radius:8px;background:transparent;color:#e67e22;font-size:12px;font-weight:800;cursor:pointer;text-align:left;">↩️ Voltar para Aguardando</button>` : '';
+
         popup.innerHTML = `
             <div style="font-size:11px;font-weight:800;color:#555;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #eee;">
                 🔧 ${o.numero} — ${o.titulo}
             </div>
-            <button id="osPopupBtnAprovar" style="width:100%;margin-bottom:8px;padding:10px;border:none;border-radius:8px;background:linear-gradient(135deg,#27ae60,#2ecc71);color:white;font-size:12px;font-weight:800;cursor:pointer;text-align:left;">
-                ✅ Aguardando Execução
-            </button>
-            <button id="osPopupBtnReprovar" style="width:100%;margin-bottom:10px;padding:10px;border:none;border-radius:8px;background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;font-size:12px;font-weight:800;cursor:pointer;text-align:left;">
-                ❌ Reprovada
-            </button>
+            <div style="font-size:10px;color:#aaa;margin-bottom:10px;">Status atual: <strong style="color:#555;">${_statusAtualOS}</strong></div>
+            ${_btnAprovar}
+            ${_btnReprovar}
+            ${_btnVoltarAguard}
             <div id="osPopupJustArea" style="display:none;">
                 <textarea id="osPopupJust" placeholder="Motivo da reprovação (obrigatório)..." rows="3"
                     style="width:100%;border:1.5px solid #e74c3c;border-radius:6px;padding:8px;font-size:12px;resize:none;font-family:inherit;box-sizing:border-box;"></textarea>
@@ -27043,19 +27082,30 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             await _salvarBanco(os);
             osRenderizar();
-            const msgs = { 'Aguardando Execução':'✅ OS Aguardando Execução!', 'Em Execução':'🔨 OS em Execução!', 'Concluída':'✔ OS Concluída!', 'Rejeitada':'❌ OS Reprovada.' };
-            sgqToast(msgs[novoStatus] || 'OS atualizada.', novoStatus === 'Rejeitada' ? 'warning' : 'success');
+            const msgs = { 'Aguardando Execução':'✅ OS aprovada — Aguardando Execução!', 'Em Execução':'🔨 OS em Execução!', 'Concluída':'✔ OS Concluída!', 'Rejeitada':'❌ OS Reprovada.', 'Aguardando Aprovação':'↩️ OS retornada para Aguardando Aprovação.' };
+            sgqToast(msgs[novoStatus] || 'OS atualizada.', novoStatus === 'Rejeitada' ? 'warning' : novoStatus === 'Aguardando Aprovação' ? 'info' : 'success');
         }
 
-        popup.querySelector('#osPopupBtnAprovar').onclick  = () => _aplicar('Aguardando Execução');
-        popup.querySelector('#osPopupBtnReprovar').onclick = () => {
+        const _bAprovar = popup.querySelector('#osPopupBtnAprovar');
+        if (_bAprovar) _bAprovar.onclick = () => _aplicar('Aguardando Execução');
+
+        const _bReprovar = popup.querySelector('#osPopupBtnReprovar');
+        if (_bReprovar) _bReprovar.onclick = () => {
             popup.querySelector('#osPopupJustArea').style.display = 'block';
-            popup.querySelector('#osPopupBtnReprovar').style.display = 'none';
+            _bReprovar.style.display = 'none';
         };
-        popup.querySelector('#osPopupBtnConfReprovar').onclick = () => {
+
+        const _bConfReprovar = popup.querySelector('#osPopupBtnConfReprovar');
+        if (_bConfReprovar) _bConfReprovar.onclick = () => {
             const just = popup.querySelector('#osPopupJust').value.trim();
             if (!just) { popup.querySelector('#osPopupJust').style.borderColor='#e74c3c'; popup.querySelector('#osPopupJust').focus(); return; }
             _aplicar('Rejeitada', just);
+        };
+
+        const _bVoltar = popup.querySelector('#osPopupBtnVoltarAguard');
+        if (_bVoltar) _bVoltar.onclick = () => {
+            if (!confirm('Tem certeza que deseja retornar esta OS para "Aguardando Aprovação"? A aprovação anterior será desfeita.')) return;
+            _aplicar('Aguardando Aprovação');
         };
 
         // Fecha ao clicar fora
@@ -27066,7 +27116,70 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 50);
     };
 
-    // ── Aprovação rápida direto do card ──────────────────────
+    // ── Alteração de status de aprovação via select inline ───────────
+    window.osAlterarStatusAprovacao = async function(id, selEl) {
+        const novoStatus = selEl.value;
+        const os = _listaOS.find(x => String(x.id) === String(id));
+        if (!os) return;
+
+        const statusAnterior = os.status;
+
+        // Se selecionou o mesmo status, ignora
+        if (novoStatus === statusAnterior ||
+            (novoStatus === 'Aguardando Execução' && (statusAnterior === 'Aguardando Execução' || statusAnterior === 'Em Execução' || statusAnterior === 'Concluída') && novoStatus === 'Aguardando Execução' && statusAnterior === 'Aguardando Execução')) {
+            _atualizarCorSelectAprov(selEl, novoStatus);
+            return;
+        }
+
+        // Reprovação exige justificativa — abre um prompt simples
+        if (novoStatus === 'Rejeitada') {
+            const just = prompt('Informe o motivo da reprovação (obrigatório):');
+            if (just === null) { selEl.value = statusAnterior; _atualizarCorSelectAprov(selEl, statusAnterior); return; }
+            if (!just.trim()) {
+                sgqToast('⚠ Justificativa obrigatória para reprovar.', 'warning');
+                selEl.value = statusAnterior;
+                _atualizarCorSelectAprov(selEl, statusAnterior);
+                return;
+            }
+            os.justificativa = just.trim();
+        }
+
+        // Voltar para Aguardando exige confirmação
+        if (novoStatus === 'Aguardando Aprovação' && statusAnterior !== 'Aguardando Aprovação') {
+            if (!confirm('Retornar esta OS para "Aguardando Aprovação"?\nA aprovação anterior será desfeita.')) {
+                selEl.value = statusAnterior;
+                _atualizarCorSelectAprov(selEl, statusAnterior);
+                return;
+            }
+            os.justificativa = '';
+        }
+
+        os.status       = novoStatus;
+        os.aprovado_por = typeof usuarioAtual !== 'undefined' ? usuarioAtual : '';
+        _atualizarCorSelectAprov(selEl, novoStatus);
+
+        await _salvarBanco(os);
+        osRenderizar();
+
+        const msgs = {
+            'Aguardando Execução':  '✅ OS aprovada — Aguardando Execução!',
+            'Rejeitada':            '❌ OS reprovada.',
+            'Aguardando Aprovação': '↩️ OS retornada para Aguardando Aprovação.',
+        };
+        sgqToast(msgs[novoStatus] || 'OS atualizada.', novoStatus === 'Rejeitada' ? 'warning' : novoStatus === 'Aguardando Aprovação' ? 'info' : 'success');
+    };
+
+    function _atualizarCorSelectAprov(sel, status) {
+        const cores = {
+            'Aguardando Aprovação': 'background:#fef3e2;color:#e67e22;',
+            'Aguardando Execução':  'background:#eafaf1;color:#27ae60;',
+            'Rejeitada':            'background:#fdecea;color:#e74c3c;',
+        };
+        const c = cores[status] || 'background:#eee;color:#555;';
+        sel.style.cssText = sel.style.cssText.replace(/background:[^;]+;color:[^;]+;/, c);
+    }
+
+    // ── Aprovação rápida direto do card (mantido para compatibilidade) ──
     window.osAbrirAprovacao = function(id) {
         osAbrirModal(id);
     };
