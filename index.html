@@ -26792,7 +26792,7 @@ document.addEventListener('DOMContentLoaded', function() {
             data_abertura: document.getElementById('osDataAbertura').value,
             data_fechamento: novaDataFechamento,
             descricao: desc,
-            obs: document.getElementById('osObs').value.trim() || null,
+            obs: (document.getElementById('osObs') ? document.getElementById('osObs').value.trim() : null) || null,
             anexo_textual: (document.getElementById('osExecucaoArea').style.display !== 'none')
                 ? (document.getElementById('osAnexoTextual').value.trim() || null)
                 : (osAnterior.anexo_textual || null),
