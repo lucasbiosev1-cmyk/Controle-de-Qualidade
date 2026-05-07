@@ -12699,7 +12699,7 @@ function exibirTabelaEMP(lista) {
         const dataFmt = r.data ? new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR') : '-';
         let acoes = '';
         if (temAcao) {
-            const podeDesfazer = podeAprovar && (r.status === 'APROVADA' || r.status === 'REPROVADA');
+            const podeDesfazer = podeAprovar && (r.status === 'APROVADA' || r.status === 'REPROVADA' || r.status === 'CONCLUÍDA');
             const btnAprRep = (podeAprovar && r.status === 'EM ANÁLISE')
                 ? `<button class="btn-action" style="background:#27ae60;color:white;min-width:82px;" onclick="abrirModalAprovarEMP(${r.id})">✅ Apr/Rep</button>`
                 : podeDesfazer
@@ -13202,6 +13202,10 @@ async function desfazerAprovacaoEMP(id) {
     const idx = entradasMP.findIndex(e => String(e.id) === String(id));
     if (idx < 0) return;
     entradasMP[idx].status = 'EM ANÁLISE';
+    // Reseta também a descarga caso esteja CONCLUÍDA ou DESCARREGANDO
+    if (entradasMP[idx].status_descarga === 'CONCLUÍDA' || entradasMP[idx].status_descarga === 'DESCARREGANDO') {
+        entradasMP[idx].status_descarga = 'FILA';
+    }
     try {
         await dbUpsertOne('entradas_mp', entradasMP[idx]);
         exibirTabelaEMP();
