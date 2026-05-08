@@ -7686,13 +7686,19 @@
                         <div class="form-group"><label>Hora</label><input type="text" id="cadHoraProd" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" oninput="mascaraHora(this)" onchange="gerarLoteAutomatico()"></div>
                         <div class="form-group required">
                             <label>Ração</label>
-                            <div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
-                                <input type="text" id="cadRacaoProdSelect" placeholder="Digite para filtrar..." required autocomplete="new-password" style="width:100%;text-transform:uppercase;"
-                                    oninput="sgqAutocompleteFiltrar(this,'cadRacaoProdSelect','racao'); gerarLoteAutomatico();"
-                                    onfocus="sgqAutocompleteFiltrar(this,'cadRacaoProdSelect','racao')"
-                                    onblur="setTimeout(()=>{const l=document.getElementById('cadRacaoProdSelect_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadRacaoProdSelect');},180)"
-                                    onkeydown="sgqAutocompleteNavegar(event,'cadRacaoProdSelect')">
-                                <ul id="cadRacaoProdSelect_list" class="sgq-autocomplete-list"></ul>
+                            <div style="display:flex;align-items:center;gap:4px;width:100%;">
+                                <div class="sgq-autocomplete-wrap" style="position:relative;flex:1;min-width:0;">
+                                    <input type="text" id="cadRacaoProdSelect" placeholder="Digite para filtrar..." required autocomplete="new-password" style="width:100%;text-transform:uppercase;"
+                                        oninput="sgqAutocompleteFiltrar(this,'cadRacaoProdSelect','racao'); gerarLoteAutomatico();"
+                                        onfocus="sgqAutocompleteFiltrar(this,'cadRacaoProdSelect','racao')"
+                                        onblur="setTimeout(()=>{const l=document.getElementById('cadRacaoProdSelect_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadRacaoProdSelect');},180)"
+                                        onkeydown="sgqAutocompleteNavegar(event,'cadRacaoProdSelect')">
+                                    <ul id="cadRacaoProdSelect_list" class="sgq-autocomplete-list"></ul>
+                                </div>
+                                <button type="button" onclick="abrirPopupNovaRacao()" title="Cadastrar nova ração"
+                                    style="flex:0 0 27px;height:27px;background:#27ae60;color:#fff;border:none;border-radius:4px;font-size:18px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;">+</button>
+                                <button type="button" onclick="abrirPopupRemoverRacao()" title="Remover ração cadastrada"
+                                    style="flex:0 0 27px;height:27px;background:#e74c3c;color:#fff;border:none;border-radius:4px;font-size:20px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;">−</button>
                             </div>
                             <!-- campo oculto mantido para compatibilidade com salvarProducao -->
                             <input type="hidden" id="cadRacaoProd">
@@ -14028,7 +14034,17 @@ function _injetarRacaoEmMemoria(nome) {
         (g.formulacoes || []).some(f => _normalizarNomeRacao(f) === nomeNorm)
     );
     if (!jaExiste) {
-        RACOES_GRUPOS.push({ grupo:nome, label:nome, racoes:[nome], cor:'#7f8c8d', formulacoes:[nome] });
+        const novoItem = { grupo:nome, label:nome, racoes:[nome], cor:'#7f8c8d', formulacoes:[nome] };
+        // Insere antes do primeiro grupo BEPEL (ordem: nativos → customizados → BEPEL)
+        const idxBepel = RACOES_GRUPOS.findIndex(g => _normalizarNomeRacao(g.label||g.grupo||'').startsWith('BEPEL'));
+        let insertAt = idxBepel !== -1 ? idxBepel : RACOES_GRUPOS.length;
+        // Dentro do bloco customizado (cor #7f8c8d), insere em ordem alfabética
+        for (let i = insertAt - 1; i >= 0; i--) {
+            if (RACOES_GRUPOS[i].cor !== '#7f8c8d') break;
+            if ((RACOES_GRUPOS[i].label||RACOES_GRUPOS[i].grupo||''). localeCompare(nome,'pt-BR',{sensitivity:'base'}) <= 0) break;
+            insertAt = i;
+        }
+        RACOES_GRUPOS.splice(insertAt, 0, novoItem);
     }
 }
 
@@ -14103,13 +14119,28 @@ async function _registrarRacaoCustomizada(nomeRacao) {
 async function _carregarRacoesCustomizadas() {
     try {
         const data = await dbGetAll('racoes_customizadas');
-        const nomes = data.map(r => r.nome).filter(Boolean);
+        let nomes = data.map(r => r.nome).filter(Boolean);
+
+        // ── AUTO-CORREÇÃO: MACASSAB → MCASSAB (grafia errada salva no banco) ──
+        for (const row of data) {
+            if (row.nome && /MAC\s*ASSAB/i.test(row.nome)) {
+                const nomeCorrigido = row.nome.replace(/MAC(\s*)ASSAB/gi, 'MCASSAB');
+                try {
+                    await _sbClient.from('racoes_customizadas').update({ nome: nomeCorrigido }).eq('id', row.id);
+                } catch(e) {}
+            }
+        }
+        // Recarrega após correção
+        nomes = nomes.map(n => n.replace(/MAC(\s*)ASSAB/gi, 'MCASSAB'));
+
         // Atualiza cache local
         localStorage.setItem(RACOES_CUSTOM_KEY, JSON.stringify(nomes));
         nomes.forEach(nome => { _injetarRacaoEmMemoria(nome); _injetarRacaoNosSelects(nome); });
     } catch(e) {
         // Fallback: usa cache local se Supabase indisponível
-        _getRacoesCustomizadasCache().forEach(nome => { _injetarRacaoEmMemoria(nome); _injetarRacaoNosSelects(nome); });
+        _getRacoesCustomizadasCache()
+            .map(n => n.replace(/MAC(\s*)ASSAB/gi, 'MCASSAB'))
+            .forEach(nome => { _injetarRacaoEmMemoria(nome); _injetarRacaoNosSelects(nome); });
     }
 }
 
@@ -14119,6 +14150,7 @@ function _restaurarRacoesCustomizadasDOM() {
 }
 
 // Injeta em memória imediatamente (antes do DOM, para RACOES_GRUPOS estar pronto nos parâmetros)
+
 (function() { _getRacoesCustomizadasCache().forEach(_injetarRacaoEmMemoria); })();
 
 // Produtos de Classificação
@@ -25711,31 +25743,26 @@ function _sgqGetFornecedores(tipo) {
     } else if (tipo === 'class') {
         return [...new Set((classificacoes || []).map(r => (r.fornecedor || '').trim().toUpperCase()).filter(Boolean))].sort();
     } else if (tipo === 'racao') {
-        const fixas = [
-            'SOJA MOÍDA','CORTE R1 WISIUM','CORTE R2 WISIUM','CORTE R3 WISIUM',
-            'CORTE R4 WISIUM','CORTE R5 WISIUM','CORTE R6 WISIUM',
-            'CORTE R1 MCASSAB','CORTE R2 MCASSAB','CORTE R3 MCASSAB',
-            'CORTE R4 MCASSAB','CORTE R5 MCASSAB',
-            'POSTURA MCASSAB R1','POSTURA MCASSAB R2','POSTURA MCASSAB R3',
-            'POSTURA MCASSAB R5','POSTURA MCASSAB R6','POSTURA MCASSAB R7',
-            'POSTURA MCASSAB R8','POSTURA MCASSAB R9','POSTURA MCASSAB R 10',
-            'POSTURA TECTRON R7','POSTURA TECTRON R8','POSTURA TECTRON R9',
-            'POSTURA TECTRON R 10','BEPEL CALCÁRIO FINO','BEPEL CALCÁRIO GROSSO'
-        ];
-        const doHistorico = (producoes || []).map(r => (r.racao || '').trim().toUpperCase()).filter(Boolean);
-        const todos = [...new Set([...fixas, ...doHistorico])];
-        return todos.sort((a, b) => {
-            const ia = fixas.indexOf(a);
-            const ib = fixas.indexOf(b);
-            // Ambos na lista fixa: mantém ordem original
-            if (ia !== -1 && ib !== -1) return ia - ib;
-            // Só A está na lista fixa: A vem primeiro
-            if (ia !== -1) return -1;
-            // Só B está na lista fixa: B vem primeiro
-            if (ib !== -1) return 1;
-            // Nenhum está na lista fixa: ordem alfabética
-            return a.localeCompare(b, 'pt-BR');
+        // Fonte única: RACOES_GRUPOS (já contém nativas + customizadas, na ordem correta)
+        const deGrupos = [];
+        (RACOES_GRUPOS || []).forEach(g => {
+            (g.racoes || [g.label || g.grupo]).forEach(r => {
+                if (r) deGrupos.push(r.trim().toUpperCase());
+            });
         });
+        // Adiciona rações do histórico que ainda não estejam listadas (normaliza antes do dedup)
+        const vistas = new Set(deGrupos.map(r => _normalizarNomeRacao(r)));
+        (producoes || []).forEach(r => {
+            const nome = (r.racao || '').trim().toUpperCase();
+            if (!nome) return;
+            const norm = _normalizarNomeRacao(nome);
+            if (!vistas.has(norm)) {
+                vistas.add(norm);
+                // Usa nome normalizado para não exibir grafias erradas do histórico
+                deGrupos.push(nome.replace(/MAC(\s*)ASSAB/gi, 'MCASSAB'));
+            }
+        });
+        return deGrupos;
     }
     return [];
 }
@@ -27337,6 +27364,179 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
 })(); /* fim módulo OS */
+</script>
+
+<!-- ===== POPUP NOVA RAÇÃO ===== -->
+<div id="popupNovaRacao" onclick="if(event.target===this)fecharPopupNovaRacao()" style="display:none;position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
+    <div style="background:#1a2332;border:1px solid #30363d;border-radius:12px;padding:28px 28px 24px;width:420px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,0.7);" onclick="event.stopPropagation()">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <div>
+                <div style="font-size:15px;font-weight:900;color:#27ae60;letter-spacing:.5px;">➕ NOVA RAÇÃO</div>
+                <div style="font-size:11px;color:#8b949e;margin-top:2px;">Cadastre uma nova ração no sistema</div>
+            </div>
+            <button onclick="fecharPopupNovaRacao()" style="background:none;border:none;color:#8b949e;font-size:22px;cursor:pointer;line-height:1;padding:0 4px;">&times;</button>
+        </div>
+        <div style="margin-bottom:20px;">
+            <label style="font-size:11px;font-weight:700;color:#8b949e;text-transform:uppercase;display:block;margin-bottom:6px;">Nome da Ração *</label>
+            <input type="text" id="inputNovaRacao" placeholder="Ex: CORTE R7 WISIUM" autocomplete="off"
+                style="width:100%;padding:10px 12px;border:1px solid #30363d;border-radius:6px;background:#0d1117;color:#e6edf3;font-size:13px;text-transform:uppercase;box-sizing:border-box;outline:none;"
+                oninput="this.value=this.value.toUpperCase()"
+                onkeydown="if(event.key==='Enter')confirmarNovaRacao()">
+            <div id="msgNovaRacao" style="font-size:11px;color:#f85149;margin-top:6px;display:none;"></div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button onclick="fecharPopupNovaRacao()" style="padding:9px 20px;background:#21262d;color:#8b949e;border:1px solid #30363d;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
+            <button onclick="confirmarNovaRacao()" style="padding:9px 24px;background:#27ae60;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">✔ Cadastrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== POPUP REMOVER RAÇÃO ===== -->
+<div id="popupRemoverRacao" onclick="if(event.target===this)fecharPopupRemoverRacao()" style="display:none;position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
+    <div style="background:#1a2332;border:1px solid #30363d;border-radius:12px;padding:28px 28px 24px;width:480px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,0.7);" onclick="event.stopPropagation()">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <div>
+                <div style="font-size:15px;font-weight:900;color:#e74c3c;letter-spacing:.5px;">➖ REMOVER RAÇÃO</div>
+                <div style="font-size:11px;color:#8b949e;margin-top:2px;">Selecione a ração customizada a remover</div>
+            </div>
+            <button onclick="fecharPopupRemoverRacao()" style="background:none;border:none;color:#8b949e;font-size:22px;cursor:pointer;line-height:1;padding:0 4px;">&times;</button>
+        </div>
+        <div style="margin-bottom:20px;">
+            <label style="font-size:11px;font-weight:700;color:#8b949e;text-transform:uppercase;display:block;margin-bottom:6px;">Ração Customizada *</label>
+            <select id="selectRemoverRacao"
+                style="width:100%;padding:10px 12px;border:1px solid #30363d;border-radius:6px;background:#0d1117;color:#e6edf3;font-size:13px;box-sizing:border-box;outline:none;">
+                <option value="">— Selecione uma ração —</option>
+            </select>
+            <div id="msgRemoverRacao" style="font-size:11px;color:#f85149;margin-top:6px;display:none;"></div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button onclick="fecharPopupRemoverRacao()" style="padding:9px 20px;background:#21262d;color:#8b949e;border:1px solid #30363d;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
+            <button onclick="confirmarRemoverRacao()" style="padding:9px 24px;background:#e74c3c;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">🗑 Remover</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── POPUP NOVA RAÇÃO ──────────────────────────────────────────
+window.abrirPopupNovaRacao = function() {
+    var popup = document.getElementById('popupNovaRacao');
+    if (!popup) { alert('Popup não encontrado'); return; }
+    var inp = document.getElementById('inputNovaRacao');
+    var msg = document.getElementById('msgNovaRacao');
+    if (inp) inp.value = '';
+    if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
+    popup.style.display = 'flex';
+    setTimeout(function(){ if (inp) inp.focus(); }, 80);
+};
+
+window.fecharPopupNovaRacao = function() {
+    var popup = document.getElementById('popupNovaRacao');
+    if (popup) popup.style.display = 'none';
+};
+
+window.confirmarNovaRacao = async function() {
+    var inp = document.getElementById('inputNovaRacao');
+    var msg = document.getElementById('msgNovaRacao');
+    var nome = (inp ? inp.value : '').trim().toUpperCase();
+    if (!nome) {
+        msg.textContent = 'Informe o nome da ração.';
+        msg.style.display = 'block';
+        if (inp) inp.focus();
+        return;
+    }
+    var nomeNorm = typeof _normalizarNomeRacao === 'function' ? _normalizarNomeRacao(nome) : nome;
+    var jaExiste = (RACOES_GRUPOS).some(function(g) {
+        return (g.racoes || []).some(function(r){ return (typeof _normalizarNomeRacao==='function'?_normalizarNomeRacao(r):r) === nomeNorm; }) ||
+               (g.formulacoes || []).some(function(f){ return (typeof _normalizarNomeRacao==='function'?_normalizarNomeRacao(f):f) === nomeNorm; });
+    });
+    if (jaExiste) {
+        msg.textContent = 'Essa ração já está cadastrada no sistema.';
+        msg.style.display = 'block';
+        return;
+    }
+    msg.style.display = 'none';
+    window.fecharPopupNovaRacao();
+    if (typeof _registrarRacaoCustomizada === 'function') await _registrarRacaoCustomizada(nome);
+};
+
+// ── POPUP REMOVER RAÇÃO ──────────────────────────────────────
+window.abrirPopupRemoverRacao = function() {
+    var popup = document.getElementById('popupRemoverRacao');
+    var sel   = document.getElementById('selectRemoverRacao');
+    var msg   = document.getElementById('msgRemoverRacao');
+    if (!popup || !sel) return;
+    // Lista todas as rações em memória (nativas + customizadas)
+    sel.innerHTML = '<option value="">— Selecione uma ração —</option>';
+    var todasRacoes = [];
+    (RACOES_GRUPOS || []).forEach(function(g) {
+        (g.racoes || [g.label || g.grupo]).forEach(function(r) {
+            if (r && todasRacoes.indexOf(r) === -1) todasRacoes.push(r);
+        });
+    });
+    if (todasRacoes.length === 0) {
+        var opt = document.createElement('option');
+        opt.disabled = true;
+        opt.textContent = 'Nenhuma ração cadastrada';
+        sel.appendChild(opt);
+    } else {
+        todasRacoes.forEach(function(nome) {
+            var opt = document.createElement('option');
+            opt.value = nome; opt.textContent = nome;
+            sel.appendChild(opt);
+        });
+    }
+    if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
+    popup.style.display = 'flex';
+};
+
+window.fecharPopupRemoverRacao = function() {
+    var popup = document.getElementById('popupRemoverRacao');
+    if (popup) popup.style.display = 'none';
+};
+
+window.confirmarRemoverRacao = async function() {
+    var sel  = document.getElementById('selectRemoverRacao');
+    var msg  = document.getElementById('msgRemoverRacao');
+    var nome = sel ? sel.value : '';
+    if (!nome) {
+        if (msg) { msg.textContent = 'Selecione uma ração para remover.'; msg.style.display = 'block'; }
+        return;
+    }
+    if (msg) msg.style.display = 'none';
+    var nomeNorm = typeof _normalizarNomeRacao === 'function' ? _normalizarNomeRacao(nome) : nome;
+    // Remove da memória
+    if (typeof RACOES_GRUPOS !== "undefined") {
+        var idx = RACOES_GRUPOS.findIndex(function(g){
+            return (typeof _normalizarNomeRacao==='function'?_normalizarNomeRacao(g.label||g.grupo||''):g.label||g.grupo||'') === nomeNorm;
+        });
+        if (idx !== -1) RACOES_GRUPOS.splice(idx, 1);
+    }
+    // Remove do cache local
+    try {
+        var cache = (typeof _getRacoesCustomizadasCache==='function' ? _getRacoesCustomizadasCache() : []).filter(function(n){
+            return (typeof _normalizarNomeRacao==='function'?_normalizarNomeRacao(n):n) !== nomeNorm;
+        });
+        localStorage.setItem('sgq_racoes_customizadas_v1', JSON.stringify(cache));
+    } catch(e) {}
+    // Remove dos selects DOM
+    ['filterRacaoProd','relRacao'].forEach(function(id){
+        var el = document.getElementById(id);
+        if (!el) return;
+        Array.from(el.options).forEach(function(o){
+            if ((typeof _normalizarNomeRacao==='function'?_normalizarNomeRacao(o.value):o.value) === nomeNorm) o.remove();
+        });
+    });
+    // Remove do Supabase (tenta nas duas tabelas: nativas não têm entrada em racoes_customizadas, tudo bem)
+    try {
+        var res = await _sbClient.from('racoes_customizadas').delete().eq('nome', nome);
+        if (typeof _registrarAuditoria==='function') _registrarAuditoria('DELETE','racoes_customizadas',null,{nome}).catch(function(){});
+        if (typeof sgqToast==='function') sgqToast('Ração "'+nome+'" removida com sucesso!','success');
+    } catch(e) {
+        if (typeof sgqToast==='function') sgqToast('Ração "'+nome+'" removida com sucesso!','success');
+    }
+    try { if (typeof renderizarTabelasParametros==='function') renderizarTabelasParametros(); } catch(e) {}
+    window.fecharPopupRemoverRacao();
+};
 </script>
 
 </body>
