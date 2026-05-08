@@ -3386,6 +3386,42 @@
             background:#fdecea; border-radius:4px; padding:4px 8px; display:inline-block;
         }
         html[data-theme="dark"] .os-card-rejeicao { background:#2e0d0d; color:#f85149; }
+
+        /* ── Dashboard OS Tela Inicial ── */
+        .dash-os-tab { transition: all .15s; }
+        .dash-os-tab.ativo {
+            background: #0d2137 !important;
+            color: #58a6ff !important;
+            border-color: #1a3a5e !important;
+        }
+        .dash-os-tab:hover:not(.ativo) {
+            background: #1c2430 !important;
+            color: #e6edf3 !important;
+        }
+        .dash-os-card-setor {
+            background: var(--gh-canvas-subtle);
+            border: 1px solid var(--gh-border-default);
+            border-radius: 8px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: border-color .15s, background .15s;
+            border-top: 3px solid transparent;
+        }
+        .dash-os-card-setor:hover { background: #1c2430; }
+        .dash-os-card-setor.selecionado {
+            background: #0d2137;
+            border-color: #1a3a5e;
+        }
+        @media (max-width:900px) {
+            #dashOSCardsSetores, #dashOSCardsDetalhe { grid-template-columns: repeat(3,1fr) !important; }
+        }
+        @media (max-width:700px) {
+            #dashOSCardsSetores, #dashOSCardsDetalhe { grid-template-columns: 1fr 1fr !important; }
+        }
+        @media (max-width:600px) {
+            #dashOSKpiStrip { grid-template-columns: 1fr 1fr !important; }
+            #dashOSVisResumo > div:last-child { grid-template-columns: 1fr !important; }
+        }
 </style>
 </head>
 <body>
@@ -3616,206 +3652,118 @@
 
     <!-- ===== ABA CAPA ===== -->
     <div id="aba-capa" class="tab-content active">
-        <div id="abaCapa">
-            <div class="capa-inner">
 
-                <!-- Saudação -->
-                <div class="capa-welcome">
-                    <div class="capa-welcome-left">
-                        <h2>Bem-vindo, <span id="capaNomeUsuario">Usuário</span> 👋</h2>
-                        <p>Aqui está o resumo do laboratório de hoje.</p>
-                    </div>
-                    <div class="capa-welcome-date" id="capaDataHoje"></div>
-                </div>
+      <!-- ═══════════════════════════════════════════════
+           DASHBOARD OS POR SETOR  (tela inicial integrada)
+           ═══════════════════════════════════════════════ -->
 
-                <!-- Navegação de Mês -->
-                <div id="kpiNavMes" style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-                    <button onclick="kpiNavegar(-1)" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:inherit;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700;">◀</button>
-                    <span id="kpiNavLabel" style="font-size:13px;font-weight:700;letter-spacing:1px;min-width:140px;text-align:center;"></span>
-                    <button onclick="kpiNavegar(+1)" id="kpiBtnProximo" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:inherit;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700;">▶</button>
-                </div>
-
-                <!-- KPIs -->
-                <div class="capa-kpis">
-                    <!-- Card 1: Conformidade Produção -->
-                    <div class="capa-kpi">
-                        <div class="capa-kpi-accent" style="background:#27ae60;"></div>
-                        <div class="capa-kpi-top">
-                            <div class="capa-kpi-label">Conformidade — Produção</div>
-                            <div class="capa-kpi-icon" style="background:#edfaf4;">🌾</div>
-                        </div>
-                        <div style="display:flex;align-items:baseline;gap:4px;">
-                            <div class="capa-kpi-value" id="kpiConfProd" style="color:#27ae60;">—</div>
-                            <span class="kpi-trend" id="kpiConfProdTrend"></span>
-                        </div>
-                        <div class="capa-kpi-row">
-                            <div class="capa-kpi-sub capa-kpi-up">Lotes dentro do limite</div>
-                            <span class="capa-kpi-badge" id="kpiConfProdP" style="background:#edfaf4;color:#27ae60;">—</span>
-                        </div>
-                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiConfProdBar" style="width:0%;background:#27ae60;"></div></div>
-                    </div>
-                    <!-- Card 2: Conformidade MP -->
-                    <div class="capa-kpi">
-                        <div class="capa-kpi-accent" style="background:#8e44ad;"></div>
-                        <div class="capa-kpi-top">
-                            <div class="capa-kpi-label">Conformidade — Mat. Prima</div>
-                            <div class="capa-kpi-icon" style="background:#f5eef8;">🧪</div>
-                        </div>
-                        <div style="display:flex;align-items:baseline;gap:4px;">
-                            <div class="capa-kpi-value" id="kpiConfMP" style="color:#8e44ad;">—</div>
-                            <span class="kpi-trend" id="kpiConfMPTrend"></span>
-                        </div>
-                        <div class="capa-kpi-row">
-                            <div class="capa-kpi-sub" style="color:#aaa;">MP dentro dos parâmetros</div>
-                            <span class="capa-kpi-badge" id="kpiConfMPP" style="background:#f5eef8;color:#8e44ad;">—</span>
-                        </div>
-                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiConfMPBar" style="width:0%;background:#8e44ad;"></div></div>
-                    </div>
-                    <!-- Card 3: Classificação de Grãos -->
-                    <div class="capa-kpi">
-                        <div class="capa-kpi-accent" style="background:#e67e22;"></div>
-                        <div class="capa-kpi-top">
-                            <div class="capa-kpi-label">Classificação de Grãos</div>
-                            <div class="capa-kpi-icon" style="background:#fef5ec;">🌽</div>
-                        </div>
-                        <div style="display:flex;align-items:baseline;gap:4px;">
-                            <div class="capa-kpi-value" id="kpiConfClassVal" style="color:#e67e22;">—</div>
-                            <span class="kpi-trend" id="kpiConfClassTrend"></span>
-                        </div>
-                        <div class="capa-kpi-row">
-                            <div class="capa-kpi-sub" style="color:#aaa;">Grãos dentro do limite</div>
-                            <span class="capa-kpi-badge" id="kpiConfClassP" style="background:#fef5ec;color:#e67e22;">—</span>
-                        </div>
-                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiConfClassBar" style="background:#e67e22;width:0%;"></div></div>
-                        <div style="font-size:9px;color:#bbb;margin-top:4px;font-weight:600;font-family:'Montserrat',Arial,sans-serif;" id="kpiConfClassSub">—</div>
-                    </div>
-                    <!-- Card 4: Conformidade Geral -->
-                    <div class="capa-kpi">
-                        <div class="capa-kpi-accent" style="background:#1a2a6e;"></div>
-                        <div class="capa-kpi-top">
-                            <div class="capa-kpi-label">Conformidade Geral (mês)</div>
-                            <div class="capa-kpi-icon" style="background:#eef2ff;">📊</div>
-                        </div>
-                        <div style="display:flex;align-items:baseline;gap:4px;">
-                            <div class="capa-kpi-value" id="kpiConfGeralVal" style="color:#1a2a6e;">—</div>
-                            <span class="kpi-trend" id="kpiConfGeralTrend" style="color:#888;"></span>
-                        </div>
-                        <div class="capa-kpi-row">
-                            <div class="capa-kpi-sub" style="color:#aaa;">Prod + MP + Class</div>
-                            <span class="capa-kpi-badge" id="kpiConfGeralSub" style="background:#eef2ff;color:#1a2a6e;">—</span>
-                        </div>
-                        <div class="capa-kpi-bar"><div class="capa-kpi-bar-fill" id="kpiConfGeralBar" style="width:0%;background:#1a2a6e;"></div></div>
-                    </div>
-                </div>
-
-                <!-- Linha de módulos: Análises Hoje + NC em Aberto + S/ Parâmetro -->
-                <div class="capa-kpi-modulos" style="margin-bottom:18px;">
-                    <div class="kpi-mod" style="border-left-color:#1a2a6e;">
-                        <div class="kpi-mod-label">Análises Hoje</div>
-                        <div class="kpi-mod-row">
-                            <span class="kpi-mod-val" id="kpiAnalises" style="color:#1a2a6e;">—</span>
-                        </div>
-                        <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiAnalisesBar" style="background:#1a2a6e;width:0%;"></div></div>
-                        <div class="kpi-mod-sub"><span id="kpiAnalisesP">—</span></div>
-                    </div>
-                    <div class="kpi-mod" style="border-left-color:#c0392b;">
-                        <div class="kpi-mod-label">NC do Mês</div>
-                        <div class="kpi-mod-row">
-                            <span class="kpi-mod-val" id="kpiNcAbertas" style="color:#c0392b;">—</span>
-                        </div>
-                        <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiNcBar" style="background:#c0392b;width:0%;"></div></div>
-                        <div class="kpi-mod-sub"><span id="kpiNcVencidaSub">—</span> NC no ano</div>
-                    </div>
-                    <div class="kpi-mod" style="border-left-color:#c0392b;">
-                        <div class="kpi-mod-label">NC <span id="kpiMilhoLabelMes">—</span> — Milho</div>
-                        <div class="kpi-mod-row">
-                            <span class="kpi-mod-val" id="kpiNcMilhoMes" style="color:#c0392b;">—</span>
-                        </div>
-                        <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiNcMilhoBar" style="background:#c0392b;width:0%;"></div></div>
-                        <div class="kpi-mod-sub"><span id="kpiNcMilhoAno">—</span> NC no ano</div>
-                    </div>
-                    <div class="kpi-mod" style="border-left-color:#c0392b;">
-                        <div class="kpi-mod-label">NC <span id="kpiSojaLabelMes">—</span> — Soja</div>
-                        <div class="kpi-mod-row">
-                            <span class="kpi-mod-val" id="kpiNcSojaMes" style="color:#c0392b;">—</span>
-                        </div>
-                        <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiNcSojaBar" style="background:#c0392b;width:0%;"></div></div>
-                        <div class="kpi-mod-sub"><span id="kpiNcSojaAno">—</span> NC no ano</div>
-                    </div>
-                </div>
-
-                <!-- Painel de Alertas -->
-                <div class="capa-alertas">
-                    <div class="capa-alertas-titulo">
-                        Alertas ativos
-                        <span class="alerta-badge-count" id="alertaCount" style="display:none;">0</span>
-                    </div>
-                    <div id="painelAlertas">
-                        <div class="sem-alertas">Calculando alertas...</div>
-                    </div>
-                </div>
-
-                <!-- Módulos -->
-                <div class="capa-sec-title">Módulos do sistema</div>
-                <div class="capa-cards">
-                    <div class="capa-card" id="capaCardProducao" onclick="trocarAba('producao', document.getElementById('tabProducao'))">
-                        <div class="capa-card-icon" style="background:#eef2ff;">🌾</div>
-                        <div class="capa-card-info">
-                            <div class="capa-card-label">Produção</div>
-                            <div class="capa-card-desc">Lançar e consultar lotes</div>
-                        </div>
-                        <span class="capa-card-arrow">›</span>
-                    </div>
-                    <div class="capa-card" id="capaCardMateriaPrima" onclick="trocarAba('materiaPrima', document.getElementById('tabMateriaPrima'))">
-                        <div class="capa-card-icon" style="background:#edfaf6;">🧪</div>
-                        <div class="capa-card-info">
-                            <div class="capa-card-label">Matéria Prima</div>
-                            <div class="capa-card-desc">Análises de MP recebida</div>
-                        </div>
-                        <span class="capa-card-arrow">›</span>
-                    </div>
-                    <div class="capa-card" id="capaCardClassificacao" onclick="trocarAba('classificacao', document.getElementById('tabClassificacao'))">
-                        <div class="capa-card-icon" style="background:#fef9ee;">🌽</div>
-                        <div class="capa-card-info">
-                            <div class="capa-card-label">Classificação</div>
-                            <div class="capa-card-desc">Grãos e insumos</div>
-                        </div>
-                        <span class="capa-card-arrow">›</span>
-                    </div>
-                    <div class="capa-card" id="capaCardRelatorio" onclick="trocarAba('relatorio', document.getElementById('tabRelatorio'))">
-                        <div class="capa-card-icon" style="background:#eef2ff;">📊</div>
-                        <div class="capa-card-info">
-                            <div class="capa-card-label">Rel. Produção</div>
-                            <div class="capa-card-desc">Relatórios por período</div>
-                        </div>
-                        <span class="capa-card-arrow">›</span>
-                    </div>
-                    <div class="capa-card" id="capaCardRelMP" onclick="trocarAba('relMP', document.getElementById('tabRelMP'))">
-                        <div class="capa-card-icon" style="background:#fef0ee;">📋</div>
-                        <div class="capa-card-info">
-                            <div class="capa-card-label">Rel. Mat. Prima</div>
-                            <div class="capa-card-desc">Análise de qualidade MP</div>
-                        </div>
-                        <span class="capa-card-arrow">›</span>
-                    </div>
-                    <div class="capa-card" id="capaCardEntradaMP" onclick="trocarAba('entradaMP', document.getElementById('tabEntradaMP'))">
-                        <div class="capa-card-icon" style="background:#f4f4f2;">📥</div>
-                        <div class="capa-card-info">
-                            <div class="capa-card-label">Entradas MP</div>
-                            <div class="capa-card-desc">Cadastro de recebimentos</div>
-                        </div>
-                        <span class="capa-card-arrow">›</span>
-                    </div>
-                </div>
-
-                <!-- Rodapé capa -->
-                <div class="capa-rodape">
-                    <span>© 2026 <strong>Agronor Alimentos</strong> — Uso interno</span>
-                    <span>Sistema de Gestão da Qualidade v2.0</span>
-                </div>
-
-            </div>
+      <!-- ─── Cabeçalho do Dashboard ─── -->
+      <div class="dash-header" id="dashHeaderOS" style="border-bottom:1px solid var(--gh-border-default);background:var(--gh-canvas-subtle);display:flex;align-items:center;justify-content:space-between;padding:14px 20px 12px;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div id="dashIconeOS" style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1a3a5e,#0d2137);border:1px solid #1a3a5e;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">📊</div>
+          <div>
+            <div id="dashTituloOS" style="font-size:14px;font-weight:700;color:var(--gh-fg-default);letter-spacing:.3px;">Dashboard — Ordens de Serviço</div>
+            <div id="dashSubtituloOS" style="font-size:11px;color:var(--gh-fg-muted);margin-top:1px;letter-spacing:.5px;text-transform:uppercase;">Carregando…</div>
+          </div>
         </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div id="dashSaudacaoOS" style="font-size:12px;color:var(--gh-fg-muted);font-weight:600;"></div>
+          <button id="dashBtnAtualizarOS" onclick="dashOSInicializar()" style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;background:transparent;border:1px solid var(--gh-border-default);color:var(--gh-fg-muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='#58a6ff';this.style.color='#58a6ff'" onmouseout="this.style.borderColor='';this.style.color=''">
+            <span id="dashReloadIconOS" style="display:inline-block;">↻</span> Atualizar
+          </button>
+        </div>
+      </div>
+
+      <!-- ─── Body do Dashboard ─── -->
+      <div style="padding:16px 20px 24px;max-width:1200px;margin:0 auto;">
+
+        <!-- Loading -->
+        <div id="dashOSLoading" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:220px;gap:12px;color:var(--gh-fg-muted);font-size:12px;">
+          <div style="width:28px;height:28px;border:2px solid rgba(88,166,255,.15);border-top-color:#58a6ff;border-radius:50%;animation:sgq-spin .8s linear infinite;"></div>
+          <div>Buscando ordens de serviço…</div>
+        </div>
+
+        <!-- Erro -->
+        <div id="dashOSErro" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:8px;color:#e74c3c;font-size:12px;text-align:center;">
+          <div style="font-size:28px;">⚠️</div>
+          <div id="dashOSErroMsg">Não foi possível carregar os dados.</div>
+        </div>
+
+        <!-- Conteúdo principal -->
+        <div id="dashOSConteudo" style="display:none;">
+
+          <!-- KPI strip -->
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px;" id="dashOSKpiStrip">
+            <div id="dashKpiAgAp"  style="background:var(--gh-canvas-subtle);border:1px solid var(--gh-border-default);border-radius:8px;padding:11px 14px;border-top:3px solid #e67e22;">
+              <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gh-fg-muted);margin-bottom:5px;">Ag. Aprovação</div>
+              <div id="dashKpiAgApNum" style="font-size:24px;font-weight:700;line-height:1;">—</div>
+              <div style="font-size:10px;color:var(--gh-fg-muted);margin-top:2px;">⏳ Pendentes</div>
+            </div>
+            <div id="dashKpiAgEx" style="background:var(--gh-canvas-subtle);border:1px solid var(--gh-border-default);border-radius:8px;padding:11px 14px;border-top:3px solid #2ecc71;">
+              <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gh-fg-muted);margin-bottom:5px;">Ag. Execução</div>
+              <div id="dashKpiAgExNum" style="font-size:24px;font-weight:700;line-height:1;">—</div>
+              <div style="font-size:10px;color:var(--gh-fg-muted);margin-top:2px;">✅ Aprovadas</div>
+            </div>
+            <div id="dashKpiExec" style="background:var(--gh-canvas-subtle);border:1px solid var(--gh-border-default);border-radius:8px;padding:11px 14px;border-top:3px solid #3498db;">
+              <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gh-fg-muted);margin-bottom:5px;">Em Execução</div>
+              <div id="dashKpiExecNum" style="font-size:24px;font-weight:700;line-height:1;">—</div>
+              <div style="font-size:10px;color:var(--gh-fg-muted);margin-top:2px;">🔨 Em andamento</div>
+            </div>
+            <div id="dashKpiConc" style="background:var(--gh-canvas-subtle);border:1px solid var(--gh-border-default);border-radius:8px;padding:11px 14px;border-top:3px solid #9b59b6;">
+              <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gh-fg-muted);margin-bottom:5px;">Concluídas</div>
+              <div id="dashKpiConcNum" style="font-size:24px;font-weight:700;line-height:1;">—</div>
+              <div style="font-size:10px;color:var(--gh-fg-muted);margin-top:2px;">✔ Finalizadas</div>
+            </div>
+            <div id="dashKpiRej" style="background:var(--gh-canvas-subtle);border:1px solid var(--gh-border-default);border-radius:8px;padding:11px 14px;border-top:3px solid #e74c3c;">
+              <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gh-fg-muted);margin-bottom:5px;">Rejeitadas</div>
+              <div id="dashKpiRejNum" style="font-size:24px;font-weight:700;line-height:1;">—</div>
+              <div style="font-size:10px;color:var(--gh-fg-muted);margin-top:2px;">❌ Reprovadas</div>
+            </div>
+          </div>
+
+          <!-- Tabs de visualização -->
+          <div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;" id="dashOSTabs">
+            <button class="dash-os-tab ativo" onclick="dashOSTrocarVis('resumo',this)" style="padding:6px 15px;border-radius:20px;border:1px solid #21262d;background:transparent;color:var(--gh-fg-muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;">Resumo geral</button>
+            <button class="dash-os-tab" onclick="dashOSTrocarVis('comparativo',this)" style="padding:6px 15px;border-radius:20px;border:1px solid #21262d;background:transparent;color:var(--gh-fg-muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;">Comparativo</button>
+            <button class="dash-os-tab" onclick="dashOSTrocarVis('detalhe',this)" style="padding:6px 15px;border-radius:20px;border:1px solid #21262d;background:transparent;color:var(--gh-fg-muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;">Detalhe por setor</button>
+          </div>
+
+          <!-- ── RESUMO ── -->
+          <div id="dashOSVisResumo">
+            <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--gh-fg-muted);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #21262d;">Total de OS por setor</div>
+            <div id="dashOSCardsSetores" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px;"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div style="background:var(--gh-canvas-subtle);border:1px solid var(--gh-border-default);border-radius:12px;padding:14px 16px;">
+                <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gh-fg-muted);margin-bottom:12px;">Distribuição geral</div>
+                <div style="position:relative;height:200px;"><canvas id="dashOSChartPizza"></canvas></div>
+                <div id="dashOSLegendaPizza" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;"></div>
+              </div>
+              <div style="background:var(--gh-canvas-subtle);border:1px solid var(--gh-border-default);border-radius:12px;padding:14px 16px;">
+                <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gh-fg-muted);margin-bottom:12px;">% concluídas por setor</div>
+                <div style="position:relative;height:200px;"><canvas id="dashOSChartConclusao"></canvas></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── COMPARATIVO ── -->
+          <div id="dashOSVisComparativo" style="display:none;">
+            <div style="background:var(--gh-canvas-subtle);border:1px solid var(--gh-border-default);border-radius:12px;padding:14px 16px;">
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gh-fg-muted);margin-bottom:12px;">Status por setor — barras empilhadas</div>
+              <div style="position:relative;height:300px;"><canvas id="dashOSChartEmpilhado"></canvas></div>
+              <div id="dashOSLegendaEmpilhado" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;"></div>
+            </div>
+          </div>
+
+          <!-- ── DETALHE ── -->
+          <div id="dashOSVisDetalhe" style="display:none;">
+            <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--gh-fg-muted);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #21262d;">Selecione um setor</div>
+            <div id="dashOSCardsDetalhe" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px;"></div>
+            <div id="dashOSDetalheConteudo"></div>
+          </div>
+
+        </div><!-- /dashOSConteudo -->
+      </div><!-- /body -->
+
     </div>
 
     <!-- ===== ABA PRODUÇÃO ===== -->
@@ -6123,12 +6071,11 @@
                     <label>Setor</label>
                     <select id="osFiltroSetor" onchange="osRenderizar()">
                         <option value="">Todos</option>
-                        <option>Laboratório</option>
+                        <option>Qualidade</option>
                         <option>Produção</option>
                         <option>Manutenção</option>
-                        <option>Qualidade</option>
-                        <option>Almoxarifado</option>
-                        <option>Administrativo</option>
+                        <option>Segurança</option>
+                        <option>ADM</option>
                     </select>
                 </div>
                 <div class="os-filtro-grupo">
@@ -6216,13 +6163,11 @@
                             <label>Setor <span class="os-req">*</span></label>
                             <select id="osSetor">
                                 <option value="">Selecione...</option>
-                                <option>Laboratório</option>
+                                <option>Qualidade</option>
                                 <option>Produção</option>
                                 <option>Manutenção</option>
-                                <option>Qualidade</option>
-                                <option>Almoxarifado</option>
-                                <option>Administrativo</option>
                                 <option>Segurança</option>
+                                <option>ADM</option>
                             </select>
                         </div>
                         <div class="os-form-group" style="flex:1.5;">
@@ -7236,6 +7181,27 @@
                 </div>
                 <input type="hidden" id="novoUsuarioSenhaConf">
                 <div class="perm-section-title">🔐 Permissões de Acesso</div>
+
+                <!-- ── Seletor de Dashboard Inicial ── -->
+                <div style="background:#f4f8ff;border:1.5px solid #d0e0f5;border-radius:8px;padding:14px 16px;margin-bottom:14px;" id="dashTipoSeletorWrap">
+                    <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#1a5276;margin-bottom:10px;">🖥️ Dashboard da Tela Inicial</div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <label id="dashTipoLabelQual" style="flex:1;min-width:160px;cursor:pointer;border:2px solid #27ae60;border-radius:8px;padding:10px 14px;background:#eafaf1;display:flex;align-items:center;gap:10px;transition:all .15s;">
+                            <input type="radio" name="dashTipoUsuario" id="dashTipoQualidade" value="qualidade" checked style="accent-color:#27ae60;width:15px;height:15px;">
+                            <div>
+                                <div style="font-size:12px;font-weight:800;color:#1e8449;">📊 Qualidade</div>
+                                <div style="font-size:10px;color:#555;margin-top:2px;">Painel de OS por setor (todos)</div>
+                            </div>
+                        </label>
+                        <label id="dashTipoLabelMan" style="flex:1;min-width:160px;cursor:pointer;border:2px solid #bdc3c7;border-radius:8px;padding:10px 14px;background:#fafafa;display:flex;align-items:center;gap:10px;transition:all .15s;">
+                            <input type="radio" name="dashTipoUsuario" id="dashTipoManutencao" value="manutencao" style="accent-color:#e67e22;width:15px;height:15px;">
+                            <div>
+                                <div style="font-size:12px;font-weight:800;color:#c0392b;">🔧 Manutenção</div>
+                                <div style="font-size:10px;color:#555;margin-top:2px;">Painel focado em OS de manutenção</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
                 <div class="perm-modal-grid" id="permModalGrid"></div>
                 <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
                     <button class="btn-cancelar-usuario" onclick="fecharModalUsuario()">Cancelar</button>
@@ -8472,9 +8438,17 @@ async function fazerLogin() {
         localStorage.removeItem('classificacoes');
         localStorage.removeItem('materias_primas');
 
-        sgqMostrarLoading('Carregando seus dados...');
+        // ── Mostra o dashboard instantaneamente, sem esperar os dados pesados ──
+        sgqOcultarLoading();
+        atualizarKpisCapa(); // inicializa dashboard OS já (com dados vazios por ora)
+        if (typeof _iaAtualizarMenuAdmin === 'function') _iaAtualizarMenuAdmin();
+
+        // Agenda e OS iniciam logo
+        if (typeof _agendaInicializar === 'function') setTimeout(_agendaInicializar, 300);
+        if (typeof _osInicializar === 'function')     setTimeout(_osInicializar, 400);
+
+        // Dados pesados carregam em background (não bloqueiam a tela)
         carregarTodosAsync().then(() => {
-            sgqOcultarLoading();
             _inicializarFiltrosDataMesAtual();
             exibirTabelaProd();
             exibirTabelaClass();
@@ -8482,17 +8456,7 @@ async function fazerLogin() {
             carregarNCeDevSupabase().catch(() => {});
             if (perfilAtual === 'admin') verificarEspacoAoIniciar();
             if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
-            atualizarKpisCapa();
-            if (typeof _iaAtualizarMenuAdmin === 'function') _iaAtualizarMenuAdmin();
-            // ── Agenda: verifica compromissos do dia e exibe popup ──
-            if (typeof _agendaInicializar === 'function') {
-                setTimeout(_agendaInicializar, 800);
-            }
-            // ── Ordem de Serviço: carrega dados ──
-            if (typeof _osInicializar === 'function') {
-                setTimeout(_osInicializar, 1000);
-            }
-        }).catch(() => sgqOcultarLoading());
+        }).catch(() => {});
 
     } catch(e) {
         err.textContent = 'Erro de conexão. Verifique sua internet e tente novamente.';
@@ -16468,6 +16432,13 @@ function abrirModalNovoUsuario() {
     PERMS_DISPONIVEIS.forEach(pd => defaultPerms[pd.key] = false);
     document.getElementById('permModalGrid').innerHTML = _buildPermGrid(defaultPerms, false);
 
+    // ── Reset dashboard tipo ──
+    const rQual = document.getElementById('dashTipoQualidade');
+    if (rQual) { rQual.checked = true; }
+    const seletorWrap = document.getElementById('dashTipoSeletorWrap');
+    if (seletorWrap) seletorWrap.style.display = '';
+    if (typeof window._dashTipoAtualizarVisual === 'function') window._dashTipoAtualizarVisual('qualidade');
+
     document.getElementById('modalUsuario').classList.add('show');
     setTimeout(() => document.getElementById('novoUsuarioNome').focus(), 100);
 }
@@ -16498,6 +16469,22 @@ function abrirModalEditarUsuario(login) {
         document.getElementById('permModalGrid').insertAdjacentHTML('beforeend',
             '<p style="grid-column:1/-1;font-size:11px;color:#f39c12;margin:8px 0 0;padding:8px;background:#fef9e7;border-radius:4px;border:1px solid #fdebd0;">⚠️ Administradores têm acesso total a todas as funcionalidades.</p>'
         );
+    }
+
+    // ── Popular dashboard tipo ──
+    const seletorWrap = document.getElementById('dashTipoSeletorWrap');
+    const rQual = document.getElementById('dashTipoQualidade');
+    const rMan  = document.getElementById('dashTipoManutencao');
+
+    // Seletor de dashboard disponível para TODOS os usuários, incluindo admin
+    if (seletorWrap) seletorWrap.style.display = '';
+    let permsUsuario = u.perms || {};
+    if (typeof permsUsuario === 'string') { try { permsUsuario = JSON.parse(permsUsuario); } catch(e) { permsUsuario = {}; } }
+    const tipoSalvo = permsUsuario.dashboard_manutencao ? 'manutencao' : 'qualidade';
+    if (rQual && rMan) {
+        rQual.checked = (tipoSalvo === 'qualidade');
+        rMan.checked  = (tipoSalvo === 'manutencao');
+        if (typeof window._dashTipoAtualizarVisual === 'function') window._dashTipoAtualizarVisual(tipoSalvo);
     }
 
     document.getElementById('modalUsuario').classList.add('show');
@@ -16538,12 +16525,23 @@ function salvarUsuario() {
         perms[pd.key] = cb ? cb.checked : false;
     });
 
+    // ── Dashboard tipo: lê do radio button e sobrescreve a permissão ──
+    const rManEl = document.getElementById('dashTipoManutencao');
+    perms['dashboard_manutencao'] = !!(rManEl && rManEl.checked);
+
     if (editando) {
         // Edição: atualiza nome e permissões
         USUARIOS[editando].nome  = nome;
-        if (USUARIOS[editando].perfil !== 'admin') USUARIOS[editando].perms = perms;
+        if (USUARIOS[editando].perfil !== 'admin') {
+            USUARIOS[editando].perms = perms;
+        } else {
+            // Admin: preserva permissões existentes mas salva o dashboard escolhido
+            USUARIOS[editando].perms = Object.assign({}, USUARIOS[editando].perms || {}, {
+                dashboard_manutencao: perms.dashboard_manutencao
+            });
+        }
         const userId = USUARIOS[editando]?.id || editando;
-        _atualizarUsuarioSupabase(userId, { nome, perms }).then(() => renderizarListaUsuarios());
+        _atualizarUsuarioSupabase(userId, { nome, perms: USUARIOS[editando].perms }).then(() => renderizarListaUsuarios());
     } else {
         // Criação: insere na tabela perfis vinculando ao email do Supabase Auth
         const novo = { email: emailRaw, username: loginRaw, nome, perfil: 'usuario', perms, ativo: true };
@@ -19530,21 +19528,23 @@ document.addEventListener('DOMContentLoaded', async function() {
                 aplicarPermissoes();
                 carregarParametros();
                 setTimeout(sgqIniciarPresenca, 800);
-                sgqMostrarLoading('Carregando seus dados...');
+
+                // ── Mostra sistema imediatamente ──
+                sgqOcultarLoading();
+                atualizarKpisCapa();
+                if (typeof _iaAtualizarMenuAdmin === 'function') _iaAtualizarMenuAdmin();
+                if (typeof _agendaInicializar === 'function') setTimeout(_agendaInicializar, 300);
+                if (typeof _osInicializar === 'function')     setTimeout(_osInicializar, 400);
+
+                // Dados pesados em background
                 carregarTodosAsync().then(() => {
-                    return carregarNCeDevSupabase().catch(() => {});
-                }).then(() => {
-                    sgqOcultarLoading();
+                    carregarNCeDevSupabase().catch(() => {});
                     exibirTabelaProd();
                     exibirTabelaClass();
                     exibirTabelaMP();
-                    atualizarKpisCapa();
                     if (perfilAtual === 'admin') verificarEspacoAoIniciar();
                     if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
-                    if (typeof _iaAtualizarMenuAdmin === 'function') _iaAtualizarMenuAdmin();
-                    // ── Agenda: login automático ──
-                    if (typeof _agendaInicializar === 'function') setTimeout(_agendaInicializar, 800);
-                }).catch(() => sgqOcultarLoading());
+                }).catch(() => {});
                 return;
             }
         }
@@ -26279,6 +26279,8 @@ document.addEventListener('DOMContentLoaded', function() {
     'use strict';
 
     let _listaOS = [];
+    // Expõe em window para o dashboard OS atualizar sem rebuscar do banco
+    Object.defineProperty(window, '_listaOS', { get: () => _listaOS, set: v => { _listaOS = v; } });
     let _osViewId = null;
     const TABELA = 'ordens_servico';
 
@@ -26933,6 +26935,7 @@ document.addEventListener('DOMContentLoaded', function() {
             osFecharModal();
             osRenderizar();
             sgqToast(id ? '✅ OS atualizada!' : '✅ OS criada com sucesso!', 'success');
+            if (typeof window.dashOSRefreshLocal === 'function') window.dashOSRefreshLocal();
 
             if (novoStatus === 'Aguardando Execução')    sgqToast('✅ OS aprovada — Aguardando Execução!', 'success');
             if (novoStatus === 'Rejeitada')   sgqToast('❌ OS Rejeitada: ' + justificativa, 'warning');
@@ -26952,6 +26955,7 @@ document.addEventListener('DOMContentLoaded', function() {
         osFecharModal();
         osRenderizar();
         sgqToast('🗑️ OS excluída.', 'success');
+        if (typeof window.dashOSRefreshLocal === 'function') window.dashOSRefreshLocal();
     };
 
     window.osLimparFiltros = function() {
@@ -27537,6 +27541,431 @@ window.confirmarRemoverRacao = async function() {
     try { if (typeof renderizarTabelasParametros==='function') renderizarTabelasParametros(); } catch(e) {}
     window.fecharPopupRemoverRacao();
 };
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     DASHBOARD OS POR SETOR — TELA INICIAL INTEGRADA
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+'use strict';
+
+// ── Configuração ────────────────────────────────────────────────
+const DASH_OS_TABELA = 'ordens_servico';
+
+// Setores do sistema completo
+const DASH_OS_SETORES_QUALIDADE = [
+    { nome: 'Qualidade',  cor: '#bc8cff', icon: '🔬' },
+    { nome: 'Produção',   cor: '#3fb950', icon: '🌾' },
+    { nome: 'Manutenção', cor: '#f0883e', icon: '🔧' },
+    { nome: 'Segurança',  cor: '#f85149', icon: '🛡️' },
+    { nome: 'ADM',        cor: '#58a6ff', icon: '🏢' },
+];
+
+const DASH_OS_SETORES_MANUTENCAO = [
+    { nome: 'Manutenção', cor: '#f0883e', icon: '🔧' },
+    { nome: 'Produção',   cor: '#3fb950', icon: '🌾' },
+    { nome: 'Qualidade',  cor: '#bc8cff', icon: '🔬' },
+    { nome: 'Segurança',  cor: '#f85149', icon: '🛡️' },
+    { nome: 'ADM',        cor: '#58a6ff', icon: '🏢' },
+];
+
+const DASH_OS_STATUS_LIST = [
+    'Aguardando Aprovação',
+    'Aguardando Execução',
+    'Em Execução',
+    'Concluída',
+    'Rejeitada',
+];
+const DASH_OS_STATUS_CORES = {
+    'Aguardando Aprovação': '#e67e22',
+    'Aguardando Execução':  '#2ecc71',
+    'Em Execução':          '#3498db',
+    'Concluída':            '#9b59b6',
+    'Rejeitada':            '#e74c3c',
+};
+const DASH_OS_STATUS_EMOJI = {
+    'Aguardando Aprovação': '⏳',
+    'Aguardando Execução':  '✅',
+    'Em Execução':          '🔨',
+    'Concluída':            '✔',
+    'Rejeitada':            '❌',
+};
+
+// ── Estado ───────────────────────────────────────────────────────
+let _dashOSDados = [];
+let _dashOSSetorSel = null;
+let _dashOSCharts = {};
+let _dashOSTipoAtual = 'qualidade'; // 'qualidade' | 'manutencao'
+
+// ── Helpers ──────────────────────────────────────────────────────
+function _dashPct(n, t) { return t ? Math.round(n / t * 100) : 0; }
+
+function _dashOSGetSetores() {
+    return _dashOSTipoAtual === 'manutencao'
+        ? DASH_OS_SETORES_MANUTENCAO
+        : DASH_OS_SETORES_QUALIDADE;
+}
+
+function _dashOSProcessar(lista) {
+    const setores = _dashOSGetSetores();
+    return setores.map(s => {
+        const osSetor = lista.filter(o => o.setor === s.nome);
+        const counts = {};
+        DASH_OS_STATUS_LIST.forEach(st => { counts[st] = 0; });
+        osSetor.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
+        return { ...s, ...counts, total: osSetor.length };
+    });
+}
+
+function _dashOSAtualizarKPIs(lista) {
+    const s = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    s('dashKpiAgApNum', lista.filter(o => o.status === 'Aguardando Aprovação').length);
+    s('dashKpiAgExNum', lista.filter(o => o.status === 'Aguardando Execução').length);
+    s('dashKpiExecNum', lista.filter(o => o.status === 'Em Execução').length);
+    s('dashKpiConcNum', lista.filter(o => o.status === 'Concluída').length);
+    s('dashKpiRejNum',  lista.filter(o => o.status === 'Rejeitada').length);
+}
+
+function _dashOSAtualizarSubtitulo(lista) {
+    const el = document.getElementById('dashSubtituloOS');
+    if (!el) return;
+    const agora = new Date().toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    const tipo = _dashOSTipoAtual === 'manutencao' ? 'Manutenção' : 'Qualidade';
+    el.textContent = `${lista.length} OS registradas · ${tipo} · ${agora}`;
+}
+
+function _dashOSAtualizarTitulo() {
+    const isManu = _dashOSTipoAtual === 'manutencao';
+    const titulo = document.getElementById('dashTituloOS');
+    const icone  = document.getElementById('dashIconeOS');
+    if (titulo) titulo.textContent = isManu
+        ? 'Dashboard — Ordens de Serviço · Manutenção'
+        : 'Dashboard — Ordens de Serviço por Setor';
+    if (icone) icone.textContent = isManu ? '🔧' : '📊';
+}
+
+// ── Detectar tipo de dashboard pelo perfil do usuário ─────────────
+function _dashOSDetectarTipo() {
+    try {
+        if (typeof usuarioAtual !== 'undefined' && typeof USUARIOS !== 'undefined') {
+            const u = USUARIOS[usuarioAtual] || {};
+            let perms = u.perms || {};
+            if (typeof perms === 'string') { try { perms = JSON.parse(perms); } catch(e) { perms = {}; } }
+
+            // Lê o perfil direto do objeto do usuário — mais confiável que perfilAtual no momento do boot
+            const perfilDoUsuario = u.perfil || perfilAtual || '';
+            const isAdmin = (perfilDoUsuario === 'admin');
+            const flagManu = !!perms.dashboard_manutencao;
+
+            console.log('[DashOS] usuario:', usuarioAtual, '| perfil:', perfilDoUsuario, '| isAdmin:', isAdmin, '| dashboard_manutencao:', flagManu);
+
+            // Admin abre sempre em Qualidade por padrão; demais usuários seguem a preferência salva
+            if (!isAdmin && flagManu) {
+                _dashOSTipoAtual = 'manutencao';
+            } else {
+                _dashOSTipoAtual = 'qualidade';
+            }
+            console.log('[DashOS] tipo detectado:', _dashOSTipoAtual);
+        }
+    } catch(e) {
+        _dashOSTipoAtual = 'qualidade';
+        console.error('[DashOS] erro detectar tipo:', e);
+    }
+}
+
+// ── Refresh rápido do dashboard usando dados já em memória ───────
+window.dashOSRefreshLocal = function() {
+    if (!Array.isArray(window._listaOS)) return;
+    const setores = _dashOSGetSetores();
+    const nomesSetores = setores.map(s => s.nome);
+    const lista = window._listaOS.filter(o => nomesSetores.includes(o.setor));
+    _dashOSDados = _dashOSProcessar(lista);
+    _dashOSAtualizarKPIs(lista);
+    _dashOSAtualizarSubtitulo(lista);
+    _dashOSRenderResumo();
+    const conteudo = document.getElementById('dashOSConteudo');
+    if (conteudo) conteudo.style.display = '';
+};
+
+// ── Carregar dados do Supabase ────────────────────────────────────
+async function _dashOSCarregarDados() {
+    // _sbClient é const declarado no escopo global do script principal
+    // eslint-disable-next-line no-undef
+    const sb = (typeof _sbClient !== 'undefined') ? _sbClient : null;
+    if (!sb || typeof sb.from !== 'function') {
+        throw new Error('Cliente Supabase não inicializado. Faça login primeiro.');
+    }
+
+    const setores = _dashOSGetSetores();
+    const nomesSetores = setores.map(s => s.nome);
+
+    const { data, error } = await sb
+        .from(DASH_OS_TABELA)
+        .select('id, setor, status, created_at')
+        .in('setor', nomesSetores);
+
+    if (error) throw error;
+    return data || [];
+}
+
+// ── Renderizar cards de setor ─────────────────────────────────────
+function _dashOSRenderCards(containerId, modoDetalhe) {
+    const c = document.getElementById(containerId);
+    if (!c) return;
+    c.innerHTML = _dashOSDados.map((s, i) => {
+        const p = _dashPct(s['Concluída'], s.total);
+        const sel = (modoDetalhe && _dashOSSetorSel === i) ? 'selecionado' : '';
+        const onclick = modoDetalhe ? `dashOSSelecionarDetalhe(${i})` : '';
+        return `<div class="dash-os-card-setor ${sel}" style="border-top-color:${s.cor};" ${onclick ? `onclick="${onclick}"` : ''}>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--gh-fg-muted);margin-bottom:6px;">${s.icon || ''} ${s.nome}</div>
+          <div style="font-size:24px;font-weight:700;line-height:1;color:var(--gh-fg-default);margin-bottom:2px;">${s.total}</div>
+          <div style="font-size:11px;color:var(--gh-fg-muted);">${p}% concluídas</div>
+          <div style="height:3px;border-radius:2px;margin-top:10px;background:#30363d;overflow:hidden;">
+            <div style="height:100%;border-radius:2px;width:${p}%;background:${s.cor};transition:width .4s ease;"></div>
+          </div>
+        </div>`;
+    }).join('');
+}
+
+// ── Renderizar aba Resumo ─────────────────────────────────────────
+function _dashOSRenderResumo() {
+    _dashOSRenderCards('dashOSCardsSetores', false);
+
+    const labels    = _dashOSDados.map(s => s.nome);
+    const totais    = _dashOSDados.map(s => s.total);
+    const cores     = _dashOSDados.map(s => s.cor);
+    const gridColor = 'rgba(139,148,158,0.12)';
+    const tickColor = '#8b949e';
+
+    if (_dashOSCharts.pizza) { try { _dashOSCharts.pizza.destroy(); } catch(e) {} }
+    const ctxP = document.getElementById('dashOSChartPizza');
+    if (ctxP) {
+        _dashOSCharts.pizza = new Chart(ctxP, {
+            type: 'doughnut',
+            data: {
+                labels,
+                datasets: [{ data: totais, backgroundColor: cores, borderWidth: 2, borderColor: '#161b22', hoverOffset: 6 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                cutout: '65%',
+            }
+        });
+    }
+
+    const lp = document.getElementById('dashOSLegendaPizza');
+    if (lp) lp.innerHTML = _dashOSDados.map(s =>
+        `<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gh-fg-muted);">
+          <span style="width:8px;height:8px;border-radius:2px;flex-shrink:0;background:${s.cor};display:inline-block;"></span>
+          ${s.nome} <strong style="color:var(--gh-fg-default);margin-left:3px;">${s.total}</strong>
+        </div>`
+    ).join('');
+
+    const pctConc = _dashOSDados.map(s => _dashPct(s['Concluída'], s.total));
+    if (_dashOSCharts.conclusao) { try { _dashOSCharts.conclusao.destroy(); } catch(e) {} }
+    const ctxC = document.getElementById('dashOSChartConclusao');
+    if (ctxC) {
+        _dashOSCharts.conclusao = new Chart(ctxC, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{ label: '% Concluídas', data: pctConc, backgroundColor: cores, borderRadius: 5 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: tickColor, font: { size: 11 }, maxRotation: 20 } },
+                    y: { min: 0, max: 100, ticks: { callback: v => v + '%', color: tickColor, font: { size: 11 } }, grid: { color: gridColor } }
+                }
+            }
+        });
+    }
+}
+
+// ── Renderizar aba Comparativo ────────────────────────────────────
+function _dashOSRenderComparativo() {
+    const labels    = _dashOSDados.map(s => s.nome);
+    const gridColor = 'rgba(139,148,158,0.12)';
+    const tickColor = '#8b949e';
+    const datasets  = DASH_OS_STATUS_LIST.map(st => ({
+        label: st,
+        data: _dashOSDados.map(s => s[st] || 0),
+        backgroundColor: DASH_OS_STATUS_CORES[st],
+        borderRadius: 3,
+        borderSkipped: false,
+    }));
+
+    if (_dashOSCharts.empilhado) { try { _dashOSCharts.empilhado.destroy(); } catch(e) {} }
+    const ctxE = document.getElementById('dashOSChartEmpilhado');
+    if (ctxE) {
+        _dashOSCharts.empilhado = new Chart(ctxE, {
+            type: 'bar',
+            data: { labels, datasets },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { stacked: true, grid: { display: false }, ticks: { color: tickColor, font: { size: 11 } } },
+                    y: { stacked: true, ticks: { color: tickColor, font: { size: 11 } }, grid: { color: gridColor } }
+                }
+            }
+        });
+    }
+
+    const le = document.getElementById('dashOSLegendaEmpilhado');
+    if (le) le.innerHTML = DASH_OS_STATUS_LIST.map(st =>
+        `<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gh-fg-muted);">
+          <span style="width:8px;height:8px;border-radius:2px;flex-shrink:0;background:${DASH_OS_STATUS_CORES[st]};display:inline-block;"></span>
+          ${DASH_OS_STATUS_EMOJI[st]} ${st}
+        </div>`
+    ).join('');
+}
+
+// ── Detalhe por setor ─────────────────────────────────────────────
+window.dashOSSelecionarDetalhe = function(idx) {
+    _dashOSSetorSel = idx;
+    document.querySelectorAll('#dashOSCardsDetalhe .dash-os-card-setor').forEach((el, i) => {
+        el.classList.toggle('selecionado', i === idx);
+    });
+    const s = _dashOSDados[idx];
+    const rows = DASH_OS_STATUS_LIST.map(st => {
+        const q = s[st] || 0;
+        const p = _dashPct(q, s.total);
+        return `<div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:11px;color:var(--gh-fg-muted);min-width:190px;white-space:nowrap;">${DASH_OS_STATUS_EMOJI[st]} ${st}</div>
+          <div style="flex:1;height:16px;background:#30363d;border-radius:4px;overflow:hidden;">
+            <div style="height:100%;border-radius:4px;width:${p}%;background:${DASH_OS_STATUS_CORES[st]};transition:width .5s ease;"></div>
+          </div>
+          <div style="font-size:12px;font-weight:700;min-width:38px;text-align:right;">${p}%</div>
+          <div style="font-size:11px;color:var(--gh-fg-muted);min-width:48px;text-align:right;">${q} OS</div>
+        </div>`;
+    }).join('');
+
+    const cont = document.getElementById('dashOSDetalheConteudo');
+    if (cont) cont.innerHTML = `
+        <div style="background:var(--gh-canvas-subtle);border:1px solid var(--gh-border-default);border-radius:12px;padding:16px 18px;border-top:3px solid ${s.cor};">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="font-size:15px;font-weight:700;color:${s.cor};">${s.icon || '🏢'} ${s.nome}</div>
+            <div style="font-size:12px;color:var(--gh-fg-muted);">${s.total} OS no total</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">${rows}</div>
+        </div>`;
+};
+
+// ── Trocar visualização ───────────────────────────────────────────
+window.dashOSTrocarVis = function(vis, btn) {
+    ['resumo', 'comparativo', 'detalhe'].forEach(v => {
+        const el = document.getElementById('dashOSVis' + v.charAt(0).toUpperCase() + v.slice(1));
+        if (el) el.style.display = (v === vis) ? '' : 'none';
+    });
+    document.querySelectorAll('.dash-os-tab').forEach(t => t.classList.remove('ativo'));
+    if (btn) btn.classList.add('ativo');
+    if (vis === 'comparativo') _dashOSRenderComparativo();
+    if (vis === 'detalhe') {
+        _dashOSRenderCards('dashOSCardsDetalhe', true);
+        if (_dashOSSetorSel !== null) dashOSSelecionarDetalhe(_dashOSSetorSel);
+    }
+};
+
+// ── Inicialização principal ───────────────────────────────────────
+window.dashOSInicializar = async function() {
+    const loading = document.getElementById('dashOSLoading');
+    const conteudo = document.getElementById('dashOSConteudo');
+    const erro     = document.getElementById('dashOSErro');
+    const btnAtt   = document.getElementById('dashBtnAtualizarOS');
+    const reloadIc = document.getElementById('dashReloadIconOS');
+
+    if (loading)  loading.style.display  = 'flex';
+    if (conteudo) conteudo.style.display = 'none';
+    if (erro)     erro.style.display     = 'none';
+    if (reloadIc) reloadIc.style.animation = 'sgq-spin .7s linear infinite';
+
+    try {
+        _dashOSDetectarTipo();
+        _dashOSAtualizarTitulo();
+
+        // Saudação personalizada
+        const saudacao = document.getElementById('dashSaudacaoOS');
+        if (saudacao && typeof usuarioAtual !== 'undefined' && typeof USUARIOS !== 'undefined') {
+            const u = USUARIOS[usuarioAtual] || {};
+            const nomeP = (u.nome || usuarioAtual || '').split(' ')[0];
+            const hora  = new Date().getHours();
+            const greet = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
+            saudacao.textContent = nomeP ? `${greet}, ${nomeP} 👋` : '';
+        }
+
+        const lista = await _dashOSCarregarDados();
+        _dashOSDados = _dashOSProcessar(lista);
+        _dashOSAtualizarKPIs(lista);
+        _dashOSAtualizarSubtitulo(lista);
+
+        // Resetar para tab Resumo
+        document.querySelectorAll('.dash-os-tab').forEach((t, i) => {
+            t.classList.toggle('ativo', i === 0);
+        });
+        ['Comparativo','Detalhe'].forEach(v => {
+            const el = document.getElementById('dashOSVis' + v);
+            if (el) el.style.display = 'none';
+        });
+        const elResumo = document.getElementById('dashOSVisResumo');
+        if (elResumo) elResumo.style.display = '';
+
+        _dashOSRenderResumo();
+
+        if (loading)  loading.style.display  = 'none';
+        if (conteudo) conteudo.style.display = '';
+
+    } catch(e) {
+        if (loading)  loading.style.display  = 'none';
+        if (erro)     erro.style.display      = 'flex';
+        const msgEl = document.getElementById('dashOSErroMsg');
+        if (msgEl) msgEl.textContent = 'Erro ao carregar dados: ' + (e.message || e);
+        console.error('[DashOS] erro:', e);
+    } finally {
+        if (reloadIc) reloadIc.style.animation = '';
+    }
+};
+
+// ── Hook: inicializar quando o sistema carregar ───────────────────
+// Aguarda o carregarTodosAsync() terminar — sobrescreve a função de KPIs
+const _origAtualizarKpisCapa = window.atualizarKpisCapa;
+window.atualizarKpisCapa = function() {
+    if (typeof _origAtualizarKpisCapa === 'function') {
+        try { _origAtualizarKpisCapa(); } catch(e) {}
+    }
+    // Pequeno delay para garantir que USUARIOS e perfilAtual já foram populados
+    setTimeout(window.dashOSInicializar, 400);
+};
+
+// ── Helper visual para seletor de dashboard no modal de usuário ──
+window._dashTipoAtualizarVisual = function(tipo) {
+    const lQual = document.getElementById('dashTipoLabelQual');
+    const lMan  = document.getElementById('dashTipoLabelMan');
+    if (!lQual || !lMan) return;
+    if (tipo === 'manutencao') {
+        lQual.style.borderColor = '#bdc3c7';
+        lQual.style.background  = '#fafafa';
+        lMan.style.borderColor  = '#e67e22';
+        lMan.style.background   = '#fef5ec';
+    } else {
+        lQual.style.borderColor = '#27ae60';
+        lQual.style.background  = '#eafaf1';
+        lMan.style.borderColor  = '#bdc3c7';
+        lMan.style.background   = '#fafafa';
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const rQual = document.getElementById('dashTipoQualidade');
+    const rMan  = document.getElementById('dashTipoManutencao');
+    if (rQual) rQual.addEventListener('change', () => window._dashTipoAtualizarVisual('qualidade'));
+    if (rMan)  rMan.addEventListener('change',  () => window._dashTipoAtualizarVisual('manutencao'));
+});
+
+})(); // fim IIFE
 </script>
 
 </body>
