@@ -8256,11 +8256,18 @@ async function _atualizarUsuarioSupabase(userId, dados) {
     try {
         const payload = { nome: dados.nome, perms: JSON.stringify(dados.perms || {}) };
         if (dados.perfil) payload.perfil = dados.perfil;
-        const { error } = await _sbClient
+        console.log('[SAVE_USUARIO] userId:', userId, '| payload:', JSON.stringify(payload));
+        const { data, error } = await _sbClient
             .from('perfis')
             .update(payload)
-            .eq('id', userId);
+            .eq('id', userId)
+            .select();
+        console.log('[SAVE_USUARIO] resultado:', JSON.stringify(data), '| erro:', error);
         if (error) throw new Error(error.message);
+        if (!data || data.length === 0) {
+            sgqToast('⚠️ Nenhum registro atualizado — verifique o ID do usuário.', 'warning');
+            return;
+        }
         sgqToast('Usuário atualizado com sucesso!', 'success');
     } catch(e) {
         sgqToast('Erro ao atualizar usuário: ' + e.message, 'error');
