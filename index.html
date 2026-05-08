@@ -27651,14 +27651,23 @@ function _dashOSDetectarTipo() {
         if (typeof usuarioAtual !== 'undefined' && typeof USUARIOS !== 'undefined') {
             const u = USUARIOS[usuarioAtual] || {};
             let perms = u.perms || {};
-            if (typeof perms === 'string') { try { perms = JSON.parse(perms); } catch(e) { perms = {}; } }
+            // Garante que perms é sempre objeto (pode chegar como string JSON do banco)
+            if (typeof perms === 'string') {
+                try { perms = JSON.parse(perms); } catch(e) { perms = {}; }
+            }
+            if (typeof perms !== 'object' || perms === null) perms = {};
 
-            // Lê o perfil direto do objeto do usuário — mais confiável que perfilAtual no momento do boot
             const perfilDoUsuario = u.perfil || perfilAtual || '';
             const isAdmin = (perfilDoUsuario === 'admin');
-            const flagManu = !!perms.dashboard_manutencao;
+            // Lê explicitamente como booleano — evita truthy acidental
+            const flagManu = perms.dashboard_manutencao === true;
 
-            console.log('[DashOS] usuario:', usuarioAtual, '| perfil:', perfilDoUsuario, '| isAdmin:', isAdmin, '| dashboard_manutencao:', flagManu);
+            console.log('[DashOS] usuario:', usuarioAtual,
+                '| perfil:', perfilDoUsuario,
+                '| isAdmin:', isAdmin,
+                '| perms bruto:', JSON.stringify(perms),
+                '| dashboard_manutencao:', perms.dashboard_manutencao,
+                '| flagManu:', flagManu);
 
             // Admin abre sempre em Qualidade por padrão; demais usuários seguem a preferência salva
             if (!isAdmin && flagManu) {
