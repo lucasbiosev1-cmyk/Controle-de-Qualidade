@@ -12861,7 +12861,7 @@ function exibirTabelaEMP(lista) {
             // Normaliza valor atual
             let sdVal = statusDesc;
             if (sdVal === 'NA FILA' || sdVal === '' ) sdVal = 'FILA';
-            // Estilos por valor
+            // Estilos por valor — idênticos ao _empStatusBadge (span de ANÁLISE)
             const sdStyles = {
                 'FILA':         'background:#e8eaf6;color:#3949ab;',
                 'DESCARREGANDO':'background:#fff3e0;color:#e65100;',
@@ -12873,10 +12873,15 @@ function exibirTabelaEMP(lista) {
                 'CONCLUÍDA':    '✅ CONCLUÍDA'
             };
             const sdStyle = sdStyles[sdVal] || 'background:#eee;color:#555;';
+            const sdLabel = sdLabels[sdVal] || sdVal;
             const opts = ['FILA','DESCARREGANDO','CONCLUÍDA'].map(v =>
                 `<option value="${v}" ${v===sdVal?'selected':''}>${sdLabels[v]}</option>`
             ).join('');
-            descargaCell = `<select id="sel-desc-${r.id}" onchange="alterarStatusDescargaEMP(${r.id}, this.value)" onclick="event.stopPropagation()" style="${sdStyle}border:none;border-radius:12px;padding:3px 10px;font-size:10px;font-weight:bold;font-family:inherit;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;text-align:center;flex-shrink:0;">${opts}</select>`;
+            // ▼ Badge como <span> idêntico ao de ANÁLISE + <select> invisível sobreposto
+            descargaCell = `<span style="position:relative;display:inline-flex;align-items:center;">` +
+                `<span style="${sdStyle}padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;white-space:nowrap;cursor:pointer;">${sdLabel} ▾</span>` +
+                `<select id="sel-desc-${r.id}" onchange="alterarStatusDescargaEMP(${r.id}, this.value)" onclick="event.stopPropagation()" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:none;">${opts}</select>` +
+                `</span>`;
         }
         const podeEditarLinha = podeEditar && r.status !== 'CONCLUÍDA';
         const dblclickAttr = podeEditarLinha ? `ondblclick="editarEntradaMP(${r.id})" title="Clique duplo para editar"` : '';
@@ -12925,10 +12930,8 @@ async function alterarStatusDescargaEMP(id, novoStatus) {
     } else if (novoStatus === 'FILA' || novoStatus === 'DESCARREGANDO') {
         if (entradasMP[idx].status === 'CONCLUÍDA') entradasMP[idx].status = 'APROVADA';
     }
-    // Atualiza cor do select imediatamente
+    // Atualiza a tabela inteira — o badge é recriado com o novo status
     const sdStyles = { 'FILA':'background:#e8eaf6;color:#3949ab;', 'DESCARREGANDO':'background:#fff3e0;color:#e65100;', 'CONCLUÍDA':'background:#d5f4e6;color:#1a7a4a;' };
-    const sel = document.getElementById('sel-desc-' + id);
-    if (sel) { sel.style.cssText = sel.style.cssText.replace(/background:[^;]+;color:[^;]+;/, sdStyles[novoStatus] || ''); }
     try {
         await dbUpsertOne('entradas_mp', entradasMP[idx]);
     } catch(e) {
