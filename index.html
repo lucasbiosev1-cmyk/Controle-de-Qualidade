@@ -3669,7 +3669,7 @@
       <!-- ═══════════════════════════════════════════════
            DASHBOARD DE QUALIDADE — KPIs DO LABORATÓRIO
            ═══════════════════════════════════════════════ -->
-      <div id="dashQualidadeWrap" style="padding:20px 24px 0; background:var(--gh-canvas-default);">
+      <div id="dashQualidadeWrap" style="padding:20px 24px 0; background:var(--gh-canvas-default);display:none;">
 
         <!-- Boas-vindas + navegação de mês -->
         <div class="capa-welcome">
@@ -3772,7 +3772,7 @@
       <!-- ═══════════════════════════════════════════════
            DASHBOARD OS POR SETOR  (tela inicial integrada)
            ═══════════════════════════════════════════════ -->
-      <div id="dashOSWrap">
+      <div id="dashOSWrap" style="display:none">
 
       <!-- ─── Cabeçalho do Dashboard ─── -->
       <div class="dash-header" id="dashHeaderOS" style="border-bottom:1px solid var(--gh-border-default);background:var(--gh-canvas-subtle);display:flex;align-items:center;justify-content:space-between;padding:14px 20px 12px;flex-wrap:wrap;gap:10px;">
@@ -8590,6 +8590,10 @@ async function fazerLogin() {
         // ── Mostra o dashboard instantaneamente com dados do mês atual ──
         sgqOcultarLoading();
         if (typeof _iaAtualizarMenuAdmin === 'function') _iaAtualizarMenuAdmin();
+
+        // ✅ Detecta tipo de dashboard ANTES de qualquer renderização
+        // Evita flash de "Qualidade → OS" para usuários de manutenção
+        if (typeof _dashOSDetectarTipo === 'function') _dashOSDetectarTipo();
 
         // Agenda e OS iniciam logo
         if (typeof _agendaInicializar === 'function') setTimeout(_agendaInicializar, 300);
@@ -19741,6 +19745,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 // ── Mostra sistema imediatamente ──
                 sgqOcultarLoading();
                 if (typeof _iaAtualizarMenuAdmin === 'function') _iaAtualizarMenuAdmin();
+
+                // ✅ Detecta tipo de dashboard ANTES de qualquer renderização
+                if (typeof _dashOSDetectarTipo === 'function') _dashOSDetectarTipo();
+
                 if (typeof _agendaInicializar === 'function') setTimeout(_agendaInicializar, 300);
                 if (typeof _osInicializar === 'function')     setTimeout(_osInicializar, 400);
 
@@ -28157,6 +28165,9 @@ window.dashOSTrocarVis = function(vis, btn) {
 
 // ── Inicialização principal ───────────────────────────────────────
 window.dashOSInicializar = async function() {
+    // ✅ Garante que os wrappers corretos estão visíveis ANTES do loading
+    _dashOSDetectarTipo();
+
     const loading = document.getElementById('dashOSLoading');
     const conteudo = document.getElementById('dashOSConteudo');
     const erro     = document.getElementById('dashOSErro');
@@ -28217,13 +28228,30 @@ window.dashOSInicializar = async function() {
 
 // ── Hook: inicializar quando o sistema carregar ───────────────────
 const _origAtualizarKpisCapa = window.atualizarKpisCapa;
+let _dashOSInitTimer = null;
+let _dashOSJaInicializado = false; // bloqueia chamadas extras no mesmo login
+
+// Reseta o flag ao fazer logout
+const _origFazerLogout = window.fazerLogout;
+window.fazerLogout = async function() {
+    _dashOSJaInicializado = false;
+    if (_dashOSInitTimer) { clearTimeout(_dashOSInitTimer); _dashOSInitTimer = null; }
+    if (typeof _origFazerLogout === 'function') return _origFazerLogout.apply(this, arguments);
+};
+
 window.atualizarKpisCapa = function() {
     // Detecta tipo ANTES de qualquer renderização
     if (typeof _dashOSDetectarTipo === 'function') _dashOSDetectarTipo();
 
     if (_dashOSTipoAtual === 'manutencao') {
-        // Dashboard OS: não roda os KPIs de qualidade
-        setTimeout(window.dashOSInicializar, 400);
+        // Dashboard OS: ignora chamadas extras se já inicializou neste login
+        if (_dashOSJaInicializado) return;
+        if (_dashOSInitTimer) clearTimeout(_dashOSInitTimer);
+        _dashOSInitTimer = setTimeout(function() {
+            _dashOSInitTimer = null;
+            _dashOSJaInicializado = true;
+            window.dashOSInicializar();
+        }, 500);
     } else {
         // Dashboard Qualidade: roda os KPIs, não inicializa OS
         if (typeof _origAtualizarKpisCapa === 'function') {
