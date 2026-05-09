@@ -1196,6 +1196,11 @@
                 flex-wrap: wrap;
                 gap: 4px;
             }
+            /* Alinha label verticalmente com o centro dos badges de status */
+            #tabelaEMPMain tbody tr td[data-label="ANÁLISE"],
+            #tabelaEMPMain tbody tr td[data-label="DESCARGA"] {
+                align-items: center;
+            }
 
             /* Número sequencial no canto superior direito do card */
             #tabelaEMPMain tbody tr td:first-child {
@@ -2967,7 +2972,7 @@
 
         /* ── KPI cards — linha de módulos ── */
         .capa-kpi-modulos { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 8px; }
-        .kpi-mod { background:#161b22; border-radius:9px; padding:12px 16px; border-left:2px solid rgba(255,255,255,0.15); border: 1px solid #30363d; border-left:2px solid rgba(255,255,255,0.15); }
+        .kpi-mod { background:#161b22; border-radius:9px; padding:12px 16px; border-left:2px solid rgba(255,255,255,0.15); border: 1px solid #30363d; border-left:2px solid rgba(255,255,255,0.15); display:flex; flex-direction:column; }
         .kpi-mod-label { font-size:9px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:rgba(255,255,255,0.3); font-family:'Montserrat',Arial,sans-serif; margin-bottom:4px; }
         .kpi-mod-row { display:flex; align-items:baseline; gap:6px; }
         .kpi-mod-val { font-size:22px; font-weight:900; font-family:'Montserrat',Arial,sans-serif; line-height:1; }
@@ -3003,8 +3008,8 @@
         .sem-alertas { text-align:center; padding:18px; color:rgba(255,255,255,0.3); font-size:11px; font-family:'Montserrat',Arial,sans-serif; background:#161b22; border-radius:10px; border:1px dashed rgba(255,255,255,0.1); }
         @media (max-width:900px) { .capa-kpi-modulos { grid-template-columns:1fr 1fr; } }
         @media (max-width:600px) { .capa-kpi-modulos { grid-template-columns:1fr; } }
-        @media (max-width: 900px) { .capa-kpis { grid-template-columns: repeat(2,1fr); } .capa-cards { grid-template-columns: repeat(2,1fr); } }
-        @media (max-width: 600px) { .capa-cards { grid-template-columns: 1fr; } .capa-bottom { grid-template-columns: 1fr; } .capa-kpis { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 900px) { .capa-kpis { grid-template-columns: repeat(2,1fr); } .capa-cards { grid-template-columns: repeat(2,1fr); } .capa-kpis-sec { grid-template-columns: repeat(2,1fr) !important; } }
+        @media (max-width: 600px) { .capa-cards { grid-template-columns: 1fr; } .capa-bottom { grid-template-columns: 1fr; } .capa-kpis { grid-template-columns: repeat(2,1fr); } .capa-kpis-sec { grid-template-columns: repeat(2,1fr) !important; } }
 
         /* ── Bloco produto avaliado (ranking) ── */
         .rk-produto-bloco {
@@ -3730,7 +3735,7 @@
         </div>
 
         <!-- Linha 2: 4 KPIs secundários -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;">
+        <div class="capa-kpis-sec" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;">
           <!-- Análises Hoje -->
           <div class="kpi-mod" style="border-left-color:#58a6ff;">
             <div class="kpi-mod-label">Análises Hoje</div>
