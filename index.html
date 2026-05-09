@@ -15,7 +15,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Sistema de Sistema Gestão da Qualidade</title>
+    <title>Sistema de Gestão da Qualidade [v8.14]</title>
     <!-- ✅ MELHORIA SEGURANÇA: Supabase JS SDK oficial (gerencia JWT automaticamente) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -27654,40 +27654,8 @@ function _dashOSAtualizarTitulo() {
 
 // ── Detectar tipo de dashboard pelo perfil do usuário ─────────────
 function _dashOSDetectarTipo() {
-    try {
-        if (typeof usuarioAtual !== 'undefined' && typeof USUARIOS !== 'undefined') {
-            const u = USUARIOS[usuarioAtual] || {};
-            let perms = u.perms || {};
-            // Garante que perms é sempre objeto (pode chegar como string JSON do banco)
-            if (typeof perms === 'string') {
-                try { perms = JSON.parse(perms); } catch(e) { perms = {}; }
-            }
-            if (typeof perms !== 'object' || perms === null) perms = {};
-
-            const perfilDoUsuario = u.perfil || perfilAtual || '';
-            const isAdmin = (perfilDoUsuario === 'admin');
-            // Lê explicitamente como booleano — evita truthy acidental
-            const flagManu = perms.dashboard_manutencao === true;
-
-            console.log('[DashOS] usuario:', usuarioAtual,
-                '| perfil:', perfilDoUsuario,
-                '| isAdmin:', isAdmin,
-                '| perms bruto:', JSON.stringify(perms),
-                '| dashboard_manutencao:', perms.dashboard_manutencao,
-                '| flagManu:', flagManu);
-
-            // Admin abre sempre em Qualidade por padrão; demais usuários seguem a preferência salva
-            if (!isAdmin && flagManu) {
-                _dashOSTipoAtual = 'manutencao';
-            } else {
-                _dashOSTipoAtual = 'qualidade';
-            }
-            console.log('[DashOS] tipo detectado:', _dashOSTipoAtual);
-        }
-    } catch(e) {
-        _dashOSTipoAtual = 'qualidade';
-        console.error('[DashOS] erro detectar tipo:', e);
-    }
+    // ✅ FIXO: Dashboard de Qualidade sempre, para todos os usuários
+    _dashOSTipoAtual = 'qualidade';
 }
 
 // ── Refresh rápido do dashboard usando dados já em memória ───────
