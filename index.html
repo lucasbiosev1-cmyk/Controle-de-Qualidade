@@ -27729,6 +27729,7 @@ async function _dashOSCarregarDados() {
 function _dashOSRenderCards(containerId, modoDetalhe) {
     const c = document.getElementById(containerId);
     if (!c) return;
+    console.log('[DashOS] renderCards tipo:', _dashOSTipoAtual, '| setores:', _dashOSDados.map(s=>s.nome));
     c.innerHTML = _dashOSDados.map((s, i) => {
         const p = _dashPct(s['Concluída'], s.total);
         const sel = (modoDetalhe && _dashOSSetorSel === i) ? 'selecionado' : '';
