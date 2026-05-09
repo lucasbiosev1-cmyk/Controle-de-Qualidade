@@ -3428,37 +3428,12 @@
         @media (max-width:900px) {
             #dashOSCardsSetores, #dashOSCardsDetalhe { grid-template-columns: repeat(3,1fr) !important; }
         }
-        /* ── Dashboard OS — Responsivo Mobile ── */
         @media (max-width:700px) {
             #dashOSCardsSetores, #dashOSCardsDetalhe { grid-template-columns: 1fr 1fr !important; }
-            #dashOSKpiStrip { grid-template-columns: 1fr 1fr !important; }
         }
         @media (max-width:600px) {
-            /* Header: empilha em 2 linhas */
-            #dashHeaderOS { flex-direction: column !important; align-items: flex-start !important; padding: 10px 14px !important; }
-            #dashHeaderOS > div:last-child { width: 100%; justify-content: space-between; }
-            /* Saudação some no mobile */
-            #dashSaudacaoOS { display: none !important; }
-            /* Nav mês ocupa toda a largura */
-            #dashOSNavMes { flex: 1; }
-            #dashOSNavMes > div { width: 100%; justify-content: space-between; }
-            /* KPIs: 2 colunas */
-            #dashOSKpiStrip { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
-            /* Cards setor: 2 colunas */
-            #dashOSCardsSetores, #dashOSCardsDetalhe { grid-template-columns: 1fr 1fr !important; gap: 6px !important; }
-            /* Gráficos: coluna única */
+            #dashOSKpiStrip { grid-template-columns: 1fr 1fr !important; }
             #dashOSVisResumo > div:last-child { grid-template-columns: 1fr !important; }
-            /* Tabs navegação: scroll horizontal */
-            #dashOSTabs { flex-wrap: nowrap !important; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
-            #dashOSTabs::-webkit-scrollbar { display: none; }
-            #dashOSTabs button { white-space: nowrap; flex-shrink: 0; }
-            /* Padding body menor */
-            #dashOSBody { padding: 10px 10px 20px !important; }
-        }
-        @media (max-width:400px) {
-            /* KPIs: coluna única em telas muito pequenas */
-            #dashOSKpiStrip { grid-template-columns: 1fr !important; }
-            #dashOSCardsSetores, #dashOSCardsDetalhe { grid-template-columns: 1fr !important; }
         }
 </style>
 </head>
@@ -3818,7 +3793,7 @@
       </div>
 
       <!-- ─── Body do Dashboard ─── -->
-      <div id="dashOSBody" style="padding:16px 20px 24px;max-width:1200px;margin:0 auto;">
+      <div style="padding:16px 20px 24px;max-width:1200px;margin:0 auto;">
 
         <!-- Loading -->
         <div id="dashOSLoading" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:220px;gap:12px;color:var(--gh-fg-muted);font-size:12px;">
@@ -8616,32 +8591,26 @@ async function fazerLogin() {
         sgqOcultarLoading();
         if (typeof _iaAtualizarMenuAdmin === 'function') _iaAtualizarMenuAdmin();
 
-        // Agenda inicia logo
+        // Agenda e OS iniciam logo
         if (typeof _agendaInicializar === 'function') setTimeout(_agendaInicializar, 300);
         if (typeof _osInicializar === 'function')     setTimeout(_osInicializar, 400);
 
-        // ── Decide fluxo conforme tipo de dashboard do usuário ──
-        if (typeof _dashOSTipoAtual !== 'undefined' && _dashOSTipoAtual === 'manutencao') {
-            // Usuário de manutenção: o dashOSInicializar já foi agendado em aplicarPermissoes
-            // Não roda fast-path de qualidade nem carregarTodosAsync para não poluir a tela
-        } else {
-            // ✅ FAST-PATH qualidade: busca só o mês atual → dashboard aparece em ~300ms
-            _carregarDashboardFast().catch(() => {});
+        // ✅ FAST-PATH: busca só o mês atual → dashboard aparece em ~300ms
+        _carregarDashboardFast().catch(() => {});
 
-            // Dados completos carregam em background (histórico, tabelas, etc.)
-            carregarTodosAsync().then(() => {
-                _inicializarFiltrosDataMesAtual();
-                exibirTabelaProd();
-                exibirTabelaClass();
-                exibirTabelaMP();
-                if (perfilAtual === 'admin') verificarEspacoAoIniciar();
-                if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
-                // Após dados completos, atualiza KPIs com NC completo também
-                carregarNCeDevSupabase().catch(() => {}).finally(() => {
-                    atualizarKpisCapa();
-                });
-            }).catch(() => {});
-        }
+        // Dados completos carregam em background (histórico, tabelas, etc.)
+        carregarTodosAsync().then(() => {
+            _inicializarFiltrosDataMesAtual();
+            exibirTabelaProd();
+            exibirTabelaClass();
+            exibirTabelaMP();
+            if (perfilAtual === 'admin') verificarEspacoAoIniciar();
+            if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
+            // Após dados completos, atualiza KPIs com NC completo também
+            carregarNCeDevSupabase().catch(() => {}).finally(() => {
+                atualizarKpisCapa();
+            });
+        }).catch(() => {});
 
     } catch(e) {
         err.textContent = 'Erro de conexão. Verifique sua internet e tente novamente.';
@@ -8827,24 +8796,10 @@ function aplicarPermissoes() {
     _cv('capaCardEntradaMP',    isAdmin || podeEntradaMP);
     _cv('capaCardOrdemServico', isAdmin || podeOS);
 
-    // ✅ Abre a aba correta conforme o perfil do usuário
+    // ✅ SEMPRE inicia na tela Início (capa) independente do perfil
     const tabCapaEl = document.getElementById('tabCapa');
-    // Detecta tipo de dashboard ANTES de decidir qual aba abrir
-    if (typeof _dashOSDetectarTipo === 'function') _dashOSDetectarTipo();
-    if (typeof _dashOSTipoAtual !== 'undefined' && _dashOSTipoAtual === 'manutencao') {
-        // Usuário de manutenção: vai direto para o dashboard OS
-        if (tabCapaEl) tabCapaEl.style.display = 'none'; // oculta aba qualidade
-        const tabOSEl = document.getElementById('tabCapa'); // reutiliza slot da capa
-        trocarAba('capa', tabOSEl);
-        // Inicializa o dashboard OS com um pequeno delay para garantir que o DOM esteja pronto
-        setTimeout(function() {
-            if (typeof window.dashOSInicializar === 'function') window.dashOSInicializar();
-        }, 200);
-    } else {
-        // Usuário de qualidade: abre a capa normalmente
-        if (tabCapaEl) tabCapaEl.style.display = '';
-        trocarAba('capa', document.getElementById('tabCapa'));
-    }
+    if (tabCapaEl) tabCapaEl.style.display = '';
+    trocarAba('capa', document.getElementById('tabCapa'));
 
     // ✅ Restrições configuráveis por usuário (definidas no painel de usuários)
     const _btnNovaNC  = document.getElementById('btnNovaNC');
@@ -19789,25 +19744,21 @@ document.addEventListener('DOMContentLoaded', async function() {
                 if (typeof _agendaInicializar === 'function') setTimeout(_agendaInicializar, 300);
                 if (typeof _osInicializar === 'function')     setTimeout(_osInicializar, 400);
 
-                // ── Decide fluxo conforme tipo de dashboard do usuário ──
-                if (typeof _dashOSTipoAtual !== 'undefined' && _dashOSTipoAtual === 'manutencao') {
-                    // Manutenção: dashOSInicializar já agendado em aplicarPermissoes
-                } else {
-                    // ✅ FAST-PATH qualidade
-                    _carregarDashboardFast().catch(() => {});
+                // ✅ FAST-PATH: busca só o mês atual → dashboard aparece em ~300ms
+                _carregarDashboardFast().catch(() => {});
 
-                    // Dados completos em background
-                    carregarTodosAsync().then(() => {
-                        exibirTabelaProd();
-                        exibirTabelaClass();
-                        exibirTabelaMP();
-                        if (perfilAtual === 'admin') verificarEspacoAoIniciar();
-                        if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
-                        carregarNCeDevSupabase().catch(() => {}).finally(() => {
-                            atualizarKpisCapa();
-                        });
-                    }).catch(() => {});
-                }
+                // Dados completos carregam em background (histórico, tabelas, etc.)
+                carregarTodosAsync().then(() => {
+                    exibirTabelaProd();
+                    exibirTabelaClass();
+                    exibirTabelaMP();
+                    if (perfilAtual === 'admin') verificarEspacoAoIniciar();
+                    if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
+                    // Após dados completos, atualiza KPIs com NC completo também
+                    carregarNCeDevSupabase().catch(() => {}).finally(() => {
+                        atualizarKpisCapa();
+                    });
+                }).catch(() => {});
                 return;
             }
         }
@@ -28264,20 +28215,20 @@ window.dashOSInicializar = async function() {
     }
 };
 
-// ── Hook: garante que atualizarKpisCapa não roda para usuário de manutenção ──
+// ── Hook: inicializar quando o sistema carregar ───────────────────
 const _origAtualizarKpisCapa = window.atualizarKpisCapa;
 window.atualizarKpisCapa = function() {
     // Detecta tipo ANTES de qualquer renderização
     if (typeof _dashOSDetectarTipo === 'function') _dashOSDetectarTipo();
 
     if (_dashOSTipoAtual === 'manutencao') {
-        // Usuário de manutenção: silencioso — dashOSInicializar já foi chamado
-        // em aplicarPermissoes. Não chamar novamente evita o bug de dupla abertura.
-        return;
-    }
-    // Dashboard Qualidade: roda normalmente
-    if (typeof _origAtualizarKpisCapa === 'function') {
-        try { _origAtualizarKpisCapa(); } catch(e) {}
+        // Dashboard OS: não roda os KPIs de qualidade
+        setTimeout(window.dashOSInicializar, 400);
+    } else {
+        // Dashboard Qualidade: roda os KPIs, não inicializa OS
+        if (typeof _origAtualizarKpisCapa === 'function') {
+            try { _origAtualizarKpisCapa(); } catch(e) {}
+        }
     }
 };
 
