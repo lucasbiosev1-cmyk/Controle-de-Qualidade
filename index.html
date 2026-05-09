@@ -2018,14 +2018,19 @@
         html[data-theme="dark"] #aba-capa .capa-rodape strong { color:#888!important; }
         html[data-theme="dark"] #aba-capa .kpi-mod { background:#fff!important; border-color:#e0e0e0!important; }
         html[data-theme="dark"] #aba-capa .kpi-mod-label { color:#888!important; }
-        html[data-theme="dark"] #aba-capa .kpi-mod-val { color:#1a1a1a!important; }
-        html[data-theme="dark"] #aba-capa .kpi-mod-pct { color:#333!important; }
         html[data-theme="dark"] #aba-capa .kpi-mod-bar { background:#eee!important; }
-        html[data-theme="dark"] #aba-capa .kpi-mod-sub { color:#666!important; }
-        :not([data-theme="dark"]) #aba-capa .kpi-mod-val { color:#1a1a1a!important; }
-        :not([data-theme="dark"]) #aba-capa .kpi-mod-pct { color:#333!important; }
-        :not([data-theme="dark"]) #aba-capa .kpi-mod-sub { color:#666!important; }
-        :not([data-theme="dark"]) #aba-capa .kpi-mod-label { color:#888!important; }
+        html[data-theme="dark"] #aba-capa .kpi-mod-sub { color:#aaa!important; }
+        /* Cards sem cor dinâmica (Análises, NC Mês, NC Milho, NC Soja) — visíveis nos dois temas */
+        /* Tema light/capa (fundo branco): escuro legível */
+        html[data-theme="dark"] #aba-capa #kpiAnalises,
+        html[data-theme="dark"] #aba-capa #kpiNcAbertas,
+        html[data-theme="dark"] #aba-capa #kpiNcMilhoMes,
+        html[data-theme="dark"] #aba-capa #kpiNcSojaMes { color:#2c3e50!important; }
+        /* Tema light nativo (fundo branco): idem */
+        :not([data-theme="dark"]) #aba-capa #kpiAnalises,
+        :not([data-theme="dark"]) #aba-capa #kpiNcAbertas,
+        :not([data-theme="dark"]) #aba-capa #kpiNcMilhoMes,
+        :not([data-theme="dark"]) #aba-capa #kpiNcSojaMes { color:#2c3e50!important; }
         html[data-theme="dark"] #aba-capa .capa-alertas-titulo { color:#aaa!important; }
         html[data-theme="dark"] #aba-capa .alerta-item { background:#fff!important; border-color:#e0e0e0!important; }
         html[data-theme="dark"] #aba-capa .alerta-titulo { color:#222!important; }
