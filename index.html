@@ -3590,13 +3590,13 @@
             <button class="mob-item" id="mobBtnEstoqueReag" onclick="mobNav('estoqueReagentes','Produtos Químicos')">🧫 Produtos Químicos</button>
             <button class="mob-item" id="mobBtnEstoqueMat"  onclick="mobNav('estoqueMateriais','Materiais')">📦 Materiais</button>
         </div>
-        <div class="mob-section">
+        <div class="mob-section" id="mobSecEquipamentos">
             <button class="mob-item" id="mobBtnEquipamentos" onclick="mobNav('equipamentos','Equipamentos')">🔬 Equipamentos</button>
         </div>
-        <div class="mob-section">
+        <div class="mob-section" id="mobSecAgenda">
             <button class="mob-item" id="mobBtnAgenda" onclick="mobNav('agenda','Agenda')">📅 Agenda</button>
         </div>
-        <div class="mob-section">
+        <div class="mob-section" id="mobSecOrdemServico">
             <button class="mob-item" id="mobBtnOrdemServico" onclick="mobNav('ordemServico','Ordem de Serviço')">🔧 Ordem de Serviço</button>
         </div>
         <div class="mob-section">
@@ -8681,8 +8681,7 @@ function aplicarPermissoes() {
     const temConfig = isAdmin || perms.backup || perms.memoria || perms.parametros || perms.whatsapp;
     const tabCfg2 = document.getElementById('tabConfiguracoes');
     if (tabCfg2) tabCfg2.style.display = temConfig ? 'inline-block' : 'none';
-    const mobCfg = document.getElementById('mobBtnConfiguracoes');
-    if (mobCfg) mobCfg.style.display = temConfig ? 'block' : 'none';
+    // (mobBtnConfiguracoes é tratado na seção mobile unificada abaixo)
 
     // Relatórios — itens filhos
     const podeRel = isAdmin || perms.relatorios;
@@ -8739,7 +8738,7 @@ function aplicarPermissoes() {
     _mob('mobBtnClassificacao', isAdmin || podeCadastro);
     // Seção lançamentos (oculta a seção inteira se não tiver acesso)
     const mobSecLanc = document.getElementById('mobSecLancamentos');
-    if (mobSecLanc) mobSecLanc.style.display = (isAdmin || podeCadastro) ? '' : 'none';
+    if (mobSecLanc) mobSecLanc.style.display = (isAdmin || podeCadastro || podeEntradaMP) ? '' : 'none';
     // Relatórios
     _mob('mobBtnRelProducao',   isAdmin || podeRel);
     _mob('mobBtnRelClass',      isAdmin || podeRel);
@@ -8764,8 +8763,13 @@ function aplicarPermissoes() {
     _mob('mobBtnEquipamentos',  isAdmin || podeEquipamentos);
     _mob('mobBtnAgenda',        isAdmin || perms.agenda);
     _mob('mobBtnOrdemServico',  isAdmin || perms.ordem_servico);
-    // Configurações
-    _mob('mobBtnConfiguracoes', isAdmin);
+    // Seções individuais (evita separadores vazios quando botão está oculto)
+    const _mobSec = (id, visivel) => { const el = document.getElementById(id); if (el) el.style.display = visivel ? '' : 'none'; };
+    _mobSec('mobSecEquipamentos', isAdmin || podeEquipamentos);
+    _mobSec('mobSecAgenda',       isAdmin || perms.agenda);
+    _mobSec('mobSecOrdemServico', isAdmin || perms.ordem_servico);
+    // Configurações (usa temConfig para ser consistente com o botão desktop)
+    _mob('mobBtnConfiguracoes', isAdmin || temConfig);
 
     // Carrega entradas ao logar
     if (podeEntradaMP) {
