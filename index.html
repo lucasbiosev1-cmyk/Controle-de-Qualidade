@@ -2020,6 +2020,8 @@
         html[data-theme="dark"] #aba-capa .kpi-mod-label { color:#888!important; }
         html[data-theme="dark"] #aba-capa .kpi-mod-bar { background:#eee!important; }
         html[data-theme="dark"] #aba-capa .kpi-mod-sub { color:#aaa!important; }
+        /* Botões da tabela de equipamentos — nunca ficam brancos */
+        #eqTbody button { color: #fff !important; }
         /* Cards sem cor dinâmica (Análises, NC Mês, NC Milho, NC Soja) — visíveis nos dois temas */
         /* Tema light/capa (fundo branco): escuro legível */
         html[data-theme="dark"] #aba-capa #kpiAnalises,
@@ -5520,25 +5522,41 @@
         </div>
 
         <!-- TABELA EQUIPAMENTOS -->
-        <div style="background:#fff;border-radius:8px;box-shadow:0 1px 6px rgba(0,0,0,0.07);overflow:hidden;">
-            <div style="overflow-x:auto;">
-                <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <div style="background:#fff;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);overflow:hidden;border:1px solid #e8ecf0;">
+            <div>
+                <table style="width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed;">
+                    <colgroup>
+                        <col style="width:16%"><!-- Equipamento -->
+                        <col style="width:6%"> <!-- TAG -->
+                        <col style="width:7%"> <!-- Marca -->
+                        <col style="width:8%"> <!-- Modelo -->
+                        <col style="width:7%"> <!-- Série -->
+                        <col style="width:4%"> <!-- Qtd -->
+                        <col style="width:9%"> <!-- Fornecedor -->
+                        <col style="width:7%"> <!-- Valor -->
+                        <col style="width:7%"> <!-- Entrada -->
+                        <col style="width:6%"> <!-- Calibração -->
+                        <col style="width:7%"> <!-- Últ. Calib. -->
+                        <col style="width:7%"> <!-- Próx. Calib. -->
+                        <col style="width:8%"> <!-- Status -->
+                        <col style="width:7%"> <!-- Ações -->
+                    </colgroup>
                     <thead>
                         <tr style="background:#1a2a6e;color:#fff;">
-                            <th style="padding:10px 12px;text-align:left;font-size:11px;letter-spacing:.5px;">EQUIPAMENTO</th>
-                            <th style="padding:10px 8px;text-align:center;">TAG N°</th>
-                            <th style="padding:10px 8px;text-align:center;">MARCA</th>
-                            <th style="padding:10px 8px;text-align:center;">MODELO</th>
-                            <th style="padding:10px 8px;text-align:center;">SÉRIE</th>
-                            <th style="padding:10px 8px;text-align:center;">QUANTIDADE</th>
-                            <th style="padding:10px 8px;text-align:center;">FORNECEDOR</th>
-                            <th style="padding:10px 8px;text-align:center;">VALOR (R$)</th>
-                            <th style="padding:10px 8px;text-align:center;">ENTRADA</th>
-                            <th style="padding:10px 8px;text-align:center;">CALIBRAÇÃO</th>
-                            <th style="padding:10px 8px;text-align:center;">ÚLT. CALIBRAÇÃO</th>
-                            <th style="padding:10px 8px;text-align:center;">PRÓX. CALIBRAÇÃO</th>
-                            <th style="padding:10px 8px;text-align:center;">STATUS</th>
-                            <th style="padding:10px 8px;text-align:center;">AÇÕES</th>
+                            <th style="padding:10px 8px;text-align:left;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Equipamento</th>
+                            <th style="padding:10px 6px;text-align:center;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">TAG</th>
+                            <th style="padding:10px 6px;text-align:center;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Marca</th>
+                            <th style="padding:10px 6px;text-align:center;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Modelo</th>
+                            <th style="padding:10px 6px;text-align:center;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Série</th>
+                            <th style="padding:10px 4px;text-align:center;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Qtd</th>
+                            <th style="padding:10px 6px;text-align:center;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Fornecedor</th>
+                            <th style="padding:10px 6px;text-align:center;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Valor (R$)</th>
+                            <th style="padding:10px 6px;text-align:center;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Entrada</th>
+                            <th style="padding:10px 6px;text-align:center;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Calib.</th>
+                            <th style="padding:10px 6px;text-align:center;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Últ. Calib.</th>
+                            <th style="padding:10px 6px;text-align:center;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Próx. Calib.</th>
+                            <th style="padding:10px 6px;text-align:center;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Status</th>
+                            <th style="padding:10px 6px;text-align:center;font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="eqTbody">
@@ -5677,9 +5695,14 @@
                     <textarea id="eqObs" rows="2" placeholder="Informações adicionais, condições, restrições..." style="width:100%;padding:9px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;resize:vertical;box-sizing:border-box;"></textarea>
                 </div>
 
-                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px;">
-                    <button onclick="eqFecharModal()" style="background:#ecf0f1;color:#555;border:none;border-radius:6px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
-                    <button onclick="eqSalvar()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer;">💾 Salvar Equipamento</button>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;">
+                    <div>
+                        <button id="eqBtnExcluirModal" onclick="eqExcluirDoModal()" style="display:none;background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;">🗑️ Excluir Equipamento</button>
+                    </div>
+                    <div style="display:flex;gap:10px;">
+                        <button onclick="eqFecharModal()" style="background:#ecf0f1;color:#555;border:none;border-radius:6px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
+                        <button onclick="eqSalvar()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer;">💾 Salvar Equipamento</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -22669,10 +22692,10 @@ function _eqStatusCalib(eq) {
 
 function _eqStatusBadge(s) {
     const map = {
-        ok:      '<span style="background:#edfaf1;color:#1e8449;border:1px solid #a9dfbf;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;">✅ Calibração OK</span>',
-        vencendo:'<span style="background:#fef5e7;color:#ca6f1e;border:1px solid #f8c471;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;">🟠 Vencendo</span>',
-        vencida: '<span style="background:#fdedec;color:#c0392b;border:1px solid #f5b7b1;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;">🔴 Vencida</span>',
-        sem:     '<span style="background:#f2f3f4;color:#717d7e;border:1px solid #d5dbdb;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;">⚪ Sem calibração</span>',
+        ok:      '<span style="color:#1e8449;font-size:12px;font-weight:700;">✅ OK</span>',
+        vencendo:'<span style="color:#ca6f1e;font-size:12px;font-weight:700;">🟠 Vencendo</span>',
+        vencida: '<span style="color:#c0392b;font-size:12px;font-weight:700;">🔴 Vencida</span>',
+        sem:     '<span style="color:#aaa;font-size:12px;">Não calibrado</span>',
     };
     return map[s] || map.sem;
 }
@@ -22746,30 +22769,47 @@ function eqRenderTabela() {
 
     const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
 
+    const TD  = 'padding:7px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;';
+    const TDC = TD + 'text-align:center;';
+
     tbody.innerHTML = lista.map((eq, i) => {
         const st  = _eqStatusCalib(eq);
-        const bg  = _tBg(i);
-        const possuiCalibLabel = (eq.possui_calib || eq.possuiCalib) === 'sim' ? '✅ Sim' : '⚪ Não';
+        const possuiCalib = (eq.possui_calib || eq.possuiCalib) === 'sim';
         const proxCalib = eq.prox_calib || eq.proxCalib || '';
         const dataCalib = eq.data_calib || eq.dataCalib || '';
-        return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}" style="border-bottom:1px solid #f0f0f0;">
-            <td style="padding:9px 12px;font-weight:700;color:#2c3e50;">${eq.nome || '—'}</td>
-            <td style="padding:9px 8px;text-align:center;"><span style="background:#1a2a6e;color:#fff;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:700;font-family:monospace;">${eq.tag || '—'}</span></td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;">${eq.marca || '—'}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;">${eq.modelo || '—'}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;font-family:monospace;">${eq.serie || '—'}</td>
-            <td style="padding:9px 8px;text-align:center;font-weight:700;">${eq.qtd || 1}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;">${eq.fornecedor || '—'}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;font-weight:700;color:#8e44ad;">${eq.valor ? parseFloat(eq.valor).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) : '—'}</td>
-            <td style="padding:9px 8px;text-align:center;">${eq.tipo_entrada === 'com_nota' ? `<span style="background:#f0e6f8;color:#8e44ad;border:1px solid #d2b4de;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;">🧾 Com Nota${eq.num_nota ? ' #'+eq.num_nota : ''}</span>` : '<span style="background:#fef5e7;color:#ca6f1e;border:1px solid #f8c471;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;">📋 Sem Nota</span>'}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;">${possuiCalibLabel}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;">${fmtDate(dataCalib)}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;font-weight:${st==='vencida'?'700':'400'};color:${st==='vencida'?'#e74c3c':st==='vencendo'?'#e67e22':'inherit'};">${fmtDate(proxCalib)}</td>
-            <td style="padding:9px 8px;text-align:center;">${_eqStatusBadge(st)}</td>
-            <td style="padding:9px 8px;text-align:center;">
-                <button onclick="eqAbrirBaixa('${eq.id}')" style="background:#8e44ad;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;margin-right:4px;" title="Registrar uso/ocorrência">📋 Registro</button>
-                <button onclick="eqEditar('${eq.id}')" style="background:#3498db;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;margin-right:4px;">✏️</button>
-                <button onclick="eqExcluir('${eq.id}')" style="background:#e74c3c;color:#fff;border:none;border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700;">🗑️</button>
+        const rowBgLight = i % 2 === 0 ? '#ffffff' : '#f8f9fa';
+        const rowBgDark  = i % 2 === 0 ? '#161b22' : '#0d1117';
+        const isDarkNow  = document.documentElement.getAttribute('data-theme') === 'dark';
+        const rowBg = isDarkNow ? rowBgDark : rowBgLight;
+        const proxColor = st==='vencida' ? '#e74c3c' : st==='vencendo' ? '#e67e22' : '#444';
+        const proxWeight = (st==='vencida'||st==='vencendo') ? '700' : '400';
+        const entradaBadge = eq.tipo_entrada === 'com_nota' && eq.num_nota
+            ? `<span style="color:#6c3483;font-size:12px;font-weight:700;">${eq.num_nota}</span>`
+            : `<span style="color:#aaa;font-size:12px;">—</span>`;
+        const calibBadge = possuiCalib
+            ? `<span style="color:#1e8449;font-size:12px;font-weight:700;">Sim</span>`
+            : `<span style="color:#888;font-size:12px;font-weight:600;">Não</span>`;
+        return `<tr style="background:${rowBg};border-bottom:1px solid #eaeaea;cursor:pointer;" title="Duplo clique para editar"
+            onmouseover="this.style.background=(document.documentElement.getAttribute('data-theme')==='dark'?'rgba(88,166,255,0.10)':'#eef4ff')"
+            onmouseout="this.style.background=(document.documentElement.getAttribute('data-theme')==='dark'?'${rowBgDark}':'${rowBgLight}')"
+            ondblclick="eqEditar('${eq.id}')">
+            <td style="${TD}font-weight:700;color:#1a2a6e;font-size:12px;max-width:200px;" title="${eq.nome||''}">${eq.nome || '—'}</td>
+            <td style="${TDC}"><span style="background:#1a2a6e;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:800;font-family:monospace;">${eq.tag || '—'}</span></td>
+            <td style="${TDC}font-size:11px;color:#444;max-width:90px;" title="${eq.marca||''}">${eq.marca || '—'}</td>
+            <td style="${TDC}font-size:11px;color:#444;max-width:110px;" title="${eq.modelo||''}">${eq.modelo || '—'}</td>
+            <td style="${TDC}font-size:11px;font-family:monospace;color:#555;">${eq.serie || '—'}</td>
+            <td style="${TDC}font-weight:700;font-size:12px;color:#2c3e50;">${eq.qtd || 1}</td>
+            <td style="${TDC}font-size:11px;color:#444;max-width:150px;" title="${eq.fornecedor||''}">${eq.fornecedor || '—'}</td>
+            <td style="${TDC}font-size:12px;font-weight:700;color:#6c3483;">${eq.valor ? parseFloat(eq.valor).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) : '—'}</td>
+            <td style="${TDC}">${entradaBadge}</td>
+            <td style="${TDC}">${calibBadge}</td>
+            <td style="${TDC}font-size:11px;color:#444;">${fmtDate(dataCalib)}</td>
+            <td style="${TDC}font-size:11px;font-weight:${proxWeight};color:${proxColor};">${fmtDate(proxCalib)}</td>
+            <td style="${TDC}">${_eqStatusBadge(st)}</td>
+            <td style="${TDC}">
+                <div style="display:flex;gap:4px;justify-content:center;align-items:center;" onclick="event.stopPropagation()">
+                    <button onclick="eqAbrirBaixa('${eq.id}')" onmouseover="this.style.background='#7d3c98';this.style.color='#fff'" onmouseout="this.style.background='#8e44ad';this.style.color='#fff'" style="background:#8e44ad !important;color:#fff !important;border:none;border-radius:4px;padding:4px 9px;font-size:11px;cursor:pointer;font-weight:700;white-space:nowrap;" title="Registro">📋 Registro</button>
+                </div>
             </td>
         </tr>`;
     }).join('');
@@ -22788,6 +22828,8 @@ function eqAbrirModal() {
     eqToggleCalib();
     eqToggleEntrada();
     document.getElementById('eqAlertaProxCalib').style.display = 'none';
+    const btnExcluirModal = document.getElementById('eqBtnExcluirModal');
+    if (btnExcluirModal) btnExcluirModal.style.display = 'none';
     document.getElementById('modalCadastroEquipamento').style.display = 'flex';
 }
 
@@ -22831,6 +22873,8 @@ function eqEditar(id) {
     document.getElementById('eqFornecedor').value = eq.fornecedor || '';
     document.getElementById('eqValor').value      = eq.valor || '';
     document.getElementById('eqNumNota').value    = eq.num_nota || '';
+    const btnExcluirModal = document.getElementById('eqBtnExcluirModal');
+    if (btnExcluirModal) btnExcluirModal.style.display = 'inline-block';
     document.getElementById('modalCadastroEquipamento').style.display = 'flex';
 }
 
@@ -22889,6 +22933,13 @@ async function eqSalvar() {
     } catch(e) {
         sgqToast('❌ Erro ao salvar equipamento: ' + e.message, 'error');
     }
+}
+
+function eqExcluirDoModal() {
+    const id = document.getElementById('eqEditId').value;
+    if (!id) return;
+    eqFecharModal();
+    eqExcluir(id);
 }
 
 async function eqExcluir(id) {
