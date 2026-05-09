@@ -1201,6 +1201,13 @@
             #tabelaEMPMain tbody tr td[data-label="DESCARGA"] {
                 align-items: center;
             }
+            /* Força largura idêntica nos labels ANÁLISE e DESCARGA para badges alinhados */
+            #tabelaEMPMain tbody tr td[data-label="ANÁLISE"]::before,
+            #tabelaEMPMain tbody tr td[data-label="DESCARGA"]::before {
+                width: 68px;
+                min-width: 68px;
+                max-width: 68px;
+            }
 
             /* Número sequencial no canto superior direito do card */
             #tabelaEMPMain tbody tr td:first-child {
