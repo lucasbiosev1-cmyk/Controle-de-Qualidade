@@ -3089,7 +3089,7 @@
         .os-kpi-card.os-kpi-conc   { border-color:#8e44ad; }
         .os-kpi-card.os-kpi-rej    { border-color:#e74c3c; }
         .os-kpi-valor { font-size:24px; font-weight:900; color:#2c3e50; }
-        html[data-theme="dark"] .os-kpi-valor { color:#e6edf3; }
+        html[data-theme="dark"] .os-kpi-valor { color:#ffffff; text-shadow: 0 0 12px rgba(255,255,255,0.15); }
         .os-kpi-label { font-size:9px; font-weight:700; color:#aaa; text-transform:uppercase; margin-top:2px; text-align:center; line-height:1.3; letter-spacing:0.3px; }
 
         /* Filtros */
@@ -3784,6 +3784,7 @@
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
+          <div id="dashOSNavMes"></div>
           <div id="dashSaudacaoOS" style="font-size:12px;color:var(--gh-fg-muted);font-weight:600;"></div>
           <button id="dashBtnAtualizarOS" onclick="dashOSInicializar()" style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;background:transparent;border:1px solid var(--gh-border-default);color:var(--gh-fg-muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='#58a6ff';this.style.color='#58a6ff'" onmouseout="this.style.borderColor='';this.style.color=''">
             <span id="dashReloadIconOS" style="display:inline-block;">↻</span> Atualizar
@@ -3813,27 +3814,27 @@
           <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px;" id="dashOSKpiStrip">
             <div id="dashKpiAgAp"  style="background:var(--gh-canvas-subtle);border:1px solid var(--gh-border-default);border-radius:8px;padding:11px 14px;border-top:3px solid #e67e22;">
               <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gh-fg-muted);margin-bottom:5px;">Ag. Aprovação</div>
-              <div id="dashKpiAgApNum" style="font-size:24px;font-weight:700;line-height:1;">—</div>
+              <div id="dashKpiAgApNum" style="font-size:24px;font-weight:700;line-height:1;color:#f39c12;">—</div>
               <div style="font-size:10px;color:var(--gh-fg-muted);margin-top:2px;">⏳ Pendentes</div>
             </div>
             <div id="dashKpiAgEx" style="background:var(--gh-canvas-subtle);border:1px solid var(--gh-border-default);border-radius:8px;padding:11px 14px;border-top:3px solid #2ecc71;">
               <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gh-fg-muted);margin-bottom:5px;">Ag. Execução</div>
-              <div id="dashKpiAgExNum" style="font-size:24px;font-weight:700;line-height:1;">—</div>
+              <div id="dashKpiAgExNum" style="font-size:24px;font-weight:700;line-height:1;color:#2ecc71;">—</div>
               <div style="font-size:10px;color:var(--gh-fg-muted);margin-top:2px;">✅ Aprovadas</div>
             </div>
             <div id="dashKpiExec" style="background:var(--gh-canvas-subtle);border:1px solid var(--gh-border-default);border-radius:8px;padding:11px 14px;border-top:3px solid #3498db;">
               <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gh-fg-muted);margin-bottom:5px;">Em Execução</div>
-              <div id="dashKpiExecNum" style="font-size:24px;font-weight:700;line-height:1;">—</div>
+              <div id="dashKpiExecNum" style="font-size:24px;font-weight:700;line-height:1;color:#3498db;">—</div>
               <div style="font-size:10px;color:var(--gh-fg-muted);margin-top:2px;">🔨 Em andamento</div>
             </div>
             <div id="dashKpiConc" style="background:var(--gh-canvas-subtle);border:1px solid var(--gh-border-default);border-radius:8px;padding:11px 14px;border-top:3px solid #9b59b6;">
               <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gh-fg-muted);margin-bottom:5px;">Concluídas</div>
-              <div id="dashKpiConcNum" style="font-size:24px;font-weight:700;line-height:1;">—</div>
+              <div id="dashKpiConcNum" style="font-size:24px;font-weight:700;line-height:1;color:#9b59b6;">—</div>
               <div style="font-size:10px;color:var(--gh-fg-muted);margin-top:2px;">✔ Finalizadas</div>
             </div>
             <div id="dashKpiRej" style="background:var(--gh-canvas-subtle);border:1px solid var(--gh-border-default);border-radius:8px;padding:11px 14px;border-top:3px solid #e74c3c;">
               <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gh-fg-muted);margin-bottom:5px;">Rejeitadas</div>
-              <div id="dashKpiRejNum" style="font-size:24px;font-weight:700;line-height:1;">—</div>
+              <div id="dashKpiRejNum" style="font-size:24px;font-weight:700;line-height:1;color:#e74c3c;">—</div>
               <div style="font-size:10px;color:var(--gh-fg-muted);margin-top:2px;">❌ Reprovadas</div>
             </div>
           </div>
@@ -27862,7 +27863,8 @@ function _dashOSAtualizarSubtitulo(lista) {
     const el = document.getElementById('dashSubtituloOS');
     if (!el) return;
     const agora = new Date().toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
-    el.textContent = `${lista.length} OS registradas · Qualidade · ${agora}`;
+    const periodoLabel = _dashOSMesLabel(_dashOSMesSel.ano, _dashOSMesSel.mes);
+    el.textContent = `${lista.length} OS · ${periodoLabel} · Atualizado ${agora}`;
 }
 
 function _dashOSAtualizarTitulo() {
@@ -27927,6 +27929,42 @@ window.dashOSRefreshLocal = function() {
 };
 
 // ── Carregar dados do Supabase ────────────────────────────────────
+// ── Controle de mês selecionado ───────────────────────────────────
+let _dashOSMesSel = { ano: new Date().getFullYear(), mes: new Date().getMonth() + 1 };
+
+function _dashOSMesLabel(ano, mes) {
+    const nomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    return `${nomes[mes - 1]} ${ano}`;
+}
+
+function _dashOSRenderNavMes() {
+    const wrap = document.getElementById('dashOSNavMes');
+    if (!wrap) return;
+    const agora = new Date();
+    const isAtual = (_dashOSMesSel.ano === agora.getFullYear() && _dashOSMesSel.mes === agora.getMonth() + 1);
+    wrap.innerHTML = `
+        <div style="display:flex;align-items:center;gap:6px;background:var(--gh-canvas-subtle);border:1px solid var(--gh-border-default);border-radius:8px;padding:4px 8px;">
+            <button onclick="dashOSNavMes(-1)" title="Mês anterior" style="background:none;border:none;color:var(--gh-fg-muted);font-size:18px;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;transition:all .15s;" onmouseover="this.style.color='#58a6ff'" onmouseout="this.style.color=''">‹</button>
+            <div style="display:flex;align-items:center;gap:6px;min-width:145px;justify-content:center;">
+                <span style="font-size:13px;font-weight:700;color:var(--gh-fg-default);">📅 ${_dashOSMesLabel(_dashOSMesSel.ano, _dashOSMesSel.mes)}</span>
+                ${isAtual ? '<span style="font-size:9px;background:#238636;color:#fff;border-radius:10px;padding:1px 7px;font-weight:700;letter-spacing:.5px;">ATUAL</span>' : '<span style="font-size:9px;background:#e67e22;color:#fff;border-radius:10px;padding:1px 7px;font-weight:700;letter-spacing:.5px;">HISTÓRICO</span>'}
+            </div>
+            <button onclick="dashOSNavMes(+1)" ${isAtual ? 'disabled' : ''} title="Próximo mês" style="background:none;border:none;color:${isAtual ? 'rgba(255,255,255,.2)' : 'var(--gh-fg-muted)'};font-size:18px;${isAtual ? '' : 'cursor:pointer;'}padding:2px 8px;border-radius:4px;line-height:1;transition:all .15s;" onmouseover="if(!this.disabled)this.style.color='#58a6ff'" onmouseout="if(!this.disabled)this.style.color=''">›</button>
+        </div>`;
+}
+
+window.dashOSNavMes = function(delta) {
+    let { ano, mes } = _dashOSMesSel;
+    mes += delta;
+    if (mes < 1)  { mes = 12; ano--; }
+    if (mes > 12) { mes = 1;  ano++; }
+    const agora = new Date();
+    if (ano > agora.getFullYear() || (ano === agora.getFullYear() && mes > agora.getMonth() + 1)) return;
+    _dashOSMesSel = { ano, mes };
+    _dashOSRenderNavMes();
+    dashOSInicializar();
+};
+
 async function _dashOSCarregarDados() {
     // _sbClient é const declarado no escopo global do script principal
     // eslint-disable-next-line no-undef
@@ -27938,10 +27976,18 @@ async function _dashOSCarregarDados() {
     const setores = _dashOSGetSetores();
     const nomesSetores = setores.map(s => s.nome);
 
+    // Filtrar por mês selecionado
+    const { ano, mes } = _dashOSMesSel;
+    const inicioPeriodo = `${ano}-${String(mes).padStart(2,'0')}-01`;
+    const ultimoDia = new Date(ano, mes, 0).getDate();
+    const fimPeriodo = `${ano}-${String(mes).padStart(2,'0')}-${ultimoDia}T23:59:59`;
+
     const { data, error } = await sb
         .from(DASH_OS_TABELA)
         .select('id, setor, status, created_at')
-        .in('setor', nomesSetores);
+        .in('setor', nomesSetores)
+        .gte('created_at', inicioPeriodo)
+        .lte('created_at', fimPeriodo);
 
     if (error) throw error;
     return data || [];
@@ -28125,6 +28171,7 @@ window.dashOSInicializar = async function() {
     try {
         _dashOSDetectarTipo();
         _dashOSAtualizarTitulo();
+        _dashOSRenderNavMes();
 
         // Saudação personalizada
         const saudacao = document.getElementById('dashSaudacaoOS');
