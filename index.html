@@ -3654,8 +3654,112 @@
     <div id="aba-capa" class="tab-content active">
 
       <!-- ═══════════════════════════════════════════════
+           DASHBOARD DE QUALIDADE — KPIs DO LABORATÓRIO
+           ═══════════════════════════════════════════════ -->
+      <div id="dashQualidadeWrap" style="padding:20px 24px 0; background:var(--gh-canvas-default);">
+
+        <!-- Boas-vindas + navegação de mês -->
+        <div class="capa-welcome">
+          <div class="capa-welcome-left">
+            <h2>Bem-vindo, <span id="capaNomeUsuario"></span> 👋</h2>
+            <p>Aqui está o resumo do laboratório de hoje.</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button onclick="kpiNavegar(-1)" id="kpiBtnAnterior" style="background:none;border:1px solid var(--gh-border-default);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;color:var(--gh-fg-muted);">◀</button>
+            <span id="kpiNavLabel" style="font-size:11px;font-weight:700;color:var(--gh-fg-muted);letter-spacing:.5px;min-width:120px;text-align:center;"></span>
+            <button onclick="kpiNavegar(1)"  id="kpiBtnProximo"  style="background:none;border:1px solid var(--gh-border-default);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px;color:var(--gh-fg-muted);" disabled>▶</button>
+          </div>
+        </div>
+
+        <!-- Linha 1: 4 KPIs principais -->
+        <div class="capa-kpis">
+          <!-- Conformidade Produção -->
+          <div class="kpi-mod" style="border-left-color:#27ae60;">
+            <div class="kpi-mod-label">Conformidade — Produção</div>
+            <div class="kpi-mod-row">
+              <span class="kpi-mod-val" id="kpiConfProd">—</span>
+              <span class="kpi-mod-pct" id="kpiConfProdTrend"></span>
+            </div>
+            <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiConfProdBar" style="width:0%;background:#27ae60;"></div></div>
+            <div class="kpi-mod-sub" id="kpiConfProdP">Lotes dentro do limite</div>
+          </div>
+          <!-- Conformidade Mat. Prima -->
+          <div class="kpi-mod" style="border-left-color:#8e44ad;">
+            <div class="kpi-mod-label">Conformidade — Mat. Prima</div>
+            <div class="kpi-mod-row">
+              <span class="kpi-mod-val" id="kpiConfMP">—</span>
+              <span class="kpi-mod-pct" id="kpiConfMPTrend"></span>
+            </div>
+            <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiConfMPBar" style="width:0%;background:#8e44ad;"></div></div>
+            <div class="kpi-mod-sub" id="kpiConfMPP">MP dentro dos parâmetros</div>
+          </div>
+          <!-- Classificação de Grãos -->
+          <div class="kpi-mod" style="border-left-color:#e67e22;">
+            <div class="kpi-mod-label">Classificação de Grãos</div>
+            <div class="kpi-mod-row">
+              <span class="kpi-mod-val" id="kpiConfClassVal">—</span>
+              <span class="kpi-mod-pct" id="kpiConfClassTrend"></span>
+            </div>
+            <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiConfClassBar" style="width:0%;background:#e67e22;"></div></div>
+            <div class="kpi-mod-sub" id="kpiConfClassSub">Grãos dentro do limite</div>
+            <div style="margin-top:6px;"><span id="kpiConfClassP" style="font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700;">—</span></div>
+          </div>
+          <!-- Conformidade Geral -->
+          <div class="kpi-mod" style="border-left-color:#1a3a9f;">
+            <div class="kpi-mod-label">Conformidade Geral (Mês)</div>
+            <div class="kpi-mod-row">
+              <span class="kpi-mod-val" id="kpiConfGeralVal">—</span>
+              <span class="kpi-mod-pct" id="kpiConfGeralTrend"></span>
+            </div>
+            <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiConfGeralBar" style="width:0%;background:#1a3a9f;"></div></div>
+            <div style="margin-top:6px;"><span id="kpiConfGeralSub" style="font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700;">Prod + MP + Class</span></div>
+          </div>
+        </div>
+
+        <!-- Linha 2: 4 KPIs secundários -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;">
+          <!-- Análises Hoje -->
+          <div class="kpi-mod" style="border-left-color:#58a6ff;">
+            <div class="kpi-mod-label">Análises Hoje</div>
+            <div class="kpi-mod-row"><span class="kpi-mod-val" id="kpiAnalises">—</span></div>
+            <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiAnalisesBar" style="width:0%;background:#58a6ff;"></div></div>
+            <div class="kpi-mod-sub" id="kpiAnalisesP">—</div>
+          </div>
+          <!-- NC do Mês -->
+          <div class="kpi-mod" style="border-left-color:#e74c3c;">
+            <div class="kpi-mod-label">NC do Mês</div>
+            <div class="kpi-mod-row"><span class="kpi-mod-val" id="kpiNcAbertas">—</span></div>
+            <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiNcBar" style="width:0%;background:#e74c3c;"></div></div>
+            <div class="kpi-mod-sub"><span id="kpiNcVencidaSub">—</span> NC no ano</div>
+          </div>
+          <!-- NC — Milho -->
+          <div class="kpi-mod" style="border-left-color:#e74c3c;">
+            <div class="kpi-mod-label">NC — <span id="kpiMilhoLabelMes">Mês</span> — Milho</div>
+            <div class="kpi-mod-row"><span class="kpi-mod-val" id="kpiNcMilhoMes">—</span></div>
+            <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiNcMilhoBar" style="width:0%;background:#e74c3c;"></div></div>
+            <div class="kpi-mod-sub"><span id="kpiNcMilhoAno">—</span> NC no ano</div>
+          </div>
+          <!-- NC — Soja -->
+          <div class="kpi-mod" style="border-left-color:#e74c3c;">
+            <div class="kpi-mod-label">NC — <span id="kpiSojaLabelMes">Mês</span> — Soja</div>
+            <div class="kpi-mod-row"><span class="kpi-mod-val" id="kpiNcSojaMes">—</span></div>
+            <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiNcSojaBar" style="width:0%;background:#e74c3c;"></div></div>
+            <div class="kpi-mod-sub"><span id="kpiNcSojaAno">—</span> NC no ano</div>
+          </div>
+        </div>
+
+        <!-- Alertas -->
+        <div class="capa-alertas">
+          <div class="capa-alertas-titulo">⚡ ALERTAS ATIVOS</div>
+          <div id="painelAlertas"></div>
+        </div>
+
+      </div><!-- /quality dashboard -->
+
+      <!-- ═══════════════════════════════════════════════
            DASHBOARD OS POR SETOR  (tela inicial integrada)
            ═══════════════════════════════════════════════ -->
+      <div id="dashOSWrap">
 
       <!-- ─── Cabeçalho do Dashboard ─── -->
       <div class="dash-header" id="dashHeaderOS" style="border-bottom:1px solid var(--gh-border-default);background:var(--gh-canvas-subtle);display:flex;align-items:center;justify-content:space-between;padding:14px 20px 12px;flex-wrap:wrap;gap:10px;">
@@ -3763,6 +3867,7 @@
 
         </div><!-- /dashOSConteudo -->
       </div><!-- /body -->
+      </div><!-- /dashOSWrap -->
 
     </div>
 
@@ -7190,18 +7295,20 @@
                             <input type="radio" name="dashTipoUsuario" id="dashTipoQualidade" value="qualidade" checked style="accent-color:#27ae60;width:15px;height:15px;">
                             <div>
                                 <div style="font-size:12px;font-weight:800;color:#1e8449;">📊 Qualidade</div>
-                                <div style="font-size:10px;color:#555;margin-top:2px;">Painel de OS por setor (todos)</div>
+                                <div style="font-size:10px;color:#555;margin-top:2px;">KPIs de conformidade do laboratório</div>
                             </div>
                         </label>
                         <label id="dashTipoLabelMan" style="flex:1;min-width:160px;cursor:pointer;border:2px solid #bdc3c7;border-radius:8px;padding:10px 14px;background:#fafafa;display:flex;align-items:center;gap:10px;transition:all .15s;">
                             <input type="radio" name="dashTipoUsuario" id="dashTipoManutencao" value="manutencao" style="accent-color:#e67e22;width:15px;height:15px;">
                             <div>
-                                <div style="font-size:12px;font-weight:800;color:#c0392b;">🔧 Manutenção</div>
-                                <div style="font-size:10px;color:#555;margin-top:2px;">Painel focado em OS de manutenção</div>
+                                <div style="font-size:12px;font-weight:800;color:#c0392b;">🔧 Ordem de Serviço</div>
+                                <div style="font-size:10px;color:#555;margin-top:2px;">Painel de OS por setor</div>
                             </div>
                         </label>
                     </div>
                 </div>
+
+
                 <div class="perm-modal-grid" id="permModalGrid"></div>
                 <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
                     <button class="btn-cancelar-usuario" onclick="fecharModalUsuario()">Cancelar</button>
@@ -16439,12 +16546,7 @@ function abrirModalNovoUsuario() {
     PERMS_DISPONIVEIS.forEach(pd => defaultPerms[pd.key] = false);
     document.getElementById('permModalGrid').innerHTML = _buildPermGrid(defaultPerms, false);
 
-    // ── Reset dashboard tipo ──
-    const rQual = document.getElementById('dashTipoQualidade');
-    if (rQual) { rQual.checked = true; }
-    const seletorWrap = document.getElementById('dashTipoSeletorWrap');
-    if (seletorWrap) seletorWrap.style.display = '';
-    if (typeof window._dashTipoAtualizarVisual === 'function') window._dashTipoAtualizarVisual('qualidade');
+
 
     document.getElementById('modalUsuario').classList.add('show');
     setTimeout(() => document.getElementById('novoUsuarioNome').focus(), 100);
@@ -16478,21 +16580,15 @@ function abrirModalEditarUsuario(login) {
         );
     }
 
-    // ── Popular dashboard tipo ──
-    const seletorWrap = document.getElementById('dashTipoSeletorWrap');
-    const rQual = document.getElementById('dashTipoQualidade');
-    const rMan  = document.getElementById('dashTipoManutencao');
-
-    // Seletor de dashboard disponível para TODOS os usuários, incluindo admin
-    if (seletorWrap) seletorWrap.style.display = '';
-    let permsUsuario = u.perms || {};
-    if (typeof permsUsuario === 'string') { try { permsUsuario = JSON.parse(permsUsuario); } catch(e) { permsUsuario = {}; } }
-    const tipoSalvo = permsUsuario.dashboard_manutencao ? 'manutencao' : 'qualidade';
-    if (rQual && rMan) {
-        rQual.checked = (tipoSalvo === 'qualidade');
-        rMan.checked  = (tipoSalvo === 'manutencao');
-        if (typeof window._dashTipoAtualizarVisual === 'function') window._dashTipoAtualizarVisual(tipoSalvo);
-    }
+    // ── Popular seletor de dashboard ──
+    let permsU = u.perms || {};
+    if (typeof permsU === 'string') { try { permsU = JSON.parse(permsU); } catch(e) { permsU = {}; } }
+    const tipoSalvo = permsU.dashboard_manutencao ? 'manutencao' : 'qualidade';
+    const rQualEl = document.getElementById('dashTipoQualidade');
+    const rManEl2 = document.getElementById('dashTipoManutencao');
+    if (rQualEl) rQualEl.checked = (tipoSalvo === 'qualidade');
+    if (rManEl2) rManEl2.checked = (tipoSalvo === 'manutencao');
+    if (typeof window._dashTipoAtualizarVisual === 'function') window._dashTipoAtualizarVisual(tipoSalvo);
 
     document.getElementById('modalUsuario').classList.add('show');
 }
@@ -16532,7 +16628,7 @@ function salvarUsuario() {
         perms[pd.key] = cb ? cb.checked : false;
     });
 
-    // ── Dashboard tipo: lê do radio button e sobrescreve a permissão ──
+    // ── Dashboard tipo: lê do radio button ──
     const rManEl = document.getElementById('dashTipoManutencao');
     perms['dashboard_manutencao'] = !!(rManEl && rManEl.checked);
 
@@ -27569,14 +27665,6 @@ const DASH_OS_SETORES_QUALIDADE = [
     { nome: 'ADM',        cor: '#58a6ff', icon: '🏢' },
 ];
 
-const DASH_OS_SETORES_MANUTENCAO = [
-    { nome: 'Manutenção', cor: '#f0883e', icon: '🔧' },
-    { nome: 'Produção',   cor: '#3fb950', icon: '🌾' },
-    { nome: 'Qualidade',  cor: '#bc8cff', icon: '🔬' },
-    { nome: 'Segurança',  cor: '#f85149', icon: '🛡️' },
-    { nome: 'ADM',        cor: '#58a6ff', icon: '🏢' },
-];
-
 const DASH_OS_STATUS_LIST = [
     'Aguardando Aprovação',
     'Aguardando Execução',
@@ -27609,9 +27697,7 @@ let _dashOSTipoAtual = 'qualidade'; // 'qualidade' | 'manutencao'
 function _dashPct(n, t) { return t ? Math.round(n / t * 100) : 0; }
 
 function _dashOSGetSetores() {
-    return _dashOSTipoAtual === 'manutencao'
-        ? DASH_OS_SETORES_MANUTENCAO
-        : DASH_OS_SETORES_QUALIDADE;
+    return DASH_OS_SETORES_QUALIDADE;
 }
 
 function _dashOSProcessar(lista) {
@@ -27638,25 +27724,55 @@ function _dashOSAtualizarSubtitulo(lista) {
     const el = document.getElementById('dashSubtituloOS');
     if (!el) return;
     const agora = new Date().toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
-    const tipo = _dashOSTipoAtual === 'manutencao' ? 'Manutenção' : 'Qualidade';
-    el.textContent = `${lista.length} OS registradas · ${tipo} · ${agora}`;
+    el.textContent = `${lista.length} OS registradas · Qualidade · ${agora}`;
 }
 
 function _dashOSAtualizarTitulo() {
-    const isManu = _dashOSTipoAtual === 'manutencao';
     const titulo = document.getElementById('dashTituloOS');
     const icone  = document.getElementById('dashIconeOS');
-    if (titulo) titulo.textContent = isManu
-        ? 'Dashboard — Ordens de Serviço · Manutenção'
-        : 'Dashboard — Ordens de Serviço por Setor';
-    if (icone) icone.textContent = isManu ? '🔧' : '📊';
+    if (titulo) titulo.textContent = 'Dashboard — Ordens de Serviço por Setor';
+    if (icone)  icone.textContent  = '📊';
 }
 
 // ── Detectar tipo de dashboard pelo perfil do usuário ─────────────
 function _dashOSDetectarTipo() {
-    // ✅ FIXO: Dashboard de Qualidade sempre, para todos os usuários
-    _dashOSTipoAtual = 'qualidade';
+    try {
+        if (typeof usuarioAtual !== 'undefined' && typeof USUARIOS !== 'undefined') {
+            const u = USUARIOS[usuarioAtual] || {};
+            let perms = u.perms || {};
+            if (typeof perms === 'string') { try { perms = JSON.parse(perms); } catch(e) { perms = {}; } }
+            if (typeof perms !== 'object' || perms === null) perms = {};
+            _dashOSTipoAtual = perms.dashboard_manutencao === true ? 'manutencao' : 'qualidade';
+        }
+    } catch(e) {
+        _dashOSTipoAtual = 'qualidade';
+    }
+    // ── Mostra apenas o dashboard correto ──
+    const wrapQual = document.getElementById('dashQualidadeWrap');
+    const wrapOS   = document.getElementById('dashOSWrap');
+    if (wrapQual) wrapQual.style.display = (_dashOSTipoAtual === 'qualidade') ? '' : 'none';
+    if (wrapOS)   wrapOS.style.display   = (_dashOSTipoAtual === 'manutencao') ? '' : 'none';
 }
+
+window._dashTipoAtualizarVisual = function _dashTipoAtualizarVisual(tipo) {
+    const lQual = document.getElementById('dashTipoLabelQual');
+    const lMan  = document.getElementById('dashTipoLabelMan');
+    if (!lQual || !lMan) return;
+    if (tipo === 'manutencao') {
+        lQual.style.borderColor = '#bdc3c7'; lQual.style.background = '#fafafa';
+        lMan.style.borderColor  = '#e67e22'; lMan.style.background  = '#fef5ec';
+    } else {
+        lQual.style.borderColor = '#27ae60'; lQual.style.background = '#eafaf1';
+        lMan.style.borderColor  = '#bdc3c7'; lMan.style.background  = '#fafafa';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const rQual = document.getElementById('dashTipoQualidade');
+    const rMan  = document.getElementById('dashTipoManutencao');
+    if (rQual) rQual.addEventListener('change', () => window._dashTipoAtualizarVisual('qualidade'));
+    if (rMan)  rMan.addEventListener('change',  () => window._dashTipoAtualizarVisual('manutencao'));
+});
 
 // ── Refresh rápido do dashboard usando dados já em memória ───────
 window.dashOSRefreshLocal = function() {
@@ -27915,40 +28031,23 @@ window.dashOSInicializar = async function() {
 };
 
 // ── Hook: inicializar quando o sistema carregar ───────────────────
-// Aguarda o carregarTodosAsync() terminar — sobrescreve a função de KPIs
 const _origAtualizarKpisCapa = window.atualizarKpisCapa;
 window.atualizarKpisCapa = function() {
-    if (typeof _origAtualizarKpisCapa === 'function') {
-        try { _origAtualizarKpisCapa(); } catch(e) {}
-    }
-    // Pequeno delay para garantir que USUARIOS e perfilAtual já foram populados
-    setTimeout(window.dashOSInicializar, 400);
-};
+    // Detecta tipo ANTES de qualquer renderização
+    if (typeof _dashOSDetectarTipo === 'function') _dashOSDetectarTipo();
 
-// ── Helper visual para seletor de dashboard no modal de usuário ──
-window._dashTipoAtualizarVisual = function(tipo) {
-    const lQual = document.getElementById('dashTipoLabelQual');
-    const lMan  = document.getElementById('dashTipoLabelMan');
-    if (!lQual || !lMan) return;
-    if (tipo === 'manutencao') {
-        lQual.style.borderColor = '#bdc3c7';
-        lQual.style.background  = '#fafafa';
-        lMan.style.borderColor  = '#e67e22';
-        lMan.style.background   = '#fef5ec';
+    if (_dashOSTipoAtual === 'manutencao') {
+        // Dashboard OS: não roda os KPIs de qualidade
+        setTimeout(window.dashOSInicializar, 400);
     } else {
-        lQual.style.borderColor = '#27ae60';
-        lQual.style.background  = '#eafaf1';
-        lMan.style.borderColor  = '#bdc3c7';
-        lMan.style.background   = '#fafafa';
+        // Dashboard Qualidade: roda os KPIs, não inicializa OS
+        if (typeof _origAtualizarKpisCapa === 'function') {
+            try { _origAtualizarKpisCapa(); } catch(e) {}
+        }
     }
 };
 
-document.addEventListener('DOMContentLoaded', function() {
-    const rQual = document.getElementById('dashTipoQualidade');
-    const rMan  = document.getElementById('dashTipoManutencao');
-    if (rQual) rQual.addEventListener('change', () => window._dashTipoAtualizarVisual('qualidade'));
-    if (rMan)  rMan.addEventListener('change',  () => window._dashTipoAtualizarVisual('manutencao'));
-});
+
 
 })(); // fim IIFE
 </script>
