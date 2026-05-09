@@ -85,8 +85,10 @@
             background: #0d1117;
             align-items: center; justify-content: center;
             flex-direction: column; gap: 20px;
+            transition: opacity 0.4s ease;
         }
-        #sgq-loading-overlay.show { display: flex; }
+        #sgq-loading-overlay.show { display: flex; opacity: 1; }
+        #sgq-loading-overlay.fade-out { opacity: 0; pointer-events: none; }
         .sgq-loading-logo {
             display: flex; flex-direction: column; align-items: center; gap: 6px;
         }
@@ -3452,14 +3454,14 @@
 <body>
 
 <!-- ✅ MELHORIA: Loading overlay global -->
-<div id="sgq-loading-overlay">
+<div id="sgq-loading-overlay" class="show">
     <div class="sgq-loading-logo">
         <div class="sgq-loading-logo-agronor">AGRONOR</div>
         <div class="sgq-loading-logo-sub">ALIMENTOS</div>
     </div>
     <div class="sgq-loading-divider"></div>
     <div class="sgq-spinner"></div>
-    <div class="sgq-loading-text" id="sgq-loading-text">Bem-vindo! Sistema iniciando...</div>
+    <div class="sgq-loading-text" id="sgq-loading-text">Verificando acesso...</div>
 </div>
 
 <!-- ✅ MELHORIA: Container de notificações toast -->
@@ -8600,7 +8602,6 @@ async function fazerLogin() {
         localStorage.removeItem('materias_primas');
 
         // ── Mostra o dashboard instantaneamente com dados do mês atual ──
-        sgqOcultarLoading();
         if (typeof _iaAtualizarMenuAdmin === 'function') _iaAtualizarMenuAdmin();
 
         // ✅ Detecta tipo de dashboard ANTES de qualquer renderização
@@ -12875,7 +12876,7 @@ function exibirTabelaEMP(lista) {
             const opts = ['FILA','DESCARREGANDO','CONCLUÍDA'].map(v =>
                 `<option value="${v}" ${v===sdVal?'selected':''}>${sdLabels[v]}</option>`
             ).join('');
-            descargaCell = `<div style="display:flex;justify-content:center;align-items:center;"><select id="sel-desc-${r.id}" onchange="alterarStatusDescargaEMP(${r.id}, this.value)" onclick="event.stopPropagation()" style="${sdStyle}border:none;border-radius:12px;padding:3px 10px;font-size:10px;font-weight:bold;font-family:inherit;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;text-align:center;">${opts}</select></div>`;
+            descargaCell = `<select id="sel-desc-${r.id}" onchange="alterarStatusDescargaEMP(${r.id}, this.value)" onclick="event.stopPropagation()" style="${sdStyle}border:none;border-radius:12px;padding:3px 10px;font-size:10px;font-weight:bold;font-family:inherit;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;text-align:center;flex-shrink:0;">${opts}</select>`;
         }
         const podeEditarLinha = podeEditar && r.status !== 'CONCLUÍDA';
         const dblclickAttr = podeEditarLinha ? `ondblclick="editarEntradaMP(${r.id})" title="Clique duplo para editar"` : '';
@@ -12896,7 +12897,7 @@ function exibirTabelaEMP(lista) {
             <td data-label="PLACA" style="text-align:center;letter-spacing:1px;font-weight:bold;">${r.placa||'-'}</td>
             <td data-label="USUÁRIO">${r.usuario||'-'}</td>
             <td data-label="ANÁLISE">${_empStatusBadge(r.status)}</td>
-            <td data-label="DESCARGA" style="text-align:center;">${descargaCell}</td>
+            <td data-label="DESCARGA">${descargaCell}</td>
             ${temAcao ? `<td data-label="AÇÃO">${acoes}</td>` : ''}
         </tr>`;
     }).join('');
@@ -13818,8 +13819,12 @@ async function _carregarDashboardFast() {
 
         // Renderiza o dashboard imediatamente com os dados do mês
         atualizarKpisCapa();
+
+        // ✅ Opção C: overlay some AQUI — dashboard já está visível com dados reais
+        sgqOcultarLoading();
     } catch(e) {
-        // silencioso — o carregamento completo em background vai cobrir
+        // silencioso — garante que o overlay some mesmo se o fast-path falhar
+        sgqOcultarLoading();
         console.warn('[fast-path] falhou, dashboard carregará após dados completos:', e.message);
     }
 }
@@ -19629,7 +19634,11 @@ function sgqMostrarLoading(texto) {
 }
 function sgqOcultarLoading() {
     const ov = document.getElementById('sgq-loading-overlay');
-    if (ov) ov.classList.remove('show');
+    if (!ov) return;
+    ov.classList.add('fade-out');
+    setTimeout(() => {
+        ov.classList.remove('show', 'fade-out');
+    }, 420);
 }
 
 // ── Toast Notifications ───────────────────────────────────────────────
@@ -19758,8 +19767,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 carregarParametros();
                 setTimeout(sgqIniciarPresenca, 800);
 
-                // ── Mostra sistema imediatamente ──
-                sgqOcultarLoading();
+                // ── Dashboard carrega via fast-path — overlay some após dados prontos ──
                 if (typeof _iaAtualizarMenuAdmin === 'function') _iaAtualizarMenuAdmin();
 
                 // ✅ Detecta tipo de dashboard ANTES de qualquer renderização
@@ -19789,9 +19797,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     } catch(e) {
         // sem sessão válida — mostra tela de login normalmente
     } finally {
-        sgqOcultarLoading();
-        // Se o mainSystem não foi exibido, mostra o login
+        // Se mainSystem já está ativo, o overlay some dentro do fast-path (Opção C)
+        // Se não há sessão, some agora para exibir o login
         if (document.getElementById('mainSystem').style.display !== 'block') {
+            sgqOcultarLoading();
             document.getElementById('loginScreen').style.display = 'flex';
         }
     }
@@ -28231,12 +28240,16 @@ window.dashOSInicializar = async function() {
         if (loading)  loading.style.display  = 'none';
         if (conteudo) conteudo.style.display = '';
 
+        // ✅ Opção C: overlay global some após dashboard OS estar renderizado
+        sgqOcultarLoading();
+
     } catch(e) {
         if (loading)  loading.style.display  = 'none';
         if (erro)     erro.style.display      = 'flex';
         const msgEl = document.getElementById('dashOSErroMsg');
         if (msgEl) msgEl.textContent = 'Erro ao carregar dados: ' + (e.message || e);
         console.error('[DashOS] erro:', e);
+        sgqOcultarLoading(); // fallback: some o overlay mesmo em caso de erro
     } finally {
         if (reloadIc) reloadIc.style.animation = '';
     }
