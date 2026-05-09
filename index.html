@@ -8552,24 +8552,29 @@ async function fazerLogin() {
         localStorage.removeItem('classificacoes');
         localStorage.removeItem('materias_primas');
 
-        // ── Mostra o dashboard instantaneamente, sem esperar os dados pesados ──
+        // ── Mostra o dashboard instantaneamente com dados do mês atual ──
         sgqOcultarLoading();
-        atualizarKpisCapa(); // inicializa dashboard OS já (com dados vazios por ora)
         if (typeof _iaAtualizarMenuAdmin === 'function') _iaAtualizarMenuAdmin();
 
         // Agenda e OS iniciam logo
         if (typeof _agendaInicializar === 'function') setTimeout(_agendaInicializar, 300);
         if (typeof _osInicializar === 'function')     setTimeout(_osInicializar, 400);
 
-        // Dados pesados carregam em background (não bloqueiam a tela)
+        // ✅ FAST-PATH: busca só o mês atual → dashboard aparece em ~300ms
+        _carregarDashboardFast().catch(() => {});
+
+        // Dados completos carregam em background (histórico, tabelas, etc.)
         carregarTodosAsync().then(() => {
             _inicializarFiltrosDataMesAtual();
             exibirTabelaProd();
             exibirTabelaClass();
             exibirTabelaMP();
-            carregarNCeDevSupabase().catch(() => {});
             if (perfilAtual === 'admin') verificarEspacoAoIniciar();
             if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
+            // Após dados completos, atualiza KPIs com NC completo também
+            carregarNCeDevSupabase().catch(() => {}).finally(() => {
+                atualizarKpisCapa();
+            });
         }).catch(() => {});
 
     } catch(e) {
@@ -13697,6 +13702,72 @@ const _COLUNAS_TABELA = {
     entradas_mp:        'id,data,hora,fornecedor,materia_prima,nf,usuario,status,status_descarga,criado_em,placa,seq,obs',
     mp_produtos_custom: 'id,nome',
 };
+
+// ── FAST-PATH: busca só o mês atual para mostrar o dashboard instantaneamente ──────────
+// Roda em paralelo com o carregamento completo. Exibe KPIs em ~300-500ms
+// enquanto os dados históricos/tabelas carregam em background.
+async function _carregarDashboardFast() {
+    try {
+        const agora = new Date();
+        const prefixo = agora.getFullYear() + '-' + String(agora.getMonth() + 1).padStart(2, '0');
+
+        const colP = _COLUNAS_TABELA['producoes']       || '*';
+        const colC = _COLUNAS_TABELA['classificacoes']  || '*';
+        const colM = _COLUNAS_TABELA['materias_primas'] || '*';
+
+        // Busca os 3 meses (atual + anterior para comparativo de tendência) + NC em paralelo
+        const prefAnt = (() => {
+            const d = new Date(agora.getFullYear(), agora.getMonth() - 1, 1);
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        })();
+        const filtroMes = `${prefAnt},${prefixo}`; // intervalo para like
+
+        const [rP, rC, rM, rNC] = await Promise.all([
+            _sbClient.from('producoes').select(colP)
+                .gte('data', prefAnt + '-01').lte('data', prefixo + '-31'),
+            _sbClient.from('classificacoes').select(colC)
+                .gte('data', prefAnt + '-01').lte('data', prefixo + '-31'),
+            _sbClient.from('materias_primas').select(colM)
+                .gte('data', prefAnt + '-01').lte('data', prefixo + '-31'),
+            _sbClient.from('nao_conformidades').select('*')
+                .gte('data', prefAnt + '-01').lte('data', prefixo + '-31')
+        ]);
+
+        const _pct = (v, dec) => (v === null || v === undefined) ? 0 : +parseFloat(v).toFixed(dec);
+        const normClass = r => ({
+            ...r,
+            queimado: _pct(r.queimado,4), ardido: _pct(r.ardido,4), mofado: _pct(r.mofado,4),
+            esverdeado: _pct(r.esverdeado,4), fermentando: _pct(r.fermentando,4), chocho: _pct(r.chocho,4),
+            picado: _pct(r.picado,4), gessado: _pct(r.gessado,4), quebrado: _pct(r.quebrado,4),
+            germinado: _pct(r.germinado,4), carunchado: _pct(r.carunchado,4), impureza: _pct(r.impureza,4),
+            umidade: _pct(r.umidade,3),
+        });
+        const normMat = r => ({
+            ...r,
+            solubil: r.solubil !== undefined ? (r.solubil !== null ? parseFloat(r.solubil) : null) : (r.solubilidade !== undefined ? (r.solubilidade !== null ? parseFloat(r.solubilidade) : null) : null),
+            extrato: r.extrato !== null ? parseFloat(r.extrato) : null,
+            fibra: r.fibra !== null ? parseFloat(r.fibra) : null,
+            mineral: r.mineral !== null ? parseFloat(r.mineral) : null,
+            acidez: r.acidez !== null ? parseFloat(r.acidez) : null,
+            ureatica: r.ureatica !== null ? parseFloat(r.ureatica) : null,
+            rancidez: r.rancidez !== null ? r.rancidez : null,
+            peroxido: r.peroxido !== null ? parseFloat(r.peroxido) : null,
+            digestibilidade: r.digestibilidade !== null ? parseFloat(r.digestibilidade) : null,
+        });
+
+        // Preenche os arrays com dados do mês — suficiente para os KPIs
+        if (rP.data && rP.data.length) producoes      = rP.data;
+        if (rC.data && rC.data.length) classificacoes = rC.data.map(normClass);
+        if (rM.data && rM.data.length) materiasPrimas = rM.data.map(normMat);
+        if (rNC.data && rNC.data.length) listaNC      = rNC.data;
+
+        // Renderiza o dashboard imediatamente com os dados do mês
+        atualizarKpisCapa();
+    } catch(e) {
+        // silencioso — o carregamento completo em background vai cobrir
+        console.warn('[fast-path] falhou, dashboard carregará após dados completos:', e.message);
+    }
+}
 
 // forcar=true → ignora cache e busca tudo do servidor (usado após importações em massa)
 async function carregarTodosAsync(forcar = false) {
@@ -19634,19 +19705,24 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                 // ── Mostra sistema imediatamente ──
                 sgqOcultarLoading();
-                atualizarKpisCapa();
                 if (typeof _iaAtualizarMenuAdmin === 'function') _iaAtualizarMenuAdmin();
                 if (typeof _agendaInicializar === 'function') setTimeout(_agendaInicializar, 300);
                 if (typeof _osInicializar === 'function')     setTimeout(_osInicializar, 400);
 
-                // Dados pesados em background
+                // ✅ FAST-PATH: busca só o mês atual → dashboard aparece em ~300ms
+                _carregarDashboardFast().catch(() => {});
+
+                // Dados completos carregam em background (histórico, tabelas, etc.)
                 carregarTodosAsync().then(() => {
-                    carregarNCeDevSupabase().catch(() => {});
                     exibirTabelaProd();
                     exibirTabelaClass();
                     exibirTabelaMP();
                     if (perfilAtual === 'admin') verificarEspacoAoIniciar();
                     if (!localStorage.getItem('correcaoDecimal_v2')) _corrigirDecimaisNoBanco();
+                    // Após dados completos, atualiza KPIs com NC completo também
+                    carregarNCeDevSupabase().catch(() => {}).finally(() => {
+                        atualizarKpisCapa();
+                    });
                 }).catch(() => {});
                 return;
             }
