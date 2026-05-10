@@ -11134,8 +11134,11 @@ function aplicarFiltrosRelClass() {
     const prodSel = document.getElementById('rcProduto').value;
     if (!di || !df) return;
 
-    // Filtro por período
-    let base = classificacoes.filter(r => r.data >= di && r.data <= df);
+    // Filtro por período (normaliza r.data para YYYY-MM-DD antes de comparar)
+    let base = classificacoes.filter(r => {
+        const d = (r.data||'').slice(0,10);
+        return d >= di && d <= df;
+    });
 
     // Resolver produtos
     let produtosAlvo, tituloSel;
@@ -11310,22 +11313,23 @@ function rcFiltrarGrafico() {
 // ────────────────────────────────────────────────────────────────
 
 function renderRCGraficoLinha(di, df, dados, produtosAlvo, _semRebuildarChk, produtosMarcados) {
-    // Salva estado para o filtro dos checkboxes
+    // Salva estado para o filtro dos checkboxes (normaliza data para YYYY-MM-DD)
     if (!_semRebuildarChk) {
         _rcGrafDi    = di;
         _rcGrafDf    = df;
-        _rcGrafDados = dados;
+        _rcGrafDados = dados.map(r => ({ ...r, data: (r.data||'').slice(0,10) }));
     }
 
-    // ✅ CORREÇÃO: usar apenas dias que realmente tiveram análise
-    const todasDatasComDados = [...new Set(dados.map(r => r.data))].sort();
+    // ✅ CORREÇÃO: normalizar r.data para YYYY-MM-DD (remove timestamp ISO se presente)
+    const dadosNorm = dados.map(r => ({ ...r, data: (r.data||'').slice(0,10) }));
+    const todasDatasComDados = [...new Set(dadosNorm.map(r => r.data))].sort();
     const datas = todasDatasComDados;
     const labelsX = datas.map(d => new Date(d+'T00:00:00').toLocaleDateString('pt-BR'));
 
     // Uma linha por produto se múltiplos, senão linha única
     const prods = produtosAlvo && produtosAlvo.length > 1
         ? produtosAlvo
-        : (produtosAlvo ? null : [...new Set(dados.map(r=>r.produto))].sort());
+        : (produtosAlvo ? null : [...new Set(dadosNorm.map(r=>r.produto))].sort());
 
     // Constrói os checkboxes na primeira chamada (não quando filtro já chamou de volta)
     if (!_semRebuildarChk && prods && prods.length > 1) {
@@ -11347,7 +11351,7 @@ function renderRCGraficoLinha(di, df, dados, produtosAlvo, _semRebuildarChk, pro
             return {
                 label: p,
                 data: datas.map(d => {
-                    const dd = dados.filter(r=>r.produto===p && r.data===d);
+                    const dd = dadosNorm.filter(r=>r.produto===p && r.data===d);
                     return dd.length ? parseFloat(med(dd.map(r=>getAvariados(r))).toFixed(2)) : null;
                 }),
                 borderColor: cor,
@@ -11367,7 +11371,7 @@ function renderRCGraficoLinha(di, df, dados, produtosAlvo, _semRebuildarChk, pro
         datasets = [{
             label:'Avariados Totais (%)',
             data: datas.map(d => {
-                const dd = dados.filter(r=>r.data===d);
+                const dd = dadosNorm.filter(r=>r.data===d);
                 return dd.length ? parseFloat(med(dd.map(r=>getAvariados(r))).toFixed(2)) : null;
             }),
             borderColor:'#e67e22', backgroundColor:'#e67e2218',
