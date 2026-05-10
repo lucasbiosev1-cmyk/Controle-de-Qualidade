@@ -11134,11 +11134,8 @@ function aplicarFiltrosRelClass() {
     const prodSel = document.getElementById('rcProduto').value;
     if (!di || !df) return;
 
-    // Filtro por período (normaliza r.data para YYYY-MM-DD antes de comparar)
-    let base = classificacoes.filter(r => {
-        const d = (r.data||'').slice(0,10);
-        return d >= di && d <= df;
-    });
+    // Filtro por período
+    let base = classificacoes.filter(r => r.data >= di && r.data <= df);
 
     // Resolver produtos
     let produtosAlvo, tituloSel;
@@ -11313,23 +11310,22 @@ function rcFiltrarGrafico() {
 // ────────────────────────────────────────────────────────────────
 
 function renderRCGraficoLinha(di, df, dados, produtosAlvo, _semRebuildarChk, produtosMarcados) {
-    // Salva estado para o filtro dos checkboxes (normaliza data para YYYY-MM-DD)
+    // Salva estado para o filtro dos checkboxes
     if (!_semRebuildarChk) {
         _rcGrafDi    = di;
         _rcGrafDf    = df;
-        _rcGrafDados = dados.map(r => ({ ...r, data: (r.data||'').slice(0,10) }));
+        _rcGrafDados = dados;
     }
 
-    // ✅ CORREÇÃO: normalizar r.data para YYYY-MM-DD (remove timestamp ISO se presente)
-    const dadosNorm = dados.map(r => ({ ...r, data: (r.data||'').slice(0,10) }));
-    const todasDatasComDados = [...new Set(dadosNorm.map(r => r.data))].sort();
+    // ✅ CORREÇÃO: usar apenas dias que realmente tiveram análise
+    const todasDatasComDados = [...new Set(dados.map(r => r.data))].sort();
     const datas = todasDatasComDados;
     const labelsX = datas.map(d => new Date(d+'T00:00:00').toLocaleDateString('pt-BR'));
 
     // Uma linha por produto se múltiplos, senão linha única
     const prods = produtosAlvo && produtosAlvo.length > 1
         ? produtosAlvo
-        : (produtosAlvo ? null : [...new Set(dadosNorm.map(r=>r.produto))].sort());
+        : (produtosAlvo ? null : [...new Set(dados.map(r=>r.produto))].sort());
 
     // Constrói os checkboxes na primeira chamada (não quando filtro já chamou de volta)
     if (!_semRebuildarChk && prods && prods.length > 1) {
@@ -11351,7 +11347,7 @@ function renderRCGraficoLinha(di, df, dados, produtosAlvo, _semRebuildarChk, pro
             return {
                 label: p,
                 data: datas.map(d => {
-                    const dd = dadosNorm.filter(r=>r.produto===p && r.data===d);
+                    const dd = dados.filter(r=>r.produto===p && r.data===d);
                     return dd.length ? parseFloat(med(dd.map(r=>getAvariados(r))).toFixed(2)) : null;
                 }),
                 borderColor: cor,
@@ -11371,7 +11367,7 @@ function renderRCGraficoLinha(di, df, dados, produtosAlvo, _semRebuildarChk, pro
         datasets = [{
             label:'Avariados Totais (%)',
             data: datas.map(d => {
-                const dd = dadosNorm.filter(r=>r.data===d);
+                const dd = dados.filter(r=>r.data===d);
                 return dd.length ? parseFloat(med(dd.map(r=>getAvariados(r))).toFixed(2)) : null;
             }),
             borderColor:'#e67e22', backgroundColor:'#e67e2218',
@@ -18034,7 +18030,7 @@ async function executarCorrecaoDefeitos() {
 }
 
 @media print {
-    @page { size: A4 portrait; margin: 12mm 14mm 12mm 14mm; }
+    @page { size: A4 portrait; margin: 6mm 8mm 6mm 8mm; }
     body > *:not(#ncPrintArea) { display: none !important; }
     #ncPrintArea {
         display: block !important;
@@ -18043,14 +18039,33 @@ async function executarCorrecaoDefeitos() {
         max-width: 100% !important;
         padding: 0 !important;
         margin: 0 !important;
-        font-size: 10px !important;
+        font-size: 8.5px !important;
         overflow: visible !important;
     }
+    #ncPrintArea .nc-report-header { padding: 6px 10px !important; }
+    #ncPrintArea .nc-report-header h1 { font-size: 11px !important; margin: 0 !important; }
+    #ncPrintArea .nc-report-header-empresa { font-size: 13px !important; }
+    #ncPrintArea .nc-report-id-bar { padding: 4px 10px !important; margin: 4px 0 !important; }
+    #ncPrintArea .nc-id-num { font-size: 16px !important; }
+    #ncPrintArea .nc-report-section-title { padding: 2px 8px !important; margin: 4px 0 3px !important; font-size: 7.5px !important; }
+    #ncPrintArea .nc-report-field { gap: 3px !important; margin-bottom: 3px !important; }
+    #ncPrintArea .nc-report-field-item { padding: 3px 6px !important; }
+    #ncPrintArea .nc-report-field-item label { font-size: 7px !important; }
+    #ncPrintArea .nc-report-field-item span { font-size: 8.5px !important; }
+    #ncPrintArea .nc-text-box { padding: 4px 8px !important; margin-bottom: 3px !important; font-size: 8.5px !important; line-height: 1.3 !important; }
+    #ncPrintArea .nc-report-sign-area { margin-top: 6px !important; gap: 6px !important; }
+    #ncPrintArea .nc-sign-block { padding: 4px 6px !important; }
+    #ncPrintArea .nc-sign-space { height: 18px !important; }
+    #ncPrintArea .nc-sign-label { font-size: 7.5px !important; }
+    #ncPrintArea .nc-sign-sub { font-size: 6.5px !important; }
+    #ncPrintArea .nc-report-footer { margin-top: 4px !important; padding-top: 3px !important; font-size: 6.5px !important; }
+    #ncPrintArea table th { padding: 3px 6px !important; font-size: 7.5px !important; }
+    #ncPrintArea table td { padding: 3px 6px !important; font-size: 8px !important; }
     .nc-report-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .nc-report-section-title { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .nc-report-id-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .nc-sign-block { -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-inside: avoid; }
-    .nc-report-sign-area { page-break-inside: avoid; }
+    .nc-report-sign-area { page-break-inside: avoid; break-inside: avoid; }
     #ncPrintArea table th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     #ncPrintArea table tr:nth-child(even) td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .nc-text-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -18480,7 +18495,9 @@ async function executarCorrecaoDefeitos() {
         <div class="ncv-modal-body" id="ncvModalBody"></div>
         <div class="ncv-modal-footer">
             <button class="nc-btn nc-btn-secondary" onclick="fecharModalVisualizarNC()">Fechar</button>
-            <button class="nc-btn nc-btn-info" onclick="imprimirVisualizacao()">🖨️ Imprimir</button>
+            <button class="nc-btn nc-btn-info" onclick="_ncvImprimir()">🖨️ Imprimir</button>
+            <button class="nc-btn nc-btn-info" id="ncvBtnEditar" style="display:none;" onclick="_ncvEditar()">✏️ Editar</button>
+            <button class="nc-btn nc-btn-danger" id="ncvBtnExcluir" style="display:none;" onclick="_ncvExcluir()">🗑️ Excluir</button>
         </div>
     </div>
 </div>
@@ -18643,64 +18660,85 @@ function imprimirRelatorioNC(tipo) {
 
         <!-- FAIXA NC Nº + GRAVIDADE -->
         <div class="nc-report-id-bar">
-            <div style="display:flex;align-items:center;gap:18px;">
+            <div style="display:flex;align-items:center;gap:14px;">
                 <div>
-                    <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:0.5px;color:#6b7a99;font-weight:700;">Número da NC</div>
+                    <div style="font-size:7px;text-transform:uppercase;letter-spacing:0.5px;color:#6b7a99;font-weight:700;">Número da NC</div>
                     <div class="nc-id-num">${num}</div>
                 </div>
-                <div style="width:1px;height:36px;background:#d0d8ea;"></div>
+                <div style="width:1px;height:28px;background:#d0d8ea;"></div>
                 <div>
-                    <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:0.5px;color:#6b7a99;font-weight:700;">Status</div>
-                    <div style="font-size:11px;font-weight:700;color:#1a2a6e;">${status}</div>
+                    <div style="font-size:7px;text-transform:uppercase;letter-spacing:0.5px;color:#6b7a99;font-weight:700;">Status</div>
+                    <div style="font-size:10px;font-weight:700;color:#1a2a6e;">${status}</div>
                 </div>
             </div>
             <span class="nc-id-badge" style="background:${gravColor};">${grav}</span>
         </div>
 
-        <!-- SEÇÃO 1: IDENTIFICAÇÃO -->
+        <!-- SEÇÃO 1: IDENTIFICAÇÃO — linha única com 4 colunas -->
         <div class="nc-report-section-title">1. Identificação</div>
-        <div class="nc-report-field">
+        <div class="nc-report-field" style="grid-template-columns:repeat(4,1fr);">
             <div class="nc-report-field-item"><label>Data de Abertura</label><span>${data}</span></div>
             <div class="nc-report-field-item"><label>Tipo de NC</label><span>${tipoNC}</span></div>
             <div class="nc-report-field-item"><label>Gravidade</label><span>${grav}</span></div>
             <div class="nc-report-field-item"><label>Local de Detecção</label><span>${local}</span></div>
         </div>
-        <div class="nc-report-field">
+        <div class="nc-report-field" style="grid-template-columns:repeat(4,1fr);">
             <div class="nc-report-field-item"><label>Fornecedor / Origem</label><span>${forn}</span></div>
             <div class="nc-report-field-item"><label>Produto / Item</label><span>${produto}</span></div>
             <div class="nc-report-field-item"><label>Lote / Nº NF</label><span>${lote}</span></div>
-            <div class="nc-report-field-item"><label>Prazo</label><span>${prazo}</span></div>
+            <div class="nc-report-field-item"><label>Responsável / Prazo</label><span>${resp} · ${prazo}</span></div>
         </div>
 
-        <!-- SEÇÃO 2: DESCRIÇÃO -->
-        <div class="nc-report-section-title">2. Descrição da Não Conformidade</div>
-        <div class="nc-text-box red">${desc}</div>
-
-        ${causas && causas !== '-' ? `
-        <div class="nc-report-section-title">3. Causas Identificadas</div>
-        <div class="nc-text-box amber">${causas}</div>` : ''}
+        <!-- SEÇÃO 2+3: DESCRIÇÃO E CAUSAS LADO A LADO -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:2px;">
+            <div>
+                <div class="nc-report-section-title">2. Descrição da NC</div>
+                <div class="nc-text-box red" style="min-height:36px;">${desc}</div>
+            </div>
+            <div>
+                <div class="nc-report-section-title">3. Causas Identificadas</div>
+                <div class="nc-text-box amber" style="min-height:36px;">${causas && causas !== '-' ? causas : '-'}</div>
+            </div>
+        </div>
 
         <!-- SEÇÃO 4: AÇÃO IMEDIATA -->
         <div class="nc-report-section-title">4. Ação Imediata / Disposição do Material</div>
-        <div class="nc-report-field cols-2">
+        <div class="nc-report-field cols-2" style="margin-bottom:2px;">
             <div class="nc-report-field-item"><label>Disposição do Material</label><span>${disp}</span></div>
             <div class="nc-report-field-item"><label>Responsável pela Ação Imediata</label><span>${respA}</span></div>
         </div>
         <div class="nc-text-box green">${acaoIm}</div>
 
-        <!-- SEÇÃO 5: AÇÃO CORRETIVA -->
-        <div class="nc-report-section-title">5. Ação Corretiva / Preventiva</div>
-        <div class="nc-report-field cols-3">
-            <div class="nc-report-field-item"><label>Responsável pela Correção</label><span>${resp}</span></div>
-            <div class="nc-report-field-item"><label>Prazo para Conclusão</label><span>${prazo}</span></div>
-            <div class="nc-report-field-item"><label>Eficácia da Ação</label><span>${efic}</span></div>
+        <!-- SEÇÃO 5+6: AÇÃO CORRETIVA E CAUSA RAIZ LADO A LADO -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:2px;">
+            <div>
+                <div class="nc-report-section-title">5. Ação Corretiva / Preventiva</div>
+                <div class="nc-report-field" style="grid-template-columns:1fr 1fr;margin-bottom:2px;">
+                    <div class="nc-report-field-item"><label>Responsável</label><span>${resp}</span></div>
+                    <div class="nc-report-field-item"><label>Prazo</label><span>${prazo}</span></div>
+                </div>
+                <div class="nc-text-box purple" style="min-height:30px;">${acaoCor && acaoCor !== '-' ? acaoCor : '-'}</div>
+            </div>
+            <div>
+                <div class="nc-report-section-title">6. Análise de Causa Raiz</div>
+                <div class="nc-text-box purple" style="min-height:30px;">${cauRaiz && cauRaiz !== '-' ? cauRaiz : '-'}</div>
+            </div>
         </div>
-        ${cauRaiz && cauRaiz !== '-' ? `<div style="font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:0.4px;color:#6b7a99;margin-bottom:3px;">Causa Raiz:</div><div class="nc-text-box purple" style="margin-bottom:5px;">${cauRaiz}</div>` : ''}
-        <div class="nc-text-box purple">${acaoCor}</div>
 
-        ${obs && obs !== '-' ? `
-        <div class="nc-report-section-title">6. Observações</div>
-        <div class="nc-text-box amber">${obs}</div>` : ''}
+        <!-- SEÇÃO 7+8: ENCERRAMENTO E OBSERVAÇÕES LADO A LADO -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px;">
+            <div>
+                <div class="nc-report-section-title">7. Encerramento</div>
+                <div class="nc-report-field" style="grid-template-columns:1fr 1fr;margin-bottom:2px;">
+                    <div class="nc-report-field-item"><label>Data de Encerramento</label><span>${dataEnc}</span></div>
+                    <div class="nc-report-field-item"><label>Eficácia da Ação</label><span>${efic}</span></div>
+                </div>
+            </div>
+            <div>
+                <div class="nc-report-section-title">8. Observações</div>
+                <div class="nc-text-box amber" style="min-height:24px;">${obs && obs !== '-' ? obs : '-'}</div>
+            </div>
+        </div>
 
         ${imgsHtml}
 
@@ -19082,7 +19120,7 @@ function renderizarNC(lista) {
         const prazoVenc = nc.prazo && new Date(nc.prazo) < new Date() && nc.status !== 'Encerrado'
             ? `<span style="color:#e74c3c;font-weight:bold;">${ncFmtData(nc.prazo)} ⚠️</span>`
             : ncFmtData(nc.prazo);
-        return `<tr style="border-bottom:1px solid #21262d;color:${_tFg()};">
+        return `<tr style="border-bottom:1px solid #21262d;color:${_tFg()};cursor:pointer;" title="Duplo clique para editar" ondblclick="${_podeEditarNC() ? `abrirModalNC(${nc.id})` : ''}">
             <td style="padding:7px 6px;text-align:center;"><span class="nc-num-badge">${nc.numero}</span></td>
             <td style="padding:7px 6px;text-align:center;">${ncFmtData(nc.data)}</td>
             <td style="padding:7px 6px;text-align:center;">${nc.tipo||'-'}</td>
@@ -19095,8 +19133,6 @@ function renderizarNC(lista) {
             <td style="padding:7px 6px;text-align:center;">${prazoVenc}</td>
             <td style="padding:7px 6px;text-align:center;">
                 <button class="nc-btn nc-btn-sm" style="background:#6c757d;color:white;" onclick="visualizarNC(${nc.id})" title="Visualizar">👁️</button>
-                ${_podeEditarNC() ? `<button class="nc-btn nc-btn-info nc-btn-sm" onclick="abrirModalNC(${nc.id})" title="Editar" style="margin-left:4px;">✏️</button>` : ''}
-                ${_podeEditarNC() ? `<button class="nc-btn nc-btn-danger nc-btn-sm" onclick="excluirNC(${nc.id})" title="Excluir" style="margin-left:4px;">🗑️</button>` : ''}
             </td>
         </tr>`;
     }).join('');
@@ -19344,7 +19380,7 @@ function renderizarDev(lista) {
         tbody.innerHTML = '<tr><td colspan="10"><div style="text-align:center;padding:40px 20px;color:#95a5a6;"><div style="font-size:48px;margin-bottom:12px;opacity:0.4;">↩️</div><p style="font-size:13px;">Nenhuma devolução registrada. Clique em <strong>+ Nova Devolução</strong> para começar.</p></div></td></tr>';
         return;
     }
-    tbody.innerHTML = lista.map(dev => `<tr style="border-bottom:1px solid #21262d;color:${_tFg()};">
+    tbody.innerHTML = lista.map(dev => `<tr style="border-bottom:1px solid #21262d;color:${_tFg()};cursor:pointer;" title="Duplo clique para editar" ondblclick="${_podeEditarNC() ? `abrirModalDev(${dev.id})` : ''}">
         <td style="padding:7px 6px;text-align:center;"><span class="nc-num-badge" style="background:#d35400;">${dev.numero}</span></td>
         <td style="padding:7px 6px;text-align:center;">${ncFmtData(dev.data)}</td>
         <td style="padding:7px 6px;text-align:center;">${dev.produto||'-'}</td>
@@ -19355,8 +19391,6 @@ function renderizarDev(lista) {
         <td style="padding:7px 6px;text-align:center;">${ncBadgeStatus(dev.status)}</td>
         <td style="padding:7px 6px;text-align:center;">
             <button class="nc-btn nc-btn-sm" style="background:#6c757d;color:white;" onclick="visualizarDev(${dev.id})" title="Visualizar">👁️</button>
-            ${_podeEditarNC() ? `<button class="nc-btn nc-btn-info nc-btn-sm" onclick="abrirModalDev(${dev.id})" title="Editar" style="margin-left:4px;">✏️</button>` : ''}
-            ${_podeEditarNC() ? `<button class="nc-btn nc-btn-danger nc-btn-sm" onclick="excluirDev(${dev.id})" title="Excluir" style="margin-left:4px;">🗑️</button>` : ''}
         </td>
     </tr>`).join('');
 }
@@ -19635,8 +19669,20 @@ document.querySelectorAll('.nc-check-item input').forEach(cb => {
 });
 
 // ===== INIT NC =====
-renderizarNC(listaNC);
-renderizarDev(listaDev);
+(function() {
+    const hoje = new Date();
+    const anoMes = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
+    const primeiroDia = anoMes + '-01';
+    const ultimoDia   = anoMes + '-' + String(new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate()).padStart(2, '0');
+    const elFi = document.getElementById('nc-fi');
+    const elFf = document.getElementById('nc-ff');
+    if (elFi) elFi.value = primeiroDia;
+    if (elFf) elFf.value = ultimoDia;
+    const ncMes = listaNC.filter(n => n.data && n.data >= primeiroDia && n.data <= ultimoDia);
+    renderizarNC(ncMes);
+    const devMes = listaDev.filter(d => d.data && d.data >= primeiroDia && d.data <= ultimoDia);
+    renderizarDev(devMes);
+})();
 
 // =====================================================================
 // ✅ MELHORIA: FUNÇÕES UTILITÁRIAS — LOADING, TOAST, AUDITORIA
@@ -19982,6 +20028,11 @@ function visualizarNC(id) {
         ${imgsHtml}
     `;
     document.getElementById('ncvModalTitulo').textContent = '📋 Não Conformidade — ' + nc.numero;
+    document.getElementById('modalVisualizarNC').dataset.ncvId   = nc.id;
+    document.getElementById('modalVisualizarNC').dataset.ncvTipo = 'nc';
+    const podeEditar = _podeEditarNC();
+    document.getElementById('ncvBtnEditar').style.display  = podeEditar ? '' : 'none';
+    document.getElementById('ncvBtnExcluir').style.display = podeEditar ? '' : 'none';
     document.getElementById('modalVisualizarNC').classList.add('show');
 }
 
@@ -20052,12 +20103,181 @@ function visualizarDev(id) {
         ${imgsHtml}
     `;
     document.getElementById('ncvModalTitulo').textContent = '↩️ Devolução — ' + dev.numero;
-    document.getElementById('modalVisualizarNC').dataset.devId = dev.id;
+    document.getElementById('modalVisualizarNC').dataset.ncvId   = dev.id;
+    document.getElementById('modalVisualizarNC').dataset.ncvTipo = 'dev';
+    const podeEditar = _podeEditarNC();
+    document.getElementById('ncvBtnEditar').style.display  = podeEditar ? '' : 'none';
+    document.getElementById('ncvBtnExcluir').style.display = podeEditar ? '' : 'none';
     document.getElementById('modalVisualizarNC').classList.add('show');
 }
 
 function fecharModalVisualizarNC() {
     document.getElementById('modalVisualizarNC').classList.remove('show');
+}
+
+function _ncvImprimir() {
+    imprimirVisualizacao();
+}
+
+function _imprimirDevPorObj(id) {
+    const dev = listaDev.find(d => String(d.id) === String(id));
+    if (!dev) return;
+    const printArea = document.getElementById('ncPrintArea');
+    if (!printArea) return;
+
+    let classif = typeof dev.classificacao === 'string' ? JSON.parse(dev.classificacao || '[]') : (dev.classificacao || []);
+    const _isMilhoDev = (dev.produto || '').toUpperCase().includes('MILHO');
+    if (_isMilhoDev) classif = classif.map(c => ((c.defeito||'').toLowerCase()==='densidade' && (c.unidade||'%')==='%') ? {...c, unidade:'g/L'} : c);
+
+    const imgs = typeof dev.imagens === 'string' ? JSON.parse(dev.imagens || '[]') : (dev.imagens || []);
+    const imgsHtml = imgs.length
+        ? `<div class="nc-report-section-title">📷 Evidências Fotográficas (${imgs.length})</div>
+           <div class="nc-report-imgs">${imgs.map(img => `
+            <div class="nc-report-img-item">
+                <img src="${img.dataUrl}" alt="${img.name}">
+                <div class="cap">${img.name}</div>
+            </div>`).join('')}</div>`
+        : '<p style="color:#95a5a6;font-size:11px;">Nenhuma evidência fotográfica registrada.</p>';
+
+    let classifHtml = '';
+    if (classif.length) {
+        const rowsHtml = classif.map(c => {
+            const unidade   = c.unidade || '%';
+            const isTexto   = unidade === 'Neg.' || isNaN(parseFloat(c.resultado));
+            const resultado = isTexto ? (c.resultado || '-') : parseFloat(c.resultado || 0);
+            const parametro = isTexto ? (c.parametro || '-') : parseFloat(c.parametro || 0);
+            const nc        = isTexto ? false : resultado > parametro;
+            const resStr    = isTexto ? resultado : resultado.toFixed(2) + ' ' + unidade;
+            const parStr    = isTexto ? parametro : parametro.toFixed(2) + ' ' + unidade;
+            return `<tr>
+                <td style="text-align:left;font-weight:600;">${c.defeito||'-'}</td>
+                <td style="font-weight:bold;color:${nc ? '#e74c3c' : '#27ae60'};">${resStr}</td>
+                <td style="color:#7f8c8d;">${parStr}</td>
+                <td style="color:${nc ? '#e74c3c' : '#27ae60'};font-weight:bold;">${nc ? '▲ NC' : '✔ OK'}</td>
+            </tr>`;
+        }).join('');
+        classifHtml = `
+        <div class="nc-report-section-title">3. Parâmetros Avaliados</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;">
+            <thead>
+                <tr style="background:#e67e22;color:white;">
+                    <th style="padding:5px 8px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:0.4px;">Avaliados</th>
+                    <th style="padding:5px 8px;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:0.4px;">Resultado</th>
+                    <th style="padding:5px 8px;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:0.4px;">Parâmetro</th>
+                    <th style="padding:5px 8px;text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:0.4px;">Situação</th>
+                </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+        </table>`;
+    }
+
+    printArea.innerHTML = `
+    <div class="nc-report-header" style="border-bottom-color:#d35400;">
+        <div class="nc-report-header-top">
+            <div>
+                <div class="nc-report-header-empresa">AGRONOR ALIMENTOS</div>
+                <div class="nc-report-header-sgq">Sistema de Gestão da Qualidade — SGQ | RELATÓRIO DE DEVOLUÇÃO</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.5px;">Doc. Controlado</div>
+                <div style="font-size:9px;color:rgba(255,255,255,0.8);font-weight:700;">SGQ-DEV-001</div>
+            </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+            <h1>Relatório de Devolução</h1>
+            <div class="nc-report-meta">Emitido em: ${new Date().toLocaleString('pt-BR')}</div>
+        </div>
+    </div>
+    <div class="nc-report-id-bar">
+        <div style="display:flex;align-items:center;gap:18px;">
+            <div>
+                <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:0.5px;color:#6b7a99;font-weight:700;">Número da Devolução</div>
+                <div class="nc-id-num">${dev.numero||'-'}</div>
+            </div>
+            <div style="width:1px;height:36px;background:#d0d8ea;"></div>
+            <div>
+                <div style="font-size:7.5px;text-transform:uppercase;letter-spacing:0.5px;color:#6b7a99;font-weight:700;">Status</div>
+                <div style="font-size:11px;font-weight:700;color:#1a2a6e;">${dev.status||'-'}</div>
+            </div>
+        </div>
+        <span class="nc-id-badge" style="background:#d35400;">${dev.tipo||'-'}</span>
+    </div>
+    <div class="nc-report-section-title">1. Identificação</div>
+    <div class="nc-report-field">
+        <div class="nc-report-field-item"><label>Data</label><span>${ncFmtData(dev.data)}</span></div>
+        <div class="nc-report-field-item"><label>Tipo de Devolução</label><span>${dev.tipo||'-'}</span></div>
+        <div class="nc-report-field-item"><label>Produto</label><span>${dev.produto||'-'}</span></div>
+        <div class="nc-report-field-item"><label>Lote / Nº NF</label><span>${dev.lote||'-'}</span></div>
+    </div>
+    <div class="nc-report-field cols-2">
+        <div class="nc-report-field-item"><label>Fornecedor</label><span>${dev.fornecedor||'-'}</span></div>
+        <div class="nc-report-field-item"><label>Placa do Veículo</label><span>${dev.placa||'-'}</span></div>
+    </div>
+    <div class="nc-report-section-title">2. Motivo da Devolução</div>
+    <div class="nc-report-field cols-2">
+        <div class="nc-report-field-item"><label>Motivo Principal</label><span>${dev.motivo||'-'}</span></div>
+        <div class="nc-report-field-item"><label>Parâmetro Não Conforme</label><span>${dev.parametro||'-'}</span></div>
+    </div>
+    ${dev.desc_motivo ? `<div class="nc-text-box amber">${dev.desc_motivo}</div>` : ''}
+    ${classifHtml}
+    ${imgsHtml}
+    ${dev.obs ? `<div class="nc-report-section-title">Observações</div><div class="nc-text-box amber">${dev.obs}</div>` : ''}
+    <div class="nc-report-sign-area">
+        <div class="nc-sign-block">
+            <div class="nc-sign-space"></div>
+            <div class="nc-sign-label">Lucas Lima</div>
+            <div class="nc-sign-line"></div>
+            <div class="nc-sign-sub">Resp. Técnico · CRQ 04473318</div>
+        </div>
+        <div class="nc-sign-block">
+            <div class="nc-sign-space"></div>
+            <div class="nc-sign-label">Assistente de Qualidade</div>
+            <div class="nc-sign-line"></div>
+            <div class="nc-sign-sub">&nbsp;</div>
+        </div>
+        <div class="nc-sign-block">
+            <div class="nc-sign-space"></div>
+            <div class="nc-sign-label">Supervisor de Produção</div>
+            <div class="nc-sign-line"></div>
+            <div class="nc-sign-sub">&nbsp;</div>
+        </div>
+    </div>
+    <div class="nc-report-footer">
+        <span>AGRONOR ALIMENTOS — SGQ · Documento interno confidencial</span>
+        <span>Revisão: 01 · ${new Date().toLocaleDateString('pt-BR')}</span>
+    </div>`;
+
+    printArea.style.display = 'block';
+    setTimeout(() => {
+        window.print();
+        setTimeout(() => { printArea.style.display = 'none'; }, 500);
+    }, 150);
+}
+
+function _imprimirNcPorObj(id) {
+    // NC: preenche o formulário e chama a função original
+    const nc = listaNC.find(n => String(n.id) === String(id));
+    if (!nc) return;
+    preencherFormNC(nc);
+    imprimirRelatorioNC('nc');
+}
+
+function _ncvEditar() {
+    const modal = document.getElementById('modalVisualizarNC');
+    const id    = modal.dataset.ncvId;
+    const tipo  = modal.dataset.ncvTipo;
+    fecharModalVisualizarNC();
+    if (tipo === 'dev') abrirModalDev(id);
+    else abrirModalNC(id);
+}
+
+function _ncvExcluir() {
+    const modal = document.getElementById('modalVisualizarNC');
+    const id    = modal.dataset.ncvId;
+    const tipo  = modal.dataset.ncvTipo;
+    fecharModalVisualizarNC();
+    if (tipo === 'dev') excluirDev(id);
+    else excluirNC(id);
 }
 function imprimirVisualizacao() {
     const titulo = document.getElementById('ncvModalTitulo').textContent;
@@ -20066,7 +20286,7 @@ function imprimirVisualizacao() {
     // Detecta se é devolução e tenta pegar o objeto completo
     let devObj = null;
     if (isDev) {
-        const devId = document.getElementById('modalVisualizarNC').dataset.devId;
+        const devId = document.getElementById('modalVisualizarNC').dataset.ncvId;
         if (devId) devObj = listaDev.find(d => String(d.id) === String(devId));
     }
 
