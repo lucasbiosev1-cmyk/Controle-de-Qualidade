@@ -425,6 +425,246 @@
         .popup-agenda-snooze-opts { display: flex; gap: 6px; flex-wrap: wrap; }
         /* ========== FIM AGENDA ========== */
 
+        /* ========== ABA HOMOGENEIDADE DE MISTURA ========== */
+        #aba-homogeneidade { padding: 20px; }
+        .hom-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 18px; padding-bottom: 14px;
+            border-bottom: 2px solid #e0e0e0; flex-wrap: wrap; gap: 10px;
+        }
+        html[data-theme="dark"] .hom-header { border-bottom-color: #30363d; }
+        .hom-header-left { display: flex; align-items: center; gap: 12px; }
+        .hom-header-left h2 {
+            font-size: 17px; font-weight: 800; color: #1a2a3a;
+            text-transform: uppercase; margin: 0; letter-spacing: 0.5px;
+        }
+        html[data-theme="dark"] .hom-header-left h2 { color: #e6edf3; }
+        .hom-badge-total {
+            background: #e8f4fd; color: #1a6fa8; border: 1px solid #b3d7f0;
+            border-radius: 20px; padding: 3px 12px; font-size: 11px; font-weight: 700;
+        }
+        html[data-theme="dark"] .hom-badge-total { background: #0d2137; color: #58a6ff; border-color: #1c3a5e; }
+        .hom-btn-novo {
+            background: linear-gradient(135deg, #1a6fa8, #2980b9);
+            color: white; border: none; border-radius: 6px;
+            padding: 10px 20px; font-size: 12px; font-weight: 700;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;
+            display: flex; align-items: center; gap: 6px;
+            box-shadow: 0 2px 8px rgba(41,128,185,0.3); transition: all 0.2s;
+        }
+        .hom-btn-novo:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(41,128,185,0.4); }
+
+        /* Texto padrão */
+        .hom-texto-padrao-box {
+            background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px;
+            padding: 14px 18px; margin-bottom: 18px;
+        }
+        html[data-theme="dark"] .hom-texto-padrao-box { background: #161b22; border-color: #30363d; }
+        .hom-texto-padrao-label {
+            font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase;
+            letter-spacing: 0.5px; margin-bottom: 6px;
+        }
+        html[data-theme="dark"] .hom-texto-padrao-label { color: #8b949e; }
+        .hom-texto-padrao-textarea {
+            width: 100%; border: 1.5px solid #ddd; border-radius: 6px;
+            padding: 9px 12px; font-size: 12px; color: #333; background: white;
+            resize: vertical; min-height: 60px; font-family: inherit; outline: none;
+            transition: border-color 0.2s;
+        }
+        html[data-theme="dark"] .hom-texto-padrao-textarea { background: #0d1117; color: #e6edf3; border-color: #30363d; }
+        .hom-texto-padrao-textarea:focus { border-color: #2980b9; }
+
+        /* Tabela */
+        .hom-table-wrap { overflow-x: auto; }
+        .hom-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .hom-table thead tr { background: #1a2a3a; }
+        html[data-theme="dark"] .hom-table thead tr { background: #161b22; border-bottom: 2px solid #30363d; }
+        .hom-table thead th {
+            padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 700;
+            color: #b0bec5; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;
+        }
+        .hom-table tbody tr { border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.15s; }
+        html[data-theme="dark"] .hom-table tbody tr { border-bottom-color: #21262d; }
+        .hom-table tbody tr:hover { background: rgba(41,128,185,0.06); }
+        .hom-table tbody td { padding: 10px 12px; vertical-align: middle; color: #333; }
+        html[data-theme="dark"] .hom-table tbody td { color: #e6edf3; }
+        .hom-td-muted { color: #888 !important; font-size: 12px; }
+        html[data-theme="dark"] .hom-td-muted { color: #6e7681 !important; }
+        .hom-badge-aprov { display:inline-flex; align-items:center; gap:4px; background:#eafaf1; color:#1e8449; border-radius:20px; padding:3px 10px; font-size:11px; font-weight:700; }
+        .hom-badge-reprov { display:inline-flex; align-items:center; gap:4px; background:#fdecea; color:#c0392b; border-radius:20px; padding:3px 10px; font-size:11px; font-weight:700; }
+        html[data-theme="dark"] .hom-badge-aprov  { background:#0a2a1a; color:#3fb950; }
+        html[data-theme="dark"] .hom-badge-reprov { background:#2e0d0d; color:#f85149; }
+        .hom-cv-ok   { color: #1e8449; font-weight: 700; }
+        .hom-cv-fail { color: #c0392b; font-weight: 700; }
+        html[data-theme="dark"] .hom-cv-ok   { color: #3fb950; }
+        html[data-theme="dark"] .hom-cv-fail { color: #f85149; }
+        .hom-btn-ver {
+            background: #ebf5fb; color: #1a6fa8; border: none; border-radius: 6px;
+            padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s;
+        }
+        .hom-btn-ver:hover { background: #d6eaf8; }
+        html[data-theme="dark"] .hom-btn-ver { background: #0d2137; color: #58a6ff; }
+        html[data-theme="dark"] .hom-btn-ver:hover { background: #1c3a5e; }
+        .hom-dbl-hint { margin-top: 10px; font-size: 11px; color: #aaa; display: flex; align-items: center; gap: 5px; }
+        .hom-empty { text-align:center; padding:60px 20px; color:#aaa; font-size:13px; font-weight:600; }
+        .hom-empty-icon { font-size:40px; margin-bottom:10px; }
+
+        /* Modal Cadastro / Edição */
+        #modalHomCadastro {
+            display: none; position: fixed; inset: 0; z-index: 9500;
+            background: rgba(0,0,0,0.55); align-items: center; justify-content: center;
+        }
+        #modalHomCadastro.show { display: flex; }
+        .hom-modal-box {
+            background: white; border-radius: 12px; width: 680px; max-width: 96vw;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.3); overflow: hidden; max-height: 92vh; display: flex; flex-direction: column;
+        }
+        html[data-theme="dark"] .hom-modal-box { background: #161b22; border: 1px solid #30363d; }
+        .hom-modal-header {
+            background: linear-gradient(135deg, #1a252f, #2c3e50);
+            color: white; padding: 16px 22px;
+            display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+        }
+        .hom-modal-header h3 { font-size: 14px; font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 0.5px; }
+        .hom-modal-close {
+            background: rgba(255,255,255,0.15); border: none; color: white;
+            width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+            font-size: 15px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+        }
+        .hom-modal-close:hover { background: rgba(255,255,255,0.3); }
+        .hom-modal-body { padding: 22px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 14px; }
+        .hom-form-row { display: flex; gap: 12px; flex-wrap: wrap; }
+        .hom-form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 160px; }
+        .hom-form-group label { font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+        html[data-theme="dark"] .hom-form-group label { color: #8b949e; }
+        .hom-form-group input, .hom-form-group select, .hom-form-group textarea {
+            border: 1.5px solid #ddd; border-radius: 6px; padding: 9px 12px;
+            font-size: 13px; color: #333; background: #fafafa; transition: border-color 0.2s; outline: none; width: 100%;
+        }
+        html[data-theme="dark"] .hom-form-group input,
+        html[data-theme="dark"] .hom-form-group select,
+        html[data-theme="dark"] .hom-form-group textarea { background: #0d1117; color: #e6edf3; border-color: #30363d; }
+        .hom-form-group input:focus, .hom-form-group select:focus, .hom-form-group textarea:focus { border-color: #2980b9; }
+
+        /* Amostras */
+        .hom-amostras-titulo {
+            font-size: 12px; font-weight: 700; color: #555; text-transform: uppercase;
+            letter-spacing: 0.5px; margin-bottom: 8px;
+        }
+        html[data-theme="dark"] .hom-amostras-titulo { color: #8b949e; }
+        .hom-amostras-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+        }
+        .hom-amostra-input {
+            border: 1.5px solid #ddd; border-radius: 6px; padding: 8px 10px;
+            font-size: 13px; text-align: center; color: #333; background: #fafafa;
+            outline: none; width: 100%; transition: border-color 0.2s;
+        }
+        html[data-theme="dark"] .hom-amostra-input { background: #0d1117; color: #e6edf3; border-color: #30363d; }
+        .hom-amostra-input:focus { border-color: #2980b9; }
+        .hom-resultados-box {
+            background: #f0f8ff; border: 1.5px solid #b3d7f0; border-radius: 8px;
+            padding: 14px 18px; display: flex; gap: 20px; flex-wrap: wrap;
+        }
+        html[data-theme="dark"] .hom-resultados-box { background: #0d2137; border-color: #1c3a5e; }
+        .hom-res-item { display: flex; flex-direction: column; gap: 3px; }
+        .hom-res-label { font-size: 10px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+        html[data-theme="dark"] .hom-res-label { color: #6e7681; }
+        .hom-res-valor { font-size: 18px; font-weight: 800; color: #1a6fa8; }
+        html[data-theme="dark"] .hom-res-valor { color: #58a6ff; }
+        .hom-res-valor.ok   { color: #1e8449; }
+        .hom-res-valor.fail { color: #c0392b; }
+        html[data-theme="dark"] .hom-res-valor.ok   { color: #3fb950; }
+        html[data-theme="dark"] .hom-res-valor.fail { color: #f85149; }
+
+        .hom-modal-footer {
+            padding: 14px 22px; border-top: 1px solid #eee;
+            display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0;
+        }
+        html[data-theme="dark"] .hom-modal-footer { border-top-color: #30363d; }
+        .hom-btn-cancelar {
+            background: #ecf0f1; color: #555; border: none; border-radius: 6px;
+            padding: 10px 20px; font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase;
+        }
+        html[data-theme="dark"] .hom-btn-cancelar { background: #21262d; color: #8b949e; }
+        .hom-btn-salvar {
+            background: linear-gradient(135deg, #1a6fa8, #2980b9);
+            color: white; border: none; border-radius: 6px;
+            padding: 10px 24px; font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(41,128,185,0.3);
+        }
+        .hom-btn-salvar:hover { opacity: 0.9; }
+
+        /* Modal Visualização */
+        #modalHomVisualizar {
+            display: none; position: fixed; inset: 0; z-index: 9600;
+            background: rgba(0,0,0,0.6); align-items: center; justify-content: center;
+        }
+        #modalHomVisualizar.show { display: flex; }
+        .hom-vis-box {
+            background: white; border-radius: 12px; width: 720px; max-width: 96vw;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.35); overflow: hidden; max-height: 92vh; display: flex; flex-direction: column;
+        }
+        html[data-theme="dark"] .hom-vis-box { background: #161b22; border: 1px solid #30363d; }
+        .hom-vis-header {
+            background: linear-gradient(135deg, #1a3a5c, #2980b9);
+            color: white; padding: 16px 22px;
+            display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+        }
+        .hom-vis-header h3 { font-size: 14px; font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 0.5px; }
+        .hom-vis-body { padding: 22px; overflow-y: auto; flex: 1; }
+        .hom-vis-section-title {
+            font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase;
+            letter-spacing: 0.5px; margin: 0 0 10px; padding-bottom: 6px;
+            border-bottom: 1px solid #eee;
+        }
+        html[data-theme="dark"] .hom-vis-section-title { color: #6e7681; border-bottom-color: #30363d; }
+        .hom-vis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 10px; margin-bottom: 18px; }
+        .hom-vis-field { display: flex; flex-direction: column; gap: 3px; }
+        .hom-vis-field-label { font-size: 10px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.4px; }
+        .hom-vis-field-val { font-size: 13px; font-weight: 600; color: #333; }
+        html[data-theme="dark"] .hom-vis-field-val { color: #e6edf3; }
+        .hom-vis-amostras-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 18px; }
+        .hom-vis-amostra-chip {
+            background: #f0f8ff; border: 1px solid #b3d7f0; border-radius: 6px;
+            padding: 8px; text-align: center; font-size: 13px; font-weight: 700; color: #1a6fa8;
+        }
+        html[data-theme="dark"] .hom-vis-amostra-chip { background: #0d2137; border-color: #1c3a5e; color: #58a6ff; }
+        .hom-vis-resultados { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+        .hom-vis-res-card {
+            background: #f8f9fa; border-radius: 8px; padding: 12px 18px; flex: 1; min-width: 120px;
+            display: flex; flex-direction: column; gap: 4px; border: 1px solid #e9ecef;
+        }
+        html[data-theme="dark"] .hom-vis-res-card { background: #0d1117; border-color: #21262d; }
+        .hom-vis-complemento-area {
+            width: 100%; border: 1.5px solid #ddd; border-radius: 6px;
+            padding: 9px 12px; font-size: 13px; color: #333; background: #fafafa;
+            resize: vertical; min-height: 70px; font-family: inherit; outline: none;
+            transition: border-color 0.2s;
+        }
+        html[data-theme="dark"] .hom-vis-complemento-area { background: #0d1117; color: #e6edf3; border-color: #30363d; }
+        .hom-vis-complemento-area:focus { border-color: #2980b9; }
+        .hom-vis-footer {
+            padding: 14px 22px; border-top: 1px solid #eee;
+            display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-shrink: 0;
+        }
+        html[data-theme="dark"] .hom-vis-footer { border-top-color: #30363d; }
+        .hom-btn-excluir-modal {
+            background: #fdecea; color: #c0392b; border: none; border-radius: 6px;
+            padding: 10px 18px; font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: all 0.2s;
+        }
+        .hom-btn-excluir-modal:hover { background: #e74c3c; color: white; }
+        html[data-theme="dark"] .hom-btn-excluir-modal { background: #2e0d0d; color: #f85149; }
+        .hom-btn-imprimir-modal {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white; border: none; border-radius: 6px;
+            padding: 10px 18px; font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(39,174,96,0.3);
+        }
+        .hom-btn-imprimir-modal:hover { opacity: 0.9; }
+        /* ========== FIM HOMOGENEIDADE ========== */
+
         /* ========== TELA DE LOGIN — CLEAN ========== */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
         #loginScreen {
@@ -3675,10 +3915,10 @@
             <div class="nav-dropdown-menu">
                 <button class="nav-dropdown-item" id="tabEstoqueReagentes" onclick="trocarAba('estoqueReagentes', this);closeDropdowns()">🧫 Produtos Químicos</button>
                 <button class="nav-dropdown-item" id="tabEstoqueMateriais" onclick="trocarAba('estoqueMateriais', this);closeDropdowns()">📦 Materiais</button>
+                <button class="nav-dropdown-item" id="tabEquipamentos" onclick="trocarAba('equipamentos', this);closeDropdowns()">🔬 Equipamentos</button>
             </div>
         </div>
-        <!-- EQUIPAMENTOS -->
-        <button class="nav-tab" id="tabEquipamentos" onclick="trocarAba('equipamentos', this)">🔬 Equipamentos</button>
+        <button class="nav-tab" id="tabHomogeneidade" onclick="trocarAba('homogeneidade', this)">⚗️ Homogeneidade</button>
         <!-- AGENDA -->
         <button class="nav-tab" id="tabAgenda" onclick="trocarAba('agenda', this)">📅 Agenda</button>
         <!-- ORDEM DE SERVIÇO -->
@@ -6168,6 +6408,176 @@
                 </div>
                 <div style="display:none;gap:8px;" id="popupBotoesSnoozeAtivo">
                     <button class="popup-agenda-btn-desativar" onclick="agendaDesativarAviso()">✖ Desativar Aviso</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ABA HOMOGENEIDADE DE MISTURA ===== -->
+    <div id="aba-homogeneidade" class="tab-content">
+        <div id="abaHom" style="padding:20px;">
+
+            <!-- Cabeçalho -->
+            <div class="hom-header">
+                <div class="hom-header-left">
+                    <h2>⚗️ Teste de Homogeneidade de Mistura</h2>
+                    <span class="hom-badge-total" id="homBadgeTotal">0 registros</span>
+                </div>
+                <button class="hom-btn-novo" onclick="homAbrirModalCadastro()">＋ Novo Teste</button>
+            </div>
+
+            <!-- Tabela -->
+            <div class="hom-table-wrap">
+                <table class="hom-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Produto</th>
+                            <th>Equipamento</th>
+                            <th>Marcador</th>
+                            <th>Tempo Mistura</th>
+                            <th>C.V. %</th>
+                            <th>Resultado</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="homTbody">
+                        <tr><td colspan="8"><div class="hom-empty"><div class="hom-empty-icon">⚗️</div>Nenhum teste registrado ainda.<br>Clique em <strong>+ Novo Teste</strong> para começar.</div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="hom-dbl-hint">👆 Duplo clique na linha para editar o registro</div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL CADASTRO / EDIÇÃO HOMOGENEIDADE ===== -->
+    <div id="modalHomCadastro">
+        <div class="hom-modal-box">
+            <div class="hom-modal-header">
+                <h3 id="homModalTitulo">➕ Novo Teste de Homogeneidade</h3>
+                <button class="hom-modal-close" onclick="homFecharModalCadastro()">✕</button>
+            </div>
+            <div class="hom-modal-body">
+                <input type="hidden" id="homEditId">
+
+                <!-- Dados do teste -->
+                <div class="hom-form-row">
+                    <div class="hom-form-group" style="max-width:160px;">
+                        <label>Data</label>
+                        <input type="date" id="homData">
+                    </div>
+                    <div class="hom-form-group">
+                        <label>Produto / Ração</label>
+                        <input type="text" id="homProduto" placeholder="Ex: Ração Corte R3 MCASSAB">
+                    </div>
+                </div>
+                <div class="hom-form-row">
+                    <div class="hom-form-group">
+                        <label>Equipamento / Misturador</label>
+                        <input type="text" id="homEquipamento" placeholder="Ex: Misturador 2 TON">
+                    </div>
+                    <div class="hom-form-group" style="max-width:180px;">
+                        <label>Marcador</label>
+                        <select id="homMarcador" onchange="homCalcular()">
+                            <option value="">-- Selecione --</option>
+                            <option value="Manganês (Mn)">Manganês (Mn) — limite 10%</option>
+                            <option value="Microtracer">Microtracer — limite 5%</option>
+                        </select>
+                    </div>
+                    <div class="hom-form-group" style="max-width:160px;">
+                        <label>Tempo de Mistura</label>
+                        <input type="text" id="homTempo" placeholder="Ex: 4 min">
+                    </div>
+                </div>
+                <div class="hom-form-row">
+                    <div class="hom-form-group">
+                        <label>Local / Endereço</label>
+                        <input type="text" id="homLocal" placeholder="Ex: Pindaré Mirim, Alto do Bode Br 316">
+                    </div>
+                    <div class="hom-form-group">
+                        <label>Laboratório</label>
+                        <input type="text" id="homLaboratorio" placeholder="Ex: Laboratório CBO">
+                    </div>
+                </div>
+                <div class="hom-form-row">
+                    <div class="hom-form-group" style="max-width:200px;">
+                        <label>Data do Resultado</label>
+                        <input type="date" id="homDataResultado">
+                    </div>
+                    <div class="hom-form-group">
+                        <label>Responsável</label>
+                        <input type="text" id="homResponsavel" placeholder="Nome do analista">
+                    </div>
+                </div>
+                <div class="hom-form-group">
+                    <label>📝 Texto Padrão de Conclusão</label>
+                    <textarea class="hom-texto-padrao-textarea" id="homTextoPadrao" rows="3"
+                        placeholder="Ex: O teste foi conduzido conforme Portaria SDA nº 798/2023..."></textarea>
+                </div>
+
+                <!-- Amostras -->
+                <div>
+                    <div class="hom-amostras-titulo">📋 Amostras Analíticas (mín. 5 — máx. 10)</div>
+                    <div class="hom-amostras-grid" id="homAmostrasGrid">
+                        <input type="number" class="hom-amostra-input" placeholder="A1" oninput="homCalcular()">
+                        <input type="number" class="hom-amostra-input" placeholder="A2" oninput="homCalcular()">
+                        <input type="number" class="hom-amostra-input" placeholder="A3" oninput="homCalcular()">
+                        <input type="number" class="hom-amostra-input" placeholder="A4" oninput="homCalcular()">
+                        <input type="number" class="hom-amostra-input" placeholder="A5" oninput="homCalcular()">
+                        <input type="number" class="hom-amostra-input" placeholder="A6 (opc)" oninput="homCalcular()">
+                        <input type="number" class="hom-amostra-input" placeholder="A7 (opc)" oninput="homCalcular()">
+                        <input type="number" class="hom-amostra-input" placeholder="A8 (opc)" oninput="homCalcular()">
+                        <input type="number" class="hom-amostra-input" placeholder="A9 (opc)" oninput="homCalcular()">
+                        <input type="number" class="hom-amostra-input" placeholder="A10 (opc)" oninput="homCalcular()">
+                    </div>
+                </div>
+
+                <!-- Resultados calculados -->
+                <div class="hom-resultados-box" id="homResultadosBox">
+                    <div class="hom-res-item">
+                        <span class="hom-res-label">N° Amostras</span>
+                        <span class="hom-res-valor" id="homResN">—</span>
+                    </div>
+                    <div class="hom-res-item">
+                        <span class="hom-res-label">Média</span>
+                        <span class="hom-res-valor" id="homResMedia">—</span>
+                    </div>
+                    <div class="hom-res-item">
+                        <span class="hom-res-label">Desvio Padrão</span>
+                        <span class="hom-res-valor" id="homResDP">—</span>
+                    </div>
+                    <div class="hom-res-item">
+                        <span class="hom-res-label">C.V. %</span>
+                        <span class="hom-res-valor" id="homResCV">—</span>
+                    </div>
+                    <div class="hom-res-item">
+                        <span class="hom-res-label">Resultado</span>
+                        <span class="hom-res-valor" id="homResStatus">—</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hom-modal-footer">
+                <button class="hom-btn-cancelar" onclick="homFecharModalCadastro()">Cancelar</button>
+                <button class="hom-btn-salvar" onclick="homSalvar()">✔ Salvar Registro</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL VISUALIZAÇÃO HOMOGENEIDADE ===== -->
+    <div id="modalHomVisualizar">
+        <div class="hom-vis-box">
+            <div class="hom-vis-header">
+                <h3>👁 Visualizar Registro</h3>
+                <button class="hom-modal-close" onclick="homFecharModalVis()">✕</button>
+            </div>
+            <div class="hom-vis-body" id="homVisBody">
+                <!-- preenchido por JS -->
+            </div>
+            <div class="hom-vis-footer">
+                <button class="hom-btn-excluir-modal" onclick="homExcluir()">🗑 Excluir</button>
+                <div style="display:flex;gap:10px;">
+                    <button class="hom-btn-cancelar" onclick="homFecharModalVis()">Fechar</button>
+                    <button class="hom-btn-imprimir-modal" onclick="homImprimir()">🖨️ Imprimir</button>
                 </div>
             </div>
         </div>
@@ -8981,6 +9391,7 @@ function trocarAba(aba, btn) {
     if (aba === 'estoqueMateriais') { try { matCarregarDados(); } catch(e){} }
     if (aba === 'equipamentos') { try { eqCarregarDados(); } catch(e){} }
     if (aba === 'agenda') { try { _agendaCarregarEExibir(); } catch(e){} }
+    if (aba === 'homogeneidade') { try { homCarregar(); } catch(e){} }
     if (aba === 'ordemServico') {
         // Bloqueia acesso se não tiver permissão
         const _u = USUARIOS[usuarioAtual] || {};
@@ -13770,6 +14181,7 @@ const _COLUNAS_TABELA = {
     materias_primas:    'id,data,hora,produto,fornecedor,nf,umidade,densidade,extrato,proteina,fibra,solubil,mineral,acidez,ureatica,rancidez,peroxido,digestibilidade,granulo1,granulo2,granulo3,granulo4,tempResfriador,tempCanhao,alimentacaoHz,calcio,fosforo,obs',
     entradas_mp:        'id,data,hora,fornecedor,materia_prima,nf,usuario,status,status_descarga,criado_em,placa,seq,obs',
     mp_produtos_custom: 'id,nome',
+    homogeneidade:      'id,dataISO,data,dataResultadoISO,dataResultado,produto,equipamento,marcador,tempo,responsavel,local,laboratorio,textoPadrao,amostras,n,media,dp,cv,complemento',
 };
 
 // ── FAST-PATH: busca só o mês atual para mostrar o dashboard instantaneamente ──────────
@@ -28529,6 +28941,573 @@ window.atualizarKpisCapa = function() {
 
 
 })(); // fim IIFE
+
+// ===== MÓDULO: HOMOGENEIDADE DE MISTURA =====
+(function() {
+    'use strict';
+
+    const HOM_TABELA = 'homogeneidade'; // tabela no Supabase
+
+    function homGetLimite(marcador) {
+        if (!marcador) return 10;
+        return marcador.toLowerCase().includes('microtracer') ? 5 : 10;
+    }
+
+    let homDados = [];
+    let homVisId = null; // id sendo visualizado
+
+    // ── Carregar do Supabase ───────────────────────────────────────
+    window.homCarregar = async function() {
+        try {
+            const dados = await dbGetAll(HOM_TABELA);
+            // amostras vem como JSON string do Supabase — parsear se necessário
+            homDados = (dados || []).map(r => ({
+                ...r,
+                amostras: typeof r.amostras === 'string' ? JSON.parse(r.amostras) : (r.amostras || [])
+            })).sort((a, b) => (b.dataISO || '').localeCompare(a.dataISO || ''));
+        } catch(e) {
+            homDados = [];
+        }
+        homRenderizar();
+    };
+
+    window.homSalvarTextoPadrao = function() {
+        // mantido por compatibilidade
+    };
+
+    // ── Persistir no Supabase ──────────────────────────────────────
+    async function homPersistir(registro) {
+        const payload = {
+            ...registro,
+            amostras: JSON.stringify(registro.amostras || [])
+        };
+        await dbUpsertOne(HOM_TABELA, payload);
+    }
+
+    // ── Renderizar tabela ─────────────────────────────────────────
+    function homRenderizar() {
+        const tbody = document.getElementById('homTbody');
+        const badge = document.getElementById('homBadgeTotal');
+        if (!tbody) return;
+        if (badge) badge.textContent = homDados.length + ' registro' + (homDados.length !== 1 ? 's' : '');
+
+        if (homDados.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8"><div class="hom-empty"><div class="hom-empty-icon">⚗️</div>Nenhum teste registrado ainda.<br>Clique em <strong>+ Novo Teste</strong> para começar.</div></td></tr>';
+            return;
+        }
+
+        const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+        tbody.innerHTML = homDados.map((r, idx) => {
+            const aprov = parseFloat(r.cv) <= homGetLimite(r.marcador);
+            const badgeHtml = aprov
+                ? '<span class="hom-badge-aprov">✔ Aprovado</span>'
+                : '<span class="hom-badge-reprov">✖ Reprovado</span>';
+            const cvClass = aprov ? 'hom-cv-ok' : 'hom-cv-fail';
+            const rowBg = idx % 2 === 0
+                ? (dark ? 'background:#161b22' : 'background:#ffffff')
+                : (dark ? 'background:#0d1117' : 'background:#f5f7fa');
+            return `<tr style="${rowBg}" class="tr-row-hover"
+                        ondblclick="homAbrirModalEditar('${r.id}')"
+                        title="Duplo clique para editar">
+                <td class="hom-td-muted">${r.data}</td>
+                <td style="font-weight:600">${r.produto}</td>
+                <td class="hom-td-muted">${r.equipamento}</td>
+                <td class="hom-td-muted">${r.marcador}</td>
+                <td class="hom-td-muted">${r.tempo}</td>
+                <td class="${cvClass}">${parseFloat(r.cv).toFixed(2)}%</td>
+                <td>${badgeHtml}</td>
+                <td><button class="hom-btn-ver" onclick="homAbrirModalVis('${r.id}')">👁 Ver</button></td>
+            </tr>`;
+        }).join('');
+    }
+
+    // ── Cálculo automático ────────────────────────────────────────
+    window.homCalcular = function() {
+        const inputs = document.querySelectorAll('#homAmostrasGrid .hom-amostra-input');
+        const vals = [];
+        inputs.forEach(i => { const v = parseFloat(i.value); if (!isNaN(v) && i.value.trim() !== '') vals.push(v); });
+
+        if (vals.length < 2) {
+            ['homResN','homResMedia','homResDP','homResCV','homResStatus'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.textContent = vals.length === 1 ? '(mín. 2)' : '—'; el.className = 'hom-res-valor'; }
+            });
+            return;
+        }
+
+        const n     = vals.length;
+        const media = vals.reduce((a,b) => a + b, 0) / n;
+        const dp    = Math.sqrt(vals.map(v => Math.pow(v - media, 2)).reduce((a,b) => a + b, 0) / (n - 1));
+        const marcadorAtual = (document.getElementById('homMarcador') || {}).value || '';
+        const cv    = (dp / media) * 100;
+        const aprov = cv <= homGetLimite(marcadorAtual);
+
+        const set = (id, txt, cls) => { const el = document.getElementById(id); if(el){ el.textContent = txt; el.className = 'hom-res-valor' + (cls ? ' ' + cls : ''); } };
+        set('homResN',      n);
+        set('homResMedia',  media.toFixed(4));
+        set('homResDP',     dp.toFixed(4));
+        set('homResCV',     cv.toFixed(2) + '%', aprov ? 'ok' : 'fail');
+        set('homResStatus', aprov ? '✔ APROVADO' : '✖ REPROVADO', aprov ? 'ok' : 'fail');
+    };
+
+    function homGetAmostras() {
+        const inputs = document.querySelectorAll('#homAmostrasGrid .hom-amostra-input');
+        const vals = [];
+        inputs.forEach(i => { const v = parseFloat(i.value); if (!isNaN(v) && i.value.trim() !== '') vals.push(v); });
+        return vals;
+    }
+
+    function homGetResultados(vals) {
+        if (vals.length < 2) return null;
+        const n     = vals.length;
+        const media = vals.reduce((a,b) => a + b, 0) / n;
+        const dp    = Math.sqrt(vals.map(v => Math.pow(v - media, 2)).reduce((a,b) => a + b, 0) / (n - 1));
+        const cv    = (dp / media) * 100;
+        return { n, media: media.toFixed(4), dp: dp.toFixed(4), cv: cv.toFixed(4) };
+    }
+
+    // ── Modal Cadastro ────────────────────────────────────────────
+    window.homAbrirModalCadastro = function() {
+        document.getElementById('homEditId').value = '';
+        document.getElementById('homModalTitulo').textContent = '➕ Novo Teste de Homogeneidade';
+        document.getElementById('homData').value = new Date().toISOString().split('T')[0];
+        ['homProduto','homEquipamento','homMarcador','homTempo','homResponsavel','homLocal','homLaboratorio','homTextoPadrao'].forEach(id => {
+            const el = document.getElementById(id); if(el) el.value = '';
+        });
+        document.getElementById('homDataResultado').value = '';
+        document.querySelectorAll('#homAmostrasGrid .hom-amostra-input').forEach(i => i.value = '');
+        ['homResN','homResMedia','homResDP','homResCV','homResStatus'].forEach(id => {
+            const el = document.getElementById(id); if(el) { el.textContent = '—'; el.className = 'hom-res-valor'; }
+        });
+        document.getElementById('modalHomCadastro').classList.add('show');
+    };
+
+    window.homAbrirModalEditar = function(id) {
+        const r = homDados.find(x => x.id === id);
+        if (!r) return;
+        document.getElementById('homEditId').value = id;
+        document.getElementById('homModalTitulo').textContent = '✏️ Editar Registro';
+        document.getElementById('homData').value        = r.dataISO || '';
+        document.getElementById('homProduto').value     = r.produto || '';
+        document.getElementById('homEquipamento').value = r.equipamento || '';
+        const selMarcador = document.getElementById('homMarcador');
+        if (selMarcador) selMarcador.value = r.marcador || '';
+        document.getElementById('homTempo').value            = r.tempo || '';
+        document.getElementById('homResponsavel').value     = r.responsavel || '';
+        document.getElementById('homLocal').value           = r.local || '';
+        document.getElementById('homLaboratorio').value     = r.laboratorio || '';
+        document.getElementById('homDataResultado').value   = r.dataResultadoISO || '';
+        const taTexto = document.getElementById('homTextoPadrao');
+        if (taTexto) taTexto.value = r.textoPadrao || '';
+        const inputs = document.querySelectorAll('#homAmostrasGrid .hom-amostra-input');
+        const amostras = r.amostras || [];
+        inputs.forEach((inp, i) => { inp.value = amostras[i] !== undefined ? amostras[i] : ''; });
+        homCalcular();
+        document.getElementById('modalHomCadastro').classList.add('show');
+    };
+
+    window.homFecharModalCadastro = function() {
+        document.getElementById('modalHomCadastro').classList.remove('show');
+    };
+
+    window.homSalvar = async function() {
+        const produto        = (document.getElementById('homProduto').value || '').trim();
+        const equipamento    = (document.getElementById('homEquipamento').value || '').trim();
+        const marcador       = (document.getElementById('homMarcador').value || '').trim();
+        const tempo          = (document.getElementById('homTempo').value || '').trim();
+        const dataISO        = document.getElementById('homData').value;
+        const responsavel    = (document.getElementById('homResponsavel').value || '').trim();
+        const local          = (document.getElementById('homLocal').value || '').trim();
+        const laboratorio    = (document.getElementById('homLaboratorio').value || '').trim();
+        const dataResultadoISO = document.getElementById('homDataResultado').value;
+        const textoPadrao    = (document.getElementById('homTextoPadrao').value || '').trim();
+        const amostras    = homGetAmostras();
+
+        if (!produto)     return sgqToast('Informe o produto/ração.', 'warning');
+        if (!equipamento) return sgqToast('Informe o equipamento.', 'warning');
+        if (amostras.length < 2) return sgqToast('Informe pelo menos 2 amostras para calcular.', 'warning');
+
+        const res = homGetResultados(amostras);
+        if (!res) return sgqToast('Erro no cálculo. Verifique as amostras.', 'error');
+
+        // Formata data para exibição
+        const [ano, mes, dia] = dataISO.split('-');
+        const dataFmt = dia ? `${dia}/${mes}/${ano}` : dataISO;
+        let dataResultadoFmt = '';
+        if (dataResultadoISO) {
+            const [ar, mr, dr] = dataResultadoISO.split('-');
+            dataResultadoFmt = dr ? `${dr}/${mr}/${ar}` : dataResultadoISO;
+        }
+
+        const editId = document.getElementById('homEditId').value;
+        const registro = editId
+            ? { ...(homDados.find(x => x.id === editId) || {}), id: editId,
+                produto, equipamento, marcador, tempo, dataISO, data: dataFmt,
+                responsavel, local, laboratorio, dataResultadoISO,
+                dataResultado: dataResultadoFmt, textoPadrao, amostras, ...res }
+            : { id: 'hom_' + Date.now(),
+                produto, equipamento, marcador, tempo, dataISO, data: dataFmt,
+                responsavel, local, laboratorio, dataResultadoISO,
+                dataResultado: dataResultadoFmt, textoPadrao, amostras, ...res };
+
+        try {
+            await homPersistir(registro);
+            // atualizar cache local
+            const idx = homDados.findIndex(x => x.id === registro.id);
+            if (idx > -1) homDados[idx] = registro;
+            else homDados.unshift(registro);
+            sgqToast(editId ? 'Registro atualizado com sucesso!' : 'Teste registrado com sucesso!', 'success');
+        } catch(e) {
+            sgqToast('Erro ao salvar: ' + e.message, 'error');
+            return;
+        }
+
+        homRenderizar();
+        homFecharModalCadastro();
+    };
+
+    // ── Modal Visualização ────────────────────────────────────────
+    window.homAbrirModalVis = function(id) {
+        const r = homDados.find(x => x.id === id);
+        if (!r) return;
+        homVisId = id;
+        const aprov = parseFloat(r.cv) <= homGetLimite(r.marcador);
+        const badgeHtml = aprov
+            ? '<span class="hom-badge-aprov" style="font-size:14px;padding:5px 14px;">✔ APROVADO</span>'
+            : '<span class="hom-badge-reprov" style="font-size:14px;padding:5px 14px;">✖ REPROVADO</span>';
+
+        const amostrasHtml = (r.amostras || []).map((v, i) =>
+            `<div class="hom-vis-amostra-chip">A${i+1}<br><strong>${v}</strong></div>`
+        ).join('');
+
+        const textoPadrao = r.textoPadrao || '';
+        const complemento = r.complemento || '';
+
+        document.getElementById('homVisBody').innerHTML = `
+            <p class="hom-vis-section-title">IDENTIFICAÇÃO</p>
+            <div class="hom-vis-grid">
+                <div class="hom-vis-field"><span class="hom-vis-field-label">Data</span><span class="hom-vis-field-val">${r.data}</span></div>
+                <div class="hom-vis-field"><span class="hom-vis-field-label">Responsável</span><span class="hom-vis-field-val">${r.responsavel || '—'}</span></div>
+                <div class="hom-vis-field"><span class="hom-vis-field-label">Produto / Ração</span><span class="hom-vis-field-val">${r.produto}</span></div>
+                <div class="hom-vis-field"><span class="hom-vis-field-label">Equipamento</span><span class="hom-vis-field-val">${r.equipamento}</span></div>
+                <div class="hom-vis-field"><span class="hom-vis-field-label">Marcador</span><span class="hom-vis-field-val">${r.marcador}</span></div>
+                <div class="hom-vis-field"><span class="hom-vis-field-label">Tempo de Mistura</span><span class="hom-vis-field-val">${r.tempo}</span></div>
+            </div>
+
+            <p class="hom-vis-section-title">AMOSTRAS ANALÍTICAS (${r.n} amostras)</p>
+            <div class="hom-vis-amostras-grid" style="margin-bottom:18px;">${amostrasHtml}</div>
+
+            <p class="hom-vis-section-title">RESULTADOS CALCULADOS</p>
+            <div class="hom-vis-resultados" style="margin-bottom:18px;">
+                <div class="hom-vis-res-card">
+                    <span class="hom-res-label">Média</span>
+                    <span class="hom-res-valor" style="font-size:16px">${r.media}</span>
+                </div>
+                <div class="hom-vis-res-card">
+                    <span class="hom-res-label">Desvio Padrão</span>
+                    <span class="hom-res-valor" style="font-size:16px">${r.dp}</span>
+                </div>
+                <div class="hom-vis-res-card">
+                    <span class="hom-res-label">C.V. %</span>
+                    <span class="hom-res-valor ${aprov ? 'ok' : 'fail'}" style="font-size:16px">${parseFloat(r.cv).toFixed(2)}%</span>
+                </div>
+                <div class="hom-vis-res-card">
+                    <span class="hom-res-label">Limite (${r.marcador})</span>
+                    <span class="hom-res-valor" style="font-size:16px">&le; ${homGetLimite(r.marcador)}%</span>
+                </div>
+                <div class="hom-vis-res-card" style="align-items:center;justify-content:center;">
+                    ${badgeHtml}
+                </div>
+            </div>
+
+            ${textoPadrao ? `<p class="hom-vis-section-title">CONCLUSÃO</p>
+            <p style="font-size:13px;color:var(--gh-fg-default,#333);line-height:1.6;margin-bottom:18px;white-space:pre-wrap;">${textoPadrao}</p>` : ''}
+
+            <p class="hom-vis-section-title">COMPLEMENTO / OBSERVAÇÕES</p>
+            <textarea class="hom-vis-complemento-area" id="homVisComplemento"
+                placeholder="Observações adicionais sobre este registro..."
+                onchange="homSalvarComplemento()">${complemento}</textarea>
+        `;
+        document.getElementById('modalHomVisualizar').classList.add('show');
+    };
+
+    window.homSalvarComplemento = async function() {
+        if (!homVisId) return;
+        const ta = document.getElementById('homVisComplemento');
+        const idx = homDados.findIndex(x => x.id === homVisId);
+        if (idx > -1 && ta) {
+            homDados[idx].complemento = ta.value;
+            try { await homPersistir(homDados[idx]); } catch(e) {}
+        }
+    };
+
+    window.homFecharModalVis = function() {
+        homSalvarComplemento();
+        document.getElementById('modalHomVisualizar').classList.remove('show');
+        homVisId = null;
+    };
+
+    window.homExcluir = async function() {
+        if (!homVisId) return;
+        const r = homDados.find(x => x.id === homVisId);
+        if (!r) return;
+        if (!confirm(`Confirma a exclusão do registro de ${r.produto} (${r.data})?`)) return;
+        try {
+            await dbDeleteOne(HOM_TABELA, r.id);
+            homDados = homDados.filter(x => x.id !== homVisId);
+            homRenderizar();
+            homFecharModalVis();
+            sgqToast('Registro excluído.', 'info');
+        } catch(e) {
+            sgqToast('Erro ao excluir: ' + e.message, 'error');
+        }
+    };
+
+    // ── Impressão ─────────────────────────────────────────────────
+    window.homImprimir = function() {
+        if (!homVisId) return;
+        homSalvarComplemento();
+        const r = homDados.find(x => x.id === homVisId);
+        if (!r) return;
+
+        const aprov       = parseFloat(r.cv) <= homGetLimite(r.marcador);
+        const limiteUsado = homGetLimite(r.marcador);
+        const cvFmt       = parseFloat(r.cv).toFixed(2) + '%';
+        const local       = r.local       || 'Pindar\u00e9 Mirim, Alto do Bode Br 316';
+        const laboratorio = r.laboratorio || 'Laborat\u00f3rio CBO';
+        const dataResult  = r.dataResultado || '\u2014';
+        const responsavel = r.responsavel || 'Respons\u00e1vel';
+        const cargo       = r.cargo       || 'Gest\u00e3o da Qualidade';
+        const crq         = r.crq         || 'CRQ- 04473818';
+        const complemento = r.complemento || '';
+        const textoPadrao = r.textoPadrao || '';
+
+        // amostras header e values
+        const hdrs = (r.amostras||[]).map((_,i) => `<th>Amostra ${i+1}</th>`).join('');
+        const vals = (r.amostras||[]).map(v => `<td>${v}</td>`).join('');
+
+        // conclusão automática se não houver texto padrão
+        // conclusão idêntica ao sistema original — gerada automaticamente
+        const conclusao = `O resultado de <b>${cvFmt}</b> ${aprov ? 'est\u00e1 dentro do' : 'excede o'} limite m\u00e1ximo de <b>${limiteUsado}%</b>, ${aprov ? 'indicando adequada distribui\u00e7\u00e3o do micromineral na massa total do produto e conformidade com a legisla\u00e7\u00e3o vigente.' : 'indicando necessidade de revis\u00e3o do processo de mistura.'}`;
+
+        const statusBg    = aprov ? '#E8EEF8' : '#FADBD8';
+        const statusIcon  = aprov ? '\u2714' : '\u2716';
+        const statusText  = aprov ? 'RESULTADO DENTRO DO LIMITE AC\u00cdTAVEL' : 'RESULTADO ACIMA DO LIMITE';
+
+        const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Homogeneidade \u2014 ${r.produto}</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { background:#fff; }
+  @page { size:A4; margin:12mm 14mm; }
+  @media print {
+    html, body { margin:0 !important; }
+    .no-print { display:none !important; }
+    * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  }
+  body { font-family:Arial,sans-serif; font-size:9pt; color:#1B2A4A; }
+
+  /* CABEÇALHO */
+  .doc-header { display:grid; grid-template-columns:160px 1fr 160px; height:56px; }
+  .dh-left  { background:#1B2A4A; padding:8px 12px; display:flex; flex-direction:column; justify-content:center; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .dh-center{ background:#0D1B2E; display:flex; align-items:center; justify-content:center; text-align:center; padding:8px 16px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .dh-right { background:#1B2A4A; padding:8px 12px; display:flex; flex-direction:column; justify-content:center; align-items:flex-end; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .dh-brand { color:white; font-weight:700; font-size:11pt; letter-spacing:.5px; }
+  .dh-sub   { color:#9aa3b8; font-size:7pt; letter-spacing:1px; }
+  .dh-title { color:white; font-weight:700; font-size:8.5pt; letter-spacing:.5px; }
+  .dh-meta  { color:#c0c8dc; font-size:7pt; line-height:1.7; text-align:right; }
+
+  /* CORPO */
+  .doc-body { padding:20px 20px 20px; display:flex; flex-direction:column; }
+
+  .sec-title {
+    font-weight:700; font-size:8pt; color:#1B2A4A;
+    border-bottom:2.5px solid #1B2A4A;
+    padding-bottom:4px; margin:18px 0 8px; letter-spacing:.3px;
+  }
+
+  /* TABELA IDENTIFICAÇÃO */
+  .id-table { width:100%; border-collapse:collapse; font-size:7.5pt; margin-bottom:4px; }
+  .id-table td { border:1px solid #B0B8CC; padding:4px 6px; }
+  .id-table .lbl { background:#E8EAF0; font-weight:700; width:25%; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+  /* TABELA AMOSTRAS */
+  .smp-table { width:100%; border-collapse:collapse; font-size:7.5pt; margin-bottom:10px; }
+  .smp-table th { background:#1B2A4A; color:white; text-align:center; padding:4px 3px; border:1px solid #B0B8CC; font-size:7pt; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .smp-table td { text-align:center; padding:4px 3px; border:1px solid #B0B8CC; }
+  .smp-table tr:nth-child(even) td { background:#F5F6FA; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+  /* TABELA ESTATÍSTICAS */
+  .stats-table { width:100%; border-collapse:collapse; font-size:7.5pt; margin-bottom:4px; }
+  .stats-table th { background:#1B2A4A; color:white; text-align:center; padding:5px 4px; border:1px solid #B0B8CC; font-size:7pt; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .stats-table td { text-align:center; padding:5px 4px; border:1px solid #B0B8CC; }
+  .cv-cell  { color:#1B2A4A; font-weight:700; font-size:9pt; }
+  .lim-cell { color:#1B2A4A; font-weight:700; font-size:9pt; background:#D6DCE8; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .result-row td { font-weight:700; font-size:7.5pt; text-align:center; padding:4px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+  /* NOTA */
+  .note-box {
+    border-left:3px solid #1B2A4A; background:#F5F6FA;
+    padding:8px 10px; font-size:7pt; color:#5a6480;
+    margin:16px 0 8px; border-radius:0 4px 4px 0;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+
+  /* ASSINATURA */
+  .sig-wrap { display:flex; justify-content:center; margin-top:36px; }
+  .sig-box  { text-align:center; min-width:200px; }
+  .sig-line { width:200px; border-top:2.5px solid #1B2A4A; margin:4px auto 6px; }
+  .sig-name { font-weight:700; font-size:8pt; }
+  .sig-role { font-size:7pt; color:#5a6480; margin-top:2px; }
+  .sig-crq  { font-size:6.5pt; color:#9aa3b8; font-style:italic; margin-top:1px; }
+  .sig-org  { font-weight:700; font-size:7pt; color:#1B2A4A; margin-top:4px; letter-spacing:.5px; }
+
+  /* RODAPÉ */
+  .doc-footer {
+    border-top:1.5px solid #1B2A4A; padding:4px 20px;
+    display:flex; justify-content:space-between;
+    font-size:6.5pt; color:#9aa3b8;
+  }
+
+  /* BOTÃO TELA */
+  .no-print {
+    position:fixed; top:12px; right:12px; z-index:999;
+    background:#1B2A4A; color:white; border:none; border-radius:8px;
+    padding:9px 18px; font-size:13px; font-weight:700; cursor:pointer;
+    box-shadow:0 4px 16px rgba(0,0,0,.25);
+  }
+</style>
+</head>
+<body>
+
+<button class="no-print" onclick="window.print()">\uD83D\uDDB6\uFE0F Imprimir</button>
+
+<div class="doc-header">
+  <div class="dh-left">
+    <div class="dh-brand">AGRONOR</div>
+    <div class="dh-sub">A L I M E N T O S</div>
+  </div>
+  <div class="dh-center">
+    <div class="dh-title">TESTE DE HOMOGENEIDADE DE MISTURA</div>
+  </div>
+  <div class="dh-right">
+    <div class="dh-meta">Formul\u00e1rio: TST-01<br>Revis\u00e3o: 01<br>Data: 01/01/2025</div>
+  </div>
+</div>
+
+<div class="doc-body">
+
+  <div class="sec-title">1. IDENTIFICA\u00c7\u00c3O</div>
+  <table class="id-table">
+    <tr><td class="lbl">Equipamento</td><td>${r.equipamento||'\u2014'}</td></tr>
+    <tr><td class="lbl">Local</td><td>${local}</td></tr>
+    <tr><td class="lbl">Produto Analisado</td><td>${r.produto||'\u2014'}</td></tr>
+    <tr><td class="lbl">Data da Coleta</td><td>${r.data||'\u2014'}</td></tr>
+    <tr><td class="lbl">Data do Resultado</td><td>${dataResult}</td></tr>
+    <tr><td class="lbl">Laborat\u00f3rio</td><td>${laboratorio}</td></tr>
+  </table>
+
+  <div class="sec-title">2. PROCEDIMENTO</div>
+  <p style="font-size:7.5pt;line-height:1.5">
+    <b>Coleta:</b> ${r.n||10} amostras da ra\u00e7\u00e3o ${r.produto||'\u2014'} no ponto de amostragem.
+    <b>Tempo de Mistura:</b> ${r.tempo||'\u2014'}.
+    <b>Marcador:</b> ${r.marcador||'\u2014'} \u2014 Portaria SDA n\u00ba 798/2023.
+  </p>
+
+  <div class="sec-title">3. RESULTADOS ANAL\u00cdTICOS</div>
+  <table class="smp-table">
+    <tr>${hdrs}</tr>
+    <tr>${vals}</tr>
+  </table>
+
+  <table class="stats-table">
+    <tr>
+      <th>M\u00e9dia</th>
+      <th>Desvio Padr\u00e3o</th>
+      <th>Coef. Varia\u00e7\u00e3o</th>
+      <th>C.V. Obtido</th>
+      <th>Limite M\u00e1x.</th>
+    </tr>
+    <tr>
+      <td>${r.media}</td>
+      <td>${r.dp}</td>
+      <td class="cv-cell">${cvFmt}</td>
+      <td class="cv-cell" style="font-size:11pt">${cvFmt}</td>
+      <td class="lim-cell" style="font-size:11pt">${limiteUsado}%</td>
+    </tr>
+    <tr>
+      <td colspan="5" class="result-row" style="background:${statusBg};color:#1B2A4A;">
+        ${statusIcon}&#160;&#160;${statusText}
+      </td>
+    </tr>
+  </table>
+
+  <div class="sec-title">4. METODOLOGIA</div>
+  <p style="font-size:7.5pt;line-height:1.5">
+    O teste foi conduzido por meio da determina\u00e7\u00e3o da concentra\u00e7\u00e3o de ${r.marcador||'marcador mineral'} como marcador mineral,
+    conforme diretrizes do <b>Minist\u00e9rio da Agricultura e Pecu\u00e1ria</b> \u2014 <b>Portaria SDA n\u00ba 798/2023.</b>
+  </p>
+
+  <div class="sec-title">5. CONCLUS\u00c3O</div>
+  <p style="font-size:7.5pt;line-height:1.5">${conclusao}</p>
+
+  ${complemento ? `<div class="sec-title">OBSERVA\u00c7\u00d5ES COMPLEMENTARES</div>
+  <p style="font-size:7.5pt;line-height:1.5;white-space:pre-wrap;margin-bottom:8px">${complemento}</p>` : ''}
+
+  <div class="note-box">
+    An\u00e1lise realizada externamente pelo <b>${laboratorio}</b>.
+    Relat\u00f3rio gerado pela Gest\u00e3o da Qualidade da <b style="color:#1B2A4A">Agronor Alimentos</b>.
+  </div>
+
+  <div class="sig-wrap">
+    <div class="sig-box">
+      <div class="sig-name">${responsavel}</div>
+      <div class="sig-line"></div>
+      <div class="sig-role">${cargo}</div>
+      <div class="sig-crq">${crq}</div>
+      <div class="sig-org">AGRONOR ALIMENTOS</div>
+    </div>
+  </div>
+
+</div><!-- /doc-body -->
+
+<div class="doc-footer">
+  <span>Gest\u00e3o da Qualidade | Agronor Alimentos</span>
+  <span>P\u00e1gina 1 de 1</span>
+</div>
+
+</body>
+</html>`;
+
+        const popup = window.open('', '_blank', 'width=900,height=750,scrollbars=yes');
+        if (!popup) { sgqToast('Permita popups no navegador para imprimir.', 'warning'); return; }
+        popup.document.write(html);
+        popup.document.close();
+        popup.focus();
+        setTimeout(() => popup.print(), 700);
+    };
+
+
+    // ── Disparo ao trocar aba ─────────────────────────────────────
+    const _origTrocarAba = window.trocarAba;
+    if (typeof _origTrocarAba === 'function') {
+        // Monkey-patch: injeta carregamento ao abrir a aba
+    }
+    // Garante carregamento ao clicar na aba
+    document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.getElementById('tabHomogeneidade');
+        if (btn) {
+            btn.addEventListener('click', function() {
+                setTimeout(homCarregar, 50);
+            });
+        }
+    });
+
+})();
+// ===== FIM MÓDULO HOMOGENEIDADE =====
 </script>
 
 </body>
