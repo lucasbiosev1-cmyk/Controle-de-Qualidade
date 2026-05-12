@@ -29010,12 +29010,12 @@ window.atualizarKpisCapa = function() {
             return `<tr style="${rowBg}" class="tr-row-hover"
                         ondblclick="homAbrirModalEditar('${r.id}')"
                         title="Duplo clique para editar">
-                <td class="hom-td-muted">${r.data || '—'}</td>
-                <td class="hom-td-muted">${r.dataResultado || '—'}</td>
+                <td>${r.data || '—'}</td>
+                <td>${r.dataResultado || '—'}</td>
                 <td style="font-weight:600">${r.produto}</td>
-                <td class="hom-td-muted">${r.equipamento}</td>
-                <td class="hom-td-muted">${r.marcador}</td>
-                <td class="hom-td-muted">${r.tempo}</td>
+                <td>${r.equipamento}</td>
+                <td>${r.marcador}</td>
+                <td>${r.tempo}</td>
                 <td class="${cvClass}">${parseFloat(r.cv).toFixed(2)}%</td>
                 <td>${badgeHtml}</td>
                 <td><button class="hom-btn-ver" onclick="homAbrirModalVis('${r.id}')">👁 Ver</button></td>
