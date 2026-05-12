@@ -480,7 +480,7 @@
         .hom-table thead tr { background: #1a2a3a; }
         html[data-theme="dark"] .hom-table thead tr { background: #161b22; border-bottom: 2px solid #30363d; }
         .hom-table thead th {
-            padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 700;
+            padding: 10px 12px; text-align: center; font-size: 11px; font-weight: 700;
             color: #b0bec5; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;
         }
         .hom-table tbody tr { border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.15s; }
@@ -29044,8 +29044,8 @@ window.atualizarKpisCapa = function() {
 
         const set = (id, txt, cls) => { const el = document.getElementById(id); if(el){ el.textContent = txt; el.className = 'hom-res-valor' + (cls ? ' ' + cls : ''); } };
         set('homResN',      n);
-        set('homResMedia',  media.toFixed(4));
-        set('homResDP',     dp.toFixed(4));
+        set('homResMedia',  media.toFixed(2));
+        set('homResDP',     dp.toFixed(2));
         set('homResCV',     cv.toFixed(2) + '%', aprov ? 'ok' : 'fail');
         set('homResStatus', aprov ? '✔ APROVADO' : '✖ REPROVADO', aprov ? 'ok' : 'fail');
     };
@@ -29063,7 +29063,7 @@ window.atualizarKpisCapa = function() {
         const media = vals.reduce((a,b) => a + b, 0) / n;
         const dp    = Math.sqrt(vals.map(v => Math.pow(v - media, 2)).reduce((a,b) => a + b, 0) / (n - 1));
         const cv    = (dp / media) * 100;
-        return { n, media: media.toFixed(4), dp: dp.toFixed(4), cv: cv.toFixed(4) };
+        return { n, media: media.toFixed(2), dp: dp.toFixed(2), cv: cv.toFixed(4) };
     }
 
     // ── Modal Cadastro ────────────────────────────────────────────
