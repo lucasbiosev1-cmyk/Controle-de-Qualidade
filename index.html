@@ -486,7 +486,7 @@
         .hom-table tbody tr { border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.15s; }
         html[data-theme="dark"] .hom-table tbody tr { border-bottom-color: #21262d; }
         .hom-table tbody tr:hover { background: rgba(41,128,185,0.06); }
-        .hom-table tbody td { padding: 10px 12px; vertical-align: middle; color: #333; }
+        .hom-table tbody td { padding: 10px 12px; vertical-align: middle; color: #333; text-align: center; }
         html[data-theme="dark"] .hom-table tbody td { color: #e6edf3; }
         .hom-td-muted { color: #888 !important; font-size: 12px; }
         html[data-theme="dark"] .hom-td-muted { color: #6e7681 !important; }
@@ -6431,7 +6431,8 @@
                 <table class="hom-table">
                     <thead>
                         <tr>
-                            <th>Data</th>
+                            <th>Data da Coleta</th>
+                            <th>Data do Resultado</th>
                             <th>Produto</th>
                             <th>Equipamento</th>
                             <th>Marcador</th>
@@ -6442,7 +6443,7 @@
                         </tr>
                     </thead>
                     <tbody id="homTbody">
-                        <tr><td colspan="8"><div class="hom-empty"><div class="hom-empty-icon">⚗️</div>Nenhum teste registrado ainda.<br>Clique em <strong>+ Novo Teste</strong> para começar.</div></td></tr>
+                        <tr><td colspan="9"><div class="hom-empty"><div class="hom-empty-icon">⚗️</div>Nenhum teste registrado ainda.<br>Clique em <strong>+ Novo Teste</strong> para começar.</div></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -29009,7 +29010,8 @@ window.atualizarKpisCapa = function() {
             return `<tr style="${rowBg}" class="tr-row-hover"
                         ondblclick="homAbrirModalEditar('${r.id}')"
                         title="Duplo clique para editar">
-                <td class="hom-td-muted">${r.data}</td>
+                <td class="hom-td-muted">${r.data || '—'}</td>
+                <td class="hom-td-muted">${r.dataResultado || '—'}</td>
                 <td style="font-weight:600">${r.produto}</td>
                 <td class="hom-td-muted">${r.equipamento}</td>
                 <td class="hom-td-muted">${r.marcador}</td>
