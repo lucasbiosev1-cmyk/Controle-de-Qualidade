@@ -3902,6 +3902,9 @@
         <div class="mob-section" id="mobSecOrdemServico">
             <button class="mob-item" id="mobBtnOrdemServico" onclick="mobNav('ordemServico','Ordem de Serviço')">🔧 Ordem de Serviço</button>
         </div>
+        <div class="mob-section" id="mobSecHomogeneidade">
+            <button class="mob-item" id="mobBtnHomogeneidade" onclick="mobNav('homogeneidade','Homogeneidade')">⚗️ Homogeneidade</button>
+        </div>
         <div class="mob-section">
             <button class="mob-item" id="mobBtnConfiguracoes" onclick="mobNav('configuracoes','Configurações')">⚙️ Configurações</button>
         </div>
@@ -6462,7 +6465,7 @@
                     <h2>⚗️ Teste de Homogeneidade de Mistura</h2>
                     <span class="hom-badge-total" id="homBadgeTotal">0 registros</span>
                 </div>
-                <button class="hom-btn-novo" onclick="homAbrirModalCadastro()">＋ Novo Teste</button>
+                <button class="hom-btn-novo" id="homBtnNovo" onclick="homAbrirModalCadastro()">＋ Novo Teste</button>
             </div>
 
             <!-- Filtros -->
@@ -6506,7 +6509,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="hom-dbl-hint">👆 Duplo clique na linha para editar o registro</div>
+            <div class="hom-dbl-hint" id="homDblHint">👆 Duplo clique na linha para editar o registro</div>
         </div>
     </div>
 
@@ -6618,7 +6621,7 @@
             </div>
             <div class="hom-modal-footer">
                 <button class="hom-btn-cancelar" onclick="homFecharModalCadastro()">Cancelar</button>
-                <button class="hom-btn-salvar" onclick="homSalvar()">✔ Salvar Registro</button>
+                <button class="hom-btn-salvar" id="homBtnSalvar" onclick="homSalvar()">✔ Salvar Registro</button>
             </div>
         </div>
     </div>
@@ -6634,7 +6637,7 @@
                 <!-- preenchido por JS -->
             </div>
             <div class="hom-vis-footer">
-                <button class="hom-btn-excluir-modal" onclick="homExcluir()">🗑 Excluir</button>
+                <button class="hom-btn-excluir-modal" id="homBtnExcluir" onclick="homExcluir()">🗑 Excluir</button>
                 <div style="display:flex;gap:10px;">
                     <button class="hom-btn-cancelar" onclick="homFecharModalVis()">Fechar</button>
                     <button class="hom-btn-imprimir-modal" onclick="homImprimir()">🖨️ Imprimir</button>
@@ -8803,6 +8806,7 @@ const PERMS_DISPONIVEIS = [
     { key: 'ordem_servico',    label: 'Ordem de Serviço',          icon: '🔧',  desc: 'Criar e acompanhar Ordens de Serviço' },
     { key: 'os_aprovar',       label: 'Aprovar Ordem de Serviço',  icon: '✅',  desc: 'Aprovar ou rejeitar Ordens de Serviço (papel de gerente)' },
     { key: 'os_executar',      label: 'Executar Ordem de Serviço', icon: '🔧',  desc: 'Definir prioridade, área (Mecânica/Elétrica/Operação), data de finalização e anexo textual das OS' },
+    { key: 'homogeneidade',    label: 'Homogeneidade',             icon: '⚗️',  desc: 'Acessar e registrar testes de homogeneidade de mistura' },
     // ── Restrições específicas ──────────────────────────────────────────
     { key: 'somente_ver_nc',   label: 'Somente visualizar NC/Dev', icon: '👁️', desc: 'Impede criar/editar/excluir NC e Devoluções', restricao: true },
 ];
@@ -9223,6 +9227,32 @@ function aplicarPermissoes() {
     const mobBtnOS = document.getElementById('mobBtnOrdemServico');
     if (mobBtnOS) mobBtnOS.style.display = podeOS ? 'block' : 'none';
 
+    // ── Homogeneidade ──
+    const podeHomogeneidade = isAdmin || perms.homogeneidade;
+    const tabHom = document.getElementById('tabHomogeneidade');
+    if (tabHom) tabHom.style.display = podeHomogeneidade ? 'inline-block' : 'none';
+    const mobBtnHom = document.getElementById('mobBtnHomogeneidade');
+    if (mobBtnHom) mobBtnHom.style.display = podeHomogeneidade ? 'block' : 'none';
+    const mobSecHom = document.getElementById('mobSecHomogeneidade');
+    if (mobSecHom) mobSecHom.style.display = podeHomogeneidade ? '' : 'none';
+    // Controles de edição: somente admin pode criar/editar/excluir
+    const homBtnNovo = document.getElementById('homBtnNovo');
+    if (homBtnNovo) homBtnNovo.style.display = isAdmin ? 'inline-block' : 'none';
+    const homBtnSalvar = document.getElementById('homBtnSalvar');
+    if (homBtnSalvar) homBtnSalvar.style.display = isAdmin ? '' : 'none';
+    const homBtnExcluir = document.getElementById('homBtnExcluir');
+    if (homBtnExcluir) homBtnExcluir.style.display = isAdmin ? '' : 'none';
+    const homDblHint = document.getElementById('homDblHint');
+    if (homDblHint) {
+        if (isAdmin) {
+            homDblHint.textContent = '👆 Duplo clique na linha para editar o registro';
+        } else {
+            homDblHint.textContent = '👁 Clique em Ver para visualizar e imprimir o registro';
+        }
+    }
+    // Expõe flag para uso na renderização da tabela
+    window._homAdminMode = isAdmin;
+
     // ── Mobile: mostrar/ocultar itens de menu ──
     const _mob = (id, visivel) => { const el = document.getElementById(id); if (el) el.style.display = visivel ? 'block' : 'none'; };
     // Lançamentos
@@ -9256,11 +9286,13 @@ function aplicarPermissoes() {
     _mob('mobBtnEquipamentos',  isAdmin || podeEquipamentos);
     _mob('mobBtnAgenda',        isAdmin || perms.agenda);
     _mob('mobBtnOrdemServico',  isAdmin || perms.ordem_servico);
+    _mob('mobBtnHomogeneidade', isAdmin || perms.homogeneidade);
     // Seções individuais (evita separadores vazios quando botão está oculto)
     const _mobSec = (id, visivel) => { const el = document.getElementById(id); if (el) el.style.display = visivel ? '' : 'none'; };
     _mobSec('mobSecEquipamentos', isAdmin || podeEquipamentos);
     _mobSec('mobSecAgenda',       isAdmin || perms.agenda);
     _mobSec('mobSecOrdemServico', isAdmin || perms.ordem_servico);
+    _mobSec('mobSecHomogeneidade',isAdmin || perms.homogeneidade);
     // Configurações (usa temConfig para ser consistente com o botão desktop)
     _mob('mobBtnConfiguracoes', isAdmin || temConfig);
 
@@ -29100,9 +29132,10 @@ window.atualizarKpisCapa = function() {
             const rowBg = idx % 2 === 0
                 ? (dark ? 'background:#161b22' : 'background:#ffffff')
                 : (dark ? 'background:#0d1117' : 'background:#f5f7fa');
+            const _adminHom = window._homAdminMode !== false;
             return `<tr style="${rowBg}" class="tr-row-hover"
-                        ondblclick="homAbrirModalEditar('${r.id}')"
-                        title="Duplo clique para editar">
+                        ondblclick="${_adminHom ? "homAbrirModalEditar('" + r.id + "')" : "homAbrirModalVis('" + r.id + "')"}"
+                        title="${_adminHom ? 'Duplo clique para editar' : 'Duplo clique para visualizar'}">
                 <td>${r.data || '—'}</td>
                 <td>${r.dataResultado && r.dataResultado.trim() ? r.dataResultado : '—'}</td>
                 <td style="font-weight:600">${r.produto}</td>
@@ -29179,6 +29212,7 @@ window.atualizarKpisCapa = function() {
 
     // ── Modal Cadastro ────────────────────────────────────────────
     window.homAbrirModalCadastro = function() {
+        if (!window._homAdminMode) { sgqToast('Sem permissão para criar registros.', 'warning'); return; }
         document.getElementById('homEditId').value = '';
         document.getElementById('homModalTitulo').textContent = '➕ Novo Teste de Homogeneidade';
         document.getElementById('homData').value = new Date().toISOString().split('T')[0];
@@ -29194,6 +29228,7 @@ window.atualizarKpisCapa = function() {
     };
 
     window.homAbrirModalEditar = function(id) {
+        if (!window._homAdminMode) { homAbrirModalVis(id); return; }
         const r = homDados.find(x => x.id === id);
         if (!r) return;
         document.getElementById('homEditId').value = id;
