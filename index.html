@@ -29132,10 +29132,16 @@ window.atualizarKpisCapa = function() {
         const vals = [];
         inputs.forEach(i => { const v = parseFloat(i.value); if (!isNaN(v) && i.value.trim() !== '') vals.push(v); });
 
+        const temDataResultado = !!(document.getElementById('homDataResultado')?.value);
+
         if (vals.length < 2) {
             ['homResN','homResMedia','homResDP','homResCV','homResStatus'].forEach(id => {
                 const el = document.getElementById(id);
-                if (el) { el.textContent = vals.length === 1 ? '(mín. 2)' : '—'; el.className = 'hom-res-valor'; }
+                if (el) {
+                    // Só mostra aviso de "mín. 2" se já foi informada a data do resultado
+                    el.textContent = (vals.length === 1 && temDataResultado) ? '(mín. 2)' : '—';
+                    el.className = 'hom-res-valor';
+                }
             });
             return;
         }
@@ -29230,10 +29236,15 @@ window.atualizarKpisCapa = function() {
 
         if (!produto)     return sgqToast('Informe o produto/ração.', 'warning');
         if (!equipamento) return sgqToast('Informe o equipamento.', 'warning');
-        if (amostras.length < 2) return sgqToast('Informe pelo menos 2 amostras para calcular.', 'warning');
 
-        const res = homGetResultados(amostras);
-        if (!res) return sgqToast('Erro no cálculo. Verifique as amostras.', 'error');
+        // Se data do resultado foi informada, exige amostras e calcula
+        // Se não foi informada, salva como pendente sem exigir amostras
+        let res = null;
+        if (dataResultadoISO) {
+            if (amostras.length < 2) return sgqToast('Informe pelo menos 2 amostras para calcular.', 'warning');
+            res = homGetResultados(amostras);
+            if (!res) return sgqToast('Erro no cálculo. Verifique as amostras.', 'error');
+        }
 
         // Formata data para exibição
         const [ano, mes, dia] = dataISO.split('-');
@@ -29249,11 +29260,13 @@ window.atualizarKpisCapa = function() {
             ? { ...(homDados.find(x => x.id === editId) || {}), id: editId,
                 produto, equipamento, marcador, tempo, dataISO, data: dataFmt,
                 responsavel, local, laboratorio, dataResultadoISO,
-                dataResultado: dataResultadoFmt, textoPadrao, amostras, ...res }
+                dataResultado: dataResultadoFmt, textoPadrao, amostras,
+                ...(res || { n: null, media: null, dp: null, cv: null }) }
             : { id: 'hom_' + Date.now(),
                 produto, equipamento, marcador, tempo, dataISO, data: dataFmt,
                 responsavel, local, laboratorio, dataResultadoISO,
-                dataResultado: dataResultadoFmt, textoPadrao, amostras, ...res };
+                dataResultado: dataResultadoFmt, textoPadrao, amostras,
+                ...(res || { n: null, media: null, dp: null, cv: null }) };
 
         try {
             await homPersistir(registro);
