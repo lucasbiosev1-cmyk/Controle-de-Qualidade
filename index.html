@@ -6465,7 +6465,10 @@
                     <h2>⚗️ Teste de Homogeneidade de Mistura</h2>
                     <span class="hom-badge-total" id="homBadgeTotal">0 registros</span>
                 </div>
-                <button class="hom-btn-novo" id="homBtnNovo" onclick="homAbrirModalCadastro()">＋ Novo Teste</button>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <button class="hom-btn-novo" style="background:#2e7d32;border-color:#2e7d32;" onclick="homImprimirLista()">🖨️ Imprimir Lista</button>
+                    <button class="hom-btn-novo" id="homBtnNovo" onclick="homAbrirModalCadastro()">＋ Novo Teste</button>
+                </div>
             </div>
 
             <!-- Filtros -->
@@ -29144,7 +29147,7 @@ window.atualizarKpisCapa = function() {
                 <td>${r.tempo}</td>
                 <td class="${cvClass}">${cvTxt}</td>
                 <td>${badgeHtml}</td>
-                <td><button class="hom-btn-ver" onclick="homAbrirModalVis('${r.id}')">👁 Ver</button></td>
+                <td><button class="hom-btn-ver" onclick="homImprimirPorId('${r.id}')">🖨️ Ver / Imprimir</button></td>
             </tr>`;
         }).join('');
     };
@@ -29643,6 +29646,137 @@ window.atualizarKpisCapa = function() {
         setTimeout(() => popup.print(), 700);
     };
 
+
+    // ── Impressão por ID (sem abrir modal) ───────────────────────
+    window.homImprimirPorId = function(id) {
+        homVisId = id;
+        homImprimir();
+        homVisId = null;
+    };
+
+    // ── Impressão da lista de resultados ─────────────────────────
+    window.homImprimirLista = function() {
+        const tbody = document.getElementById('homTbody');
+        if (!tbody) return;
+
+        const filtroInfo = document.getElementById('homFiltroInfo')?.textContent || '';
+        const badge = document.getElementById('homBadgeTotal')?.textContent || '';
+        const dataDe  = document.getElementById('homFiltroDataDe')?.value  || '';
+        const dataAte = document.getElementById('homFiltroDataAte')?.value || '';
+        const equip   = document.getElementById('homFiltroEquipamento')?.value || '';
+
+        // monta filtros legíveis
+        const filtrosArr = [];
+        if (dataDe)  filtrosArr.push('De: ' + dataDe.split('-').reverse().join('/'));
+        if (dataAte) filtrosArr.push('Até: ' + dataAte.split('-').reverse().join('/'));
+        if (equip)   filtrosArr.push('Equipamento: ' + equip);
+        const filtrosTxt = filtrosArr.length ? filtrosArr.join(' &nbsp;|&nbsp; ') : 'Todos os registros';
+
+        // captura as linhas visíveis da tabela
+        const rows = tbody.querySelectorAll('tr');
+        let rowsHtml = '';
+        rows.forEach(tr => {
+            const cells = tr.querySelectorAll('td');
+            if (cells.length < 8) { rowsHtml += tr.outerHTML; return; } // linha vazia/empty
+            // recria linha sem a coluna Ação (última)
+            let tds = '';
+            for (let i = 0; i < cells.length - 1; i++) {
+                const td = cells[i];
+                // extrai somente o texto interno limpo (sem botões)
+                tds += `<td style="${td.getAttribute('style')||''}">${td.innerHTML}</td>`;
+            }
+            rowsHtml += `<tr>${tds}</tr>`;
+        });
+
+        const now = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+        const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title></title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  @page { size:A4 landscape; margin:10mm 12mm; }
+  body { font-family:Arial,sans-serif; font-size:8.5pt; color:#1B2A4A; background:#fff; }
+  @media print {
+    .no-print { display:none !important; }
+    * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  }
+
+  .doc-header { display:grid; grid-template-columns:150px 1fr 180px; height:52px; margin-bottom:14px; }
+  .dh-left  { background:#1B2A4A; padding:8px 12px; display:flex; flex-direction:column; justify-content:center; }
+  .dh-center{ background:#0D1B2E; display:flex; align-items:center; justify-content:center; padding:8px; }
+  .dh-right { background:#1B2A4A; padding:8px 12px; display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-end; }
+  .dh-brand { color:#fff; font-weight:700; font-size:10pt; }
+  .dh-sub   { color:#9aa3b8; font-size:6.5pt; letter-spacing:1px; }
+  .dh-title { color:#fff; font-weight:700; font-size:9pt; }
+  .dh-meta  { color:#c0c8dc; font-size:6.5pt; line-height:1.7; text-align:right; }
+
+  .list-info { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:7.5pt; }
+  .list-badge { background:#1B2A4A; color:#fff; border-radius:10px; padding:2px 10px; font-size:7pt; }
+  .list-filtros { color:#5a6480; font-size:7pt; }
+
+  table { width:100%; border-collapse:collapse; font-size:7.5pt; }
+  thead th { background:#1B2A4A; color:#fff; padding:5px 6px; text-align:left; border:1px solid #2d3f5e; font-size:7pt; }
+  tbody td { padding:5px 6px; border:1px solid #c8cdd8; vertical-align:middle; }
+  tbody tr:nth-child(even) td { background:#f5f7fa; }
+  .hom-badge-aprov { color:#2e7d32; font-weight:700; }
+  .hom-badge-reprov { color:#c0392b; font-weight:700; }
+  .hom-badge-pendente { color:#795548; }
+  .hom-cv-ok   { color:#2e7d32; font-weight:700; }
+  .hom-cv-fail { color:#c0392b; font-weight:700; }
+  .hom-cv-pendente { color:#888; }
+
+  .doc-footer { border-top:1px solid #1B2A4A; margin-top:14px; padding:4px 0; display:flex; justify-content:space-between; font-size:6.5pt; color:#9aa3b8; }
+  .no-print { position:fixed; top:12px; right:12px; background:#1B2A4A; color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:12px; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.25); }
+</style>
+</head>
+<body>
+
+<button class="no-print" onclick="window.print()">🖨️ Imprimir</button>
+
+<div class="doc-header">
+  <div class="dh-left"><div class="dh-brand">AGRONOR</div><div class="dh-sub">A L I M E N T O S</div></div>
+  <div class="dh-center"><div class="dh-title">TESTES DE HOMOGENEIDADE DE MISTURA — LISTA DE RESULTADOS</div></div>
+  <div class="dh-right"><div class="dh-meta">Emitido em: ${now}</div></div>
+</div>
+
+
+
+<table>
+  <thead>
+    <tr>
+      <th>Data da Coleta</th>
+      <th>Data do Resultado</th>
+      <th>Produto</th>
+      <th>Equipamento</th>
+      <th>Marcador</th>
+      <th>Tempo Mistura</th>
+      <th>C.V. %</th>
+      <th>Resultado</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${rowsHtml}
+  </tbody>
+</table>
+
+<div class="doc-footer">
+  <span>Gestão da Qualidade | Agronor Alimentos</span>
+  <span>Impresso em ${now}</span>
+</div>
+
+</body>
+</html>`;
+
+        const popup = window.open('', '_blank', 'width=1050,height=700,scrollbars=yes');
+        if (!popup) { sgqToast('Permita popups no navegador para imprimir.', 'warning'); return; }
+        popup.document.write(html);
+        popup.document.close();
+        popup.focus();
+        setTimeout(() => popup.print(), 700);
+    };
 
     // ── Disparo ao trocar aba ─────────────────────────────────────
     const _origTrocarAba = window.trocarAba;
