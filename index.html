@@ -20485,7 +20485,7 @@ function visualizarNC(id) {
     const imgs = typeof nc.imagens === 'string' ? JSON.parse(nc.imagens || '[]') : (nc.imagens || []);
     const imgsHtml = imgs.length
         ? `<div class="ncv-section-title">📷 Evidências Fotográficas</div>
-           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">${imgs.map(img => `<img src="${img.dataUrl}" style="max-width:140px;max-height:100px;border-radius:4px;border:1px solid #ddd;">`).join('')}</div>`
+           <div class="img-print-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">${imgs.map(img => `<img src="${img.dataUrl}" style="max-width:140px;max-height:100px;border-radius:4px;border:1px solid #ddd;">`).join('')}</div>`
         : '';
     const fld = (label, val) => `<div class="ncv-field"><div class="ncv-label">${label}</div><div class="ncv-value">${val||'-'}</div></div>`;
     document.getElementById('ncvModalBody').innerHTML = `
@@ -20554,7 +20554,7 @@ function visualizarDev(id) {
     const imgs = typeof dev.imagens === 'string' ? JSON.parse(dev.imagens || '[]') : (dev.imagens || []);
     const imgsHtml = imgs.length
         ? `<div class="ncv-section-title">📷 Evidências Fotográficas</div>
-           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">${imgs.map(img => `<img src="${img.dataUrl}" style="max-width:140px;max-height:100px;border-radius:4px;border:1px solid #ddd;">`).join('')}</div>`
+           <div class="img-print-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">${imgs.map(img => `<img src="${img.dataUrl}" style="max-width:140px;max-height:100px;border-radius:4px;border:1px solid #ddd;">`).join('')}</div>`
         : '';
     const fld = (label, val) => `<div class="ncv-field"><div class="ncv-label">${label}</div><div class="ncv-value">${val||'-'}</div></div>`;
     let classifHtml = '';
@@ -20972,32 +20972,80 @@ function imprimirVisualizacao() {
         win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
         <title>${titulo}</title>
         <style>
-            @page{size:A4 portrait;margin:8mm 8mm 8mm 8mm;}
+            @page{size:A4 portrait;margin:7mm 8mm 7mm 8mm;}
             *{margin:0;padding:0;box-sizing:border-box;}
             html,body{width:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-            body{font-family:Arial,sans-serif;background:#fff;color:#333;font-size:12px;}
-            .page-header{background:linear-gradient(135deg,#1a2a6e 0%,#c0392b 100%);color:#fff;padding:14px 18px 12px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-            .header-brand{font-size:17px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
-            .header-sub{font-size:10px;letter-spacing:1px;opacity:.85;margin-top:2px;}
-            .ncv-header-bar{background:#f8f9fa;border-left:5px solid #c0392b;padding:12px 16px;border-radius:4px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;}
-            .ncv-section-title{font-size:10px;font-weight:bold;text-transform:uppercase;color:#fff;background:#34495e;padding:5px 10px;border-radius:3px;margin:12px 0 8px;letter-spacing:.5px;display:inline-block;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-            .ncv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
-            .ncv-field{background:#f8f9fa;border:1px solid #e8ecf0;border-radius:4px;padding:8px 10px;}
-            .ncv-label{font-size:9px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
-            .ncv-value{font-size:12px;color:#333;font-weight:600;}
-            .ncv-text-block{background:#f8f9fa;border:1px solid #e0e0e0;border-left:4px solid #3498db;border-radius:3px;padding:10px 12px;font-size:12px;line-height:1.6;margin-bottom:12px;color:#333;min-height:42px;}
-            table{width:100%;border-collapse:collapse;font-size:12px;}
-            th{background:#d35400;color:white;padding:7px 10px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-            td{padding:6px 10px;border-bottom:1px solid #eee;}
-            img{max-width:150px;max-height:110px;margin:4px;border-radius:3px;}
-            @media print{button{display:none!important;}}
+            body{font-family:Arial,sans-serif;background:#fff;color:#222;font-size:9px;}
+
+            /* ── CABEÇALHO ── */
+            .page-header{background:linear-gradient(135deg,#1a2a6e 0%,#c0392b 100%);color:#fff;padding:7px 12px 6px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;border-radius:3px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+            .header-brand{font-size:14px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
+            .header-sub{font-size:7.5px;letter-spacing:.8px;opacity:.85;margin-top:1px;}
+
+            /* ── FAIXA NC (ncv-header-bar) ── */
+            .ncv-header-bar{border:1px solid #e0e0e0;border-left:4px solid #c0392b;border-radius:3px;padding:6px 10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+
+            /* ── TÍTULO DE SEÇÃO: apenas texto colorido com linha embaixo ── */
+            .ncv-section-title{font-size:7.5px;font-weight:800;text-transform:uppercase;color:#1a2a6e;letter-spacing:.5px;display:block;margin:7px 0 4px;padding-bottom:2px;border-bottom:1.5px solid #1a2a6e;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+
+            /* ── GRID DE CAMPOS ── */
+            .ncv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:5px;}
+            .ncv-field{border:1px solid #e8ecf0;border-radius:3px;padding:4px 7px;background:#fafafa;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+            .ncv-label{font-size:6.5px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px;}
+            .ncv-value{font-size:9px;color:#222;font-weight:600;line-height:1.3;}
+
+            /* ── BLOCO DE TEXTO (descrição, causas, obs) ── */
+            .ncv-text-block{border:1px solid #e8ecf0;border-left:3px solid #3498db;border-radius:2px;padding:4px 8px;font-size:8.5px;line-height:1.45;margin-bottom:5px;color:#333;background:#fafafa;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+
+            /* ── TABELAS ── */
+            table{width:100%;border-collapse:collapse;font-size:8.5px;margin-bottom:5px;}
+            th{background:#1a2a6e;color:#fff;padding:4px 7px;text-align:left;font-size:7.5px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+            td{padding:3px 7px;border-bottom:1px solid #eee;}
+            tr:nth-child(even) td{background:#fafafa;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+
+            /* ── GRID DE CAMPOS: preservar 3 colunas ── */
+            .ncv-grid{
+                display:grid!important;
+                grid-template-columns:repeat(3,1fr)!important;
+                gap:4px!important;
+                margin-bottom:5px!important;
+            }
+            /* ── CONTAINER DE IMAGENS (flex inline do modal → grid quadrado) ── */
+            .img-print-grid,
+            div[style*="display:flex"][style*="flex-wrap"]{
+                display:grid!important;
+                grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important;
+                gap:8px!important;
+                margin-bottom:6px!important;
+            }
+            img{
+                width:100%!important;
+                height:155px!important;
+                max-width:none!important;
+                max-height:none!important;
+                object-fit:cover!important;
+                border-radius:4px!important;
+                border:1px solid #ddd!important;
+                margin:0!important;
+                display:block!important;
+            }
+
+            /* ── OCULTAR BOTÕES ── */
+            button,.ncv-modal-actions,.ncv-close-btn,.ncv-print-btn,[class*="modal-close"],[class*="btn-fechar"]{display:none!important;}
+
+            /* ── ASSINATURAS ── */
+            .ncv-sign-area,.nc-report-sign-area{margin-top:8px;padding-top:6px;border-top:1px solid #ddd;}
+            .nc-sign-block{padding:3px 8px!important;}
+            .nc-sign-space{height:18px!important;}
+            .nc-sign-label{font-size:7px!important;color:#666!important;}
+            .nc-sign-sub{font-size:6px!important;}
         </style></head><body>
         <div class="page-header">
             <div>
                 <div class="header-brand">AGRONOR ALIMENTOS</div>
-                <div class="header-sub">Sistema de Gestão da Qualidade — SGQ</div>
+                <div class="header-sub">Sistema de Gestão da Qualidade — SGQ &nbsp;|&nbsp; Registro de Não Conformidade</div>
             </div>
-            <div style="text-align:right;font-size:9px;opacity:.85;">${titulo}<br>${new Date().toLocaleString('pt-BR')}</div>
+            <div style="text-align:right;font-size:7.5px;opacity:.9;line-height:1.5;">${titulo}<br>Emitido em: ${new Date().toLocaleString('pt-BR')}</div>
         </div>
         ${conteudo}
         </body></html>`);
