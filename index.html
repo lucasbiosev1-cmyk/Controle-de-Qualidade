@@ -663,6 +663,45 @@
             box-shadow: 0 2px 8px rgba(39,174,96,0.3);
         }
         .hom-btn-imprimir-modal:hover { opacity: 0.9; }
+        /* Filtros Homogeneidade */
+        .hom-filtros {
+            display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap;
+            background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px;
+            padding: 12px 16px; margin-bottom: 16px;
+        }
+        html[data-theme="dark"] .hom-filtros { background: #161b22; border-color: #30363d; }
+        .hom-filtro-group { display: flex; flex-direction: column; gap: 4px; }
+        .hom-filtro-group label {
+            font-size: 10px; font-weight: 700; color: #777; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        html[data-theme="dark"] .hom-filtro-group label { color: #8b949e; }
+        .hom-filtro-group input[type="date"],
+        .hom-filtro-group select {
+            border: 1.5px solid #ddd; border-radius: 6px; padding: 7px 10px;
+            font-size: 12px; color: #333; background: #fff; outline: none;
+            transition: border-color 0.2s; min-width: 140px;
+        }
+        html[data-theme="dark"] .hom-filtro-group input[type="date"],
+        html[data-theme="dark"] .hom-filtro-group select { background: #0d1117; color: #e6edf3; border-color: #30363d; }
+        .hom-filtro-group input[type="date"]:focus,
+        .hom-filtro-group select:focus { border-color: #2980b9; }
+        .hom-filtro-limpar {
+            background: #ecf0f1; color: #555; border: none; border-radius: 6px;
+            padding: 7px 14px; font-size: 11px; font-weight: 700; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 0.4px; align-self: flex-end;
+            transition: all 0.2s; white-space: nowrap;
+        }
+        .hom-filtro-limpar:hover { background: #dde1e3; }
+        html[data-theme="dark"] .hom-filtro-limpar { background: #21262d; color: #8b949e; }
+        html[data-theme="dark"] .hom-filtro-limpar:hover { background: #30363d; color: #e6edf3; }
+        .hom-filtro-info {
+            font-size: 11px; color: #888; align-self: flex-end; padding-bottom: 1px;
+        }
+        html[data-theme="dark"] .hom-filtro-info { color: #6e7681; }
+        .hom-badge-pendente { display:inline-flex; align-items:center; gap:4px; background:#fef9e7; color:#b7770d; border-radius:20px; padding:3px 10px; font-size:11px; font-weight:700; }
+        html[data-theme="dark"] .hom-badge-pendente { background:#2d2200; color:#e3a008; }
+        .hom-cv-pendente { color: #b7770d; font-weight: 700; }
+        html[data-theme="dark"] .hom-cv-pendente { color: #e3a008; }
         /* ========== FIM HOMOGENEIDADE ========== */
 
         /* ========== TELA DE LOGIN — CLEAN ========== */
@@ -6424,6 +6463,26 @@
                     <span class="hom-badge-total" id="homBadgeTotal">0 registros</span>
                 </div>
                 <button class="hom-btn-novo" onclick="homAbrirModalCadastro()">＋ Novo Teste</button>
+            </div>
+
+            <!-- Filtros -->
+            <div class="hom-filtros">
+                <div class="hom-filtro-group">
+                    <label>📅 Data Coleta — De</label>
+                    <input type="date" id="homFiltroDataDe" onchange="homAplicarFiltros()">
+                </div>
+                <div class="hom-filtro-group">
+                    <label>📅 Data Coleta — Até</label>
+                    <input type="date" id="homFiltroDataAte" onchange="homAplicarFiltros()">
+                </div>
+                <div class="hom-filtro-group">
+                    <label>🔧 Equipamento</label>
+                    <select id="homFiltroEquipamento" onchange="homAplicarFiltros()">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <button class="hom-filtro-limpar" onclick="homLimparFiltros()">✕ Limpar</button>
+                <span class="hom-filtro-info" id="homFiltroInfo"></span>
             </div>
 
             <!-- Tabela -->
@@ -28987,23 +29046,57 @@ window.atualizarKpisCapa = function() {
 
     // ── Renderizar tabela ─────────────────────────────────────────
     function homRenderizar() {
+        homAtualizarSelectEquipamento();
+        homAplicarFiltros();
+    }
+
+    function homAtualizarSelectEquipamento() {
+        const sel = document.getElementById('homFiltroEquipamento');
+        if (!sel) return;
+        const atual = sel.value;
+        const equipamentos = [...new Set(homDados.map(r => r.equipamento).filter(Boolean))].sort();
+        sel.innerHTML = '<option value="">Todos</option>' +
+            equipamentos.map(e => `<option value="${e}"${e === atual ? ' selected' : ''}>${e}</option>`).join('');
+    }
+
+    window.homAplicarFiltros = function() {
+        const dataDe  = document.getElementById('homFiltroDataDe')?.value  || '';
+        const dataAte = document.getElementById('homFiltroDataAte')?.value || '';
+        const equip   = document.getElementById('homFiltroEquipamento')?.value || '';
+
+        let dados = homDados;
+
+        if (dataDe)  dados = dados.filter(r => (r.dataISO || '') >= dataDe);
+        if (dataAte) dados = dados.filter(r => (r.dataISO || '') <= dataAte);
+        if (equip)   dados = dados.filter(r => r.equipamento === equip);
+
         const tbody = document.getElementById('homTbody');
         const badge = document.getElementById('homBadgeTotal');
+        const info  = document.getElementById('homFiltroInfo');
         if (!tbody) return;
-        if (badge) badge.textContent = homDados.length + ' registro' + (homDados.length !== 1 ? 's' : '');
 
-        if (homDados.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8"><div class="hom-empty"><div class="hom-empty-icon">⚗️</div>Nenhum teste registrado ainda.<br>Clique em <strong>+ Novo Teste</strong> para começar.</div></td></tr>';
+        const filtrado = dados.length !== homDados.length;
+        if (badge) badge.textContent = dados.length + ' registro' + (dados.length !== 1 ? 's' : '');
+        if (info) info.textContent = filtrado ? `(${homDados.length} no total)` : '';
+
+        if (dados.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9"><div class="hom-empty"><div class="hom-empty-icon">🔍</div>' +
+                (filtrado ? 'Nenhum resultado para os filtros aplicados.' : 'Nenhum teste registrado ainda.<br>Clique em <strong>+ Novo Teste</strong> para começar.') +
+                '</div></td></tr>';
             return;
         }
 
         const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-        tbody.innerHTML = homDados.map((r, idx) => {
-            const aprov = parseFloat(r.cv) <= homGetLimite(r.marcador);
-            const badgeHtml = aprov
-                ? '<span class="hom-badge-aprov">✔ Aprovado</span>'
-                : '<span class="hom-badge-reprov">✖ Reprovado</span>';
-            const cvClass = aprov ? 'hom-cv-ok' : 'hom-cv-fail';
+        tbody.innerHTML = dados.map((r, idx) => {
+            const temResultado = !!(r.dataResultado && r.dataResultado.trim() && r.cv != null && r.cv !== '');
+            const aprov = temResultado && parseFloat(r.cv) <= homGetLimite(r.marcador);
+            const badgeHtml = !temResultado
+                ? '<span class="hom-badge-pendente">⏳ Pendente</span>'
+                : aprov
+                    ? '<span class="hom-badge-aprov">✔ Aprovado</span>'
+                    : '<span class="hom-badge-reprov">✖ Reprovado</span>';
+            const cvClass = !temResultado ? 'hom-cv-pendente' : aprov ? 'hom-cv-ok' : 'hom-cv-fail';
+            const cvTxt   = !temResultado ? '—' : parseFloat(r.cv).toFixed(2) + '%';
             const rowBg = idx % 2 === 0
                 ? (dark ? 'background:#161b22' : 'background:#ffffff')
                 : (dark ? 'background:#0d1117' : 'background:#f5f7fa');
@@ -29011,17 +29104,27 @@ window.atualizarKpisCapa = function() {
                         ondblclick="homAbrirModalEditar('${r.id}')"
                         title="Duplo clique para editar">
                 <td>${r.data || '—'}</td>
-                <td>${r.dataResultado || '—'}</td>
+                <td>${r.dataResultado && r.dataResultado.trim() ? r.dataResultado : '—'}</td>
                 <td style="font-weight:600">${r.produto}</td>
                 <td>${r.equipamento}</td>
                 <td>${r.marcador}</td>
                 <td>${r.tempo}</td>
-                <td class="${cvClass}">${parseFloat(r.cv).toFixed(2)}%</td>
+                <td class="${cvClass}">${cvTxt}</td>
                 <td>${badgeHtml}</td>
                 <td><button class="hom-btn-ver" onclick="homAbrirModalVis('${r.id}')">👁 Ver</button></td>
             </tr>`;
         }).join('');
-    }
+    };
+
+    window.homLimparFiltros = function() {
+        const de  = document.getElementById('homFiltroDataDe');
+        const ate = document.getElementById('homFiltroDataAte');
+        const eq  = document.getElementById('homFiltroEquipamento');
+        if (de)  de.value  = '';
+        if (ate) ate.value = '';
+        if (eq)  eq.value  = '';
+        homAplicarFiltros();
+    };
 
     // ── Cálculo automático ────────────────────────────────────────
     window.homCalcular = function() {
