@@ -6503,12 +6503,13 @@
                             <th>Marcador</th>
                             <th>Tempo Mistura</th>
                             <th>C.V. %</th>
+                            <th>C.V. Limite</th>
                             <th>Resultado</th>
                             <th>Ação</th>
                         </tr>
                     </thead>
                     <tbody id="homTbody">
-                        <tr><td colspan="9"><div class="hom-empty"><div class="hom-empty-icon">⚗️</div>Nenhum teste registrado ainda.<br>Clique em <strong>+ Novo Teste</strong> para começar.</div></td></tr>
+                        <tr><td colspan="10"><div class="hom-empty"><div class="hom-empty-icon">⚗️</div>Nenhum teste registrado ainda.<br>Clique em <strong>+ Novo Teste</strong> para começar.</div></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -29146,6 +29147,7 @@ window.atualizarKpisCapa = function() {
                 <td>${r.marcador}</td>
                 <td>${r.tempo}</td>
                 <td class="${cvClass}">${cvTxt}</td>
+                <td style="text-align:center;font-weight:600;color:var(--gh-fg-muted,#8b949e)">${temResultado ? '\u2264\u00a0' + homGetLimite(r.marcador) + '%' : '\u2014'}</td>
                 <td>${badgeHtml}</td>
                 <td><button class="hom-btn-ver" onclick="homImprimirPorId('${r.id}')">🖨️ Ver / Imprimir</button></td>
             </tr>`;
@@ -29677,7 +29679,7 @@ window.atualizarKpisCapa = function() {
         let rowsHtml = '';
         rows.forEach(tr => {
             const cells = tr.querySelectorAll('td');
-            if (cells.length < 8) { rowsHtml += tr.outerHTML; return; } // linha vazia/empty
+            if (cells.length < 9) { rowsHtml += tr.outerHTML; return; } // linha vazia/empty
             // recria linha sem a coluna Ação (última)
             let tds = '';
             for (let i = 0; i < cells.length - 1; i++) {
@@ -29754,6 +29756,7 @@ window.atualizarKpisCapa = function() {
       <th>Marcador</th>
       <th>Tempo Mistura</th>
       <th>C.V. %</th>
+      <th>C.V. Limite</th>
       <th>Resultado</th>
     </tr>
   </thead>
