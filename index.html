@@ -10243,13 +10243,17 @@ function salvarClassificacao(event) {
         mostrarErroClass('❌ Preencha todos os campos obrigatórios!'); return;
     }
     // Bloquear NF duplicada, exceto NF = "0" ou "-" (AGRONOR)
+    // Mesma NF é permitida se o fornecedor for diferente
     if (nfFinal.trim() !== '0' && nfFinal.trim() !== '-') {
         const nfUpper = nfFinal.toUpperCase();
+        const fornUpper = fornecedor.toUpperCase();
         const duplicada = classificacoes.some(r =>
-            r.nf.toUpperCase() === nfUpper && r.id !== (idEdicaoClass || null)
+            r.nf.toUpperCase() === nfUpper &&
+            (r.fornecedor || '').toUpperCase() === fornUpper &&
+            r.id !== (idEdicaoClass || null)
         );
         if (duplicada) {
-            mostrarErroClass('❌ Já existe um registro com a NF "' + nfUpper + '". NFs duplicadas não são permitidas!'); return;
+            mostrarErroClass('❌ Já existe um registro com a NF "' + nfUpper + '" para o fornecedor "' + fornUpper + '". NFs duplicadas do mesmo fornecedor não são permitidas!'); return;
         }
     }
     const _pfC = id => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; };
