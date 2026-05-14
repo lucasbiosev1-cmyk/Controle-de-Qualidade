@@ -27602,7 +27602,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Duplo clique: OS ativas, aguardando aprovação (gerente pode abrir para aprovar), ou admin
             const podeEditar = ativa || isAguardandoAprovacao || (typeof perfilAtual !== 'undefined' && perfilAtual === 'admin');
-            const dblClick = podeEditar ? `ondblclick="osAbrirModal('${o.id}')" title="Duplo clique para editar"` : `title="OS bloqueada para edição"`;
+            const dblClick = podeEditar ? `ondblclick="osAbrirModal('${o.id}')"` : ``;
             const cursor   = podeEditar ? 'cursor:pointer;' : 'cursor:default;';
 
             // ── Dias em aberto ──
