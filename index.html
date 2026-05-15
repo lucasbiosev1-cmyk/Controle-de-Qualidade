@@ -3742,6 +3742,71 @@
             #dashOSVisResumo > div:last-child { grid-template-columns: 1fr !important; }
         }
 </style>
+<script>
+// ✅ GLOBAL: Desativa lista de recentes e força MAIÚSCULAS em todos os campos de texto
+(function() {
+    // IDs que NÃO devem virar maiúsculas (senhas, e-mails, logins, campos técnicos)
+    var _excluirIds = new Set([
+        'loginUser','loginPass','novoUsuarioLogin','novoUsuarioEmail','novoUsuarioSenha',
+        'wappNumero','wappMsg'
+    ]);
+    // Tipos de input que NÃO devem ser alterados
+    var _excluirTipos = new Set(['password','email','number','date','time','checkbox','radio','hidden','file','range','color']);
+
+    function _aplicar(el) {
+        if (!el || el._sgqUpperApplied) return;
+        // Pula exclusões por id
+        if (el.id && _excluirIds.has(el.id)) return;
+        // Pula inputs de tipos especiais
+        if (el.tagName === 'INPUT' && _excluirTipos.has((el.type || '').toLowerCase())) return;
+        // Pula readonly (ex: campos gerados automaticamente como número NC, lote)
+        if (el.readOnly) return;
+
+        // Desativa autocomplete (lista de recentes do navegador)
+        if (!el.getAttribute('autocomplete') || el.getAttribute('autocomplete') === 'on') {
+            el.setAttribute('autocomplete', 'off');
+        }
+
+        // Força maiúsculas via CSS + evento
+        el.style.textTransform = 'uppercase';
+        el.addEventListener('input', function() {
+            var pos = this.selectionStart;
+            var val = this.value.toUpperCase();
+            if (this.value !== val) {
+                this.value = val;
+                try { this.setSelectionRange(pos, pos); } catch(e) {}
+            }
+        });
+        // Garante que valor já preenchido também vire maiúsculo
+        if (el.value) el.value = el.value.toUpperCase();
+
+        el._sgqUpperApplied = true;
+    }
+
+    function _aplicarTodos() {
+        document.querySelectorAll('input[type="text"], input:not([type]), textarea').forEach(_aplicar);
+    }
+
+    // Aplica ao carregar
+    document.addEventListener('DOMContentLoaded', _aplicarTodos);
+
+    // Aplica em elementos adicionados dinamicamente (modais, formulários gerados por JS)
+    var _obs = new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+            m.addedNodes.forEach(function(node) {
+                if (node.nodeType !== 1) return;
+                if (node.matches && (node.matches('input[type="text"],input:not([type]),textarea'))) {
+                    _aplicar(node);
+                }
+                node.querySelectorAll && node.querySelectorAll('input[type="text"],input:not([type]),textarea').forEach(_aplicar);
+            });
+        });
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+        _obs.observe(document.body, { childList: true, subtree: true });
+    });
+})();
+</script>
 </head>
 <body>
 
