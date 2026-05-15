@@ -941,7 +941,7 @@
         .header-user span { font-weight: bold; }
 
         /* NAVEGAÇÃO */
-        .nav-tabs { background: #0d1117; display: flex; gap: 2px; padding: 0 20px; border-bottom: 1px solid rgba(48,54,61,1); }
+        .nav-tabs { background: #0d1117; display: flex; gap: 2px; padding: 0 20px; border-bottom: 1px solid rgba(48,54,61,1); align-items: center; }
         .nav-tab { padding: 10px 22px; color: rgba(255,255,255,0.45); cursor: pointer; font-size: 12px; font-weight: 700; border: none; background: none; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
         .nav-tab:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.04); border-radius: 6px 6px 0 0; }
         .nav-tab.active { color: #58a6ff; border-bottom: 2px solid #58a6ff; background: rgba(88,166,255,0.08); }
@@ -3891,19 +3891,14 @@
 
     <div class="header" id="mainHeader" style="padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;">
         <div class="header-left" style="display:flex;align-items:center;gap:16px;">
-            <!-- Botão Sair -->
-            <button class="btn-logout" onclick="fazerLogout()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                Sair
-            </button>
+            <!-- AGRONOR ALIMENTOS no lugar do botão Sair -->
+            <div style="display:flex;flex-direction:column;justify-content:center;line-height:1.1;flex-shrink:0;">
+                <span style="font-family:'Montserrat',Arial Black,sans-serif;font-weight:900;font-size:15px;color:#ffffff;letter-spacing:.5px;">AGRONOR</span>
+                <span style="font-family:'Montserrat',Arial,sans-serif;font-weight:700;font-size:7px;color:#58a6ff;letter-spacing:3.5px;text-transform:uppercase;">ALIMENTOS</span>
+            </div>
             <div id="headerDivider" style="width:1px;height:24px;background:rgba(255,255,255,0.1);"></div>
-            <!-- Logo somente texto -->
-            <svg viewBox="0 0 160 44" width="140" xmlns="http://www.w3.org/2000/svg" style="display:block;flex-shrink:0;">
-                <text x="0" y="28" font-family="Montserrat,Arial Black,sans-serif" font-weight="900" font-size="19" fill="#ffffff" letter-spacing=".5">AGRONOR</text>
-                <text x="1" y="40" font-family="Montserrat,Arial,sans-serif" font-weight="700" font-size="7" fill="#58a6ff" letter-spacing="3.5">ALIMENTOS</text>
-            </svg>
-            <div id="headerDivider2" style="width:1px;height:24px;background:rgba(255,255,255,0.1);"></div>
-            <div id="headerSubtitle" style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:1.5px;text-transform:uppercase;font-family:'Montserrat',Arial,sans-serif;">Gestão da Qualidade</div>
+            <div id="headerDivider2" style="width:1px;height:24px;background:rgba(255,255,255,0.1);display:none;"></div>
+            <div id="headerSubtitle" style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.35);letter-spacing:1.5px;text-transform:uppercase;font-family:'Montserrat',Arial,sans-serif;">SIGQ — Sistema Integrado de Gestão da Qualidade</div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;">
             <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#58a6ff,#388bfd);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#0d1117;flex-shrink:0;" id="headerAvatar">U</div>
@@ -4037,6 +4032,11 @@
         <button class="nav-tab" id="tabOrdemServico" onclick="trocarAba('ordemServico', this)">🔧 Ordem de Serviço</button>
         <!-- CONFIGURAÇÕES -->
         <button class="nav-tab" id="tabConfiguracoes" onclick="trocarAba('configuracoes', this)">⚙️ Configurações</button>
+        <!-- LOGOFF — empurrado para o extremo direito -->
+        <button class="btn-logout" onclick="fazerLogout()" style="margin-left:auto;align-self:center;flex-shrink:0;" title="Sair do sistema">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Logoff
+        </button>
     </div>
 
     <!-- ===== ABA CAPA ===== -->
@@ -9251,7 +9251,7 @@ function aplicarPermissoes() {
     })();
 
     // Aba Configurações — visível se tiver qualquer permissão de config
-    const temConfig = isAdmin || perms.backup || perms.memoria || perms.parametros || perms.whatsapp;
+    const temConfig = isAdmin || perms.backup || perms.memoria || perms.parametros || perms.whatsapp || true; // não-admin sempre tem Aparência
     const tabCfg2 = document.getElementById('tabConfiguracoes');
     if (tabCfg2) tabCfg2.style.display = temConfig ? 'inline-block' : 'none';
     // (mobBtnConfiguracoes é tratado na seção mobile unificada abaixo)
@@ -9424,6 +9424,22 @@ function aplicarPermissoes() {
     if (cfgBtnUsuarios) cfgBtnUsuarios.style.display = isAdmin ? '' : 'none';
     const cfgPanelUsuarios = document.getElementById('cfg-panel-usuarios');
     if (cfgPanelUsuarios && !isAdmin) cfgPanelUsuarios.style.display = 'none';
+
+    // Aba Aparência — visível para TODOS (admin e não-admin)
+    // Para não-admin: oculta todas as outras sub-abas de config, mostra só Aparência
+    if (!isAdmin) {
+        ['cfgBtn-parametros','cfgBtn-backup','cfgBtn-memoria','cfgBtn-alertaWhatsApp'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+        ['cfg-panel-parametros','cfg-panel-backup','cfg-panel-memoria','cfg-panel-alertaWhatsApp'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+    }
+    // Garante que não-admin veja a aba Configurações mesmo sem outras permissões de config
+    const tabCfgEl = document.getElementById('tabConfiguracoes');
+    if (tabCfgEl && !isAdmin) tabCfgEl.style.display = 'inline-block';
 }
 
 async function fazerLogout() {
@@ -9554,7 +9570,13 @@ function trocarAba(aba, btn) {
     if (aba === 'relClass')  inicializarRelClass();
     if (aba === 'ranking')   inicializarRanking();
     if (aba === 'boletim')   inicializarBoletim();
-    if (aba === 'configuracoes') trocarSubCfg('parametros', document.getElementById('cfgBtn-parametros'));
+    if (aba === 'configuracoes') {
+        if (perfilAtual === 'admin') {
+            trocarSubCfg('parametros', document.getElementById('cfgBtn-parametros'));
+        } else {
+            trocarSubCfg('aparencia', document.getElementById('cfgBtn-aparencia'));
+        }
+    }
     if (aba === 'estoqueReagentes') { try { reagCarregarDados(); setTimeout(_reagInjetarCampoEmail, 500); } catch(e){} }
     if (aba === 'estoqueMateriais') { try { matCarregarDados(); } catch(e){} }
     if (aba === 'equipamentos') { try { eqCarregarDados(); } catch(e){} }
