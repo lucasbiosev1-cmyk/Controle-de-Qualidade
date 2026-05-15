@@ -2946,6 +2946,11 @@
         /* Seções do formulário */
         html[data-theme="dark"] .nc-form-section { background: #0d1117 !important; border-color: #30363d !important; }
         html[data-theme="dark"] .nc-form-group label { color: #8b949e !important; }
+
+        /* Checkboxes de Causas Prováveis — dark mode */
+        html[data-theme="dark"] .nc-check-item { background: #161b22 !important; border-color: #30363d !important; color: #e6edf3 !important; }
+        html[data-theme="dark"] .nc-check-item:hover { background: #1c2333 !important; border-color: #e74c3c !important; color: #e6edf3 !important; }
+        html[data-theme="dark"] .nc-check-item.checked { background: #2e0d0d !important; border-color: #e74c3c !important; color: #f85149 !important; }
         html[data-theme="dark"] .nc-form-group input,
         html[data-theme="dark"] .nc-form-group select,
         html[data-theme="dark"] .nc-form-group textarea { background: #161b22 !important; border-color: #30363d !important; color: #e6edf3 !important; }
@@ -27011,9 +27016,10 @@ document.addEventListener('DOMContentLoaded', function() {
     async function _carregar() {
         try {
             const uid = _getUserId();
-            let query = _sbClient.from(TABELA).select('*').order('hora',{ascending:true});
-            if (uid) query = query.eq('user_id', uid);
-            const { data, error } = await query;
+            // Segurança: se não houver usuário identificado, não carrega nada
+            if (!uid) { _compromissos = []; return; }
+            const { data, error } = await _sbClient.from(TABELA).select('*')
+                .eq('user_id', uid).order('hora',{ascending:true});
             if (error) throw error;
             _compromissos = data || [];
         } catch(e) { _compromissos = []; }
