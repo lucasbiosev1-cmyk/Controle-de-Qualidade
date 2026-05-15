@@ -18676,7 +18676,7 @@ async function executarCorrecaoDefeitos() {
                                 title="Gerar comunicado ao fornecedor com IA"
                                 style="font-size:10px;padding:2px 8px;border:none;border-radius:3px;background:#6c3483;color:white;cursor:pointer;font-weight:700;">✦ IA</button>
                         </label>
-                        <textarea id="nc-motivo" rows="3" placeholder="Descreva o motivo da NC ou clique em ✦ IA para gerar automaticamente..." style="resize:vertical;font-family:inherit;width:100%;"></textarea>
+                        <textarea id="nc-motivo" rows="1" placeholder="Descreva o motivo..." style="resize:none;font-family:inherit;width:100%;height:36px;overflow:hidden;"></textarea>
                     </div>
                     <input type="hidden" id="nc-qtd">
                     <input type="hidden" id="nc-unidade" value="kg">
@@ -25462,31 +25462,29 @@ function fecharChatIA_NC() {
 }
 
 async function ncGerarMotivoFornecedor() {
-    var descricao = (document.getElementById('nc-descricao') ? document.getElementById('nc-descricao').value : '').trim();
+    var motivo    = (document.getElementById('nc-motivo')    ? document.getElementById('nc-motivo').value    : '').trim();
     var produto   = (document.getElementById('nc-produto')   ? document.getElementById('nc-produto').value   : '').trim();
     var fornecedor= (document.getElementById('nc-fornecedor')? document.getElementById('nc-fornecedor').value: '').trim();
-    var gravidade = (document.getElementById('nc-gravidade') ? document.getElementById('nc-gravidade').value : '').trim();
     var local     = (document.getElementById('nc-local')     ? document.getElementById('nc-local').value     : '').trim();
-    if (!descricao && !produto) {
-        sgqToast('Preencha pelo menos o Produto e a Descricao antes de gerar o motivo.', 'warning');
+    if (!motivo) {
+        sgqToast('Preencha o campo Motivo antes de gerar o texto.', 'warning');
         return;
     }
     var btn = document.getElementById('btnGerarMotivoNC');
     if (btn) { btn.disabled = true; btn.textContent = '...'; }
     try {
-        var systemPrompt = 'Voce e um especialista em qualidade de alimentos para animais. Sua unica tarefa e redigir um comunicado formal e objetivo ao fornecedor explicando a nao conformidade identificada e o seu impacto no processo produtivo. Seja direto, tecnico e profissional. Nao adicione saudacoes longas, listas, analises extras nem recomendacoes alem do comunicado solicitado. Responda apenas com o texto do comunicado, sem titulos, sem introducao sua, sem explicacoes adicionais.';
-        var userMsg = 'Produto: ' + (produto || 'nao informado') + '. ';
-        userMsg += 'Fornecedor: ' + (fornecedor || 'nao informado') + '. ';
-        userMsg += 'Gravidade: ' + (gravidade || 'nao informada') + '. ';
-        userMsg += 'Local de deteccao: ' + (local || 'nao informado') + '. ';
-        userMsg += 'Descricao da NC: ' + (descricao || 'nao informada') + '. ';
-        userMsg += 'Redija um comunicado formal ao fornecedor explicando a nao conformidade detectada e o impacto que ela causa no processo produtivo.';
-        var texto = await _iaCall(systemPrompt, [{ role: 'user', content: userMsg }], 400);
+        var systemPrompt = 'Voce redige comunicados tecnicos de nao conformidade para fornecedores. Escreva UMA unica frase objetiva, no estilo: Durante a inspecao [local/momento], foi constatado que [descricao do problema], comprometendo [impacto direto]. Sem saudacao, sem titulo, sem lista, sem recomendacao. Apenas a frase.';
+        var userMsg = 'Motivo da NC: ' + motivo + '.';
+        if (produto) userMsg += ' Produto: ' + produto + '.';
+        if (fornecedor) userMsg += ' Fornecedor: ' + fornecedor + '.';
+        if (local) userMsg += ' Local de deteccao: ' + local + '.';
+        userMsg += ' Gere a frase do comunicado.';
+        var texto = await _iaCall(systemPrompt, [{ role: 'user', content: userMsg }], 150);
         var campo = document.getElementById('nc-motivo');
         if (campo) campo.value = texto.trim();
-        sgqToast('Motivo gerado com sucesso.', 'success');
+        sgqToast('Texto gerado com sucesso.', 'success');
     } catch(e) {
-        sgqToast('Erro ao gerar motivo: ' + (e.message || e), 'error');
+        sgqToast('Erro ao gerar texto: ' + (e.message || e), 'error');
     } finally {
         if (btn) { btn.disabled = false; btn.textContent = '✦ IA'; }
     }
