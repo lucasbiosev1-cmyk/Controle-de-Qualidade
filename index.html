@@ -3688,7 +3688,7 @@
         .os-tabela td { padding:10px 12px; vertical-align:middle; }
         .os-tabela td:last-child { text-align:center; }
         .os-tabela .os-td-numero { font-family:monospace; font-size:10px; color:#888; font-weight:700; white-space:nowrap; }
-        .os-tabela .os-td-titulo { font-weight:700; color:#2c3e50; max-width:220px; }
+        .os-tabela .os-td-titulo { font-weight:700; color:#2c3e50; max-width:220px; text-align:center; word-break:break-word; white-space:normal; }
         html[data-theme="dark"] .os-tabela .os-td-titulo { color:#e6edf3; }
         .os-tabela .os-td-desc { font-size:11px; color:#888; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
         html[data-theme="dark"] .os-tabela .os-td-desc { color:#6e7681; }
@@ -27784,7 +27784,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td style="font-size:11px;white-space:nowrap;color:#666;text-align:center;">${_fmtData(o.data_abertura)}</td>
                 <td style="font-size:11px;text-align:center;">${fechamentoCell}</td>
                 <td style="text-align:center;">
-                    <div class="os-td-titulo" style="font-size:12px;text-align:center;">${o.titulo||'—'}</div>
+                    <div class="os-td-titulo" style="font-size:12px;text-align:center;" title="${o.titulo||''}">${(o.titulo||'—').length > 42 ? (o.titulo).substring(0,42)+'…' : (o.titulo||'—')}</div>
                 </td>
                 <td style="font-size:11px;white-space:nowrap;text-align:center;">${o.setor||'—'}</td>
                 <td style="font-size:11px;white-space:nowrap;text-align:center;">${o.criado_por||"—"}</td>
