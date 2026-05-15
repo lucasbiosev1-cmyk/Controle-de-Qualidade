@@ -25471,7 +25471,7 @@ async function ncGerarMotivoFornecedor() {
     var btn = document.getElementById('btnGerarMotivoNC');
     if (btn) { btn.disabled = true; btn.textContent = '...'; }
     try {
-        var systemPrompt = 'Voce redige comunicados tecnicos de nao conformidade para fornecedores. Escreva UMA unica frase objetiva, no estilo: Durante a inspecao [local/momento], foi constatado que [descricao do problema], comprometendo [impacto direto]. NAO mencione o nome do produto, do fornecedor ou do item — esses dados ja constam no formulario. Foque apenas no problema identificado e seu impacto. Sem saudacao, sem titulo, sem lista, sem recomendacao. Apenas a frase.';
+        var systemPrompt = 'Voce redige comunicados tecnicos de nao conformidade. Escreva exatamente 2 frases no estilo abaixo. PRIMEIRA FRASE: Durante a inspecao [local/momento], foi constatada/constatado [descricao objetiva do problema identificado]. SEGUNDA FRASE: Tal condicao pode comprometer [impacto na qualidade, seguranca ou processo produtivo]. NAO escreva saudacao, NAO escreva prezado fornecedor, NAO escreva solicitacao, NAO mencione nome do produto ou fornecedor. Apenas as 2 frases.';
         var userMsg = 'Motivo da NC: ' + motivo + '.';
         if (produto) userMsg += ' Produto: ' + produto + '.';
         if (fornecedor) userMsg += ' Fornecedor: ' + fornecedor + '.';
