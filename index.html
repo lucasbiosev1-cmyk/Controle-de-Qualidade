@@ -14144,15 +14144,32 @@ const _sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, 
 });
 
 // ✅ Monitor de estado de autenticação — detecta expiração de sessão
-_sbClient.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_OUT' || (event === 'TOKEN_REFRESHED' && !session)) {
-        if (document.getElementById('mainSystem').style.display !== 'none') {
-            document.getElementById('sgq-session-banner').classList.add('show');
+// FIX: usa debounce para evitar falso positivo durante refresh de token (race condition)
+let _sessionBannerTimer = null;
+function _mostrarBannerSessao() {
+    // Verifica de fato se a sessão ainda é válida antes de exibir o banner
+    _sbClient.auth.getSession().then(({ data }) => {
+        if (!data || !data.session) {
+            if (document.getElementById('mainSystem').style.display !== 'none') {
+                document.getElementById('sgq-session-banner').classList.add('show');
+            }
         }
-    }
+    }).catch(() => {
+        // Em caso de erro na verificação, não exibe o banner
+    });
+}
+_sbClient.auth.onAuthStateChange((event, session) => {
+    // Limpa qualquer timer pendente ao receber novo evento
+    if (_sessionBannerTimer) { clearTimeout(_sessionBannerTimer); _sessionBannerTimer = null; }
+
     if (event === 'TOKEN_REFRESHED' && session) {
+        // Token renovado com sucesso — esconde o banner
         document.getElementById('sgq-session-banner').classList.remove('show');
+    } else if (event === 'SIGNED_OUT' && !session) {
+        // Aguarda 3s antes de exibir — evita falso positivo durante refresh transitório
+        _sessionBannerTimer = setTimeout(_mostrarBannerSessao, 3000);
     }
+    // Ignora INITIAL_SESSION, USER_UPDATED e outros eventos não críticos
 });
 
 // ── sbFetch removido: era uma camada legada sobre o SDK que não era mais chamada.
@@ -14190,10 +14207,8 @@ async function dbGetAll(tabela) {
 
         return todos;
     } catch(e) {
-        // ✅ Detecta sessão expirada
-        if (e.message && (e.message.includes('JWT') || e.message.includes('401') || e.message.includes('token'))) {
-            document.getElementById('sgq-session-banner').classList.add('show');
-        }
+        // FIX: não exibe banner por erros temporários de rede/JWT —
+        // o onAuthStateChange cuida da sessão expirada de forma confiável
         // ✅ Erro real visível — sem fallback silencioso
         sgqToast('Erro ao carregar "' + tabela + '": ' + e.message, 'error');
         throw e; // propaga para o chamador tratar se necessário
@@ -18670,10 +18685,7 @@ async function executarCorrecaoDefeitos() {
                         </select>
                     </div>
                     <div class="nc-form-group">
-                        <label style="display:flex;align-items:center;justify-content:space-between;">
-                            <span>Motivo</span>
-                            <button type="button" id="btnGerarMotivoNC" onclick="ncGerarMotivoFornecedor()" title="Gerar comunicado ao fornecedor com IA" style="font-size:10px;padding:2px 8px;border:none;border-radius:3px;background:#6c3483;color:white;cursor:pointer;font-weight:700;">✦ Análise</button>
-                        </label>
+                        <label>Motivo</label>
                         <textarea id="nc-motivo" rows="1" placeholder="Descreva o motivo..." style="resize:none;font-family:inherit;width:100%;height:36px;min-height:36px;max-height:36px;overflow:hidden;box-sizing:border-box;padding:8px 10px;line-height:1.2;"></textarea>
                     </div>
                     <input type="hidden" id="nc-qtd">
@@ -18685,7 +18697,10 @@ async function executarCorrecaoDefeitos() {
                 <h3 class="orange">3. Descrição da Não Conformidade</h3>
                 <div class="nc-form-grid">
                     <div class="nc-form-group nc-full">
-                        <label>Descrição Detalhada <span class="nc-req">*</span></label>
+                        <label style="display:flex;align-items:center;justify-content:space-between;">
+                            <span>Descrição Detalhada <span class="nc-req">*</span></span>
+                            <button type="button" id="btnGerarMotivoNC" onclick="ncGerarMotivoFornecedor()" title="Gerar descrição com IA" style="font-size:10px;padding:2px 8px;border:none;border-radius:3px;background:#6c3483;color:white;cursor:pointer;font-weight:700;">✶ Análise</button>
+                        </label>
                         <textarea id="nc-descricao" rows="3" placeholder="Descreva a não conformidade detectada de forma clara e objetiva..."></textarea>
                     </div>
                 </div>
@@ -18801,7 +18816,6 @@ async function executarCorrecaoDefeitos() {
         <div class="nc-modal-footer">
             <button class="nc-btn nc-btn-secondary" onclick="fecharModalNC()">Cancelar</button>
             <button class="nc-btn nc-btn-info" onclick="imprimirRelatorioNC('nc')" title="Gerar relatório para impressão">🖨️ Imprimir</button>
-            <button class="nc-btn" style="background:linear-gradient(135deg,#6c3483,#8e44ad);color:white;display:flex;align-items:center;gap:6px;" onclick="abrirChatIA_NC()" title="Consultar IA para análise técnica baseada em Embrapa e Compêndio Brasileiro de Nutrição Animal">🤖 Consultar IA</button>
             <button class="nc-btn nc-btn-primary" onclick="salvarNC()">💾 Salvar NC</button>
         </div>
     </div>
