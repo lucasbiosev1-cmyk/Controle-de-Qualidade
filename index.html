@@ -5222,7 +5222,7 @@
                         <label style="display:block;font-weight:bold;font-size:11px;margin-bottom:4px;color:#444;">Gravidade</label>
                         <select id="nc-grav-f" style="width:100%;padding:8px;border:1px solid #bdc3c7;border-radius:4px;font-size:12px;">
                             <option value="">Todas</option>
-                            <option>Crítica</option><option>Maior</option><option>Menor</option>
+                            <option>Crítica</option><option>Moderada</option><option>Leve</option>
                         </select>
                     </div>
                     <div>
@@ -18635,7 +18635,7 @@ async function executarCorrecaoDefeitos() {
                         <label>Gravidade <span class="nc-req">*</span></label>
                         <select id="nc-gravidade" onchange="atualizarGravidade()">
                             <option value="">Selecione...</option>
-                            <option>Crítica</option><option>Maior</option><option>Menor</option>
+                            <option>Crítica</option><option>Moderada</option><option>Leve</option>
                         </select>
                     </div>
                 </div>
@@ -18668,6 +18668,15 @@ async function executarCorrecaoDefeitos() {
                             <option>Recepção / Portaria</option><option>Laboratório</option><option>Armazém</option>
                             <option>Linha de Produção</option><option>Expedição</option><option>Pós-venda / Cliente</option>
                         </select>
+                    </div>
+                    <div class="nc-form-group">
+                        <label style="display:flex;align-items:center;justify-content:space-between;">
+                            <span>Motivo</span>
+                            <button type="button" id="btnGerarMotivoNC" onclick="ncGerarMotivoFornecedor()"
+                                title="Gerar comunicado ao fornecedor com IA"
+                                style="font-size:10px;padding:2px 8px;border:none;border-radius:3px;background:#6c3483;color:white;cursor:pointer;font-weight:700;">✦ IA</button>
+                        </label>
+                        <textarea id="nc-motivo" rows="3" placeholder="Descreva o motivo da NC ou clique em ✦ IA para gerar automaticamente..." style="resize:vertical;font-family:inherit;width:100%;"></textarea>
                     </div>
                     <input type="hidden" id="nc-qtd">
                     <input type="hidden" id="nc-unidade" value="kg">
@@ -19147,7 +19156,7 @@ function imprimirRelatorioNC(tipo) {
         const efic    = document.getElementById('nc-eficacia')?.value || '-';
         const obs     = document.getElementById('nc-obs')?.value || '-';
         const causas  = Array.from(document.querySelectorAll('#nc-causasGrid input:checked, #causasGrid input:checked')).map(cb => cb.value).join(', ') || '-';
-        const gravColor = grav === 'Crítica' ? '#c0392b' : grav === 'Maior' ? '#e67e22' : '#27ae60';
+        const gravColor = grav === 'Crítica' ? '#c0392b' : grav === 'Moderada' ? '#e67e22' : '#27ae60';
 
         const imgsHtml = (ncImagens && ncImagens.length)
             ? `<div class="nc-report-section-title">📷 Evidências Fotográficas (${ncImagens.length})</div>
@@ -19464,7 +19473,7 @@ function ncBadgeStatus(s) {
     return `<span class="badge ${m[s]||'nc-badge-pendente'}" style="display:inline-block;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;">${s||'-'}</span>`;
 }
 function ncBadgeGravidade(g) {
-    const m = { 'Crítica':'nc-badge-high','Maior':'nc-badge-med','Menor':'nc-badge-low' };
+    const m = { 'Crítica':'nc-badge-high','Moderada':'nc-badge-med','Leve':'nc-badge-low' };
     return `<span class="badge ${m[g]||''}" style="display:inline-block;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:bold;">${g||'-'}</span>`;
 }
 
@@ -19514,7 +19523,7 @@ function fecharModalNC() { document.getElementById('modalNC').classList.remove('
 function limparFormNC() {
     ['nc-numero','nc-data','nc-produto','nc-lote','nc-qtd','nc-fornecedor','nc-placa',
      'nc-descricao','nc-causa-raiz','nc-acao-imediata','nc-acao-corretiva',
-     'nc-responsavel','nc-resp-acao','nc-prazo','nc-data-enc','nc-obs','nc-edit-id']
+     'nc-responsavel','nc-resp-acao','nc-prazo','nc-data-enc','nc-obs','nc-edit-id','nc-motivo']
         .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
     ['nc-tipo','nc-gravidade','nc-local','nc-disposicao','nc-status','nc-eficacia']
         .forEach(id => { const el = document.getElementById(id); if(el) el.selectedIndex = 0; });
@@ -19527,10 +19536,10 @@ function limparFormNC() {
 function preencherFormNC(nc) {
     const ids = ['nc-numero','nc-data','nc-tipo','nc-gravidade','nc-produto','nc-lote','nc-fornecedor','nc-placa',
                  'nc-local','nc-descricao','nc-disposicao','nc-resp-acao','nc-acao-imediata',
-                 'nc-causa-raiz','nc-responsavel','nc-prazo','nc-acao-corretiva','nc-status','nc-data-enc','nc-eficacia','nc-obs'];
+                 'nc-causa-raiz','nc-responsavel','nc-prazo','nc-acao-corretiva','nc-status','nc-data-enc','nc-eficacia','nc-obs','nc-motivo'];
     const vals = ['numero','data','tipo','gravidade','produto','lote','fornecedor','placa',
                   'local','descricao','disposicao','resp_acao','acao_imediata',
-                  'causa_raiz','responsavel','prazo','acao_corretiva','status','data_enc','eficacia','obs'];
+                  'causa_raiz','responsavel','prazo','acao_corretiva','status','data_enc','eficacia','obs','motivo'];
     ids.forEach((id, i) => { const el = document.getElementById(id); if(el) el.value = nc[vals[i]] || ''; });
     const causas = typeof nc.causas === 'string' ? JSON.parse(nc.causas || '[]') : (nc.causas || []);
     document.querySelectorAll('#causasGrid input').forEach(cb => { cb.checked = causas.includes(cb.value); });
@@ -19546,8 +19555,8 @@ function atualizarGravidade() {
     if (g === 'Crítica') {
         el.innerHTML = '<div class="nc-alert nc-alert-danger">⚠️ <strong>NC CRÍTICA:</strong> Requer ação imediata e notificação à liderança. Prazo máximo: 24h.</div>';
         el.style.display = 'block';
-    } else if (g === 'Maior') {
-        el.innerHTML = '<div class="nc-alert nc-alert-warning">⚡ <strong>NC MAIOR:</strong> Requer plano de ação formal com prazo definido. Prazo máximo: 7 dias.</div>';
+    } else if (g === 'Moderada') {
+        el.innerHTML = '<div class="nc-alert nc-alert-warning">⚡ <strong>NC MODERADA:</strong> Requer plano de ação formal com prazo definido. Prazo máximo: 7 dias.</div>';
         el.style.display = 'block';
     } else { el.style.display = 'none'; }
 }
@@ -19593,6 +19602,7 @@ async function salvarNC() {
         data_enc:       document.getElementById('nc-data-enc').value,
         eficacia:       document.getElementById('nc-eficacia').value,
         obs:            (document.getElementById('nc-obs')?.value || ''),
+        motivo:         (document.getElementById('nc-motivo')?.value || ''),
         imagens:        JSON.stringify(ncImagens.slice()),
     };
     try {
@@ -20492,7 +20502,7 @@ function visualizarNC(id) {
     const nc = listaNC.find(n => String(n.id) === String(id));
     if (!nc) return;
     const causas = typeof nc.causas === 'string' ? JSON.parse(nc.causas || '[]') : (nc.causas || []);
-    const gravColor = nc.gravidade === 'Crítica' ? '#c0392b' : nc.gravidade === 'Maior' ? '#e67e22' : '#27ae60';
+    const gravColor = nc.gravidade === 'Crítica' ? '#c0392b' : nc.gravidade === 'Moderada' ? '#e67e22' : '#27ae60';
     const imgs = typeof nc.imagens === 'string' ? JSON.parse(nc.imagens || '[]') : (nc.imagens || []);
     const imgsHtml = imgs.length
         ? `<div class="ncv-section-title">📷 Evidências Fotográficas</div>
@@ -25428,7 +25438,7 @@ function abrirChatIA_NC() {
     const el = document.getElementById('chatIA_NC_contexto');
     el.innerHTML = `<strong>📌 NC Atual:</strong> ${ctx.nc.numero || 'Nova'} | 
         <strong>Tipo:</strong> ${ctx.nc.tipo || '—'} | 
-        <strong>Gravidade:</strong> <span style="color:${ctx.nc.gravidade==='Crítica'?'#e74c3c':ctx.nc.gravidade==='Maior'?'#e67e22':'#27ae60'};font-weight:800;">${ctx.nc.gravidade || '—'}</span> | 
+        <strong>Gravidade:</strong> <span style="color:${ctx.nc.gravidade==='Crítica'?'#e74c3c':ctx.nc.gravidade==='Moderada'?'#e67e22':'#27ae60'};font-weight:800;">${ctx.nc.gravidade || '—'}</span> | 
         <strong>Produto:</strong> ${ctx.nc.produto || '—'} | 
         <strong>Fornecedor:</strong> ${ctx.nc.fornecedor || '—'}`;
 
@@ -25451,6 +25461,36 @@ function fecharChatIA_NC() {
     document.getElementById('modalChatIA_NC').style.display = 'none';
 }
 
+async function ncGerarMotivoFornecedor() {
+    var descricao = (document.getElementById('nc-descricao') ? document.getElementById('nc-descricao').value : '').trim();
+    var produto   = (document.getElementById('nc-produto')   ? document.getElementById('nc-produto').value   : '').trim();
+    var fornecedor= (document.getElementById('nc-fornecedor')? document.getElementById('nc-fornecedor').value: '').trim();
+    var gravidade = (document.getElementById('nc-gravidade') ? document.getElementById('nc-gravidade').value : '').trim();
+    var local     = (document.getElementById('nc-local')     ? document.getElementById('nc-local').value     : '').trim();
+    if (!descricao && !produto) {
+        sgqToast('Preencha pelo menos o Produto e a Descricao antes de gerar o motivo.', 'warning');
+        return;
+    }
+    var btn = document.getElementById('btnGerarMotivoNC');
+    if (btn) { btn.disabled = true; btn.textContent = '...'; }
+    try {
+        var systemPrompt = 'Voce e um especialista em qualidade de alimentos para animais. Sua unica tarefa e redigir um comunicado formal e objetivo ao fornecedor explicando a nao conformidade identificada e o seu impacto no processo produtivo. Seja direto, tecnico e profissional. Nao adicione saudacoes longas, listas, analises extras nem recomendacoes alem do comunicado solicitado. Responda apenas com o texto do comunicado, sem titulos, sem introducao sua, sem explicacoes adicionais.';
+        var userMsg = 'Produto: ' + (produto || 'nao informado') + '. ';
+        userMsg += 'Fornecedor: ' + (fornecedor || 'nao informado') + '. ';
+        userMsg += 'Gravidade: ' + (gravidade || 'nao informada') + '. ';
+        userMsg += 'Local de deteccao: ' + (local || 'nao informado') + '. ';
+        userMsg += 'Descricao da NC: ' + (descricao || 'nao informada') + '. ';
+        userMsg += 'Redija um comunicado formal ao fornecedor explicando a nao conformidade detectada e o impacto que ela causa no processo produtivo.';
+        var texto = await _iaCall(systemPrompt, [{ role: 'user', content: userMsg }], 400);
+        var campo = document.getElementById('nc-motivo');
+        if (campo) campo.value = texto.trim();
+        sgqToast('Motivo gerado com sucesso.', 'success');
+    } catch(e) {
+        sgqToast('Erro ao gerar motivo: ' + (e.message || e), 'error');
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '✦ IA'; }
+    }
+}
 async function _iaAnalisarNC_inicial() {
     const ctx = _chatIA_NC_contextoNC;
     if (!ctx) return;
@@ -25937,7 +25977,7 @@ async function gerarRelatorioMensalIA() {
 
         // ---- MÉTRICAS NC ----
         const ncCrit    = ncMes.filter(n => n.gravidade === 'Crítica').length;
-        const ncMaior   = ncMes.filter(n => n.gravidade === 'Maior').length;
+        const ncModerada = ncMes.filter(n => n.gravidade === 'Moderada').length;
         const ncAberta  = ncMes.filter(n => n.status === 'Pendente' || n.status === 'Em Análise').length;
         const ncCritAnt = ncAnt.filter(n => n.gravidade === 'Crítica').length;
         const ncFornece = {};
@@ -25975,7 +26015,7 @@ ${temComparacao ? `[RESUMO DE DESVIOS — MÊS ANTERIOR (${nomeMesAnt}) — ${cl
 
         const _blocosNC = !_usaNC ? '' : `
 == NÃO CONFORMIDADES ==
-MÊS ATUAL (${nomeMes}): ${ncMes.length} NCs | Críticas: ${ncCrit} | Maiores: ${ncMaior} | Abertas: ${ncAberta}
+MÊS ATUAL (${nomeMes}): ${ncMes.length} NCs | Críticas: ${ncCrit} | Moderadas: ${ncModerada} | Abertas: ${ncAberta}
 ${temComparacao ? `MÊS ANTERIOR (${nomeMesAnt}): ${ncAnt.length} NCs | Críticas: ${ncCritAnt}` : ''}
 Fornecedores: ${topFornNC || 'nenhum'}
 Tipos: ${[...new Set(ncMes.map(n=>n.tipo))].join(', ') || '—'}`;
