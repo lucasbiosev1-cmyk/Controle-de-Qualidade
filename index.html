@@ -18670,13 +18670,11 @@ async function executarCorrecaoDefeitos() {
                         </select>
                     </div>
                     <div class="nc-form-group">
-                        <label style="display:flex;align-items:center;justify-content:space-between;">
-                            <span>Motivo</span>
-                            <button type="button" id="btnGerarMotivoNC" onclick="ncGerarMotivoFornecedor()"
-                                title="Gerar comunicado ao fornecedor com IA"
-                                style="font-size:10px;padding:2px 8px;border:none;border-radius:3px;background:#6c3483;color:white;cursor:pointer;font-weight:700;">✦ IA</button>
-                        </label>
-                        <textarea id="nc-motivo" rows="1" placeholder="Descreva o motivo..." style="resize:none;font-family:inherit;width:100%;height:36px;min-height:36px;max-height:36px;overflow:hidden;box-sizing:border-box;padding:8px 10px;line-height:1.2;"></textarea>
+                        <label>Motivo</label>
+                        <div style="position:relative;">
+                            <textarea id="nc-motivo" rows="1" placeholder="Descreva o motivo..." style="resize:none;font-family:inherit;width:100%;height:36px;min-height:36px;max-height:36px;overflow:hidden;box-sizing:border-box;padding:8px 10px;padding-right:48px;line-height:1.2;"></textarea>
+                            <button type="button" id="btnGerarMotivoNC" onclick="ncGerarMotivoFornecedor()" title="Gerar comunicado ao fornecedor com IA" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:10px;padding:2px 7px;border:none;border-radius:3px;background:#6c3483;color:white;cursor:pointer;font-weight:700;">✦ IA</button>
+                        </div>
                     </div>
                     <input type="hidden" id="nc-qtd">
                     <input type="hidden" id="nc-unidade" value="kg">
@@ -25473,14 +25471,14 @@ async function ncGerarMotivoFornecedor() {
     var btn = document.getElementById('btnGerarMotivoNC');
     if (btn) { btn.disabled = true; btn.textContent = '...'; }
     try {
-        var systemPrompt = 'Voce redige comunicados tecnicos de nao conformidade para fornecedores. Escreva UMA unica frase objetiva, no estilo: Durante a inspecao [local/momento], foi constatado que [descricao do problema], comprometendo [impacto direto]. Sem saudacao, sem titulo, sem lista, sem recomendacao. Apenas a frase.';
+        var systemPrompt = 'Voce redige comunicados tecnicos de nao conformidade para fornecedores. Escreva UMA unica frase objetiva, no estilo: Durante a inspecao [local/momento], foi constatado que [descricao do problema], comprometendo [impacto direto]. NAO mencione o nome do produto, do fornecedor ou do item — esses dados ja constam no formulario. Foque apenas no problema identificado e seu impacto. Sem saudacao, sem titulo, sem lista, sem recomendacao. Apenas a frase.';
         var userMsg = 'Motivo da NC: ' + motivo + '.';
         if (produto) userMsg += ' Produto: ' + produto + '.';
         if (fornecedor) userMsg += ' Fornecedor: ' + fornecedor + '.';
         if (local) userMsg += ' Local de deteccao: ' + local + '.';
         userMsg += ' Gere a frase do comunicado.';
         var texto = await _iaCall(systemPrompt, [{ role: 'user', content: userMsg }], 150);
-        var campo = document.getElementById('nc-motivo');
+        var campo = document.getElementById('nc-descricao');
         if (campo) campo.value = texto.trim();
         sgqToast('Texto gerado com sucesso.', 'success');
     } catch(e) {
