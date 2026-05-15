@@ -18851,7 +18851,7 @@ async function executarCorrecaoDefeitos() {
                         <input type="text" id="dev-produto" placeholder="Ex: Milho, Soja, Embalagem...">
                     </div>
                     <div class="nc-form-group">
-                        <label>Lote / Nº NF de Entrada <span style="font-weight:400;font-size:11px;color:#8b949e;">(use <b>Ñ</b> se sem nota)</span></label>
+                        <label>Lote / Nº NF de Entrada</label>
                         <input type="text" id="dev-lote" placeholder="Ex: 12345 ou Ñ (sem nota)">
                     </div>
                     <div class="nc-form-group">
@@ -18886,7 +18886,10 @@ async function executarCorrecaoDefeitos() {
                         <input type="text" id="dev-parametro" placeholder="Ex: Umidade 16%, Ardido 5%...">
                     </div>
                     <div class="nc-form-group nc-full">
-                        <label>Descrição do Motivo</label>
+                        <label style="display:flex;align-items:center;justify-content:space-between;">
+                            <span>Descrição do Motivo</span>
+                            <button type="button" id="btnGerarDescDevIA" onclick="devGerarDescricaoMotivo()" title="Gerar descrição com IA" style="font-size:10px;padding:2px 8px;border:none;border-radius:3px;background:#6c3483;color:white;cursor:pointer;font-weight:700;">✦ IA</button>
+                        </label>
                         <textarea id="dev-desc-motivo" rows="2" placeholder="Detalhe o motivo da devolução..."></textarea>
                     </div>
                 </div>
@@ -25457,6 +25460,35 @@ function abrirChatIA_NC() {
 
 function fecharChatIA_NC() {
     document.getElementById('modalChatIA_NC').style.display = 'none';
+}
+
+async function devGerarDescricaoMotivo() {
+    var parametro = (document.getElementById('dev-parametro') ? document.getElementById('dev-parametro').value : '').trim();
+    var motivo    = (document.getElementById('dev-motivo')    ? document.getElementById('dev-motivo').value    : '').trim();
+    var produto   = (document.getElementById('dev-produto')   ? document.getElementById('dev-produto').value   : '').trim();
+    var local     = (document.getElementById('dev-local')     ? document.getElementById('dev-local').value     : '').trim();
+    if (!parametro && !motivo) {
+        sgqToast('Preencha o campo Parametro Nao Conforme antes de gerar a descricao.', 'warning');
+        return;
+    }
+    var btn = document.getElementById('btnGerarDescDevIA');
+    if (btn) { btn.disabled = true; btn.textContent = '...'; }
+    try {
+        var systemPrompt = 'Voce redige comunicados tecnicos de nao conformidade para industria de racao animal. A partir de um motivo curto, escreva EXATAMENTE 2 frases curtas e diretas, separadas por ponto final. FRASE 1: comece com Durante a inspecao [contexto], foi constatado/constatada [apenas o que foi descrito, sem acrescentar sintomas ou detalhes nao informados]. FRASE 2: comece com Tal condicao [impacto tecnico objetivo na qualidade, seguranca ou processo produtivo]. EXEMPLO — motivo: lona rasgada — FRASE 1: Durante a inspecao do veiculo no recebimento, foi constatado que a lona de cobertura do caminhao encontra-se rasgada, comprometendo a adequada protecao da carga contra umidade, contaminacoes e demais agentes externos. FRASE 2: Tal condicao coloca em risco a integridade da materia-prima recebida, podendo inviabilizar seu uso no processo produtivo. REGRAS ABSOLUTAS: descreva somente o que foi informado, NAO invente sintomas ou caracteristicas nao mencionadas, apenas 2 frases, sem saudacao, sem solicitacao, sem nome de produto ou fornecedor, sem texto adicional.';
+        var userMsg = 'Parametro nao conforme: ' + (parametro || motivo) + '.';
+        if (motivo) userMsg += ' Motivo principal: ' + motivo + '.';
+        if (produto) userMsg += ' Produto: ' + produto + '.';
+        if (local) userMsg += ' Local: ' + local + '.';
+        userMsg += ' Gere a descricao do motivo da devolucao.';
+        var texto = await _iaCall(systemPrompt, [{ role: 'user', content: userMsg }], 250);
+        var campo = document.getElementById('dev-desc-motivo');
+        if (campo) campo.value = texto.trim();
+        sgqToast('Descricao gerada com sucesso.', 'success');
+    } catch(e) {
+        sgqToast('Erro ao gerar descricao: ' + (e.message || e), 'error');
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '✦ IA'; }
+    }
 }
 
 async function ncGerarMotivoFornecedor() {
