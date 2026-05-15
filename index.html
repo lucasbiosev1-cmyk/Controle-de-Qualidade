@@ -25471,13 +25471,13 @@ async function ncGerarMotivoFornecedor() {
     var btn = document.getElementById('btnGerarMotivoNC');
     if (btn) { btn.disabled = true; btn.textContent = '...'; }
     try {
-        var systemPrompt = 'Voce redige comunicados tecnicos de nao conformidade para industria de racao animal. A partir de um motivo curto, expanda com contexto tecnico realista e escreva exatamente 2 frases. EXEMPLO — motivo: lona rasgada — resposta: Durante a inspecao do veiculo no recebimento, foi constatado que a lona de cobertura do caminhao encontra-se rasgada, comprometendo a adequada protecao da carga contra umidade, contaminacoes e demais agentes externos. Tal condicao coloca em risco a integridade e a qualidade da materia-prima recebida, podendo inviabilizar seu uso no processo produtivo. REGRAS: use linguagem tecnica, expanda o motivo com detalhes pertinentes ao contexto de recebimento de materias-primas, NAO mencione nome do produto ou fornecedor, NAO escreva saudacao nem solicitacao, apenas as 2 frases.';
+        var systemPrompt = 'Voce redige comunicados tecnicos de nao conformidade para industria de racao animal. A partir de um motivo curto, escreva EXATAMENTE 2 frases curtas e diretas, separadas por ponto final. FRASE 1: comece com Durante a inspecao [contexto], foi constatado/constatada [apenas o que foi descrito no motivo, sem acrescentar sintomas, caracteristicas ou detalhes que nao foram informados]. FRASE 2: comece com Tal condicao [impacto tecnico objetivo na qualidade, seguranca ou processo produtivo]. EXEMPLO — motivo: lona rasgada — FRASE 1: Durante a inspecao do veiculo no recebimento, foi constatado que a lona de cobertura do caminhao encontra-se rasgada, comprometendo a adequada protecao da carga contra umidade, contaminacoes e demais agentes externos. FRASE 2: Tal condicao coloca em risco a integridade da materia-prima recebida, podendo inviabilizar seu uso no processo produtivo. REGRAS ABSOLUTAS: descreva somente o que foi informado no motivo, NAO invente sintomas, caracteristicas visuais, odores ou detalhes nao mencionados, apenas 2 frases, sem saudacao, sem solicitacao, sem nome de produto ou fornecedor, sem texto adicional.';
         var userMsg = 'Motivo da NC: ' + motivo + '.';
         if (produto) userMsg += ' Produto: ' + produto + '.';
         if (fornecedor) userMsg += ' Fornecedor: ' + fornecedor + '.';
         if (local) userMsg += ' Local de deteccao: ' + local + '.';
         userMsg += ' Gere a frase do comunicado.';
-        var texto = await _iaCall(systemPrompt, [{ role: 'user', content: userMsg }], 150);
+        var texto = await _iaCall(systemPrompt, [{ role: 'user', content: userMsg }], 250);
         var campo = document.getElementById('nc-descricao');
         if (campo) campo.value = texto.trim();
         sgqToast('Texto gerado com sucesso.', 'success');
