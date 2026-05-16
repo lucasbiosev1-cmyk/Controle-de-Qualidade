@@ -10165,7 +10165,7 @@ function exibirTabelaProd() {
             <td>${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td><td style="text-transform:uppercase;">${r.hora}</td>
             ${racaoCell}
             <td style="text-transform:uppercase;">${r.lote}</td>
-            <td${estiloFora(r.dgm,'prod',r.racao,'dgm',r.data)}>${fmtN(r.dgm,2)}</td>
+            <td${estiloFora(r.dgm,'prod',r.racao,'dgm',r.data)}>${fmtN(r.dgm,0)}</td>
             <td${estiloFora(r.dpg,'prod',r.racao,'dpg',r.data)}>${fmtN(r.dpg,2)}</td>
             <td${estiloFora(r.extrato,'prod',r.racao,'extrato',r.data)}>${fmtN(r.extrato,2)}</td>
             <td${estiloFora(r.proteina,'prod',r.racao,'proteina',r.data)}>${fmtN(r.proteina,2)}</td>
@@ -10999,7 +10999,7 @@ function aplicarFiltrosRel() {
     document.getElementById('relPeriodo').textContent  = `PERÍODO: ${diStr} ATÉ ${dfStr}  |  ${dados.length} registro(s)`;
     document.getElementById('relTitulo').textContent   = `RELATÓRIO: ${tituloSel}`;
     document.getElementById('relGraficoTitulo').textContent = `EVOLUÇÃO ${tituloSel} — ${analNome}`;
-    document.getElementById('thValor').textContent    = analNome + ' (µm)';
+    document.getElementById('thValor').textContent    = analNome;
     if (document.getElementById('thDPG')) document.getElementById('thDPG').textContent = 'DPG (µm)';
     document.getElementById('thAnalise').textContent  = `MÉDIA ${analNome}`;
     // Atualiza capa
@@ -11014,12 +11014,20 @@ function aplicarFiltrosRel() {
     }
 
     // ---- CARDS ----
-    const vals    = dados.map(r => getValor(r, analise));
+    // Filtra zeros para nao distorcer minimo/CV (registros sem valor na analise)
+    const vals    = dados.map(r => getValor(r, analise)).filter(v => v > 0);
     const estat   = calcEstat(vals);
+    // Sempre calcula DGM separadamente para o card dedicado (quando analise nao e DGM)
+    const valsDGM = dados.map(r => parseFloat(r.dgm) || 0).filter(v => v > 0);
+    const estatDGM = calcEstat(valsDGM);
     // Sempre calcula DPG separadamente para o card dedicado
     const valsDPG = dados.map(r => parseFloat(r.dpg) || 0).filter(v => v > 0);
     const estatDPG = calcEstat(valsDPG);
-    renderCards(estat, analNome, valsDPG.length ? estatDPG : null);
+    // Para analise DGM: sem card extra DGM, card3=DPG medio
+    // Para outras analises: card3=DGM medio, card4=DPG medio (ambos como referencia)
+    const eDGMref = analise !== 'dgm' ? (valsDGM.length ? estatDGM : null) : null;
+    const eDPGref = valsDPG.length ? estatDPG : null;
+    renderCards(estat, analNome, eDGMref, eDPGref, analise, dados.length);
 
     // ---- GRÁFICO LINHA ----
     renderGraficoLinha(di, df, dados, analise, analNome, corPrincipal, racoesAlvo);
@@ -11043,24 +11051,48 @@ function aplicarFiltrosRel() {
     renderDetalhe(dados, analise, analNome);
 }
 
-function renderCards(e, analNome, eDPG) {
-    const cvCor = e.cv<=10?'#27ae60':e.cv<=15?'#e67e22':'#e74c3c';
+function renderCards(e, analNome, eDGM, eDPG, analise, totalRegistros) {
+    const isDGM = !analise || analise === 'dgm';
+    const cvCor    = e.cv<=10?'#27ae60':e.cv<=15?'#e67e22':'#e74c3c';
+    const cvDGMCor = eDGM && eDGM.cv<=10?'#27ae60':eDGM && eDGM.cv<=15?'#e67e22':'#e74c3c';
     const cvDPGCor = eDPG && eDPG.cv<=10?'#27ae60':eDPG && eDPG.cv<=15?'#e67e22':'#e74c3c';
+    const nReg = totalRegistros !== undefined ? totalRegistros : e.n;
+
     const itens = [
-        { label: 'REGISTROS',      value: e.n,                       sub: 'no período',          cor: '#2980b9', icon: '📋' },
-        { label: 'DGM MÉDIO',      value: e.media.toFixed(2),        sub: 'DGM (µm)',             cor: '#27ae60', icon: '📊' },
-        { label: 'DPG MÉDIO',      value: eDPG ? eDPG.media.toFixed(2) : '—',
-                                   sub: 'DPG (µm) | C.V: ' + (eDPG ? eDPG.cv.toFixed(2)+'%' : '—'),
-                                   cor: eDPG ? cvDPGCor : '#95a5a6', icon: '📐' },
-        { label: 'MÍNIMO',         value: e.min.toFixed(2),          sub: analNome,               cor: '#16a085', icon: '⬇️' },
-        { label: 'MÁXIMO',         value: e.max.toFixed(2),          sub: analNome,               cor: '#e67e22', icon: '⬆️' },
-        { label: 'C.V (%)',        value: e.cv.toFixed(2) + '%',     sub: 'Coef. de Variação',    cor: cvCor,     icon: '📉' },
+        { label: 'REGISTROS', value: nReg, sub: 'no período', cor: '#2980b9', icon: '📋' },
+
+        // Card 2: DGM medio (sempre) — quando analise=DGM, o proprio "e" ja e DGM
+        isDGM
+            ? { label: 'DGM MÉDIO', value: Math.round(e.media),
+                                    sub: 'DGM (µm) | C.V: ' + e.cv.toFixed(2) + '%',
+                                    cor: '#27ae60', icon: '📊' }
+            : { label: 'DGM MÉDIO', value: eDGM ? Math.round(eDGM.media) : '—',
+                                    sub: 'DGM (µm) | C.V: ' + (eDGM ? eDGM.cv.toFixed(2)+'%' : '—'),
+                                    cor: eDGM ? cvDGMCor : '#95a5a6', icon: '📊' },
+
+        // Card 3: DPG medio (sempre)
+        { label: 'DPG MÉDIO', value: eDPG ? eDPG.media.toFixed(2) : '—',
+                               sub: 'DPG (µm) | C.V: ' + (eDPG ? eDPG.cv.toFixed(2)+'%' : '—'),
+                               cor: eDPG ? cvDPGCor : '#95a5a6', icon: '📐' },
+
+        // Card 4: MÉDIA da análise filtrada (só aparece quando NAO e DGM)
+        ...(!isDGM ? [{ label: 'MÉDIA', value: e.media.toFixed(2), sub: analNome, cor: '#8e44ad', icon: '📈' }] : []),
+
+        { label: 'MÍNIMO', value: isDGM ? Math.round(e.min) : e.min.toFixed(2), sub: analNome, cor: '#16a085', icon: '⬇️' },
+        { label: 'MÁXIMO', value: isDGM ? Math.round(e.max) : e.max.toFixed(2), sub: analNome, cor: '#e67e22', icon: '⬆️' },
+        // C.V. sempre referente ao DGM (analise principal)
+        isDGM
+            ? { label: 'C.V (%)', value: e.cv.toFixed(2) + '%',               sub: 'Coef. de Variação', cor: cvCor,    icon: '📉' }
+            : { label: 'C.V (%)', value: eDGM ? eDGM.cv.toFixed(2) + '%' : '—', sub: 'C.V. DGM',       cor: eDGM ? cvDGMCor : '#95a5a6', icon: '📉' },
     ];
+
+    // O CSS do relCards usa auto-fit/minmax, ajusta colunas automaticamente
+
     document.getElementById('relCards').innerHTML = itens.map(i => `
         <div style="background:#f9f9f9;border:1px solid #ddd;border-radius:6px;padding:10px 6px;text-align:center;border-top:4px solid ${i.cor};box-sizing:border-box;min-width:0;overflow:hidden;">
             <div style="font-size:18px;margin-bottom:2px;">${i.icon}</div>
             <div style="font-size:9px;font-weight:bold;text-transform:uppercase;color:#666;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.label}</div>
-            <div style="font-size:clamp(13px,3vw,20px);font-weight:bold;color:${i.cor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.value}</div>
+            <div style="font-size:clamp(12px,2.5vw,20px);font-weight:bold;color:${i.cor};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.value}</div>
             <div style="font-size:8px;color:#999;margin-top:3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.sub}</div>
         </div>`).join('');
 }
@@ -11075,10 +11107,12 @@ function renderGraficoLinha(di, df, dados, analise, analNome, cor, racoesAlvo) {
     // Filtrar apenas datas com pelo menos 1 registro
     const datas = todasDatas.filter(d => dados.some(r => r.data === d));
 
-    // Valor por dia (somente datas com registro — sem nulls)
+    // Valor por dia (somente datas com registro — sem nulls, filtra zeros da analise)
     const mediaDia = datas.map(d => {
         const dd = dados.filter(r => r.data === d);
-        return parseFloat((dd.reduce((s,r)=>s+getValor(r,analise),0)/dd.length).toFixed(2));
+        const vs = dd.map(r => getValor(r, analise)).filter(v => v > 0);
+        if (!vs.length) return null;
+        return parseFloat((vs.reduce((s,v)=>s+v,0)/vs.length).toFixed(2));
     });
 
     const labelsX = datas.map(d => new Date(d+'T00:00:00').toLocaleDateString('pt-BR'));
@@ -11165,15 +11199,16 @@ function renderTabelaFases(base, subFases, analise, analNome) {
     tbody.innerHTML = subFases.map((fk, i) => {
         const f    = FASES_MAP[fk];
         const dd   = base.filter(r => f.racoes.includes(r.racao));
-        const vals = dd.map(r => getValor(r, analise));
+        const vals = dd.map(r => getValor(r, analise)).filter(v => v > 0);
         const e    = calcEstat(vals);
         const cvCor= e.cv<=10?'#27ae60':e.cv<=15?'#e67e22':'#e74c3c';
+        const fmt  = analise === 'dgm' ? (v => Math.round(v)) : (v => v.toFixed(2));
         return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
             <td style="padding:7px 10px;font-weight:bold;color:${f.cor};border-left:4px solid ${f.cor};">${f.label}</td>
             <td style="padding:7px;text-align:center;">${e.n}</td>
-            <td style="padding:7px;text-align:center;font-weight:bold;">${e.media.toFixed(2)}</td>
-            <td style="padding:7px;text-align:center;">${e.min.toFixed(2)}</td>
-            <td style="padding:7px;text-align:center;">${e.max.toFixed(2)}</td>
+            <td style="padding:7px;text-align:center;font-weight:bold;">${fmt(e.media)}</td>
+            <td style="padding:7px;text-align:center;">${fmt(e.min)}</td>
+            <td style="padding:7px;text-align:center;">${fmt(e.max)}</td>
             <td style="padding:7px;text-align:center;">${e.dp.toFixed(2)}</td>
             <td style="padding:7px;text-align:center;font-weight:bold;color:${cvCor};">${e.cv.toFixed(2)}%</td>
         </tr>`;
@@ -11254,7 +11289,7 @@ function renderDetalhe(dados, analise, analNome) {
             <td style="padding:5px 8px;">${r.hora||''}</td>
             <td style="padding:5px 8px;text-align:left;">${r.racao}</td>
             <td style="padding:5px 8px;">${r.lote||''}</td>
-            <td style="padding:5px 8px;font-weight:bold;">${val.toFixed(2)}</td>
+            <td style="padding:5px 8px;font-weight:bold;">${analise === 'dgm' ? Math.round(val) : val.toFixed(2)}</td>
             <td style="padding:5px 8px;font-weight:bold;${dpgCor}">${dpgStatus}</td>
             <td style="padding:5px 8px;">${status}</td>
         </tr>`;
