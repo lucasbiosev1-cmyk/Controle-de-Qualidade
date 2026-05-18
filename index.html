@@ -13754,7 +13754,7 @@ function abrirModalEMP() {
 function editarEntradaMP(id) {
     const entrada = entradasMP.find(e => String(e.id) === String(id));
     if (!entrada) return;
-    _empEditandoId = id;
+    _empEditandoId = String(id);
     document.getElementById('modalTituloEMP').textContent = '✏️ EDITAR ENTRADA DE MATÉRIA PRIMA';
     document.getElementById('cadIdEMP').value = id;
     document.getElementById('cadDataEMP').value = dataParaDisplay(entrada.data);
@@ -13846,7 +13846,7 @@ async function salvarEntradaMP(event) {
                 return;
             }
         }
-        const idx = entradasMP.findIndex(e => e.id === _empEditandoId);
+        const idx = entradasMP.findIndex(e => String(e.id) === String(_empEditandoId));
         if (idx >= 0) {
             // Atualiza o objeto local IMEDIATAMENTE
             const itemAtualizado = { ...entradasMP[idx], data, hora, materia_prima, fornecedor, nf, placa, obs, seq, quantidade };
@@ -13895,7 +13895,14 @@ async function salvarEntradaMP(event) {
             criado_em: new Date().toISOString()
         };
         entradasMP.push(novaEntrada);
-        try { await dbUpsertOne('entradas_mp', novaEntrada); } catch(e){ mostrarMsgEMP('erro','Erro ao salvar: ' + e.message); }
+        try {
+            const saved = await dbUpsertOne('entradas_mp', novaEntrada);
+            // ✅ CORREÇÃO: captura o ID real gerado pelo Supabase e atualiza o array local
+            if (saved && saved.id != null) {
+                const localIdx = entradasMP.findIndex(e => e.id === novaEntrada.id);
+                if (localIdx >= 0) entradasMP[localIdx] = { ...entradasMP[localIdx], id: saved.id };
+            }
+        } catch(e){ mostrarMsgEMP('erro','Erro ao salvar: ' + e.message); }
         mostrarMsgEMP('sucesso','✅ Entrada registrada com sucesso! Status: ' + statusInicial);
     }
 
@@ -14001,7 +14008,7 @@ function abrirModalAprovarEMP(id) {
 async function acaoEntradaMP(novoStatus) {
     document.getElementById('modalAprovarEMP').style.display = 'none';
     if (!_empAprovarId) return;
-    const idx = entradasMP.findIndex(e => e.id === _empAprovarId);
+    const idx = entradasMP.findIndex(e => String(e.id) === String(_empAprovarId));
     if (idx < 0) return;
     entradasMP[idx].status = novoStatus;
     if (novoStatus === 'APROVADA' && !entradasMP[idx].status_descarga) {
