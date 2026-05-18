@@ -4682,9 +4682,21 @@
     <div id="aba-relMP" class="tab-content">
         <div class="relatorio-container">
 
-            <div style="display:flex;gap:10px;justify-content:flex-end;margin-bottom:15px;">
-                <button class="btn-print" onclick="imprimirRelMP()">🖨️ IMPRIMIR</button>
-                <button class="btn-pdf"   onclick="imprimirRelMP()">📄 GERAR PDF</button>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-bottom:15px;position:relative;">
+                <!-- Dropdown de impressão -->
+                <div style="position:relative;display:inline-block;" id="rmpPrintDropdownWrap">
+                    <button class="btn-print" onclick="rmpTogglePrintMenu()" style="display:flex;align-items:center;gap:6px;">
+                        🖨️ IMPRIMIR <span style="font-size:10px;opacity:0.7;">▾</span>
+                    </button>
+                    <div id="rmpPrintMenu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid #ccc;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:230px;z-index:9999;overflow:hidden;">
+                        <button onclick="imprimirRelMP();rmpTogglePrintMenu()" style="width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #eee;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:700;color:#2980b9;display:flex;align-items:center;gap:8px;">
+                            📋 Completo (como está)
+                        </button>
+                        <button onclick="imprimirRelMPAgrupado();rmpTogglePrintMenu()" style="width:100%;text-align:left;background:none;border:none;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:700;color:#27ae60;display:flex;align-items:center;gap:8px;">
+                            📦 Somente por tipo de produto
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="rel-filtros" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
@@ -7950,13 +7962,14 @@
                 </div>
                 <div style="display:flex;gap:5px;">
                     <button class="btn-filtrar" onclick="aplicarFiltrosEMP()">FILTRAR</button>
-                    <button class="btn-limpar" onclick="limparFiltrosEMP()">LIMPAR</button>
+                    <button class="btn-limpar" onclick="imprimirRelatorioEMPPorTipo()">🖨️ IMPRIMIR</button>
                 </div>
             </div>
             <div class="emp-toolbar">
                 <div class="emp-toolbar-btns">
                     <button onclick="abrirModalEMP()" class="emp-btn-registrar">+ REGISTRAR ENTRADA</button>
                     <button onclick="atualizarStatusEMP(this)" class="emp-btn-atualizar" title="Recarrega os status do banco de dados">🔄 Atualizar Status</button>
+                    <button id="btnMigrarObsQtd" onclick="empMigrarObsParaQuantidade()" title="Correção única: move valores numéricos da observação para a coluna Quantidade" style="padding:7px 14px;background:#7b1fa2;color:white;border:none;border-radius:5px;font-size:11px;font-weight:bold;cursor:pointer;letter-spacing:0.5px;display:none;">🔧 CORRIGIR OBS → QTD</button>
                 </div>
                 <span class="emp-total-label">TOTAL DE REGISTROS: <span id="totalRegistrosEMP">0</span></span>
             </div>
@@ -7969,7 +7982,7 @@
                     <thead id="theadEMP">
                         <tr>
                             <th style="text-align:left;padding-left:8px;">MATÉRIA PRIMA</th><th>DATA</th><th>HORA</th><th>NOTA FISCAL</th>
-                            <th>PLACA</th><th>USUÁRIO</th><th>ANÁLISE</th><th id="thDescargaEMP">DESCARGA</th><th id="thAcaoEMP">AÇÃO</th>
+                            <th>PLACA</th><th>USUÁRIO</th><th id="thQtdEMP">QUANTIDADE</th><th>ANÁLISE</th><th id="thDescargaEMP">DESCARGA</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaEntradaMP"><tr><td colspan="8" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
@@ -8059,6 +8072,11 @@
                                     oninput="this.value=this.value.toUpperCase()">
                             </div>
                         </div>
+                        <!-- Quantidade -->
+                        <div class="form-group" style="margin-bottom:4px;">
+                            <label>QUANTIDADE (KG/TON)</label>
+                            <input type="number" id="cadQtdEMP" min="0" step="0.01" placeholder="Ex: 28500" style="text-align:center;" title="Quantidade recebida em kg ou toneladas">
+                        </div>
                     </div>
 
                     <!-- ── SEÇÃO 3: CONTROLE ── -->
@@ -8083,6 +8101,7 @@
                         <button type="button" class="btn-salvar" onclick="salvarEntradaMP(event)">SALVAR</button>
                         <button type="button" class="btn-limpar-form" onclick="limparFormularioEMP()">LIMPAR</button>
                         <button type="button" class="btn-cancelar" onclick="fecharModalEMP()">CANCELAR</button>
+                        <button type="button" id="btnDesfazerEMP" class="btn-action" style="margin-left:4px;padding:8px 14px;font-size:11px;font-weight:bold;display:none;background:#e67e22;color:white;border:none;border-radius:4px;cursor:pointer;" onclick="desfazerAprovacaoEMPDoModal()" title="Desfazer aprovação/reprovação">↩️ DESFAZER</button>
                         <button type="button" id="btnExcluirEMP" class="btn-delete btn-action" style="margin-left:auto;padding:8px 18px;font-size:11px;font-weight:bold;display:none;" onclick="excluirEMPDoModal()">🗑️ EXCLUIR</button>
                     </div>
                 </form>
@@ -9233,21 +9252,12 @@ function aplicarPermissoes() {
     // Botão de registrar entrada
     const btnEMP = document.getElementById('btnCadastroEMP');
     if (btnEMP) btnEMP.style.display = podeEntradaMP ? 'inline-block' : 'none';
-    // Coluna de ação — visível somente para quem pode aprovar/reprovar entradas
+    // Botão de migração única obs→qtd: visível apenas para admin
+    const btnMigrar = document.getElementById('btnMigrarObsQtd');
+    if (btnMigrar) btnMigrar.style.display = isAdmin ? 'inline-block' : 'none';
+    // Coluna AÇÃO removida — excluir no modal, aprovar/reprovar na coluna ANÁLISE
     const thAcaoEMP = document.getElementById('thAcaoEMP');
-    const _temAcaoEMP = isAdmin || perms.entrada_aprovar;
-    (function() {
-        // larguras com ação: MP 22%, Data 9%, Hora 6%, NF 13%, Placa 9%, Usuário 11%, Status 12%, Ação 18%
-        // larguras sem ação: redistribui os 18% da coluna Ação
-        const comAcao  = ['22%','9%','6%','13%','9%','11%','12%','18%'];
-        const semAcao  = ['28%','11%','7%','16%','11%','13%','14%','0%'];
-        const widths = _temAcaoEMP ? comAcao : semAcao;
-        widths.forEach((w, i) => {
-            const col = document.getElementById('colEMP' + i);
-            if (col) col.style.width = w;
-        });
-        if (thAcaoEMP) thAcaoEMP.style.display = _temAcaoEMP ? '' : 'none';
-    })();
+    if (thAcaoEMP) thAcaoEMP.style.display = 'none';
 
     // Aba Configurações — visível se tiver qualquer permissão de config
     const temConfig = isAdmin || perms.backup || perms.memoria || perms.parametros || perms.whatsapp || true; // não-admin sempre tem Aparência
@@ -13319,6 +13329,50 @@ async function carregarEntradasMP() {
     entradasMP = await dbGetAll('entradas_mp');
 }
 
+// ── Migração pontual única: obs com valor numérico → quantidade ───────────
+window.empMigrarObsParaQuantidade = async function() {
+    const reNumerico = /^[\d\s.,]+(kg|ton|t|kgs|toneladas?)?\s*$/i;
+    const migrar = entradasMP.filter(r => {
+        const semQtd = r.quantidade == null || r.quantidade === '' || r.quantidade === 0;
+        const obsVal = (r.obs || '').trim();
+        return semQtd && obsVal && reNumerico.test(obsVal);
+    });
+    if (!migrar.length) {
+        sgqToast('Nenhum registro com quantidade na observação encontrado.', 'info');
+        document.getElementById('btnMigrarObsQtd').style.display = 'none';
+        return;
+    }
+    if (!confirm(`Encontrados ${migrar.length} registro(s) com valor numérico na observação.\n\nDeseja mover esses valores para a coluna Quantidade e limpar a observação?`)) return;
+    const btn = document.getElementById('btnMigrarObsQtd');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Migrando...'; }
+    let ok = 0, falha = 0;
+    for (const r of migrar) {
+        const numStr = r.obs.trim()
+            .replace(/\.([\d]{3})/g, '$1')
+            .replace(',', '.')
+            .replace(/[^\d.]/g, '');
+        const quantidade = parseFloat(numStr);
+        if (isNaN(quantidade)) continue;
+        const idx = entradasMP.findIndex(e => e.id === r.id);
+        if (idx < 0) continue;
+        entradasMP[idx].quantidade = quantidade;
+        entradasMP[idx].obs = '';
+        try {
+            await dbUpsertOne('entradas_mp', entradasMP[idx]);
+            ok++;
+        } catch(e) {
+            falha++;
+            entradasMP[idx].quantidade = r.quantidade;
+            entradasMP[idx].obs = r.obs;
+        }
+    }
+    if (ok > 0) sgqToast(`✅ ${ok} registro(s) corrigido(s): observação → quantidade.`, 'success');
+    if (falha > 0) sgqToast(`⚠️ ${falha} registro(s) não puderam ser migrados.`, 'warning');
+    // Oculta o botão após rodar — não é mais necessário
+    if (btn) btn.style.display = 'none';
+    exibirTabelaEMP();
+};
+
 function _empStatusBadge(status) {
     if (status === 'CONCLUÍDA')
         return '<span style="background:#d5f4e6;color:#27ae60;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">✅ CONCLUÍDA</span>';
@@ -13395,24 +13449,19 @@ function exibirTabelaEMP(lista) {
     const podeExcluir  = isAdmin || perms.entrada_excluir;
     const podeEditar   = isAdmin || perms.entrada_editar;
     const podeAprovar  = isAdmin || perms.entrada_aprovar;
-    // Coluna Ação visível somente para quem pode aprovar/reprovar entradas
-    const temAcao = podeAprovar;
-
-    // Ajusta larguras via <col> e oculta cabeçalho AÇÃO conforme permissão
+    // Coluna AÇÃO removida — excluir está no modal, aprovar/reprovar está na coluna ANÁLISE
     const thAcao = document.getElementById('thAcaoEMP');
-    if (thAcao) thAcao.style.display = temAcao ? '' : 'none';
+    if (thAcao) thAcao.style.display = 'none';
     const thDescarga = document.getElementById('thDescargaEMP');
     if (thDescarga) thDescarga.style.display = '';
     (function(){
-        const comAcao = ['20%','8%','5%','11%','8%','10%','11%','12%','15%'];
-        const semAcao = ['24%','10%','6%','14%','10%','12%','12%','12%','0%'];
-        const widths = temAcao ? comAcao : semAcao;
+        const widths = ['22%','8%','6%','10%','8%','9%','8%','14%','15%'];
         widths.forEach((w, i) => { const col = document.getElementById('colEMP'+i); if(col) col.style.width = w; });
     })();
 
     const tbody = document.getElementById('tabelaEntradaMP');
     if (!dados.length) {
-        tbody.innerHTML = `<tr><td colspan="${temAcao ? 9 : 8}" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
         return;
     }
 
@@ -13468,7 +13517,7 @@ function exibirTabelaEMP(lista) {
         if (mpKey !== ultimoGrupo) {
             ultimoGrupo = mpKey;
             separador = `<tr class="emp-grupo-header">
-                <td colspan="${temAcao ? 9 : 8}" style="
+                <td colspan="9" style="
                     background: ${_empCoresGrupo[corIdx]};
                     border-top: 2px solid rgba(255,255,255,0.15);
                     border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -13486,19 +13535,25 @@ function exibirTabelaEMP(lista) {
         }
 
         const dataFmt = r.data ? new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR') : '-';
-        let acoes = '';
-        if (temAcao) {
-            const podeDesfazer = podeAprovar && (r.status === 'APROVADA' || r.status === 'REPROVADA' || r.status === 'CONCLUÍDA');
-            const btnAprRep = (podeAprovar && r.status === 'EM ANÁLISE')
-                ? `<button class="btn-action" style="background:#27ae60;color:white;min-width:82px;" onclick="abrirModalAprovarEMP(${r.id})">✅ Apr/Rep</button>`
-                : podeDesfazer
-                    ? `<button class="btn-action" style="background:#e67e22;color:white;min-width:82px;" onclick="desfazerAprovacaoEMP(${r.id})" title="Desfazer">↩️ Desfazer</button>`
-                    : `<span style="display:inline-block;min-width:82px;"></span>`;
-            const btnDelete = podeExcluir
-                ? `<button class="btn-action btn-delete" style="min-width:28px;" onclick="excluirEntradaMP(${r.id})" title="Excluir">🗑️</button>`
-                : '';
-            acoes = `<div style="display:flex;align-items:center;gap:4px;justify-content:center;">${btnAprRep}${btnDelete}</div>`;
-        }
+        // Dropdown Análise — badge clicável igual ao descarga (aprovado/reprovado/em análise)
+        const analiseLabels = {'EM ANÁLISE':'⏳ Análise','APROVADA':'✅ Aprovada','REPROVADA':'❌ Reprovada','CONCLUÍDA':'✅ Concluída'};
+        const analiseStyles = {
+            'EM ANÁLISE': 'background:#fff8e1;color:#b7770d;',
+            'APROVADA':   'background:#d5f4e6;color:#1a7a4a;',
+            'REPROVADA':  'background:#fadbd8;color:#e74c3c;',
+            'CONCLUÍDA':  'background:#e3f2fd;color:#1565c0;'
+        };
+        const anStyle = analiseStyles[r.status] || 'background:#eee;color:#555;';
+        const anLabel = analiseLabels[r.status] || r.status;
+        const analiseOpts = ['EM ANÁLISE','APROVADA','REPROVADA'].map(v =>
+            `<option value="${v}" ${r.status===v?'selected':''}>${analiseLabels[v]}</option>`
+        ).join('');
+        const analiseCell = podeAprovar
+            ? `<span style="position:relative;display:inline-flex;align-items:center;">
+                <span style="${anStyle}padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;white-space:nowrap;cursor:pointer;">${anLabel} ▾</span>
+                <select onchange="alterarStatusAnaliseEMP(${r.id}, this.value)" onclick="event.stopPropagation()" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:none;">${analiseOpts}</select>
+               </span>`
+            : `<span style="${anStyle}padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;white-space:nowrap;">${anLabel}</span>`;
         // ── Lógica de DESCARGA — dropdown inline para alterar direto na tabela ──
         const statusDesc = r.status_descarga || '';
         let descargaCell = '';
@@ -13550,9 +13605,9 @@ function exibirTabelaEMP(lista) {
             <td data-label="NOTA FISCAL">${r.nf||'-'}</td>
             <td data-label="PLACA" style="text-align:center;letter-spacing:1px;font-weight:bold;">${r.placa||'-'}</td>
             <td data-label="USUÁRIO">${r.usuario||'-'}</td>
-            <td data-label="ANÁLISE">${_empStatusBadge(r.status)}</td>
+            <td data-label="QUANTIDADE" style="text-align:center;font-weight:bold;">${r.quantidade != null && r.quantidade !== '' ? Number(r.quantidade).toLocaleString('pt-BR') : '-'}</td>
+            <td data-label="ANÁLISE" style="text-align:center;">${analiseCell}</td>
             <td data-label="DESCARGA">${descargaCell}</td>
-            ${temAcao ? `<td data-label="AÇÃO">${acoes}</td>` : ''}
         </tr>`;
     }).join('');
 }
@@ -13725,6 +13780,8 @@ function abrirModalEMP() {
     document.getElementById('cadIdEMP').value = '';
     const btnExcEMP = document.getElementById('btnExcluirEMP');
     if (btnExcEMP) btnExcEMP.style.display = 'none';
+    const btnDesfEMP = document.getElementById('btnDesfazerEMP');
+    if (btnDesfEMP) btnDesfEMP.style.display = 'none';
     document.getElementById('cadDataEMP').value = dataHoje();
     const agora = new Date();
     document.getElementById('cadHoraEMP').value = String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0');
@@ -13733,6 +13790,8 @@ function abrirModalEMP() {
     document.getElementById('cadNFEMP').value = '';
     const _placaEMPNew = document.getElementById('cadPlacaEMP');
     if (_placaEMPNew) _placaEMPNew.value = '';
+    const _qtdEMPNew = document.getElementById('cadQtdEMP');
+    if (_qtdEMPNew) _qtdEMPNew.value = '';
     const uNome = USUARIOS[usuarioAtual]?.nome || usuarioAtual || '';
     document.getElementById('cadUsuarioEMP').value = uNome;
     const _stEMP = document.getElementById('cadStatusEMP');
@@ -13756,6 +13815,15 @@ function editarEntradaMP(id) {
     document.getElementById('cadUsuarioEMP').value = entrada.usuario || '';
     const placaEMP = document.getElementById('cadPlacaEMP');
     if (placaEMP) placaEMP.value = (entrada.placa || '').toUpperCase();
+    const qtdEMP = document.getElementById('cadQtdEMP');
+    if (qtdEMP) qtdEMP.value = entrada.quantidade != null ? entrada.quantidade : '';
+    // Botão Desfazer — visível apenas se status não for EM ANÁLISE
+    const btnDesfazerEMP = document.getElementById('btnDesfazerEMP');
+    if (btnDesfazerEMP) {
+        const podeDesfazerModal = (entrada.status === 'APROVADA' || entrada.status === 'REPROVADA' || entrada.status === 'CONCLUÍDA');
+        btnDesfazerEMP.style.display = podeDesfazerModal ? 'inline-flex' : 'none';
+        btnDesfazerEMP.setAttribute('data-emp-id', entrada.id);
+    }
     // Status visual no modal de edição
     const _stEMPEdit = document.getElementById('cadStatusEMP');
     if (_stEMPEdit) {
@@ -13791,6 +13859,8 @@ function limparFormularioEMP() {
     document.getElementById('cadNFEMP').value = '';
     const placaElEMP = document.getElementById('cadPlacaEMP');
     if (placaElEMP) placaElEMP.value = '';
+    const qtdElEMP = document.getElementById('cadQtdEMP');
+    if (qtdElEMP) qtdElEMP.value = '';
     const obsEl = document.getElementById('cadObsEMP');
     if (obsEl) { obsEl.value = ''; const tog = obsEl.closest('.obs-body').previousElementSibling; tog.classList.remove('open'); obsEl.closest('.obs-body').classList.remove('open'); }
 }
@@ -13805,6 +13875,8 @@ async function salvarEntradaMP(event) {
     const usuario     = USUARIOS[usuarioAtual]?.nome || usuarioAtual || '';
     const obs         = (document.getElementById('cadObsEMP').value || '').trim();
     const placa       = (document.getElementById('cadPlacaEMP')?.value || '').trim().toUpperCase();
+    const qtdVal      = document.getElementById('cadQtdEMP')?.value;
+    const quantidade  = (qtdVal !== '' && qtdVal != null && !isNaN(qtdVal)) ? Number(qtdVal) : null;
     const seqVal      = document.getElementById('cadSeqEMP')?.value;
     // Garante que o valor seja salvo como número ou null se vazio
     const seq         = (seqVal !== '' && seqVal != null && !isNaN(seqVal)) ? Number(seqVal) : null;
@@ -13825,7 +13897,7 @@ async function salvarEntradaMP(event) {
         const idx = entradasMP.findIndex(e => e.id === _empEditandoId);
         if (idx >= 0) {
             // Atualiza o objeto local IMEDIATAMENTE
-            const itemAtualizado = { ...entradasMP[idx], data, hora, materia_prima, fornecedor, nf, placa, obs, seq };
+            const itemAtualizado = { ...entradasMP[idx], data, hora, materia_prima, fornecedor, nf, placa, obs, seq, quantidade };
             entradasMP[idx] = itemAtualizado;
             
             try { 
@@ -13865,7 +13937,7 @@ async function salvarEntradaMP(event) {
         const novaEntrada = {
             id: Date.now(),
             data, hora, materia_prima, fornecedor, nf, placa,
-            usuario, obs, seq,
+            usuario, obs, seq, quantidade,
             status: statusInicial,
             status_descarga: '',
             criado_em: new Date().toISOString()
@@ -14006,6 +14078,459 @@ async function desfazerAprovacaoEMP(id) {
         mostrarMsgEMP('erro', 'Erro ao desfazer: ' + e.message);
     }
 }
+
+// ── Altera status de análise diretamente pelo dropdown na tabela ────────
+async function alterarStatusAnaliseEMP(id, novoStatus) {
+    const idx = entradasMP.findIndex(e => String(e.id) === String(id));
+    if (idx < 0) return;
+    entradasMP[idx].status = novoStatus;
+    if (novoStatus === 'APROVADA' && !entradasMP[idx].status_descarga) {
+        entradasMP[idx].status_descarga = 'FILA';
+    }
+    if (novoStatus === 'REPROVADA') {
+        entradasMP[idx].status_descarga = '';
+    }
+    try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e){}
+    const labels = {'APROVADA':'✅ Aprovado!','REPROVADA':'❌ Reprovado!','EM ANÁLISE':'↩️ Voltou para Em Análise'};
+    sgqToast(labels[novoStatus] || 'Status atualizado', 'sucesso');
+    exibirTabelaEMP();
+}
+
+// ── Desfazer aprovação/reprovação a partir do modal de edição ───────────
+async function desfazerAprovacaoEMPDoModal() {
+    const id = document.getElementById('btnDesfazerEMP')?.getAttribute('data-emp-id') || document.getElementById('cadIdEMP')?.value;
+    if (!id) return;
+    if (!confirm('Deseja desfazer e voltar o status para "EM ANÁLISE"?')) return;
+    fecharModalEMP();
+    await desfazerAprovacaoEMP(id);
+}
+
+// ── Impressão de relatório com filtros aplicados ────────────────────────
+window.imprimirRelatorioEMP = function() {
+    const tbody = document.getElementById('tabelaEntradaMP');
+    if (!tbody) return;
+
+    // Coleta filtros ativos para exibir no relatório
+    const nf    = (document.getElementById('filterNFEMP')?.value || '').trim();
+    const di    = document.getElementById('filterDataInicioEMP')?.value || '';
+    const df    = document.getElementById('filterDataFimEMP')?.value || '';
+    const forn  = (document.getElementById('filterFornecedorEMP')?.value || '').trim();
+    const stF   = document.getElementById('filterStatusEMP')?.value || '';
+    const total = document.getElementById('totalRegistrosEMP')?.textContent || '0';
+
+    const filtrosArr = [];
+    if (nf)   filtrosArr.push('NF: ' + nf);
+    if (di)   filtrosArr.push('De: ' + di.split('-').reverse().join('/'));
+    if (df)   filtrosArr.push('Até: ' + df.split('-').reverse().join('/'));
+    if (forn) filtrosArr.push('Fornecedor: ' + forn);
+    if (stF)  filtrosArr.push('Status: ' + stF);
+    const filtrosTxt = filtrosArr.length ? filtrosArr.join(' &nbsp;|&nbsp; ') : 'Todos os registros';
+
+    // Monta linhas da tabela a partir dos dados filtrados
+    const isAdmin = perfilAtual === 'admin';
+    const user = USUARIOS[usuarioAtual] || {};
+    let perms = user.perms || {};
+    if (typeof perms === 'string') { try { perms = JSON.parse(perms); } catch(e) { perms = {}; } }
+    const podeAprovarRel = isAdmin || perms.entrada_aprovar;
+
+    const nfF    = nf.toUpperCase();
+    const fornF  = forn.toUpperCase();
+    let dados = entradasMP.filter(r => {
+        if (nfF && !(r.nf||'').toUpperCase().includes(nfF)) return false;
+        if (di && r.data < di) return false;
+        if (df && r.data > df) return false;
+        if (fornF && !(r.fornecedor||'').toUpperCase().includes(fornF)) return false;
+        if (stF && r.status !== stF) return false;
+        return true;
+    });
+
+    // Ordena igual à tabela (por grupo + seq)
+    const _EMP_ORDEM_MP_REL = ['MILHO','SOJA','FARELO DE SOJA','FARELO DE TRIGO','FARINHA DE CARNE E OSSO'];
+    function _empOrdemRel(mp) {
+        const mpUp = (mp||'').toUpperCase().trim();
+        const idx = _EMP_ORDEM_MP_REL.indexOf(mpUp);
+        return idx >= 0 ? idx : _EMP_ORDEM_MP_REL.length;
+    }
+    dados.sort((a,b) => {
+        const ga = _empOrdemRel(a.materia_prima), gb = _empOrdemRel(b.materia_prima);
+        if (ga !== gb) return ga - gb;
+        const nA = (a.seq != null && a.seq !== '') ? Number(a.seq) : 999999;
+        const nB = (b.seq != null && b.seq !== '') ? Number(b.seq) : 999999;
+        if (nA !== nB) return nA - nB;
+        const d = (b.data||'').localeCompare(a.data||'');
+        return d !== 0 ? d : (b.hora||'').localeCompare(a.hora||'');
+    });
+
+    // Agrupa por matéria prima e dentro por fornecedor
+    // Para cada fornecedor: mostra nome uma vez, lista as entradas (data, NF, placa, qtd, status)
+    const _empCoresRel = {
+        'MILHO':'#e8f5e9','SOJA':'#e3f2fd','FARELO DE SOJA':'#fff3e0',
+        'FARELO DE TRIGO':'#f3e5f5','FARINHA DE CARNE E OSSO':'#fce4ec'
+    };
+    const stStyles = {
+        'EM ANÁLISE':'color:#b7770d;font-weight:bold;',
+        'APROVADA':  'color:#2e7d32;font-weight:bold;',
+        'REPROVADA': 'color:#c0392b;font-weight:bold;',
+        'CONCLUÍDA': 'color:#1565c0;font-weight:bold;'
+    };
+
+    // Agrupa: { mpKey → { fornecedor → [registros] } }
+    const grupos = {};
+    for (const r of dados) {
+        const mpKey = (r.materia_prima || 'OUTROS').toUpperCase();
+        const fornKey = (r.fornecedor || '-').toUpperCase();
+        if (!grupos[mpKey]) grupos[mpKey] = {};
+        if (!grupos[mpKey][fornKey]) grupos[mpKey][fornKey] = [];
+        grupos[mpKey][fornKey].push(r);
+    }
+
+    // Ordem dos grupos de MP
+    const _EMP_ORDEM_REL2 = ['MILHO','SOJA','FARELO DE SOJA','FARELO DE TRIGO','FARINHA DE CARNE E OSSO'];
+    const mpsSorted = Object.keys(grupos).sort((a,b) => {
+        const ia = _EMP_ORDEM_REL2.indexOf(a), ib = _EMP_ORDEM_REL2.indexOf(b);
+        const ra = ia >= 0 ? ia : 999, rb = ib >= 0 ? ib : 999;
+        return ra !== rb ? ra - rb : a.localeCompare(b);
+    });
+
+    let rowsHtml = '';
+    let totalGeral = 0;
+
+    for (const mpKey of mpsSorted) {
+        const corGrupo = _empCoresRel[mpKey] || '#f5f5f5';
+        const fornecedores = grupos[mpKey];
+        const fornsSorted = Object.keys(fornecedores).sort();
+
+        // Cabeçalho da matéria prima
+        rowsHtml += `<tr><td colspan="7" style="background:#1B2A4A;color:white;padding:6px 10px;font-weight:700;font-size:8pt;letter-spacing:1.5px;text-transform:uppercase;">📦 ${mpKey}</td></tr>`;
+
+        for (const fornKey of fornsSorted) {
+            const entradas = fornecedores[fornKey];
+            // Ordena entradas por seq/data/hora
+            entradas.sort((a,b) => {
+                const nA = (a.seq != null && a.seq !== '') ? Number(a.seq) : 999999;
+                const nB = (b.seq != null && b.seq !== '') ? Number(b.seq) : 999999;
+                if (nA !== nB) return nA - nB;
+                return (a.data||'').localeCompare(b.data||'') || (a.hora||'').localeCompare(b.hora||'');
+            });
+
+            // Soma quantidade do fornecedor
+            const qtdTotal = entradas.reduce((s, r) => {
+                const q = r.quantidade != null && r.quantidade !== '' ? Number(r.quantidade) : 0;
+                return s + q;
+            }, 0);
+            totalGeral += qtdTotal;
+            const qtdTotalFmt = qtdTotal > 0 ? qtdTotal.toLocaleString('pt-BR') : '-';
+
+            // Linha do fornecedor — nome aparece uma vez, rowspan = nº de entradas
+            const nEntradas = entradas.length;
+
+            // Primeira entrada junto com o nome do fornecedor
+            const r0 = entradas[0];
+            const data0 = r0.data ? new Date(r0.data+'T00:00:00').toLocaleDateString('pt-BR') : '-';
+            const qtd0 = r0.quantidade != null && r0.quantidade !== '' ? Number(r0.quantidade).toLocaleString('pt-BR') : '-';
+            const st0 = stStyles[r0.status] || '';
+            const seq0 = (r0.seq != null && r0.seq !== '') ? r0.seq : '-';
+
+            rowsHtml += `<tr style="background:${corGrupo};">
+                <td rowspan="${nEntradas}" style="font-weight:700;font-size:8pt;vertical-align:middle;border-right:2px solid #1B2A4A;">${fornKey}</td>
+                <td rowspan="${nEntradas}" style="text-align:center;font-weight:bold;vertical-align:middle;border-right:1px solid #c8cdd8;">${qtdTotalFmt}</td>
+                <td style="text-align:center;">${seq0}</td>
+                <td>${data0}</td>
+                <td>${r0.hora||'-'}</td>
+                <td>${r0.nf||'-'}</td>
+                <td style="${st0}">${r0.status||'-'}</td>
+            </tr>`;
+
+            // Entradas adicionais do mesmo fornecedor
+            for (let i = 1; i < nEntradas; i++) {
+                const r = entradas[i];
+                const dataFmt = r.data ? new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR') : '-';
+                const stStyle = stStyles[r.status] || '';
+                const seqExib = (r.seq != null && r.seq !== '') ? r.seq : '-';
+                rowsHtml += `<tr style="background:${corGrupo};">
+                    <td style="text-align:center;">${seqExib}</td>
+                    <td>${dataFmt}</td>
+                    <td>${r.hora||'-'}</td>
+                    <td>${r.nf||'-'}</td>
+                    <td style="${stStyle}">${r.status||'-'}</td>
+                </tr>`;
+            }
+        }
+    }
+
+    // Rodapé com total geral de quantidade
+    if (totalGeral > 0) {
+        rowsHtml += `<tr><td colspan="7" style="background:#1B2A4A;color:white;padding:5px 10px;font-weight:700;font-size:8pt;text-align:right;">TOTAL GERAL: ${totalGeral.toLocaleString('pt-BR')}</td></tr>`;
+    }
+
+    const now = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Relatório - Entrada de Matéria Prima</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  @page { size:A4 landscape; margin:10mm 12mm; }
+  body { font-family:Arial,sans-serif; font-size:8.5pt; color:#1B2A4A; background:#fff; }
+  @media print {
+    .no-print { display:none !important; }
+    * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  }
+  .doc-header { display:grid; grid-template-columns:150px 1fr 200px; height:52px; margin-bottom:14px; }
+  .dh-left  { background:#1B2A4A; padding:8px 12px; display:flex; flex-direction:column; justify-content:center; }
+  .dh-center{ background:#0D1B2E; display:flex; align-items:center; justify-content:center; padding:8px; }
+  .dh-right { background:#1B2A4A; padding:8px 12px; display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-end; }
+  .dh-brand { color:#fff; font-weight:700; font-size:10pt; }
+  .dh-sub   { color:#9aa3b8; font-size:6.5pt; letter-spacing:1px; }
+  .dh-title { color:#fff; font-weight:700; font-size:9pt; }
+  .dh-meta  { color:#c0c8dc; font-size:6.5pt; line-height:1.7; text-align:right; }
+  .list-info { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:7.5pt; }
+  .list-badge { background:#1B2A4A; color:#fff; border-radius:10px; padding:2px 10px; font-size:7pt; }
+  .list-filtros { color:#5a6480; font-size:7pt; }
+  table { width:100%; border-collapse:collapse; font-size:7.5pt; }
+  thead th { background:#1B2A4A; color:#fff; padding:5px 6px; text-align:left; border:1px solid #2d3f5e; font-size:7pt; }
+  tbody td { padding:5px 6px; border:1px solid #c8cdd8; vertical-align:top; }
+  .doc-footer { border-top:1px solid #1B2A4A; margin-top:14px; padding:4px 0; display:flex; justify-content:space-between; font-size:6.5pt; color:#9aa3b8; }
+  .no-print { position:fixed; top:12px; right:12px; background:#1B2A4A; color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:12px; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.25); }
+</style>
+</head>
+<body>
+<button class="no-print" onclick="window.print()">🖨️ Imprimir</button>
+<div class="doc-header">
+  <div class="dh-left"><div class="dh-brand">AGRONOR</div><div class="dh-sub">A L I M E N T O S</div></div>
+  <div class="dh-center"><div class="dh-title">RELATÓRIO DE ENTRADA DE MATÉRIA PRIMA</div></div>
+  <div class="dh-right"><div class="dh-meta">Emitido em: ${now}<br>Usuário: ${(USUARIOS[usuarioAtual]?.nome || usuarioAtual || '').toUpperCase()}</div></div>
+</div>
+<div class="list-info">
+  <span class="list-filtros">🔍 Filtros: ${filtrosTxt}</span>
+  <span class="list-badge">Total: ${total} registro(s)</span>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th style="width:28%;">FORNECEDOR</th>
+      <th style="width:10%;">QTD TOTAL</th>
+      <th style="width:5%;">SEQ</th>
+      <th style="width:9%;">DATA</th>
+      <th style="width:7%;">HORA</th>
+      <th style="width:12%;">NOTA FISCAL</th>
+      <th style="width:11%;">STATUS</th>
+    </tr>
+  </thead>
+  <tbody>${rowsHtml}</tbody>
+</table>
+<div class="doc-footer">
+  <span>Gestão da Qualidade | Agronor Alimentos</span>
+  <span>Impresso em ${now}</span>
+</div>
+</body>
+</html>`;
+
+    const popup = window.open('', '_blank', 'width=1100,height=750,scrollbars=yes');
+    if (!popup) { sgqToast('Permita popups no navegador para imprimir.', 'warning'); return; }
+    popup.document.write(html);
+    popup.document.close();
+    popup.focus();
+    setTimeout(() => popup.print(), 700);
+};
+
+// ── Toggle dropdown de impressão EMP ──────────────────────────────────────
+function empTogglePrintMenu() {
+    const menu = document.getElementById('empPrintMenu');
+    if (!menu) return;
+    const visible = menu.style.display === 'block';
+    menu.style.display = visible ? 'none' : 'block';
+    if (!visible) {
+        setTimeout(() => {
+            const handler = function(e) {
+                const wrap = document.getElementById('empPrintDropdownWrap');
+                if (wrap && !wrap.contains(e.target)) {
+                    menu.style.display = 'none';
+                    document.removeEventListener('click', handler);
+                }
+            };
+            document.addEventListener('click', handler);
+        }, 0);
+    }
+}
+
+// ── Imprimir somente agrupado por tipo de produto (sem fornecedor) ─────────
+window.imprimirRelatorioEMPPorTipo = function() {
+    const nf    = (document.getElementById('filterNFEMP')?.value || '').trim();
+    const di    = document.getElementById('filterDataInicioEMP')?.value || '';
+    const df    = document.getElementById('filterDataFimEMP')?.value || '';
+    const forn  = (document.getElementById('filterFornecedorEMP')?.value || '').trim();
+    const stF   = document.getElementById('filterStatusEMP')?.value || '';
+    const total = document.getElementById('totalRegistrosEMP')?.textContent || '0';
+
+    const filtrosArr = [];
+    if (nf)   filtrosArr.push('NF: ' + nf);
+    if (di)   filtrosArr.push('De: ' + di.split('-').reverse().join('/'));
+    if (df)   filtrosArr.push('At\u00e9: ' + df.split('-').reverse().join('/'));
+    if (forn) filtrosArr.push('Fornecedor: ' + forn);
+    if (stF)  filtrosArr.push('Status: ' + stF);
+    const filtrosTxt = filtrosArr.length ? filtrosArr.join(' &nbsp;|&nbsp; ') : 'Todos os registros';
+
+    const nfF   = nf.toUpperCase();
+    const fornF = forn.toUpperCase();
+    let dados = entradasMP.filter(r => {
+        if (nfF && !(r.nf||'').toUpperCase().includes(nfF)) return false;
+        if (di && r.data < di) return false;
+        if (df && r.data > df) return false;
+        if (fornF && !(r.fornecedor||'').toUpperCase().includes(fornF)) return false;
+        if (stF && r.status !== stF) return false;
+        return true;
+    });
+
+    if (!dados.length) { sgqToast('Nenhum registro encontrado com os filtros atuais.', 'warning'); return; }
+
+    const _EMP_ORDEM_REL = ['MILHO','SOJA','FARELO DE SOJA','FARELO DE TRIGO','FARINHA DE CARNE E OSSO'];
+    const _empCoresRel = {
+        'MILHO':'#e8f5e9','SOJA':'#e3f2fd','FARELO DE SOJA':'#fff3e0',
+        'FARELO DE TRIGO':'#f3e5f5','FARINHA DE CARNE E OSSO':'#fce4ec'
+    };
+    const stStyles = {
+        'EM AN\u00c1LISE':'color:#b7770d;font-weight:bold;',
+        'APROVADA':  'color:#2e7d32;font-weight:bold;',
+        'REPROVADA': 'color:#c0392b;font-weight:bold;',
+        'CONCLU\u00cdDA': 'color:#1565c0;font-weight:bold;'
+    };
+
+    // Agrupa apenas por tipo de MP
+    const grupos = {};
+    for (const r of dados) {
+        const mpKey = (r.materia_prima || 'OUTROS').toUpperCase();
+        if (!grupos[mpKey]) grupos[mpKey] = [];
+        grupos[mpKey].push(r);
+    }
+
+    const mpsSorted = Object.keys(grupos).sort((a,b) => {
+        const ia = _EMP_ORDEM_REL.indexOf(a), ib = _EMP_ORDEM_REL.indexOf(b);
+        const ra = ia >= 0 ? ia : 999, rb = ib >= 0 ? ib : 999;
+        return ra !== rb ? ra - rb : a.localeCompare(b);
+    });
+
+    let rowsHtml = '';
+    let totalGeral = 0;
+
+    for (const mpKey of mpsSorted) {
+        const corGrupo = _empCoresRel[mpKey] || '#f5f5f5';
+        const regs = grupos[mpKey];
+
+        // Ordena por data/hora
+        regs.sort((a,b) => (a.data||'').localeCompare(b.data||'') || (a.hora||'').localeCompare(b.hora||''));
+
+        const qtdGrupo = regs.reduce((s,r) => s + ((r.status||'').toUpperCase() === 'REPROVADA' ? 0 : (r.quantidade != null && r.quantidade !== '' ? Number(r.quantidade) : 0)), 0);
+        totalGeral += qtdGrupo;
+        const qtdGrupoFmt = qtdGrupo > 0 ? qtdGrupo.toLocaleString('pt-BR') : '-';
+        const nForn = [...new Set(regs.map(r=>(r.fornecedor||'').toUpperCase()))].length;
+
+        // Cabeçalho do grupo
+        rowsHtml += `<tr>
+            <td colspan="6" style="background:#1B2A4A;color:white;padding:6px 10px;font-weight:700;font-size:8pt;letter-spacing:1.2px;text-transform:uppercase;">
+                &#128230; ${mpKey}
+                &nbsp;<span style="font-weight:normal;opacity:0.75;font-size:7pt;">(${regs.length} entrada${regs.length>1?'s':''} &bull; ${nForn} fornecedor${nForn>1?'es':''} &bull; Total: ${qtdGrupoFmt})</span>
+            </td>
+        </tr>`;
+
+        // Linhas de cada entrada
+        regs.forEach((r, i) => {
+            const bg = i % 2 === 0 ? corGrupo : '#fff';
+            const dataFmt = r.data ? new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR') : '-';
+            const qtdFmt = r.quantidade != null && r.quantidade !== '' ? Number(r.quantidade).toLocaleString('pt-BR') : '-';
+            const stStyle = stStyles[r.status] || '';
+            rowsHtml += `<tr style="background:${bg};">
+                <td style="padding:5px 8px;border:1px solid #d0d6e0;">${dataFmt}</td>
+                <td style="padding:5px 8px;border:1px solid #d0d6e0;">${r.hora||'-'}</td>
+                <td style="padding:5px 8px;border:1px solid #d0d6e0;font-weight:600;">${(r.fornecedor||'-').toUpperCase()}</td>
+                <td class="center" style="padding:5px 8px;border:1px solid #d0d6e0;">${r.nf||'-'}</td>
+                <td class="center" style="padding:5px 8px;border:1px solid #d0d6e0;">${qtdFmt}</td>
+                <td class="center" style="padding:5px 8px;border:1px solid #d0d6e0;${stStyle}">${r.status||'-'}</td>
+            </tr>`;
+        });
+
+        // Linha de subtotal do grupo
+        rowsHtml += `<tr>
+            <td colspan="4" style="padding:5px 8px;border:1px solid #b0b8cc;background:#e8eaf2;font-weight:700;font-size:7.5pt;text-align:right;color:#1B2A4A;">SUBTOTAL ${mpKey}</td>
+            <td style="padding:5px 8px;border:1px solid #b0b8cc;background:#e8eaf2;font-weight:700;font-size:8pt;text-align:center;color:#1B2A4A;">${qtdGrupoFmt}</td>
+            <td style="padding:5px 8px;border:1px solid #b0b8cc;background:#e8eaf2;"></td>
+        </tr>`;
+    }
+
+    const now = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Relat\u00f3rio - Entrada de Mat\u00e9ria Prima (Por Tipo)</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  @page { size:A4 landscape; margin:10mm 12mm; }
+  body { font-family:Arial,sans-serif; font-size:8.5pt; color:#1B2A4A; background:#fff; }
+  @media print {
+    .no-print { display:none !important; }
+    * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  }
+  .doc-header { display:grid; grid-template-columns:150px 1fr 220px; height:52px; margin-bottom:14px; }
+  .dh-left  { background:#1B2A4A; padding:8px 12px; display:flex; flex-direction:column; justify-content:center; }
+  .dh-center{ background:#0D1B2E; display:flex; align-items:center; justify-content:center; padding:8px; }
+  .dh-right { background:#1B2A4A; padding:8px 12px; display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-end; }
+  .dh-brand { color:#fff; font-weight:700; font-size:10pt; }
+  .dh-sub   { color:#9aa3b8; font-size:6.5pt; letter-spacing:1px; }
+  .dh-title { color:#fff; font-weight:700; font-size:9pt; text-align:center; }
+  .dh-meta  { color:#c0c8dc; font-size:6.5pt; line-height:1.7; text-align:right; }
+  .list-info { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:7.5pt; }
+  .list-badge { background:#1B2A4A; color:#fff; border-radius:10px; padding:2px 10px; font-size:7pt; }
+  .list-filtros { color:#5a6480; font-size:7pt; }
+  table { width:100%; border-collapse:collapse; font-size:7.5pt; }
+  thead th { background:#1B2A4A; color:#fff; padding:5px 8px; text-align:left; border:1px solid #2d3f5e; font-size:7pt; }
+  thead th.center { text-align:center; }
+  tbody td.center { text-align:center; }
+  .doc-footer { border-top:1px solid #1B2A4A; margin-top:14px; padding:4px 0; display:flex; justify-content:space-between; font-size:6.5pt; color:#9aa3b8; }
+  .no-print { position:fixed; top:12px; right:12px; background:#1B2A4A; color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:12px; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.25); }
+</style>
+</head>
+<body>
+<button class="no-print" onclick="window.print()">&#128424; Imprimir</button>
+<div class="doc-header">
+  <div class="dh-left"><div class="dh-brand">AGRONOR</div><div class="dh-sub">A L I M E N T O S</div></div>
+  <div class="dh-center"><div class="dh-title">RELAT\u00d3RIO DE ENTRADA DE MAT\u00c9RIA PRIMA &mdash; POR TIPO DE PRODUTO</div></div>
+  <div class="dh-right"><div class="dh-meta">Emitido em: ${now}<br>Usu\u00e1rio: ${(USUARIOS[usuarioAtual]?.nome || usuarioAtual || '').toUpperCase()}</div></div>
+</div>
+<div class="list-info">
+  <span class="list-filtros">&#128269; Filtros: ${filtrosTxt}</span>
+  <span class="list-badge">Total: ${total} registro(s)</span>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th style="width:9%;">DATA</th>
+      <th style="width:7%;">HORA</th>
+      <th style="width:32%;">FORNECEDOR</th>
+      <th class="center" style="width:14%;">NOTA FISCAL</th>
+      <th class="center" style="width:10%;">QUANTIDADE</th>
+      <th class="center" style="width:13%;">STATUS</th>
+    </tr>
+  </thead>
+  <tbody>${rowsHtml}</tbody>
+</table>
+<div class="doc-footer">
+  <span>Gest\u00e3o da Qualidade | Agronor Alimentos</span>
+  <span>Impresso em ${now}</span>
+</div>
+</body>
+</html>`;
+
+    const popup = window.open('', '_blank', 'width=1100,height=750,scrollbars=yes');
+    if (!popup) { sgqToast('Permita popups no navegador para imprimir.', 'warning'); return; }
+    popup.document.write(html);
+    popup.document.close();
+    popup.focus();
+    setTimeout(() => popup.print(), 700);
+};
 
 // Hook: sempre que salvar classificação ou matéria prima, verifica conclusões de entradas
 function _empHookAposRegistro() {
@@ -18135,8 +18660,125 @@ function aplicarFiltrosRelMP() {
     }).join('');
 }
 
+// Abre/fecha o menu dropdown de impressão do relMP
+function rmpTogglePrintMenu() {
+    const menu = document.getElementById('rmpPrintMenu');
+    if (!menu) return;
+    const visible = menu.style.display === 'block';
+    menu.style.display = visible ? 'none' : 'block';
+    if (!visible) {
+        // fecha ao clicar fora
+        setTimeout(() => {
+            const handler = function(e) {
+                const wrap = document.getElementById('rmpPrintDropdownWrap');
+                if (wrap && !wrap.contains(e.target)) {
+                    menu.style.display = 'none';
+                    document.removeEventListener('click', handler);
+                }
+            };
+            document.addEventListener('click', handler);
+        }, 0);
+    }
+}
+
+// Impressão completa — igual ao comportamento original
 function imprimirRelMP() {
     window.print();
+}
+
+// Impressão somente agrupada por tipo de produto (popup)
+function imprimirRelMPAgrupado() {
+    // Coleta dados já filtrados via tbody do resumo
+    const tituloEl  = document.getElementById('rmpTitulo');
+    const periodoEl = document.getElementById('rmpPeriodo');
+    const tbodyResumo = document.getElementById('rmpTbodyResumo');
+    const tbodyDetalhe = document.getElementById('rmpTbodyDetalhe');
+
+    if (!tbodyDetalhe || !tbodyDetalhe.rows.length) {
+        alert('Aplique o filtro antes de imprimir.');
+        return;
+    }
+
+    const titulo  = tituloEl  ? tituloEl.textContent  : 'RELATÓRIO DE MATÉRIA PRIMA';
+    const periodo = periodoEl ? periodoEl.textContent : '';
+
+    // Lê as linhas da tabela detalhada e agrupa por produto (col índice 2)
+    const grupos = {};
+    const ordem  = [];
+    Array.from(tbodyDetalhe.rows).forEach(tr => {
+        const cells = Array.from(tr.cells);
+        const prod  = cells[2] ? cells[2].textContent.trim() : '-';
+        if (!grupos[prod]) { grupos[prod] = []; ordem.push(prod); }
+        grupos[prod].push(cells.map(td => td.innerHTML));
+    });
+
+    // Cabeçalho das colunas (copiado do HTML fixo)
+    const colunas = [
+        'DATA','HORA','PRODUTO','FORNECEDOR','NF',
+        'PROTEÍNA %','SOLUBIL. %','FIBRA %','UMIDADE %',
+        'DENSIDADE','MINERAL %','ACIDEZ','URÉICA','RANCIDEZ','PERÓXIDO','DIGESTIB. %'
+    ];
+
+    let tabelaHTML = '';
+    ordem.sort().forEach(prod => {
+        const regs = grupos[prod];
+        tabelaHTML += `
+        <tr>
+            <td colspan="${colunas.length}" style="background:#1B2A4A;color:#fff;font-weight:bold;font-size:11px;
+                padding:7px 10px;text-transform:uppercase;letter-spacing:0.5px;border-top:2px solid #0a1438;">
+                📦 ${prod} &nbsp;<span style="font-weight:normal;opacity:0.7;">(${regs.length} registro${regs.length>1?'s':''})</span>
+            </td>
+        </tr>`;
+        regs.forEach((cells, i) => {
+            const bg = i % 2 === 0 ? '#ffffff' : '#f5f7fa';
+            tabelaHTML += `<tr style="background:${bg};">`;
+            cells.forEach(cell => {
+                tabelaHTML += `<td style="padding:5px 6px;border-bottom:1px solid #e8eaf0;font-size:10px;text-align:center;">${cell}</td>`;
+            });
+            tabelaHTML += '</tr>';
+        });
+    });
+
+    const popup = window.open('', '_blank', 'width=1100,height=800,scrollbars=yes');
+    popup.document.write(`<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>${titulo}</title>
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size:11px; background:#fff; color:#222; padding:20px; }
+    .no-print { display:flex; gap:10px; justify-content:flex-end; margin-bottom:18px; }
+    .no-print button { padding:8px 20px; border:none; border-radius:5px; font-weight:bold; font-size:12px; cursor:pointer; }
+    .btn-imp  { background:#1B2A4A; color:#fff; }
+    .btn-fec  { background:#95a5a6; color:#fff; }
+    h1 { font-size:14px; text-transform:uppercase; text-align:center; border-bottom:2px solid #1B2A4A; padding-bottom:8px; margin-bottom:4px; color:#1B2A4A; }
+    .periodo { text-align:center; font-size:10px; color:#555; margin-bottom:16px; }
+    table { width:100%; border-collapse:collapse; font-size:10px; }
+    thead th { background:#1B2A4A; color:#fff; padding:6px 6px; text-align:center; font-size:9px; white-space:nowrap; border:1px solid #0a1438; }
+    @media print {
+        .no-print { display:none !important; }
+        body { padding:10px; }
+        thead { display:table-header-group; }
+    }
+</style>
+</head>
+<body>
+<div class="no-print">
+    <button class="btn-imp" onclick="window.print()">🖨️ Imprimir</button>
+    <button class="btn-fec" onclick="window.close()">✕ Fechar</button>
+</div>
+<h1>${titulo}</h1>
+<div class="periodo">${periodo}</div>
+<table>
+    <thead>
+        <tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr>
+    </thead>
+    <tbody>${tabelaHTML}</tbody>
+</table>
+</body>
+</html>`);
+    popup.document.close();
 }
 
 // Popular select de produtos ao trocar para a aba
