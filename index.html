@@ -7969,7 +7969,6 @@
                 <div class="emp-toolbar-btns">
                     <button onclick="abrirModalEMP()" class="emp-btn-registrar">+ REGISTRAR ENTRADA</button>
                     <button onclick="atualizarStatusEMP(this)" class="emp-btn-atualizar" title="Recarrega os status do banco de dados">🔄 Atualizar Status</button>
-                    <button id="btnMigrarObsQtd" onclick="empMigrarObsParaQuantidade()" title="Correção única: move valores numéricos da observação para a coluna Quantidade" style="padding:7px 14px;background:#7b1fa2;color:white;border:none;border-radius:5px;font-size:11px;font-weight:bold;cursor:pointer;letter-spacing:0.5px;display:none;">🔧 CORRIGIR OBS → QTD</button>
                 </div>
                 <span class="emp-total-label">TOTAL DE REGISTROS: <span id="totalRegistrosEMP">0</span></span>
             </div>
@@ -9252,9 +9251,6 @@ function aplicarPermissoes() {
     // Botão de registrar entrada
     const btnEMP = document.getElementById('btnCadastroEMP');
     if (btnEMP) btnEMP.style.display = podeEntradaMP ? 'inline-block' : 'none';
-    // Botão de migração única obs→qtd: visível apenas para admin
-    const btnMigrar = document.getElementById('btnMigrarObsQtd');
-    if (btnMigrar) btnMigrar.style.display = isAdmin ? 'inline-block' : 'none';
     // Coluna AÇÃO removida — excluir no modal, aprovar/reprovar na coluna ANÁLISE
     const thAcaoEMP = document.getElementById('thAcaoEMP');
     if (thAcaoEMP) thAcaoEMP.style.display = 'none';
@@ -13328,50 +13324,6 @@ async function carregarEntradasMP() {
     // ✅ MELHORIA: erro propaga corretamente — sem fallback silencioso para localStorage
     entradasMP = await dbGetAll('entradas_mp');
 }
-
-// ── Migração pontual única: obs com valor numérico → quantidade ───────────
-window.empMigrarObsParaQuantidade = async function() {
-    const reNumerico = /^[\d\s.,]+(kg|ton|t|kgs|toneladas?)?\s*$/i;
-    const migrar = entradasMP.filter(r => {
-        const semQtd = r.quantidade == null || r.quantidade === '' || r.quantidade === 0;
-        const obsVal = (r.obs || '').trim();
-        return semQtd && obsVal && reNumerico.test(obsVal);
-    });
-    if (!migrar.length) {
-        sgqToast('Nenhum registro com quantidade na observação encontrado.', 'info');
-        document.getElementById('btnMigrarObsQtd').style.display = 'none';
-        return;
-    }
-    if (!confirm(`Encontrados ${migrar.length} registro(s) com valor numérico na observação.\n\nDeseja mover esses valores para a coluna Quantidade e limpar a observação?`)) return;
-    const btn = document.getElementById('btnMigrarObsQtd');
-    if (btn) { btn.disabled = true; btn.textContent = '⏳ Migrando...'; }
-    let ok = 0, falha = 0;
-    for (const r of migrar) {
-        const numStr = r.obs.trim()
-            .replace(/\.([\d]{3})/g, '$1')
-            .replace(',', '.')
-            .replace(/[^\d.]/g, '');
-        const quantidade = parseFloat(numStr);
-        if (isNaN(quantidade)) continue;
-        const idx = entradasMP.findIndex(e => e.id === r.id);
-        if (idx < 0) continue;
-        entradasMP[idx].quantidade = quantidade;
-        entradasMP[idx].obs = '';
-        try {
-            await dbUpsertOne('entradas_mp', entradasMP[idx]);
-            ok++;
-        } catch(e) {
-            falha++;
-            entradasMP[idx].quantidade = r.quantidade;
-            entradasMP[idx].obs = r.obs;
-        }
-    }
-    if (ok > 0) sgqToast(`✅ ${ok} registro(s) corrigido(s): observação → quantidade.`, 'success');
-    if (falha > 0) sgqToast(`⚠️ ${falha} registro(s) não puderam ser migrados.`, 'warning');
-    // Oculta o botão após rodar — não é mais necessário
-    if (btn) btn.style.display = 'none';
-    exibirTabelaEMP();
-};
 
 function _empStatusBadge(status) {
     if (status === 'CONCLUÍDA')
