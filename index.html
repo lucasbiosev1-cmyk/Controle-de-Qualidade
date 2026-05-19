@@ -13494,8 +13494,10 @@ function exibirTabelaEMP(lista) {
             'REPROVADA':  'background:#fadbd8;color:#e74c3c;',
             'CONCLUÍDA':  'background:#e3f2fd;color:#1565c0;'
         };
-        const anStyle = analiseStyles[r.status] || 'background:#eee;color:#555;';
-        const anLabel = analiseLabels[r.status] || r.status;
+        // Se análise está CONCLUÍDA mas descarga ainda está DESCARREGANDO, exibe como APROVADA (dado inconsistente)
+        const _statusAnaliseExib = (r.status === 'CONCLUÍDA' && r.status_descarga === 'DESCARREGANDO') ? 'APROVADA' : r.status;
+        const anStyle = analiseStyles[_statusAnaliseExib] || 'background:#eee;color:#555;';
+        const anLabel = analiseLabels[_statusAnaliseExib] || _statusAnaliseExib;
         const analiseOpts = ['EM ANÁLISE','APROVADA','REPROVADA'].map(v =>
             `<option value="${v}" ${r.status===v?'selected':''}>${analiseLabels[v]}</option>`
         ).join('');
