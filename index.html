@@ -10137,14 +10137,14 @@ function salvarProducao(event) {
     };
     if (idEdicaoProd) {
         const idx = producoes.findIndex(x => String(x.id) === String(idEdicaoProd));
-        if (idx !== -1) { producoes[idx] = r; mostrarSucessoProd('✓ Produção atualizada com sucesso!'); }
+        if (idx !== -1) { producoes[idx] = r; }
     } else {
-        producoes.push(r); mostrarSucessoProd('✓ Produção salva com sucesso!');
+        producoes.push(r);
     }
     // Persiste rações novas (digitadas via "Nova Ração") para uso em parâmetros e filtros
     _registrarRacaoCustomizada(r.racao);
     // Salva no Supabase
-    dbUpsertOne('producoes', r).then(() => { sgqToast('Produção salva com sucesso!', 'success'); _registrarAuditoria(idEdicaoProd ? 'EDIT' : 'CREATE', 'producoes', r.id, { racao: r.racao, data: r.data }).catch(() => {}); }).catch(e => { mostrarErroProd('❌ Erro ao salvar: ' + e.message); sgqToast('Erro ao salvar produção: ' + e.message, 'error'); });
+    dbUpsertOne('producoes', r).then(() => { sgqToast(idEdicaoProd ? '✓ Produção atualizada com sucesso!' : '✓ Produção salva com sucesso!', 'success'); _registrarAuditoria(idEdicaoProd ? 'EDIT' : 'CREATE', 'producoes', r.id, { racao: r.racao, data: r.data }).catch(() => {}); }).catch(e => { mostrarErroProd('❌ Erro ao salvar: ' + e.message); sgqToast('Erro ao salvar produção: ' + e.message, 'error'); });
     fecharModalCadastroProd(); limparFormularioProd(); exibirTabelaProd();
 }
 
@@ -10379,12 +10379,12 @@ function salvarClassificacao(event) {
     };
     if (idEdicaoClass) {
         const idx = classificacoes.findIndex(x => String(x.id) === String(idEdicaoClass));
-        if (idx !== -1) { classificacoes[idx] = r; mostrarSucessoClass('✓ Classificação atualizada com sucesso!'); }
+        if (idx !== -1) { classificacoes[idx] = r; }
     } else {
-        classificacoes.push(r); mostrarSucessoClass('✓ Classificação salva com sucesso!');
+        classificacoes.push(r);
     }
     // Salva no Supabase
-    dbUpsertOne('classificacoes', r).then(() => { sgqToast('Classificação salva com sucesso!', 'success'); _registrarAuditoria(idEdicaoClass ? 'EDIT' : 'CREATE', 'classificacoes', r.id, { produto: r.produto, data: r.data }).catch(() => {}); }).catch(e => { mostrarErroClass('❌ Erro ao salvar: ' + e.message); sgqToast('Erro ao salvar classificação: ' + e.message, 'error'); });
+    dbUpsertOne('classificacoes', r).then(() => { sgqToast(idEdicaoClass ? '✓ Classificação atualizada com sucesso!' : '✓ Classificação salva com sucesso!', 'success'); _registrarAuditoria(idEdicaoClass ? 'EDIT' : 'CREATE', 'classificacoes', r.id, { produto: r.produto, data: r.data }).catch(() => {}); }).catch(e => { mostrarErroClass('❌ Erro ao salvar: ' + e.message); sgqToast('Erro ao salvar classificação: ' + e.message, 'error'); });
     fecharModalCadastroClass(); limparFormularioClass(); exibirTabelaClass();
     setTimeout(_empHookAposRegistro, 800);
 }
@@ -10606,12 +10606,12 @@ function salvarMateriaPrima(event) {
     };
     if (idEdicaoMP) {
         const idx = materiasPrimas.findIndex(x => String(x.id) === String(idEdicaoMP));
-        if (idx !== -1) { materiasPrimas[idx] = r; mostrarSucessoMP('✓ MATÉRIA PRIMA ATUALIZADA COM SUCESSO!'); }
+        if (idx !== -1) { materiasPrimas[idx] = r; }
     } else {
-        materiasPrimas.push(r); mostrarSucessoMP('✓ MATÉRIA PRIMA SALVA COM SUCESSO!');
+        materiasPrimas.push(r);
     }
     // Salva no Supabase
-    dbUpsertOne('materias_primas', r).then(() => { sgqToast('Matéria Prima salva com sucesso!', 'success'); _registrarAuditoria(idEdicaoMP ? 'EDIT' : 'CREATE', 'materias_primas', r.id, { produto: r.produto, data: r.data }).catch(() => {}); }).catch(e => { mostrarErroMP('❌ Erro ao salvar: ' + e.message); sgqToast('Erro ao salvar Matéria Prima: ' + e.message, 'error'); });
+    dbUpsertOne('materias_primas', r).then(() => { sgqToast(idEdicaoMP ? '✓ MATÉRIA PRIMA ATUALIZADA COM SUCESSO!' : '✓ MATÉRIA PRIMA SALVA COM SUCESSO!', 'success'); _registrarAuditoria(idEdicaoMP ? 'EDIT' : 'CREATE', 'materias_primas', r.id, { produto: r.produto, data: r.data }).catch(() => {}); }).catch(e => { mostrarErroMP('❌ Erro ao salvar: ' + e.message); sgqToast('Erro ao salvar Matéria Prima: ' + e.message, 'error'); });
     fecharModalCadastroMP(); limparFormularioMP(); exibirTabelaMP();
     setTimeout(_empHookAposRegistro, 800);
 }
