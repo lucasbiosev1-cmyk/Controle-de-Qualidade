@@ -4263,7 +4263,7 @@
     <!-- ===== ABA PRODUÇÃO ===== -->
     <div id="aba-producao" class="tab-content">
         <div class="container">
-            <div class="msg-sucesso" id="msgSucessoProd"></div>
+
             <div class="msg-erro" id="msgErroProd"></div>
             <div class="filtros">
                 <div class="form-group"><label>Filtrar por Lote:</label><input type="text" id="filterLoteProd" placeholder="Digite o lote"></div>
@@ -4329,7 +4329,7 @@
     <!-- ===== ABA CLASSIFICAÇÃO ===== -->
     <div id="aba-classificacao" class="tab-content">
         <div class="container">
-            <div class="msg-sucesso" id="msgSucessoClass"></div>
+
             <div class="msg-erro" id="msgErroClass"></div>
             <div class="filtros">
                 <div class="form-group"><label>Filtrar por NF:</label><input type="text" id="filterNFClass" placeholder="Digite a NF"></div>
@@ -4376,7 +4376,6 @@
     <!-- ===== ABA MATÉRIA PRIMA ===== -->
     <div id="aba-materiaPrima" class="tab-content">
         <div class="container">
-            <div class="msg-sucesso" id="msgSucessoMP"></div>
             <div class="msg-erro" id="msgErroMP"></div>
             <div class="filtros">
                 <div class="form-group"><label>Filtrar por NF:</label><input type="text" id="filterNFMP" placeholder="DIGITE A NF"></div>
@@ -7104,7 +7103,7 @@
                         <button onclick="corrigirDPGForcar(this)" id="btnCorrigirDPG" style="background:#c0392b;color:white;padding:9px 18px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;" title="Desativa DPG incorretamente ativo no banco">🔧 Corrigir DPG</button>
                     </div>
                 </div>
-                <div id="msgSucessoParam" class="msg-sucesso"></div>
+
                 <div id="msgErroParam" class="msg-erro"></div>
 
                 <!-- SUB-ABAS DE CATEGORIA -->
@@ -7940,7 +7939,7 @@
     <!-- ===== ABA ENTRADA DE MATÉRIA PRIMA ===== -->
     <div id="aba-entradaMP" class="tab-content">
         <div class="container">
-            <div class="msg-sucesso" id="msgSucessoEMP"></div>
+
             <div class="msg-erro" id="msgErroEMP"></div>
             <div class="filtros">
                 <div class="form-group"><label>Filtrar por NF:</label><input type="text" id="filterNFEMP" placeholder="NÚMERO DA NOTA"></div>
@@ -10238,7 +10237,7 @@ function deletarProd(id) {
     }
 }
 
-function mostrarSucessoProd(t) { showMsg('msgSucessoProd', t, 3000); }
+function mostrarSucessoProd(t) { sgqToast(t, 'success'); }
 function mostrarErroProd(t)    { showMsg('msgErroProd', t, 4000); }
 
 // ===================================================
@@ -10482,7 +10481,7 @@ function deletarClass(id) {
     }
 }
 
-function mostrarSucessoClass(t) { showMsg('msgSucessoClass', t, 3000); }
+function mostrarSucessoClass(t) { sgqToast(t, 'success'); }
 function mostrarErroClass(t)    { showMsg('msgErroClass', t, 4000); }
 
 // ===================================================
@@ -10750,7 +10749,7 @@ function excluirMPDoModal() {
     }
 }
 
-function mostrarSucessoMP(t) { showMsg('msgSucessoMP', t, 3000); }
+function mostrarSucessoMP(t) { sgqToast(t, 'success'); }
 function mostrarErroMP(t)    { showMsg('msgErroMP', t, 4000); }
 
 // NOVA MATÉRIA PRIMA
@@ -13914,10 +13913,13 @@ async function salvarEntradaMP(event) {
 }
 
 function mostrarMsgEMP(tipo, msg) {
-    const sid = tipo === 'sucesso' ? 'msgSucessoEMP' : 'msgErroEMP';
-    const hid = tipo === 'sucesso' ? 'msgErroEMP' : 'msgSucessoEMP';
-    document.getElementById(hid).classList.remove('show');
+    if (tipo === 'sucesso') { sgqToast(msg, 'success'); return; }
+    const sid = 'msgErroEMP';
+    const hid = 'msgSucessoEMP';
+    const hidEl = document.getElementById(hid);
+    if (hidEl) hidEl.classList.remove('show');
     const el = document.getElementById(sid);
+    if (!el) return;
     el.textContent = msg;
     el.classList.add('show');
     setTimeout(() => el.classList.remove('show'), 4000);
@@ -15873,7 +15875,7 @@ async function corrigirDPGForcar(btn) {
         });
     });
     if (alterados === 0) {
-        showMsg('msgSucessoParam', 'ℹ️ Nenhum DPG problemático encontrado no banco.', 5000);
+        sgqToast('ℹ️ Nenhum DPG problemático encontrado no banco.', 'info');
         btn.disabled = false;
         btn.textContent = '🔧 Corrigir DPG';
         return;
@@ -15883,7 +15885,7 @@ async function corrigirDPGForcar(btn) {
             .from('parametros')
             .upsert({ chave: 'sistema_parametros_v3', valor: JSON.stringify(PARAMETROS) }, { onConflict: 'chave' });
         if (error) throw new Error(error.message);
-        showMsg('msgSucessoParam', '✅ ' + alterados + ' DPG(s) corrigido(s) no banco! Recarregando tabelas...', 6000);
+        sgqToast('✅ ' + alterados + ' DPG(s) corrigido(s) no banco! Recarregando tabelas...', 'success');
         btn.textContent = '✅ Corrigido!';
         btn.style.background = '#27ae60';
         exibirTabelaProd && exibirTabelaProd();
@@ -15926,7 +15928,7 @@ function resetarParametros() {
     });
     renderizarTabelasParametros();
     exibirTabelaProd(); exibirTabelaClass(); exibirTabelaMP();
-    showMsg('msgSucessoParam','✓ Parâmetros restaurados para os valores padrão.',3000);
+    sgqToast('✓ Parâmetros restaurados para os valores padrão.', 'success');
 }
 
 function atualizarParametros() {
@@ -15992,9 +15994,7 @@ function confirmarAtualizar(escopo) {
     const msg  = escopo === 'tudo'
         ? `🔃 Tabelas atualizadas com os parâmetros de "${nome}" para <strong>todos os registros</strong>. Clique em 💾 Salvar para gravar permanentemente.`
         : `🔃 Tabelas atualizadas com os parâmetros de "${nome}" a partir de <strong>${new Date(modal._vigencia+'T00:00:00').toLocaleDateString('pt-BR')}</strong>. Clique em 💾 Salvar para gravar permanentemente.`;
-    document.getElementById('msgSucessoParam').innerHTML = msg;
-    document.getElementById('msgSucessoParam').classList.add('show');
-    setTimeout(()=>document.getElementById('msgSucessoParam').classList.remove('show'), 6000);
+    sgqToast(msg.replace(/<[^>]+>/g, ''), 'info');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -16287,8 +16287,7 @@ function salvarMicoParams() {
         fumo: { leve: get('micoFumoLeve'), moderado: get('micoFumoModera'), critico: get('micoFumoCrit') }
     };
     localStorage.setItem(MICO_STORAGE_KEY, JSON.stringify(MICO_LIMITES));
-    const msg = document.getElementById('msgSucessoParam');
-    if (msg) { msg.textContent = '✅ Limites salvos! Relatório atualizado.'; msg.style.display='block'; setTimeout(()=>{ msg.style.display='none'; }, 3000); }
+    sgqToast('✅ Limites salvos! Relatório atualizado.', 'success');
     // Re-renderiza o relatório de classificação (que contém as micotoxinas) se já estiver gerado
     try { if (typeof aplicarFiltrosRelClass === 'function') aplicarFiltrosRelClass(); } catch(e) {}
     // Re-renderiza tabela de classificação (badges na aba de lançamentos)
@@ -21891,7 +21890,7 @@ async function salvarParametros() {
         ? 'todos os registros (retroativo)'
         : new Date(vigencia+'T00:00:00').toLocaleDateString('pt-BR');
     const motivoMsg = motivo ? ` | Motivo: "${motivo}"` : '';
-    showMsg('msgSucessoParam', `✓ Parâmetros de "${racaKey.replace(/_/g,' ')}" salvos para ${dFmt}.${motivoMsg} Tabelas atualizadas.`, 5000);
+    sgqToast(`✓ Parâmetros de "${racaKey.replace(/_/g,' ')}" salvos para ${dFmt}.${motivoMsg} Tabelas atualizadas.`, 'success');
     renderizarPainelRacao(catAtiva, modulo, racaKey);
 }
 
@@ -21903,7 +21902,7 @@ function resetarParametros() {
     });
     renderizarTabelasParametros();
     exibirTabelaProd(); exibirTabelaClass(); exibirTabelaMP();
-    showMsg('msgSucessoParam','✓ Parâmetros restaurados para os valores padrão.',3000);
+    sgqToast('✓ Parâmetros restaurados para os valores padrão.', 'success');
 }
 </script>
 
