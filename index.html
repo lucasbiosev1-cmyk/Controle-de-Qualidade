@@ -9586,7 +9586,7 @@ function trocarAba(aba, btn) {
         if (parentBtn) parentBtn.classList.add('active');
     }
     // ── Preenche filtros de data com o mês atual ao abrir relatórios ──
-    const abasRelatorio = ['relatorio','relClass','relMP','ranking','boletim','naoConformidade','entradaMP','producao','classificacao','materiaPrima'];
+    const abasRelatorio = ['relatorio','relClass','relMP','ranking','boletim','naoConformidade','producao','classificacao','materiaPrima']; // entradaMP gerencia suas próprias datas via empSetModo
     if (abasRelatorio.includes(aba)) preencherFiltrosMesAtual(aba);
 
     if (aba === 'relatorio') inicializarRelatorio();
@@ -9600,6 +9600,7 @@ function trocarAba(aba, btn) {
             trocarSubCfg('aparencia', document.getElementById('cfgBtn-aparencia'));
         }
     }
+    if (aba === 'entradaMP') { exibirTabelaEMP(); }
     if (aba === 'estoqueReagentes') { try { reagCarregarDados(); setTimeout(_reagInjetarCampoEmail, 500); } catch(e){} }
     if (aba === 'estoqueMateriais') { try { matCarregarDados(); } catch(e){} }
     if (aba === 'equipamentos') { try { eqCarregarDados(); } catch(e){} }
@@ -9636,7 +9637,7 @@ function preencherFiltrosMesAtual(aba) {
         ranking:         ['rkDataInicio',             'rkDataFim'],
         boletim:         ['bolDataInicio',            'bolDataFim'],
         naoConformidade: ['nc-fi',                    'nc-ff'],
-        entradaMP:       ['filterDataInicioEMP',      'filterDataFimEMP'],
+        // entradaMP: datas gerenciadas por empSetModo — não preencher automaticamente
         producao:        ['filterDataInicioProd',     'filterDataFimProd'],
         classificacao:   ['filterDataInicioClass',    'filterDataFimClass'],
         materiaPrima:    ['filterDataInicioMP',       'filterDataFimMP'],
