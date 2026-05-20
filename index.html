@@ -13415,6 +13415,13 @@ function exibirTabelaEMP(lista) {
     }
 
     console.log('[EMP] modo=' + _empModoAtual + ' di=' + di + ' df=' + df + ' total=' + lista.length);
+    if (lista.length > 0) console.log('[EMP] exemplo r.data=', lista[0].data, '| tipo=', typeof lista[0].data);
+
+    // Log de diagnóstico: mostra os 3 primeiros r.data para ver o formato real
+    if (di || df) {
+        const amostras = lista.slice(0, 3).map(r => JSON.stringify({data: r.data, dataNorm: _normData(r.data)}));
+        console.log('[EMP] amostras data:', amostras.join(' | '));
+    }
 
     let dados = lista.filter(r => {
         // ── Modo PENDENTES: mostra apenas cargas em andamento ──
