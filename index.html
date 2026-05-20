@@ -1535,6 +1535,16 @@
             flex-wrap: wrap;
             margin-bottom: 15px;
         }
+        /* ── Banner de alerta retroativo EMP ── */
+        html[data-theme="dark"] #empAlertaRetroativo {
+            background: #2d2200 !important; color: #e3a008 !important;
+            border-color: #b7770d !important;
+        }
+        html[data-theme="dark"] #empAlertaRetroativo button {
+            background: #b7770d !important; color: #fff !important;
+        }
+        /* Filtro status oculto por padrão (modo pendentes — JS pode exibir no modo todas) */
+        #empFiltroStatusWrap { display: none; }
         .emp-toolbar-btns {
             display: flex;
             gap: 8px;
@@ -7941,7 +7951,30 @@
         <div class="container">
 
             <div class="msg-erro" id="msgErroEMP"></div>
-            <div class="filtros">
+
+            <!-- ── Banner de alerta: carga pendente retroativa detectada ── -->
+            <div id="empAlertaRetroativo" style="display:none;align-items:center;gap:10px;background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:8px;padding:8px 14px;margin-bottom:8px;font-size:12px;font-weight:600;">
+                <span style="font-size:16px;">⚠️</span>
+                <span id="empAlertaRetroativoTexto">Existem cargas pendentes de dias anteriores.</span>
+                <button onclick="empFocarRetroativo()" style="background:#ffc107;color:#000;border:none;border-radius:5px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;margin-left:auto;">VER PENDENTES</button>
+            </div>
+
+            <!-- ── Barra de modo: Pendentes / Todas ── -->
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+                <div style="display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--gh-border-default);">
+                    <button id="empModoPendentes" onclick="empSetModo('pendentes')"
+                        style="padding:5px 14px;font-size:11px;font-weight:700;border:none;cursor:pointer;background:#e3a008;color:#fff;letter-spacing:.5px;">
+                        ⏳ PENDENTES / ANÁLISE
+                    </button>
+                    <button id="empModoTodas" onclick="empSetModo('todas')"
+                        style="padding:5px 14px;font-size:11px;font-weight:700;border:none;cursor:pointer;background:transparent;color:var(--gh-fg-muted);letter-spacing:.5px;">
+                        📋 TODAS
+                    </button>
+                </div>
+                <span id="empModoLabel" style="font-size:10px;color:var(--gh-fg-muted);font-style:italic;">Mostrando apenas cargas em andamento</span>
+            </div>
+
+            <div class="filtros" id="empFiltrosAvancados">
                 <div class="form-group"><label>Filtrar por NF:</label><input type="text" id="filterNFEMP" placeholder="NÚMERO DA NOTA"></div>
                 <div class="form-group"><label>Data Início:</label><input type="date" id="filterDataInicioEMP"></div>
                 <div class="form-group"><label>Data Fim:</label><input type="date" id="filterDataFimEMP"></div>
@@ -7949,7 +7982,7 @@
                     <label>Fornecedor:</label>
                     <input type="text" id="filterFornecedorEMP" placeholder="FORNECEDOR">
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="empFiltroStatusWrap">
                     <label>Status:</label>
                     <select id="filterStatusEMP">
                         <option value="">TODOS</option>
@@ -9380,22 +9413,8 @@ function aplicarPermissoes() {
     if (podeEntradaMP) {
         carregarListaMP(); // ✅ Carrega lista de matérias-primas do Supabase
         carregarEntradasMP().then(() => {
-            const hoje = new Date().toISOString().split('T')[0];
-            const di = document.getElementById('filterDataInicioEMP');
-            const df = document.getElementById('filterDataFimEMP');
-            if (df && !df.value) df.value = hoje;
-            if (di && !di.value) {
-                // Data Início = data mais antiga entre registros REALMENTE pendentes:
-                // - status_descarga explicitamente 'FILA' ou 'NA FILA'
-                // - OU status = 'EM ANÁLISE' (sem aprovação, reprovação ou conclusão)
-                const _pendentes = entradasMP.filter(r =>
-                    (r.status_descarga === 'FILA' || r.status_descarga === 'NA FILA')
-                    || (r.status === 'EM ANÁLISE' && r.status !== 'APROVADA' && r.status !== 'REPROVADA' && r.status !== 'CONCLUÍDA')
-                );
-                const _datas = _pendentes.map(r => r.data || '').filter(d => !!d).sort();
-                di.value = _datas.length > 0 ? _datas[0] : hoje;
-            }
-            exibirTabelaEMP();
+            // Inicia sempre no modo "pendentes" — mostra apenas cargas em andamento
+            empSetModo('pendentes', true);
         });
     }
 
@@ -13373,9 +13392,9 @@ async function _empAtualizarStatusConclusoes() {
 function exibirTabelaEMP(lista) {
     if (!lista) lista = entradasMP;
 
-    // ── Data Início: preenche automaticamente com a data mais antiga de registros pendentes ──
-    // Pendente = status_descarga em Fila (ou vazio) OU status = 'EM ANÁLISE' (sem aprovação/reprovação)
-    // Filtra
+    // ── Atualiza banner de alerta retroativo (sempre, independente do modo) ──
+    _empAtualizarAlertaRetroativo();
+
     const nf       = (document.getElementById('filterNFEMP')?.value || '').trim().toUpperCase();
     const di       = document.getElementById('filterDataInicioEMP')?.value || '';
     const df       = document.getElementById('filterDataFimEMP')?.value || '';
@@ -13383,6 +13402,8 @@ function exibirTabelaEMP(lista) {
     const statusF  = document.getElementById('filterStatusEMP')?.value || '';
 
     let dados = lista.filter(r => {
+        // ── Modo PENDENTES: mostra apenas cargas em andamento (EM ANÁLISE, APROVADA-não-concluída) ──
+        if (_empModoAtual === 'pendentes' && !_empEhPendente(r)) return false;
         if (nf && !(r.nf||'').toUpperCase().includes(nf)) return false;
         if (di && r.data < di) return false;
         if (df && r.data > df) return false;
@@ -13546,7 +13567,7 @@ function exibirTabelaEMP(lista) {
         const fornecedorExib = r.obs
             ? `<span class="obs-tooltip-wrap">${r.fornecedor||'-'}<span class="obs-tooltip">💬 ${r.obs.replace(/</g,'&lt;')}</span></span>`
             : (r.fornecedor||'-');
-        return separador + `<tr style="background:${_empCoresGrupo[corIdx]};${cursorStyle}" ${dblclickAttr}>
+        return separador + `<tr data-data="${r.data||''}" style="background:${_empCoresGrupo[corIdx]};${cursorStyle}" ${dblclickAttr}>
             <td data-label="FORNECEDOR" style="font-weight:bold;overflow:hidden;">
                 <div style="display:flex;align-items:center;gap:8px;">
                     <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;width:22px;height:22px;background:rgba(255,255,255,0.12);border-radius:50%;font-size:10px;font-weight:800;flex-shrink:0;">${seqExibida}</span>
@@ -13644,6 +13665,91 @@ async function desfazerDescargaEMP(id) {
     sgqToast('↩️ Descarga revertida para Fila!', 'aviso');
     document.getElementById('modalAprovarEMP').style.display = 'none';
     exibirTabelaEMP();
+}
+
+// ── Modo de exibição da tabela EMP: 'pendentes' | 'todas' ──
+let _empModoAtual = 'pendentes';
+
+// Retorna true se a entrada está "em andamento" (pendente, análise ou descarregando)
+function _empEhPendente(r) {
+    if (r.status === 'CONCLUÍDA') return false;
+    if (r.status === 'REPROVADA') return false;
+    if (r.status === 'EM ANÁLISE') return true;
+    if (r.status === 'APROVADA') {
+        const sd = (r.status_descarga || '').toUpperCase();
+        return sd !== 'CONCLUÍDA';
+    }
+    return false;
+}
+
+// Alterna entre modo pendentes e todas
+function empSetModo(modo, silencioso) {
+    _empModoAtual = modo;
+    const hoje = new Date().toISOString().split('T')[0];
+    const btnPend  = document.getElementById('empModoPendentes');
+    const btnTodas = document.getElementById('empModoTodas');
+    const label    = document.getElementById('empModoLabel');
+    const wrapStatus = document.getElementById('empFiltroStatusWrap');
+    const ativoAmb = 'background:#e3a008;color:#fff;padding:5px 14px;font-size:11px;font-weight:700;border:none;cursor:pointer;letter-spacing:.5px;';
+    const ativoAzul = 'background:#58a6ff;color:#fff;padding:5px 14px;font-size:11px;font-weight:700;border:none;cursor:pointer;letter-spacing:.5px;';
+    const inativo  = 'background:transparent;color:var(--gh-fg-muted);padding:5px 14px;font-size:11px;font-weight:700;border:none;cursor:pointer;letter-spacing:.5px;';
+    if (btnPend) btnPend.style.cssText  = modo === 'pendentes' ? ativoAmb  : inativo;
+    if (btnTodas) btnTodas.style.cssText = modo === 'todas'     ? ativoAzul : inativo;
+    if (modo === 'pendentes') {
+        const di = document.getElementById('filterDataInicioEMP');
+        const df = document.getElementById('filterDataFimEMP');
+        const sel = document.getElementById('filterStatusEMP');
+        if (di) di.value = '';
+        if (df) df.value = '';
+        if (sel) sel.value = '';
+        if (wrapStatus) wrapStatus.style.display = 'none';
+        if (label) label.textContent = 'Mostrando apenas cargas em andamento';
+    } else {
+        const di = document.getElementById('filterDataInicioEMP');
+        const df = document.getElementById('filterDataFimEMP');
+        if (df && !df.value) df.value = hoje;
+        if (di && !di.value) di.value = hoje;
+        if (wrapStatus) wrapStatus.style.display = '';
+        if (label) label.textContent = 'Mostrando todo o histórico';
+    }
+    exibirTabelaEMP();
+}
+
+// Foca nas cargas retroativas pendentes (chamado pelo banner de alerta)
+function empFocarRetroativo() {
+    const hoje = new Date().toISOString().split('T')[0];
+    const container = document.getElementById('tabelaEMPContainer');
+    if (container) container.scrollTop = 0;
+    setTimeout(() => {
+        const linhas = document.querySelectorAll('#tabelaEntradaMP tr[data-data]');
+        linhas.forEach(tr => {
+            if ((tr.dataset.data || '') < hoje) {
+                tr.style.transition = 'outline 0.3s';
+                tr.style.outline = '2px solid #ffc107';
+                tr.style.outlineOffset = '-2px';
+                setTimeout(() => { tr.style.outline = ''; tr.style.outlineOffset = ''; }, 3500);
+            }
+        });
+    }, 80);
+    sgqToast('⚠️ Cargas retroativas pendentes destacadas.', 'warning');
+}
+
+// Atualiza o banner de alerta retroativo
+function _empAtualizarAlertaRetroativo() {
+    const banner = document.getElementById('empAlertaRetroativo');
+    const texto  = document.getElementById('empAlertaRetroativoTexto');
+    if (!banner) return;
+    const hoje = new Date().toISOString().split('T')[0];
+    const pendentes = entradasMP.filter(_empEhPendente);
+    const retro = pendentes.filter(r => (r.data||'') < hoje && (r.data||'') !== '');
+    if (retro.length > 0) {
+        const datasUnicas = [...new Set(retro.map(r => r.data))].sort();
+        const fmtDatas = datasUnicas.map(d => new Date(d+'T00:00:00').toLocaleDateString('pt-BR')).join(', ');
+        if (texto) texto.textContent = retro.length + ' carga(s) pendente(s) de dias anteriores: ' + fmtDatas;
+        banner.style.display = 'flex';
+    } else {
+        banner.style.display = 'none';
+    }
 }
 
 function aplicarFiltrosEMP() { exibirTabelaEMP(); }
