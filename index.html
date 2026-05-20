@@ -13752,12 +13752,34 @@ function _empAtualizarAlertaRetroativo() {
     }
 }
 
-function aplicarFiltrosEMP() { exibirTabelaEMP(); }
+function aplicarFiltrosEMP() {
+    // Se o usuário preencheu datas manualmente, vai automaticamente para modo "todas"
+    const di = document.getElementById('filterDataInicioEMP')?.value || '';
+    const df = document.getElementById('filterDataFimEMP')?.value || '';
+    const statusF = document.getElementById('filterStatusEMP')?.value || '';
+    const nf = document.getElementById('filterNFEMP')?.value || '';
+    const forn = document.getElementById('filterFornecedorEMP')?.value || '';
+    if (di || df || statusF || nf || forn) {
+        _empModoAtual = 'todas';
+        const btnPend  = document.getElementById('empModoPendentes');
+        const btnTodas = document.getElementById('empModoTodas');
+        const label    = document.getElementById('empModoLabel');
+        const wrapStatus = document.getElementById('empFiltroStatusWrap');
+        const ativoAzul = 'background:#58a6ff;color:#fff;padding:5px 14px;font-size:11px;font-weight:700;border:none;cursor:pointer;letter-spacing:.5px;';
+        const inativo   = 'background:transparent;color:var(--gh-fg-muted);padding:5px 14px;font-size:11px;font-weight:700;border:none;cursor:pointer;letter-spacing:.5px;';
+        if (btnPend)  btnPend.style.cssText  = inativo;
+        if (btnTodas) btnTodas.style.cssText = ativoAzul;
+        if (wrapStatus) wrapStatus.style.display = '';
+        if (label) label.textContent = 'Mostrando todo o histórico';
+    }
+    exibirTabelaEMP();
+}
 function limparFiltrosEMP() {
     ['filterNFEMP','filterFornecedorEMP'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
     ['filterDataInicioEMP','filterDataFimEMP'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
     const sel = document.getElementById('filterStatusEMP'); if(sel) sel.value='';
-    exibirTabelaEMP();
+    // Volta ao modo pendentes ao limpar
+    empSetModo('pendentes');
 }
 
 // Lista fixa de matérias primas para o modal EMP
