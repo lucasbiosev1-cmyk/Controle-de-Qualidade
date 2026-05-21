@@ -6155,72 +6155,228 @@
     </div>
 
     <!-- MODAL ESTUDO DE CONSUMO -->
-    <div id="reagModalEstudo" style="display:none;position:fixed;inset:0;z-index:8500;background:rgba(0,0,0,0.55);align-items:flex-start;justify-content:center;padding:20px 10px;overflow-y:auto;">
-        <div style="background:#fff;border-radius:12px;width:100%;max-width:980px;box-shadow:0 8px 40px rgba(0,0,0,0.22);margin:auto;">
-            <div style="background:linear-gradient(135deg,#8e44ad,#6c3483);color:#fff;padding:16px 22px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1;">
+    <!-- ── CSS tema-responsivo para o Modal Estudo de Consumo ── -->
+    <style>
+        /* ═══════════════════════════════════════════
+           ESTUDO DE CONSUMO — TEMA DARK COMPLETO
+        ═══════════════════════════════════════════ */
+        #reagModalEstudo { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+        #reagModalEstudo .ec-card {
+            background: #1c1c2e;
+            border-radius: 14px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+            width: 100%; max-width: 1060px; margin: auto;
+        }
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-card {
+            background: #fff;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+        }
+
+        /* ── Painel de KPIs ── */
+        #reagModalEstudo .ec-kpi-grid {
+            display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px;
+        }
+        #reagModalEstudo .ec-kpi {
+            border-radius: 10px; padding: 14px 16px;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        #reagModalEstudo .ec-kpi-val { font-size: 28px; font-weight: 900; line-height: 1; }
+        #reagModalEstudo .ec-kpi-lbl { font-size: 10px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; opacity: .7; }
+
+        /* dark kpi */
+        #reagModalEstudo .ec-kpi-urgente  { background: rgba(231,76,60,.15);  border-left: 4px solid #e74c3c; }
+        #reagModalEstudo .ec-kpi-moderado { background: rgba(230,126,34,.15); border-left: 4px solid #e67e22; }
+        #reagModalEstudo .ec-kpi-ok       { background: rgba(39,174,96,.15);  border-left: 4px solid #27ae60; }
+        #reagModalEstudo .ec-kpi-total    { background: rgba(88,166,255,.12); border-left: 4px solid #58a6ff; }
+        #reagModalEstudo .ec-kpi-urgente  .ec-kpi-val { color: #e74c3c; }
+        #reagModalEstudo .ec-kpi-moderado .ec-kpi-val { color: #e67e22; }
+        #reagModalEstudo .ec-kpi-ok       .ec-kpi-val { color: #27ae60; }
+        #reagModalEstudo .ec-kpi-total    .ec-kpi-val { color: #58a6ff; }
+        #reagModalEstudo .ec-kpi-urgente  .ec-kpi-lbl,
+        #reagModalEstudo .ec-kpi-moderado .ec-kpi-lbl,
+        #reagModalEstudo .ec-kpi-ok       .ec-kpi-lbl,
+        #reagModalEstudo .ec-kpi-total    .ec-kpi-lbl { color: #e6edf3; }
+
+        /* light kpi */
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-kpi-urgente  { background: #fff0ef; border-left-color: #e74c3c; }
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-kpi-moderado { background: #fff7ef; border-left-color: #e67e22; }
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-kpi-ok       { background: #edfbf3; border-left-color: #27ae60; }
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-kpi-total    { background: #eef5ff; border-left-color: #2980b9; }
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-kpi-urgente  .ec-kpi-lbl,
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-kpi-moderado .ec-kpi-lbl,
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-kpi-ok       .ec-kpi-lbl,
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-kpi-total    .ec-kpi-lbl { color: #444; }
+
+        /* ── Filtros ── */
+        #reagModalEstudo .ec-filtros {
+            display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 18px;
+        }
+        #reagModalEstudo .ec-select {
+            border-radius: 7px; padding: 7px 12px; font-size: 12px; font-weight: 600;
+            border: 1.5px solid #30363d; background: #0d1117; color: #e6edf3; cursor: pointer;
+        }
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-select {
+            background: #fff; color: #333; border-color: #ccc;
+        }
+
+        /* ── Tabela ── */
+        #reagModalEstudo .ec-table-wrap { overflow-x: auto; border-radius: 10px; }
+        #reagModalEstudo .ec-table {
+            width: 100%; border-collapse: collapse; font-size: 12px;
+        }
+        #reagModalEstudo .ec-table thead th {
+            background: #0d1117; color: #8b949e;
+            padding: 9px 10px; font-size: 10px; font-weight: 700;
+            letter-spacing: .6px; text-transform: uppercase;
+            border-bottom: 2px solid #30363d; white-space: nowrap;
+        }
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-table thead th {
+            background: #f0f0f5; color: #555; border-bottom: 2px solid #ddd;
+        }
+        #reagModalEstudo .ec-table tbody tr {
+            border-bottom: 1px solid #21262d; transition: background .12s;
+        }
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-table tbody tr {
+            border-bottom: 1px solid #eee;
+        }
+        #reagModalEstudo .ec-table tbody tr:hover { background: rgba(88,166,255,0.06) !important; }
+        #reagModalEstudo .ec-table tbody td { padding: 11px 10px; vertical-align: middle; color: #e6edf3; }
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-table tbody td { color: #2c3e50; }
+
+        /* row colors dark */
+        #reagModalEstudo .ec-row-urgente  { background: rgba(231,76,60,.08); }
+        #reagModalEstudo .ec-row-moderado { background: rgba(230,126,34,.07); }
+        #reagModalEstudo .ec-row-ok       { background: transparent; }
+        #reagModalEstudo .ec-row-zerado   { background: rgba(231,76,60,.13); }
+
+        /* row colors light */
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-row-urgente  { background: #fff4f3; }
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-row-moderado { background: #fff8f0; }
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-row-ok       { background: #fff; }
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-row-zerado   { background: #ffeaea; }
+
+        /* ── Progress bar de cobertura ── */
+        #reagModalEstudo .ec-prog-track {
+            height: 8px; border-radius: 6px; background: #30363d; overflow: hidden; min-width: 90px;
+        }
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-prog-track { background: #e0e0e0; }
+        #reagModalEstudo .ec-prog-fill { height: 100%; border-radius: 6px; transition: width .4s; }
+
+        /* ── Badge status ── */
+        #reagModalEstudo .ec-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            border-radius: 20px; padding: 4px 12px; font-size: 10px; font-weight: 800;
+            letter-spacing: .5px; white-space: nowrap;
+        }
+        #reagModalEstudo .ec-badge-urgente  { background: #e74c3c; color: #fff; }
+        #reagModalEstudo .ec-badge-moderado { background: #e67e22; color: #fff; }
+        #reagModalEstudo .ec-badge-ok       { background: #27ae60; color: #fff; }
+        #reagModalEstudo .ec-badge-zerado   { background: #c0392b; color: #fff; animation: ec-pulse 1.4s infinite; }
+
+        @keyframes ec-pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+
+        /* ── Seção título ── */
+        #reagModalEstudo .ec-sec-title {
+            font-size: 11px; font-weight: 800; letter-spacing: .8px;
+            text-transform: uppercase; color: #58a6ff; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-sec-title { color: #6c3483; }
+
+        /* ── Tooltip legenda ── */
+        #reagModalEstudo .ec-legenda-box {
+            background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+            padding: 14px 18px; margin-bottom: 18px; font-size: 11px; color: #8b949e; line-height: 2;
+        }
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-legenda-box {
+            background: #f8f0ff; border-color: #d7bde2; color: #555;
+        }
+        #reagModalEstudo .ec-legenda-box b { color: #e6edf3; }
+        html:not([data-theme="dark"]) #reagModalEstudo .ec-legenda-box b { color: #2c3e50; }
+
+        /* ── Sugestão de compra ── */
+        #reagModalEstudo .ec-compra-val { font-size: 15px; font-weight: 900; }
+        #reagModalEstudo .ec-compra-ok  { color: #27ae60; font-size: 12px; font-weight: 700; }
+
+        /* ── Dias restantes chip ── */
+        #reagModalEstudo .ec-dias {
+            font-size: 11px; font-weight: 800; padding: 3px 9px;
+            border-radius: 12px; white-space: nowrap; display: inline-block;
+        }
+        #reagModalEstudo .ec-dias-ok  { background: rgba(39,174,96,.18);  color: #27ae60; }
+        #reagModalEstudo .ec-dias-mod { background: rgba(230,126,34,.18); color: #e67e22; }
+        #reagModalEstudo .ec-dias-urg { background: rgba(231,76,60,.18);  color: #e74c3c; }
+
+        /* ── Responsividade KPIs ── */
+        @media (max-width: 700px) {
+            #reagModalEstudo .ec-kpi-grid { grid-template-columns: repeat(2,1fr); }
+        }
+    </style>
+
+    <div id="reagModalEstudo" style="display:none;position:fixed;inset:0;z-index:8500;background:rgba(0,0,0,0.75);align-items:flex-start;justify-content:center;padding:16px 10px;overflow-y:auto;">
+        <div class="ec-card">
+
+            <!-- CABEÇALHO -->
+            <div style="background:linear-gradient(135deg,#6c3483,#4a235a);color:#fff;padding:18px 24px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;">
                 <div>
-                    <div style="font-size:16px;font-weight:900;">📊 Estudo de Consumo — Sugestão de Compra</div>
-                    <div style="font-size:10px;opacity:.75;margin-top:2px;">Baseado nos últimos 3 meses · Prazo de entrega: 2 meses</div>
+                    <div style="font-size:17px;font-weight:900;letter-spacing:.3px;">📦 Estudo de Consumo de Reagentes</div>
+                    <div style="font-size:10px;opacity:.7;margin-top:3px;">Estoque atual · Taxa de consumo diária · Projeção de ruptura · Sugestão de compra</div>
                 </div>
-                <button onclick="document.getElementById('reagModalEstudo').style.display='none'" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;">✕</button>
+                <button onclick="document.getElementById('reagModalEstudo').style.display='none'" style="background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;cursor:pointer;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;">✕</button>
             </div>
-            <div style="padding:20px;">
+
+            <div style="padding:22px 24px;">
+
+                <!-- KPIs -->
+                <div class="ec-kpi-grid" id="estudoKpis"></div>
 
                 <!-- LEGENDA -->
-                <div style="background:#f8f0ff;border:1px solid #d7bde2;border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:11px;color:#6c3483;line-height:1.7;">
-                    <strong>📌 Como é calculado:</strong><br>
-                    <b>Consumo médio mensal</b> = total consumido nos últimos 3 meses ÷ 3<br>
-                    <b>Necessidade 2 meses</b> = consumo médio × 2 (prazo de entrega)<br>
-                    <b>Sugestão de compra</b> = Necessidade 2 meses + estoque mínimo − estoque atual<br>
-                    <span style="color:#e74c3c;font-weight:700;">🔴 Compra urgente</span> quando estoque atual não cobre nem 1 mês de consumo &nbsp;|&nbsp;
-                    <span style="color:#e67e22;font-weight:700;">🟠 Atenção</span> não cobre 2 meses &nbsp;|&nbsp;
-                    <span style="color:#27ae60;font-weight:700;">🟢 OK</span> estoque suficiente
+                <div class="ec-legenda-box" id="estudoLegenda">
+                    <b>📌 Como funciona:</b> O sistema calcula a <b>taxa de consumo diária</b> com base nos movimentos dos últimos 90 dias.
+                    Com o estoque atual, projeta <b>quantos dias de autonomia</b> restam. Compara com o <b>prazo de entrega do fornecedor</b> (padrão: 30 dias)
+                    e o <b>estoque mínimo cadastrado</b> para decidir se é necessário comprar.<br>
+                    <span style="color:#e74c3c;font-weight:800;">🔴 URGENTE</span> — autonomia ≤ prazo de entrega (risco de ruptura) &nbsp;|&nbsp;
+                    <span style="color:#e67e22;font-weight:800;">🟠 MODERADO</span> — autonomia entre 1× e 2× o prazo &nbsp;|&nbsp;
+                    <span style="color:#27ae60;font-weight:800;">🟢 SUFICIENTE</span> — autonomia &gt; 2× o prazo
                 </div>
 
-                <!-- FILTRO -->
-                <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
-                    <select id="estudoFiltroPF" onchange="reagRenderEstudo()" style="border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:12px;">
+                <!-- FILTROS -->
+                <div class="ec-filtros">
+                    <select id="estudoFiltroStatus" onchange="reagRenderEstudo()" class="ec-select">
+                        <option value="">Todos os status</option>
+                        <option value="urgente">🔴 Urgente</option>
+                        <option value="moderado">🟠 Moderado</option>
+                        <option value="ok">🟢 Suficiente</option>
+                        <option value="zerado">⚫ Sem estoque</option>
+                    </select>
+                    <select id="estudoFiltroPF" onchange="reagRenderEstudo()" class="ec-select">
                         <option value="">Todos os reagentes</option>
                         <option value="pf">🚔 Apenas Controlados PF</option>
                         <option value="normal">Apenas não controlados</option>
                     </select>
-                    <select id="estudoFiltroStatus" onchange="reagRenderEstudo()" style="border:1px solid #ddd;border-radius:6px;padding:7px 10px;font-size:12px;">
-                        <option value="">Todos os status</option>
-                        <option value="urgente">🔴 Urgente</option>
-                        <option value="atencao">🟠 Atenção</option>
-                        <option value="ok">🟢 OK</option>
-                    </select>
-                    <button onclick="reagExportarEstudo()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:7px 16px;font-weight:700;cursor:pointer;font-size:12px;margin-left:auto;">⬇️ Exportar CSV</button>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#8b949e;cursor:pointer;">
+                        <input type="number" id="estudoPrazoEntrega" value="30" min="1" max="365" onchange="reagRenderEstudo()"
+                            style="width:60px;border-radius:7px;padding:7px 8px;font-size:12px;font-weight:700;border:1.5px solid #30363d;background:#0d1117;color:#e6edf3;text-align:center;">
+                        dias prazo entrega
+                    </label>
+                    <button onclick="reagExportarEstudo()" style="background:#27ae60;color:#fff;border:none;border-radius:7px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;margin-left:auto;display:flex;align-items:center;gap:6px;">⬇️ Exportar CSV</button>
                 </div>
 
-                <!-- RANKING TOP 5 -->
-                <div style="margin-bottom:18px;">
-                    <div style="font-size:12px;font-weight:800;color:#6c3483;margin-bottom:10px;letter-spacing:.5px;">🏆 TOP 5 MAIS UTILIZADOS (últimos 3 meses)</div>
-                    <div id="estudoRanking" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
-                </div>
-
-                <!-- GRÁFICO CONSUMO MENSAL -->
-                <div style="background:#f9f9fb;border-radius:8px;padding:14px;margin-bottom:18px;">
-                    <div style="font-size:12px;font-weight:800;color:#6c3483;margin-bottom:10px;">📈 CONSUMO MENSAL POR REAGENTE (últimos 3 meses)</div>
-                    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;" id="estudoGrafChks"></div>
-                    <canvas id="estudoGrafico" height="90"></canvas>
-                </div>
-
-                <!-- TABELA DE SUGESTÃO -->
-                <div style="font-size:12px;font-weight:800;color:#6c3483;margin-bottom:10px;letter-spacing:.5px;">🛒 SUGESTÃO DE COMPRA</div>
-                <div style="overflow-x:auto;">
-                    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <!-- TABELA PRINCIPAL -->
+                <div class="ec-sec-title">🛒 Painel de Estoque e Sugestão de Compra</div>
+                <div class="ec-table-wrap">
+                    <table class="ec-table">
                         <thead>
-                            <tr style="background:#6c3483;color:#fff;">
-                                <th style="padding:10px 12px;text-align:left;">REAGENTE</th>
-                                <th style="padding:10px 8px;text-align:center;">MÊS -3</th>
-                                <th style="padding:10px 8px;text-align:center;">MÊS -2</th>
-                                <th style="padding:10px 8px;text-align:center;">MÊS -1</th>
-                                <th style="padding:10px 8px;text-align:center;">MÉDIA/MÊS</th>
-                                <th style="padding:10px 8px;text-align:center;">ESTOQUE ATUAL</th>
-                                <th style="padding:10px 8px;text-align:center;">COBRE ATÉ</th>
-                                <th style="padding:10px 8px;text-align:center;background:#4a235a;">SUGESTÃO COMPRA</th>
-                                <th style="padding:10px 8px;text-align:center;">PRIORIDADE</th>
+                            <tr>
+                                <th style="text-align:left;min-width:190px;">REAGENTE</th>
+                                <th style="text-align:right;">ESTOQUE<br>ATUAL</th>
+                                <th style="text-align:right;">ESTOQUE<br>MÍNIMO</th>
+                                <th style="text-align:center;min-width:80px;">CONSUMO<br>/DIA</th>
+                                <th style="text-align:center;min-width:130px;">AUTONOMIA ATUAL</th>
+                                <th style="text-align:center;">PRAZO<br>ENTREGA</th>
+                                <th style="text-align:right;min-width:110px;">COMPRAR</th>
+                                <th style="text-align:center;">STATUS</th>
                             </tr>
                         </thead>
                         <tbody id="estudoTbody"></tbody>
@@ -23838,206 +23994,283 @@ async function _reagSalvarEmail() {
 
 
 // =====================================================================
-// 📊 ESTUDO DE CONSUMO — SUGESTÃO DE COMPRA
+// 📦 ESTUDO DE CONSUMO — LÓGICA PROFISSIONAL DE GESTÃO DE ESTOQUE
+// =====================================================================
+// Metodologia:
+//   1. Agrupa reagentes pelo mesmo nome (consolida lotes)
+//   2. Soma o consumo real dos últimos 90 dias (movimentos tipo consumo/descarte)
+//   3. Calcula taxa de consumo diária (total90dias ÷ 90)
+//   4. Projeta autonomia em dias = estoqueAtual ÷ consumoDiario
+//   5. Compara com prazoEntrega + estoqueSegurança
+//   6. Classifica: URGENTE / MODERADO / SUFICIENTE
+//   7. Calcula quanto comprar para cobrir prazoEntrega + estoque mínimo
 // =====================================================================
 
-let _estudoGrafInst = null;
-
 function reagAbrirEstudo() {
-    // ✅ FIX: garante que os dados estejam carregados antes de abrir o estudo
     if (!_reagentes || _reagentes.length === 0) { try { reagCarregarDados(); } catch(e){} }
     document.getElementById('reagModalEstudo').style.display = 'flex';
     reagRenderEstudo();
 }
 
-function _reagUltimosMeses(n) {
-    // Retorna array com os últimos n meses no formato 'YYYY-MM'
-    const meses = [];
-    const hoje = new Date();
-    for (let i = n; i >= 1; i--) {
-        const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
-        meses.push(d.toISOString().substring(0, 7));
-    }
-    return meses;
+// ── Retorna consumo total de um reagId nos últimos N dias ────────────
+function _ecConsumo90(reagIds, diasJanela) {
+    const limite = new Date();
+    limite.setDate(limite.getDate() - diasJanela);
+    const limStr = limite.toISOString().slice(0, 10);
+    return _reagMovimentos
+        .filter(m =>
+            reagIds.includes(m.reagId) &&
+            (m.tipo === 'consumo' || m.tipo === 'descarte') &&
+            m.data && m.data >= limStr
+        )
+        .reduce((s, m) => s + (parseFloat(m.qtd) || 0), 0);
 }
 
-function _reagConsumoMes(reagId, mes) {
+// ── Retorna consumo por mês (para o gráfico) ─────────────────────────
+function _ecConsumoMes(reagIds, anoMes) {
     return _reagMovimentos
-        .filter(m => m.reagId === reagId && m.mes === mes && (m.tipo === 'consumo' || m.tipo === 'descarte'))
-        .reduce((s, m) => s + m.qtd, 0);
+        .filter(m =>
+            reagIds.includes(m.reagId) &&
+            (m.tipo === 'consumo' || m.tipo === 'descarte') &&
+            m.mes === anoMes
+        )
+        .reduce((s, m) => s + (parseFloat(m.qtd) || 0), 0);
+}
+
+// ── Agrupa reagentes pelo mesmo nome ─────────────────────────────────
+function _ecAgrupar(lista) {
+    const map = new Map();
+    lista.forEach(r => {
+        const chave = r.nome.trim().toUpperCase();
+        if (!map.has(chave)) {
+            map.set(chave, {
+                nome:       r.nome.trim(),
+                unidade:    r.unidade,
+                controlePF: false,
+                fornecedor: r.fornecedor || '',
+                ids:        [],
+                qtdAtual:   0,
+                minimo:     0,
+                custoUnit:  r.custoUnit || 0
+            });
+        }
+        const g = map.get(chave);
+        g.ids.push(r.id);
+        g.qtdAtual  += parseFloat(r.qtdAtual) || 0;
+        g.minimo    += parseFloat(r.minimo)   || 0;
+        if (r.controlePF)  g.controlePF = true;
+        if (!g.fornecedor && r.fornecedor) g.fornecedor = r.fornecedor;
+    });
+    return Array.from(map.values());
+}
+
+// ── Classificar um grupo ──────────────────────────────────────────────
+function _ecClassificar(g, prazoEntregaDias) {
+    const JANELA = 90; // dias de histórico
+    const total90 = _ecConsumo90(g.ids, JANELA);
+    const consumoDiario = total90 / JANELA; // unidades/dia
+
+    // Autonomia real em dias
+    const autonomiaDias = consumoDiario > 0
+        ? Math.floor(g.qtdAtual / consumoDiario)
+        : (g.qtdAtual > 0 ? Infinity : 0);
+
+    // Ponto de pedido: precisa ter estoque para o prazo + buffer do mínimo
+    // Quantidade mínima pra aguentar o prazo de entrega a partir de hoje
+    const necessidadePrazo = consumoDiario * prazoEntregaDias;
+    // Estoque de segurança = máximo entre mínimo cadastrado e 15 dias de consumo
+    const estoqueSeguranca = Math.max(g.minimo, consumoDiario * 15);
+    // Ponto de pedido = necessidade do prazo + estoque de segurança
+    const pontoPedido = necessidadePrazo + estoqueSeguranca;
+
+    // Quanto comprar = cobrir prazoEntrega + recompor segurança − estoque atual
+    const qtdComprar = Math.max(0, Math.ceil(pontoPedido - g.qtdAtual));
+
+    // Classificação
+    let status;
+    if (g.qtdAtual <= 0) {
+        status = 'zerado';
+    } else if (consumoDiario <= 0) {
+        // Sem consumo registrado: verifica só vs mínimo
+        status = g.qtdAtual > g.minimo ? 'ok' : 'urgente';
+    } else if (autonomiaDias <= prazoEntregaDias) {
+        status = 'urgente';   // vai faltar antes do fornecedor entregar!
+    } else if (autonomiaDias <= prazoEntregaDias * 2) {
+        status = 'moderado';  // dura, mas já é hora de comprar
+    } else {
+        status = 'ok';
+    }
+
+    // % da barra de progresso (máx = 3× prazo)
+    const pctBarra = autonomiaDias === Infinity
+        ? 100
+        : Math.min(100, Math.round((autonomiaDias / (prazoEntregaDias * 3)) * 100));
+
+    return {
+        g, total90, consumoDiario, autonomiaDias, pontoPedido,
+        estoqueSeguranca, necessidadePrazo, qtdComprar, status, pctBarra
+    };
 }
 
 function reagRenderEstudo() {
-    const meses  = _reagUltimosMeses(3);
-    const filPF  = (document.getElementById('estudoFiltroPF')     || {}).value || '';
-    const filSt  = (document.getElementById('estudoFiltroStatus') || {}).value || '';
+    const prazoEntregaDias = parseInt(document.getElementById('estudoPrazoEntrega')?.value || '30') || 30;
+    const filSt  = document.getElementById('estudoFiltroStatus')?.value  || '';
+    const filPF  = document.getElementById('estudoFiltroPF')?.value      || '';
 
     let lista = [..._reagentes];
     if (filPF === 'pf')     lista = lista.filter(r => r.controlePF);
     if (filPF === 'normal') lista = lista.filter(r => !r.controlePF);
 
-    // Calcular consumo por reagente
-    const dados = lista.map(r => {
-        const consumoMeses = meses.map(m => _reagConsumoMes(r.id, m));
-        const totalConsumido = consumoMeses.reduce((s, v) => s + v, 0);
-        const media = totalConsumido / 3;
-        const necessidade2m = media * 2; // prazo de entrega 2 meses
-        const sugestao = Math.max(0, Math.ceil(necessidade2m + r.minimo - r.qtdAtual));
-        const cobreMeses = media > 0 ? r.qtdAtual / media : 99;
+    const grupos = _ecAgrupar(lista);
+    const dados  = grupos.map(g => _ecClassificar(g, prazoEntregaDias));
 
-        let prioridade = 'ok';
-        if (media > 0) {
-            if (cobreMeses < 1) prioridade = 'urgente';
-            else if (cobreMeses < 2) prioridade = 'atencao';
-        }
-
-        return { r, consumoMeses, media, necessidade2m, sugestao, cobreMeses, prioridade, totalConsumido };
+    // Ordenação: zerado → urgente → moderado → ok, depois por autonomia asc
+    const ordem = { zerado: 0, urgente: 1, moderado: 2, ok: 3 };
+    dados.sort((a, b) => {
+        if (ordem[a.status] !== ordem[b.status]) return ordem[a.status] - ordem[b.status];
+        const au = a.autonomiaDias === Infinity ? 99999 : a.autonomiaDias;
+        const bu = b.autonomiaDias === Infinity ? 99999 : b.autonomiaDias;
+        return au - bu;
     });
 
-    // Filtro de status
-    const dadosFiltrados = filSt ? dados.filter(d => d.prioridade === filSt) : dados;
-
-    // Ordenar: urgente > atencao > ok, depois por total consumido desc
-    dadosFiltrados.sort((a, b) => {
-        const ord = { urgente: 0, atencao: 1, ok: 2 };
-        if (ord[a.prioridade] !== ord[b.prioridade]) return ord[a.prioridade] - ord[b.prioridade];
-        return b.totalConsumido - a.totalConsumido;
-    });
-
-    // ── Ranking Top 5 ──────────────────────────────────────────────
-    const top5 = [...dados].sort((a, b) => b.totalConsumido - a.totalConsumido).slice(0, 5);
-    const rankDiv = document.getElementById('estudoRanking');
-    if (rankDiv) {
-        const maxVal = top5[0]?.totalConsumido || 1;
-        rankDiv.innerHTML = top5.map((d, i) => {
-            const pct = Math.round((d.totalConsumido / maxVal) * 100);
-            const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
-            return `<div style="flex:1;min-width:150px;background:#fff;border-radius:8px;padding:12px;box-shadow:0 1px 6px rgba(0,0,0,0.08);border-top:3px solid #8e44ad;">
-                <div style="font-size:16px;margin-bottom:4px;">${medals[i]}</div>
-                <div style="font-size:11px;font-weight:800;color:#2c3e50;margin-bottom:2px;">${d.r.nome}${d.r.controlePF ? ' <span style="font-size:9px;background:#8e44ad;color:#fff;border-radius:3px;padding:1px 5px;">PF</span>' : ''}</div>
-                <div style="font-size:10px;color:#888;">${d.totalConsumido.toFixed(1)} ${d.r.unidade} / 3 meses</div>
-                <div style="background:#e8d5f5;border-radius:4px;height:6px;margin-top:6px;overflow:hidden;">
-                    <div style="background:#8e44ad;height:6px;width:${pct}%;border-radius:4px;"></div>
-                </div>
+    // ── KPIs ──────────────────────────────────────────────────────────
+    const kpiEl = document.getElementById('estudoKpis');
+    if (kpiEl) {
+        const nUrgente  = dados.filter(d => d.status === 'urgente' || d.status === 'zerado').length;
+        const nModerado = dados.filter(d => d.status === 'moderado').length;
+        const nOk       = dados.filter(d => d.status === 'ok').length;
+        const nTotal    = dados.length;
+        kpiEl.innerHTML = `
+            <div class="ec-kpi ec-kpi-urgente">
+                <div class="ec-kpi-val">${nUrgente}</div>
+                <div class="ec-kpi-lbl">🔴 Ação Urgente</div>
+            </div>
+            <div class="ec-kpi ec-kpi-moderado">
+                <div class="ec-kpi-val">${nModerado}</div>
+                <div class="ec-kpi-lbl">🟠 Moderado</div>
+            </div>
+            <div class="ec-kpi ec-kpi-ok">
+                <div class="ec-kpi-val">${nOk}</div>
+                <div class="ec-kpi-lbl">🟢 Suficiente</div>
+            </div>
+            <div class="ec-kpi ec-kpi-total">
+                <div class="ec-kpi-val">${nTotal}</div>
+                <div class="ec-kpi-lbl">📦 Total Reagentes</div>
             </div>`;
-        }).join('');
     }
 
-    // ── Gráfico consumo mensal ─────────────────────────────────────
-    const MESES_LABEL = meses.map(m => {
-        const [ano, mes] = m.split('-');
-        const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-        return nomes[parseInt(mes)-1] + '/' + ano.substring(2);
-    });
-    const PALETA = ['#8e44ad','#e74c3c','#3498db','#27ae60','#e67e22','#1abc9c','#f39c12','#2c3e50'];
-    const top8   = [...dados].sort((a, b) => b.totalConsumido - a.totalConsumido).slice(0, 8);
+    // ── Filtro de status ──────────────────────────────────────────────
+    const filtrados = filSt
+        ? dados.filter(d => filSt === 'urgente' ? (d.status === 'urgente' || d.status === 'zerado') : d.status === filSt)
+        : dados;
 
-    // Checkboxes do gráfico
-    const chkDiv = document.getElementById('estudoGrafChks');
-    if (chkDiv && chkDiv.innerHTML === '') {
-        chkDiv.innerHTML = top8.map((d, i) => {
-            const cor = PALETA[i % PALETA.length];
-            return `<label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;background:rgba(88,166,255,0.08);border:2px solid ${cor};color:${cor};padding:3px 10px;border-radius:16px;font-size:10px;font-weight:700;">
-                <input type="checkbox" checked data-idx="${i}" onchange="reagAtualizarGrafEstudo()" style="display:none;">
-                <span style="width:8px;height:8px;border-radius:50%;background:${cor};display:inline-block;"></span>${d.r.nome.substring(0,18)}
-            </label>`;
-        }).join('');
-    }
-
-    const ctx = document.getElementById('estudoGrafico');
-    if (!ctx) return;
-    if (_estudoGrafInst) _estudoGrafInst.destroy();
-    _estudoGrafInst = new Chart(ctx.getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: MESES_LABEL,
-            datasets: top8.map((d, i) => ({
-                label: d.r.nome,
-                data: d.consumoMeses,
-                backgroundColor: PALETA[i % PALETA.length] + 'bb',
-                borderColor:     PALETA[i % PALETA.length],
-                borderWidth: 1,
-                borderRadius: 4
-            }))
-        },
-        options: {
-            responsive: true, maintainAspectRatio: true,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { stacked: false, ticks: { font: { size: 10 } } },
-                y: { beginAtZero: true, ticks: { font: { size: 10 } },
-                     title: { display: true, text: 'Qtd consumida', font: { size: 10 } } }
-            }
-        }
-    });
-
-    // ── Tabela sugestão ────────────────────────────────────────────
+    // ── Tabela ────────────────────────────────────────────────────────
     const tbody = document.getElementById('estudoTbody');
     if (!tbody) return;
-
-    if (!dadosFiltrados.length) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:#aaa;">Nenhum dado encontrado.</td></tr>';
+    if (!filtrados.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:#8b949e;font-size:13px;">Nenhum reagente encontrado.</td></tr>`;
         return;
     }
 
-    const priorBadge = {
-        urgente: '<span style="background:#e74c3c;color:#fff;border-radius:10px;padding:2px 10px;font-size:10px;font-weight:800;">🔴 URGENTE</span>',
-        atencao: '<span style="background:#e67e22;color:#fff;border-radius:10px;padding:2px 10px;font-size:10px;font-weight:800;">🟠 ATENÇÃO</span>',
-        ok:      '<span style="background:#27ae60;color:#fff;border-radius:10px;padding:2px 10px;font-size:10px;font-weight:800;">🟢 OK</span>'
+    const barCor = { zerado: '#e74c3c', urgente: '#e74c3c', moderado: '#e67e22', ok: '#27ae60' };
+    const rowCls = { zerado: 'ec-row-zerado', urgente: 'ec-row-urgente', moderado: 'ec-row-moderado', ok: 'ec-row-ok' };
+
+    const badges = {
+        zerado:   '<span class="ec-badge ec-badge-zerado">⚫ SEM ESTOQUE</span>',
+        urgente:  '<span class="ec-badge ec-badge-urgente">🔴 URGENTE</span>',
+        moderado: '<span class="ec-badge ec-badge-moderado">🟠 MODERADO</span>',
+        ok:       '<span class="ec-badge ec-badge-ok">🟢 SUFICIENTE</span>'
     };
 
-    tbody.innerHTML = dadosFiltrados.map(d => {
-        const rowBg = d.prioridade === 'urgente' ? '#fff5f5' : d.prioridade === 'atencao' ? '#fff9f0' : '#fff';
-        const cobreStr = d.cobreMeses >= 99 ? '∞' : d.cobreMeses.toFixed(1) + ' meses';
-        const sugestaoStr = d.sugestao > 0
-            ? `<strong style="color:${d.prioridade==='urgente'?'#e74c3c':d.prioridade==='atencao'?'#e67e22':'#27ae60'};font-size:13px;">${d.sugestao.toFixed(0)} ${d.r.unidade}</strong>`
-            : '<span style="color:#27ae60;font-weight:700;">— suficiente</span>';
-        return `<tr style="border-bottom:1px solid #f0f0f0;background:${rowBg};">
-            <td style="padding:9px 12px;">
-                <div style="font-weight:700;color:#2c3e50;">${d.r.nome}</div>
-                ${d.r.controlePF ? '<span style="background:#8e44ad;color:#fff;border-radius:3px;padding:1px 6px;font-size:9px;font-weight:800;">🚔 PF CONTROLADO</span>' : ''}
+    tbody.innerHTML = filtrados.map(d => {
+        const { g, consumoDiario, autonomiaDias, qtdComprar, status, pctBarra } = d;
+
+        // Autonomia formatada
+        let autonomiaStr, diasChip;
+        if (g.qtdAtual <= 0) {
+            autonomiaStr = '<span style="color:#e74c3c;font-weight:900;">Sem estoque!</span>';
+            diasChip = '<span class="ec-dias ec-dias-urg">⚫ 0 dias</span>';
+        } else if (autonomiaDias === Infinity) {
+            autonomiaStr = '<span style="color:#27ae60;">Sem consumo</span>';
+            diasChip = '<span class="ec-dias ec-dias-ok">∞ dias</span>';
+        } else {
+            const cls = status === 'ok' ? 'ec-dias-ok' : status === 'moderado' ? 'ec-dias-mod' : 'ec-dias-urg';
+            diasChip = `<span class="ec-dias ${cls}">${autonomiaDias} dias</span>`;
+            autonomiaStr = '';
+        }
+
+        // Barra de autonomia
+        const barFill = `<div class="ec-prog-track" style="margin-top:5px;">
+            <div class="ec-prog-fill" style="width:${pctBarra}%;background:${barCor[status]};"></div>
+        </div>`;
+
+        // Consumo diário
+        const consumoStr = consumoDiario > 0
+            ? consumoDiario.toFixed(3) + ' ' + g.unidade + '/dia'
+            : '<span style="color:#8b949e;font-size:10px;">sem registro</span>';
+
+        // Comprar
+        let comprarStr;
+        if (status === 'ok' && qtdComprar === 0) {
+            comprarStr = '<span class="ec-compra-ok">✓ Não necessário</span>';
+        } else if (status === 'zerado' && consumoDiario <= 0) {
+            const repor = Math.ceil(g.minimo) || 1;
+            comprarStr = `<span class="ec-compra-val" style="color:#e74c3c;">${repor} ${g.unidade}</span><div style="font-size:9px;color:#8b949e;margin-top:2px;">repor mínimo</div>`;
+        } else {
+            const cor = status === 'urgente' || status === 'zerado' ? '#e74c3c' : '#e67e22';
+            comprarStr = `<span class="ec-compra-val" style="color:${cor};">${qtdComprar} ${g.unidade}</span><div style="font-size:9px;color:#8b949e;margin-top:2px;">para ${prazoEntregaDias}d + segurança</div>`;
+        }
+
+        // Estoque vs mínimo highlight
+        const estoqueAbaixoMin = g.qtdAtual < g.minimo && g.qtdAtual > 0;
+        const estoqueStr = `<span style="${estoqueAbaixoMin ? 'color:#e74c3c;font-weight:800;' : 'font-weight:700;'}">
+            ${g.qtdAtual.toFixed(1)} ${g.unidade}
+        </span>${estoqueAbaixoMin ? '<div style="font-size:9px;color:#e74c3c;">⚠ abaixo do mínimo</div>' : ''}`;
+
+        const lotes = g.ids.length;
+
+        return `<tr class="${rowCls[status]}">
+            <td style="padding:12px 10px;">
+                <div style="font-weight:800;font-size:12px;line-height:1.3;">${g.nome}</div>
+                <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;">
+                    ${g.controlePF ? '<span style="background:#6c3483;color:#fff;border-radius:4px;padding:1px 6px;font-size:9px;font-weight:700;">🚔 PF</span>' : ''}
+                    ${lotes > 1 ? `<span style="background:#1a4a6e;color:#58a6ff;border-radius:4px;padding:1px 6px;font-size:9px;font-weight:700;">📦 ${lotes} lotes</span>` : ''}
+                    ${g.fornecedor ? `<span style="color:#8b949e;font-size:9px;">${g.fornecedor.substring(0,22)}</span>` : ''}
+                </div>
             </td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;">${d.consumoMeses[0].toFixed(1)} ${d.r.unidade}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;">${d.consumoMeses[1].toFixed(1)} ${d.r.unidade}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;">${d.consumoMeses[2].toFixed(1)} ${d.r.unidade}</td>
-            <td style="padding:9px 8px;text-align:center;font-weight:700;color:#8e44ad;">${d.media.toFixed(1)} ${d.r.unidade}</td>
-            <td style="padding:9px 8px;text-align:center;">${d.r.qtdAtual} ${d.r.unidade}</td>
-            <td style="padding:9px 8px;text-align:center;font-size:11px;color:${d.cobreMeses<1?'#e74c3c':d.cobreMeses<2?'#e67e22':'#555'};">${cobreStr}</td>
-            <td style="padding:9px 8px;text-align:center;background:#fdf8ff;">${sugestaoStr}</td>
-            <td style="padding:9px 8px;text-align:center;">${priorBadge[d.prioridade]}</td>
+            <td style="padding:12px 10px;text-align:right;">${estoqueStr}</td>
+            <td style="padding:12px 10px;text-align:right;color:#8b949e;font-size:11px;">${g.minimo > 0 ? g.minimo.toFixed(1) + ' ' + g.unidade : '—'}</td>
+            <td style="padding:12px 10px;text-align:center;font-size:11px;">${consumoStr}</td>
+            <td style="padding:12px 10px;text-align:center;">
+                ${autonomiaStr || diasChip}
+                ${consumoDiario > 0 ? barFill : ''}
+            </td>
+            <td style="padding:12px 10px;text-align:center;font-size:11px;color:#8b949e;">${prazoEntregaDias} dias</td>
+            <td style="padding:12px 10px;text-align:right;">${comprarStr}</td>
+            <td style="padding:12px 10px;text-align:center;">${badges[status]}</td>
         </tr>`;
     }).join('');
 }
 
-function reagAtualizarGrafEstudo() {
-    // Atualiza visibilidade das séries do gráfico conforme checkboxes
-    if (!_estudoGrafInst) return;
-    const chks = document.querySelectorAll('#estudoGrafChks input[type=checkbox]');
-    chks.forEach((chk, i) => {
-        const meta = _estudoGrafInst.getDatasetMeta(i);
-        if (meta) { meta.hidden = !chk.checked; }
-    });
-    _estudoGrafInst.update();
-}
-
 function reagExportarEstudo() {
-    const meses = _reagUltimosMeses(3);
-    const linhas = [['Reagente','Controlado PF','Unidade','Mes-3','Mes-2','Mes-1','Media/Mes','Estoque Atual','Estoque Minimo','Sugestao Compra','Prioridade']];
-    _reagentes.forEach(r => {
-        const consumoMeses = meses.map(m => _reagConsumoMes(r.id, m));
-        const media = consumoMeses.reduce((s,v)=>s+v,0) / 3;
-        const sugestao = Math.max(0, Math.ceil(media * 2 + r.minimo - r.qtdAtual));
-        const cobreMeses = media > 0 ? r.qtdAtual / media : 99;
-        const prio = media > 0 ? (cobreMeses < 1 ? 'URGENTE' : cobreMeses < 2 ? 'ATENCAO' : 'OK') : 'SEM CONSUMO';
-        linhas.push([r.nome, r.controlePF?'SIM':'NAO', r.unidade,
-            consumoMeses[0].toFixed(1), consumoMeses[1].toFixed(1), consumoMeses[2].toFixed(1),
-            media.toFixed(1), r.qtdAtual, r.minimo, sugestao, prio]);
+    const prazoEntregaDias = parseInt(document.getElementById('estudoPrazoEntrega')?.value || '30') || 30;
+    const grupos = _ecAgrupar([..._reagentes]);
+    const linhas = [['Reagente','Lotes','Controlado PF','Fornecedor','Unidade','Estoque Atual','Estoque Mínimo','Consumo 90 dias','Consumo/dia','Autonomia (dias)','Qtd Comprar','Status']];
+    grupos.forEach(g => {
+        const d = _ecClassificar(g, prazoEntregaDias);
+        const aut = d.autonomiaDias === Infinity ? '∞' : d.autonomiaDias;
+        linhas.push([
+            g.nome, g.ids.length, g.controlePF?'SIM':'NAO', g.fornecedor, g.unidade,
+            g.qtdAtual.toFixed(1), g.minimo.toFixed(1),
+            d.total90.toFixed(1), d.consumoDiario.toFixed(4),
+            aut, d.qtdComprar, d.status.toUpperCase()
+        ]);
     });
-    const csv = linhas.map(l => l.join(';')).join('\n');
+    const csv = '\uFEFF' + linhas.map(l => l.join(';')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a'); a.href = url;
-    a.download = 'estudo_consumo_reagentes_' + _reagHoje() + '.csv';
+    a.download = 'estudo_consumo_' + new Date().toISOString().slice(0,10) + '.csv';
     a.click(); URL.revokeObjectURL(url);
     sgqToast('✅ CSV exportado com sucesso!', 'success');
 }
