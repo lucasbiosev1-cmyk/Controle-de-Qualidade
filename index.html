@@ -8296,6 +8296,45 @@
         </div>
     </div>
 
+    <!-- ===== MODAL CONFIRMAÇÃO DE LANÇAMENTO DUPLICADO ===== -->
+    <div id="modalDuplicataEMP" style="display:none;position:fixed;z-index:3100;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.65);align-items:center;justify-content:center;">
+        <div style="background:#1a1f2e;border-radius:12px;width:480px;max-width:95%;box-shadow:0 12px 48px rgba(0,0,0,0.5);overflow:hidden;border:1px solid #30363d;">
+            <!-- Cabeçalho -->
+            <div style="background:linear-gradient(135deg,#7d3c00,#c0392b);padding:18px 22px;display:flex;align-items:center;gap:12px;">
+                <span style="font-size:24px;">⚠️</span>
+                <div>
+                    <div style="color:#fff;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;">Possível Lançamento Duplicado</div>
+                    <div style="color:rgba(255,255,255,0.7);font-size:10px;font-weight:500;margin-top:2px;">Registro similar encontrado na base de dados</div>
+                </div>
+            </div>
+            <!-- Corpo -->
+            <div style="padding:22px;">
+                <p style="color:#e6edf3;font-size:12.5px;line-height:1.7;margin-bottom:16px;">
+                    Foi encontrado um registro com características similares ao que você está tentando lançar. Verifique os dados abaixo antes de confirmar.
+                </p>
+                <!-- Card do registro encontrado -->
+                <div id="dupCardEMP" style="background:#0d1117;border:1px solid #30363d;border-left:4px solid #e67e22;border-radius:8px;padding:14px 16px;margin-bottom:18px;font-size:11.5px;color:#8b949e;line-height:2;">
+                </div>
+                <!-- Aviso -->
+                <div style="background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);border-radius:6px;padding:10px 14px;margin-bottom:18px;display:flex;align-items:flex-start;gap:8px;">
+                    <span style="font-size:14px;flex-shrink:0;margin-top:1px;">🔒</span>
+                    <span style="color:#f1948a;font-size:11px;font-weight:600;line-height:1.6;">
+                        Lançamentos duplicados podem comprometer o controle de estoque e a rastreabilidade. Confirme apenas se tiver certeza de que se trata de uma entrada diferente.
+                    </span>
+                </div>
+                <!-- Botões -->
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button onclick="fecharModalDuplicataEMP()" style="padding:9px 22px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.3px;">
+                        ← Voltar e Revisar
+                    </button>
+                    <button onclick="confirmarLancamentoDuplicataEMP()" style="padding:9px 22px;border-radius:6px;border:none;background:linear-gradient(135deg,#b7410e,#c0392b);color:#fff;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.3px;box-shadow:0 2px 8px rgba(192,57,43,0.4);">
+                        Confirmar Mesmo Assim
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== MODAL APROVAR/REPROVAR ENTRADA ===== -->
     <div id="modalAprovarEMP" style="display:none;position:fixed;z-index:2000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
         <div style="background:white;border-radius:8px;width:420px;max-width:95%;box-shadow:0 8px 32px rgba(0,0,0,0.25);overflow:hidden;">
@@ -14122,6 +14161,75 @@ function limparFormularioEMP() {
     if (obsEl) { obsEl.value = ''; const tog = obsEl.closest('.obs-body').previousElementSibling; tog.classList.remove('open'); obsEl.closest('.obs-body').classList.remove('open'); }
 }
 
+// ── Estado temporário para lançamento com duplicata confirmada ──────────
+let _empPendenteDuplicata = null;
+
+function fecharModalDuplicataEMP() {
+    document.getElementById('modalDuplicataEMP').style.display = 'none';
+    _empPendenteDuplicata = null;
+}
+
+async function confirmarLancamentoDuplicataEMP() {
+    document.getElementById('modalDuplicataEMP').style.display = 'none';
+    if (!_empPendenteDuplicata) return;
+    await _executarSalvarEntradaMP(_empPendenteDuplicata);
+    _empPendenteDuplicata = null;
+}
+
+function _abrirModalDuplicataEMP(registroSuspeito, dadosPendentes) {
+    const d = registroSuspeito;
+    const dataFmt = d.data ? d.data.split('-').reverse().join('/') : '-';
+    document.getElementById('dupCardEMP').innerHTML = `
+        <div style="color:#e6edf3;font-weight:700;font-size:12px;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">📋 Registro Existente</div>
+        <div><span style="color:#58a6ff;font-weight:600;min-width:120px;display:inline-block;">Matéria Prima:</span> <span style="color:#e6edf3;font-weight:600;">${d.materia_prima || '-'}</span></div>
+        <div><span style="color:#58a6ff;font-weight:600;min-width:120px;display:inline-block;">Fornecedor:</span> ${d.fornecedor || '-'}</div>
+        <div><span style="color:#58a6ff;font-weight:600;min-width:120px;display:inline-block;">Data / Hora:</span> ${dataFmt} às ${d.hora || '-'}</div>
+        <div><span style="color:#58a6ff;font-weight:600;min-width:120px;display:inline-block;">Placa:</span> ${d.placa || '-'}</div>
+        <div><span style="color:#58a6ff;font-weight:600;min-width:120px;display:inline-block;">Nota Fiscal:</span> ${d.nf || '(sem NF)'}</div>
+        <div><span style="color:#58a6ff;font-weight:600;min-width:120px;display:inline-block;">Status:</span> <span style="color:#e67e22;font-weight:700;">${d.status || '-'}</span></div>
+    `;
+    _empPendenteDuplicata = dadosPendentes;
+    document.getElementById('modalDuplicataEMP').style.display = 'flex';
+}
+
+async function _executarSalvarEntradaMP(payload) {
+    const { data, hora, materia_prima, fornecedor, nf, placa, usuario, obs, seq, quantidade } = payload;
+    const nfUp = (nf || '').toUpperCase();
+
+    let statusInicial = 'EM ANÁLISE';
+    if (nfUp && nfUp !== '-') {
+        const emClass = classificacoes.some(r => {
+            const nfR = (r.nf||'').toString().trim().toUpperCase();
+            return nfR && nfR !== '-' && nfR === nfUp;
+        });
+        const emMP = materiasPrimas.some(r => {
+            const nfR = (r.nf||'').toString().trim().toUpperCase();
+            return nfR && nfR !== '-' && nfR === nfUp;
+        });
+        if (emClass || emMP) statusInicial = 'CONCLUÍDA';
+    }
+
+    const novaEntrada = {
+        id: Date.now(),
+        data, hora, materia_prima, fornecedor, nf, placa,
+        usuario, obs, seq, quantidade,
+        status: statusInicial,
+        status_descarga: '',
+        criado_em: new Date().toISOString()
+    };
+    entradasMP.push(novaEntrada);
+    try {
+        const saved = await dbUpsertOne('entradas_mp', novaEntrada);
+        if (saved && saved.id != null) {
+            const localIdx = entradasMP.findIndex(e => e.id === novaEntrada.id);
+            if (localIdx >= 0) entradasMP[localIdx] = { ...entradasMP[localIdx], id: saved.id };
+        }
+    } catch(e) { mostrarMsgEMP('erro','Erro ao salvar: ' + e.message); return; }
+    mostrarMsgEMP('sucesso','✅ Entrada registrada com sucesso! Status: ' + statusInicial);
+    fecharModalEMP();
+    setTimeout(() => exibirTabelaEMP(), 100);
+}
+
 async function salvarEntradaMP(event) {
     if (event) event.preventDefault();
     const data        = dataParaISO(document.getElementById('cadDataEMP').value);
@@ -14135,7 +14243,6 @@ async function salvarEntradaMP(event) {
     const qtdVal      = document.getElementById('cadQtdEMP')?.value;
     const quantidade  = (qtdVal !== '' && qtdVal != null && !isNaN(qtdVal)) ? Number(qtdVal) : null;
     const seqVal      = document.getElementById('cadSeqEMP')?.value;
-    // Garante que o valor seja salvo como número ou null se vazio
     const seq         = (seqVal !== '' && seqVal != null && !isNaN(seqVal)) ? Number(seqVal) : null;
 
     if (!data)         { mostrarMsgEMP('erro','Informe a data.'); return; }
@@ -14143,7 +14250,7 @@ async function salvarEntradaMP(event) {
     if (!fornecedor)   { mostrarMsgEMP('erro','Informe o fornecedor.'); return; }
 
     if (_empEditandoId) {
-        // Ao editar: verifica duplicata de NF excluindo o próprio registro (somente se NF informada)
+        // Ao editar: bloqueia NF duplicada excluindo o próprio registro
         if (nf) {
             const nfDupEdit = entradasMP.find(e => String(e.id) !== String(_empEditandoId) && (e.nf||'').toString().trim().toUpperCase() === nf);
             if (nfDupEdit) {
@@ -14153,11 +14260,9 @@ async function salvarEntradaMP(event) {
         }
         const idx = entradasMP.findIndex(e => String(e.id) === String(_empEditandoId));
         if (idx >= 0) {
-            // Atualiza o objeto local IMEDIATAMENTE
             const itemAtualizado = { ...entradasMP[idx], data, hora, materia_prima, fornecedor, nf, placa, obs, seq, quantidade };
             entradasMP[idx] = itemAtualizado;
-            
-            try { 
+            try {
                 const res = await dbUpsertOne('entradas_mp', itemAtualizado);
                 console.log("Resposta do Supabase ao salvar seq:", res);
             } catch(e){
@@ -14166,58 +14271,45 @@ async function salvarEntradaMP(event) {
             }
         }
         mostrarMsgEMP('sucesso','✅ Entrada atualizada com sucesso!');
+        fecharModalEMP();
+        setTimeout(() => exibirTabelaEMP(), 100);
     } else {
         const nfUp = nf.toUpperCase();
-        // Bloqueia NF duplicada (somente se NF foi informada)
-        if (nfUp) {
+
+        // ── BLOQUEIO TOTAL: NF informada e já existe ──────────────────
+        if (nfUp && nfUp !== '-') {
             const nfDupNovo = entradasMP.find(e => (e.nf||'').toString().trim().toUpperCase() === nfUp);
             if (nfDupNovo) {
                 mostrarMsgEMP('erro', `⚠️ NF "${nfUp}" já está registrada (Fornecedor: ${nfDupNovo.fornecedor || '-'}, Data: ${nfDupNovo.data ? nfDupNovo.data.split('-').reverse().join('/') : '-'}). Não é possível duplicar.`);
                 return;
             }
         }
-        // ✅ CORREÇÃO: só verifica NF se ela foi informada e não é traço — placas se repetem e não devem influenciar o status
-        let statusInicial = 'EM ANÁLISE';
-        if (nfUp && nfUp !== '-') {
-            // ✅ CORREÇÃO CRÍTICA: só cruza com registros que têm NF real (evita '' === '' ou '-' === '-')
-            const emClass = classificacoes.some(r => {
-                const nfR = (r.nf||'').toString().trim().toUpperCase();
-                return nfR && nfR !== '-' && nfR === nfUp;
+
+        // ── ALERTA: sem NF — verifica duplicata por matéria prima + fornecedor + data + placa ──
+        if (!nfUp || nfUp === '-') {
+            const suspeito = entradasMP.find(e => {
+                const mesmaMp   = (e.materia_prima||'').toUpperCase() === materia_prima;
+                const mesmoForn = (e.fornecedor||'').toUpperCase() === fornecedor;
+                const mesmaData = (e.data||'') === data;
+                const mesmaPlaca = placa && (e.placa||'').toUpperCase() === placa;
+                // Duplicata = mesma MP + mesmo fornecedor + mesma data + (placa igual se informada)
+                return mesmaMp && mesmoForn && mesmaData && (placa ? mesmaPlaca : true);
             });
-            const emMP = materiasPrimas.some(r => {
-                const nfR = (r.nf||'').toString().trim().toUpperCase();
-                return nfR && nfR !== '-' && nfR === nfUp;
-            });
-            if (emClass || emMP) statusInicial = 'CONCLUÍDA';
+            if (suspeito) {
+                const dadosPendentes = { data, hora, materia_prima, fornecedor, nf, placa, usuario, obs, seq, quantidade };
+                _abrirModalDuplicataEMP(suspeito, dadosPendentes);
+                return;
+            }
         }
 
-        const novaEntrada = {
-            id: Date.now(),
-            data, hora, materia_prima, fornecedor, nf, placa,
-            usuario, obs, seq, quantidade,
-            status: statusInicial,
-            status_descarga: '',
-            criado_em: new Date().toISOString()
-        };
-        entradasMP.push(novaEntrada);
-        try {
-            const saved = await dbUpsertOne('entradas_mp', novaEntrada);
-            // ✅ CORREÇÃO: captura o ID real gerado pelo Supabase e atualiza o array local
-            if (saved && saved.id != null) {
-                const localIdx = entradasMP.findIndex(e => e.id === novaEntrada.id);
-                if (localIdx >= 0) entradasMP[localIdx] = { ...entradasMP[localIdx], id: saved.id };
-            }
-        } catch(e){ mostrarMsgEMP('erro','Erro ao salvar: ' + e.message); }
-        mostrarMsgEMP('sucesso','✅ Entrada registrada com sucesso! Status: ' + statusInicial);
+        // ── Sem duplicata: salva diretamente ──────────────────────────
+        const dadosPendentes = { data, hora, materia_prima, fornecedor, nf, placa, usuario, obs, seq, quantidade };
+        await _executarSalvarEntradaMP(dadosPendentes);
+        return;
     }
-
-    fecharModalEMP();
-    // Força um pequeno delay para garantir que o array global 'entradasMP' esteja atualizado antes de renderizar
-    setTimeout(() => {
-        exibirTabelaEMP();
-    }, 100);
 }
 
+// ── LEGADO: bloco original removido e incorporado em _executarSalvarEntradaMP ──
 function mostrarMsgEMP(tipo, msg) {
     if (tipo === 'sucesso') { sgqToast(msg, 'success'); return; }
     const sid = 'msgErroEMP';
@@ -14232,19 +14324,58 @@ function mostrarMsgEMP(tipo, msg) {
 }
 
 async function excluirEntradaMP(id) {
-    if (!confirm('Excluir este registro de entrada?')) return;
     entradasMP = entradasMP.filter(e => String(e.id) !== String(id));
     try { await dbDeleteOne('entradas_mp', id); } catch(e){}
     exibirTabelaEMP();
-    mostrarMsgEMP('sucesso','✅ Entrada excluída.');
+    mostrarMsgEMP('sucesso','✅ Entrada excluída com sucesso.');
 }
 
 async function excluirEMPDoModal() {
     const id = document.getElementById('cadIdEMP').value;
     if (!id) return;
-    if (!confirm('Tem certeza que deseja excluir este registro de entrada?')) return;
-    fecharModalEMP();
-    await excluirEntradaMP(id);
+    const entrada = entradasMP.find(e => String(e.id) === String(id));
+    const dataFmt = entrada?.data ? entrada.data.split('-').reverse().join('/') : '-';
+    const infoHtml = entrada ? `
+        <div style="background:#0d1117;border:1px solid #30363d;border-left:4px solid #e74c3c;border-radius:8px;padding:14px 16px;margin-bottom:16px;font-size:11.5px;color:#8b949e;line-height:2;">
+            <div style="color:#e6edf3;font-weight:700;font-size:12px;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">📋 Registro a Excluir</div>
+            <div><span style="color:#58a6ff;font-weight:600;min-width:120px;display:inline-block;">Matéria Prima:</span> <span style="color:#e6edf3;font-weight:600;">${entrada.materia_prima||'-'}</span></div>
+            <div><span style="color:#58a6ff;font-weight:600;min-width:120px;display:inline-block;">Fornecedor:</span> ${entrada.fornecedor||'-'}</div>
+            <div><span style="color:#58a6ff;font-weight:600;min-width:120px;display:inline-block;">Data / Hora:</span> ${dataFmt} às ${entrada.hora||'-'}</div>
+            <div><span style="color:#58a6ff;font-weight:600;min-width:120px;display:inline-block;">Placa:</span> ${entrada.placa||'-'}</div>
+            <div><span style="color:#58a6ff;font-weight:600;min-width:120px;display:inline-block;">Nota Fiscal:</span> ${entrada.nf||'(sem NF)'}</div>
+        </div>` : '';
+    const overlay = document.createElement('div');
+    overlay.id = 'overlayConfirmExcEMP';
+    overlay.style.cssText = 'position:fixed;z-index:3200;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;';
+    overlay.innerHTML = `
+        <div style="background:#1a1f2e;border-radius:12px;width:460px;max-width:95%;box-shadow:0 12px 48px rgba(0,0,0,0.6);overflow:hidden;border:1px solid #30363d;">
+            <div style="background:linear-gradient(135deg,#6d0000,#c0392b);padding:18px 22px;display:flex;align-items:center;gap:12px;">
+                <span style="font-size:22px;">🗑️</span>
+                <div>
+                    <div style="color:#fff;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;">Confirmar Exclusão</div>
+                    <div style="color:rgba(255,255,255,0.7);font-size:10px;font-weight:500;margin-top:2px;">Esta ação não poderá ser desfeita</div>
+                </div>
+            </div>
+            <div style="padding:22px;">
+                <p style="color:#e6edf3;font-size:12.5px;line-height:1.7;margin-bottom:14px;">Você está prestes a excluir permanentemente este registro de entrada. Confirme os dados abaixo:</p>
+                ${infoHtml}
+                <div style="background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);border-radius:6px;padding:10px 14px;margin-bottom:18px;display:flex;align-items:flex-start;gap:8px;">
+                    <span style="font-size:14px;flex-shrink:0;margin-top:1px;">⚠️</span>
+                    <span style="color:#f1948a;font-size:11px;font-weight:600;line-height:1.6;">A exclusão removerá este registro do sistema e do banco de dados permanentemente. Certifique-se de que não há análises vinculadas a esta entrada.</span>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button id="btnCancelarExcEMP" style="padding:9px 22px;border-radius:6px;border:1px solid #30363d;background:#21262d;color:#e6edf3;font-size:12px;font-weight:600;cursor:pointer;">Cancelar</button>
+                    <button id="btnConfirmarExcEMP" style="padding:9px 22px;border-radius:6px;border:none;background:linear-gradient(135deg,#8b0000,#c0392b);color:#fff;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(192,57,43,0.4);">🗑️ Excluir Definitivamente</button>
+                </div>
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
+    document.getElementById('btnCancelarExcEMP').onclick = () => overlay.remove();
+    document.getElementById('btnConfirmarExcEMP').onclick = async () => {
+        overlay.remove();
+        fecharModalEMP();
+        await excluirEntradaMP(id);
+    };
 }
 
 function abrirModalAprovarEMP(id) {
