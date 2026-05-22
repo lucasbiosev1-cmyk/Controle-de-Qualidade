@@ -14137,7 +14137,14 @@ function editarEntradaMP(id) {
     else { obsToggleEMP.classList.remove('open'); obsEMP.closest('.obs-body').classList.remove('open'); }
     document.getElementById('modalCadastroEMP').classList.add('show');
     const btnExcEMP2 = document.getElementById('btnExcluirEMP');
-    if (btnExcEMP2) btnExcEMP2.style.display = podeExcluir ? 'inline-block' : 'none';
+    if (btnExcEMP2) {
+        const _isAdminExc = perfilAtual === 'admin';
+        const _userExc = USUARIOS[usuarioAtual] || {};
+        let _permsExc = _userExc.perms || {};
+        if (typeof _permsExc === 'string') { try { _permsExc = JSON.parse(_permsExc); } catch(e) { _permsExc = {}; } }
+        const _podeExcluir = _isAdminExc || _permsExc.entrada_excluir;
+        btnExcEMP2.style.display = _podeExcluir ? 'inline-block' : 'none';
+    }
 }
 
 function fecharModalEMP() {
