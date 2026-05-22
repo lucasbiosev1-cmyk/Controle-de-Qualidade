@@ -15830,7 +15830,9 @@ function _getRacoesCustomizadasCache() {
 
 // Normaliza nome de ração para comparação: maiúsculas, sem espaços extras, remove acento de CALCÁRIO→CALCARIO
 function _normalizarNomeRacao(s) {
-    return (s || '').toUpperCase().replace(/\s+/g, ' ').trim()
+    return (s || '').toUpperCase()
+        .replace(/-/g, ' ')                      // normaliza hífen → espaço (BEPEL-CALCÁRIO = BEPEL CALCÁRIO)
+        .replace(/\s+/g, ' ').trim()
         .replace(/MAC(\s*)ASSAB/g, 'MCASSAB')   // corrige MACASSAB → MCASSAB
         .replace(/CÁLCARIO|CALCÁRIO|CALCARIO/g, 'CALCARIO'); // normaliza acentos
 }
@@ -15930,16 +15932,19 @@ async function _carregarRacoesCustomizadas() {
         let nomes = data.map(r => r.nome).filter(Boolean);
 
         // ── AUTO-CORREÇÃO: MACASSAB → MCASSAB (grafia errada salva no banco) ──
+        // ── AUTO-CORREÇÃO: hífen em BEPEL (ex: BEPEL-CALCÁRIO → BEPEL CALCÁRIO) ──
         for (const row of data) {
-            if (row.nome && /MAC\s*ASSAB/i.test(row.nome)) {
-                const nomeCorrigido = row.nome.replace(/MAC(\s*)ASSAB/gi, 'MCASSAB');
+            const nomeFix = (row.nome || '')
+                .replace(/MAC(\s*)ASSAB/gi, 'MCASSAB')
+                .replace(/BEPEL\s*-\s*/gi, 'BEPEL ');
+            if (row.nome && nomeFix !== row.nome) {
                 try {
-                    await _sbClient.from('racoes_customizadas').update({ nome: nomeCorrigido }).eq('id', row.id);
+                    await _sbClient.from('racoes_customizadas').update({ nome: nomeFix }).eq('id', row.id);
                 } catch(e) {}
             }
         }
         // Recarrega após correção
-        nomes = nomes.map(n => n.replace(/MAC(\s*)ASSAB/gi, 'MCASSAB'));
+        nomes = nomes.map(n => n.replace(/MAC(\s*)ASSAB/gi, 'MCASSAB').replace(/BEPEL\s*-\s*/gi, 'BEPEL '));
 
         // Atualiza cache local
         localStorage.setItem(RACOES_CUSTOM_KEY, JSON.stringify(nomes));
@@ -28163,7 +28168,7 @@ function _sgqGetFornecedores(tipo) {
             if (!vistas.has(norm)) {
                 vistas.add(norm);
                 // Usa nome normalizado para não exibir grafias erradas do histórico
-                deGrupos.push(nome.replace(/MAC(\s*)ASSAB/gi, 'MCASSAB'));
+                deGrupos.push(nome.replace(/MAC(\s*)ASSAB/gi, 'MCASSAB').replace(/BEPEL\s*-\s*/gi, 'BEPEL '));
             }
         });
         return deGrupos;
