@@ -2524,7 +2524,7 @@
             font-weight: bold !important;
         }
         html[data-theme="dark"] .mico-leve     { background:#0d3320 !important; color:#2ecc71 !important; }
-        html[data-theme="dark"] .mico-moderado { background:#3d2800 !important; color:#f39c12 !important; }
+        html[data-theme="dark"] .mico-moderado { background:#7a3e00 !important; color:#ffc04d !important; }
         html[data-theme="dark"] .mico-critico  { background:#5c1010 !important; color:#ff6b6b !important; }
 
         /* ── Linhas de tabela sensíveis ao tema ── */
@@ -18461,14 +18461,19 @@ function renderRCMicotoxinas(dados, di, df) {
     const ctx = document.getElementById('rcMicoGraficoLinha').getContext('2d');
     if (_rcMicoGraficoInst) { _rcMicoGraficoInst.destroy(); _rcMicoGraficoInst = null; }
     if (dados.length) {
-        // agrupar por data
+        // Agrupa por data — apenas datas com ao menos uma micotoxina registrada
         const dateMap = {};
         dados.forEach(r => {
+            if ((r.aflatoxinas||0) <= 0 && (r.fumonisinas||0) <= 0) return;
             if (!dateMap[r.data]) dateMap[r.data] = { afla:[], fumo:[] };
             if ((r.aflatoxinas||0) > 0) dateMap[r.data].afla.push(r.aflatoxinas);
             if ((r.fumonisinas||0) > 0) dateMap[r.data].fumo.push(r.fumonisinas);
         });
         const labels = Object.keys(dateMap).sort();
+
+
+
+
         const fmtLabel = d => new Date(d+'T00:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
         _rcMicoGraficoInst = new Chart(ctx, {
             type: 'line',
@@ -18512,7 +18517,7 @@ function renderRCMicotoxinas(dados, di, df) {
         fumoMedia: d.fumoArr.length ? _rcMed(d.fumoArr) : 0,
         fumoMax:   d.fumoArr.length ? Math.max(...d.fumoArr) : 0,
         score:     (d.aflaArr.length ? _rcMed(d.aflaArr) : 0)*2 + (d.fumoArr.length ? _rcMed(d.fumoArr)/1000 : 0)
-    })).sort((a,b) => b.score - a.score);
+    })).sort((a,b) => a.score - b.score);
 
     const getRisco = (aflaMedia, fumoMedia, produto) => {
         return getMicoRiscoGeral(aflaMedia, fumoMedia);
@@ -18546,9 +18551,9 @@ function renderRCMicotoxinas(dados, di, df) {
 
     // ---- TABELA DETALHADA (todos com afla ou fumo > 0) ----
     const sorted = [...comMico].sort((a,b) => {
-        const scoreA = (a.aflatoxinas||0)*2 + (a.fumonisinas||0)/1000;
-        const scoreB = (b.aflatoxinas||0)*2 + (b.fumonisinas||0)/1000;
-        return scoreB - scoreA;
+        if (a.data < b.data) return -1;
+        if (a.data > b.data) return  1;
+        return (a.hora||'').localeCompare(b.hora||'');
     });
 
     document.getElementById('rcMicoTbodyDetalhe').innerHTML = sorted.length ? sorted.map((r,i) => {
