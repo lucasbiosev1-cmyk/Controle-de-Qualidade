@@ -8725,7 +8725,7 @@
 </div></div>
                         <div class="form-group required">
                             <label>Produto</label>
-                            <select id="cadProdutoClass" required>
+                            <select id="cadProdutoClass" required onchange="classAtualizarCamposProduto(this.value)">
                                 <option value="">Selecione...</option>
                                 <option value="SOJA">SOJA</option>
                                 <option value="SOJA ESTOQUE 01">SOJA ESTOQUE 01</option>
@@ -8748,8 +8748,8 @@
                         <div class="form-group"><label>Picado</label><input type="number" id="cadPicadoClass" step="0.0001" min="0"></div>
                         <div class="form-group"><label>Gessado</label><input type="number" id="cadGessadoClass" step="0.0001" min="0"></div>
                         <div class="form-group"><label>Quebrado</label><input type="number" id="cadQuebradoClass" step="0.0001" min="0"></div>
-                        <div class="form-group"><label>Germinado</label><input type="number" id="cadGerminadoClass" step="0.0001" min="0"></div>
                         <div class="form-group"><label>Carunchado</label><input type="number" id="cadCarunchadoClass" step="0.0001" min="0"></div>
+                        <div class="form-group"><label>Germinado</label><input type="number" id="cadGerminadoClass" step="0.0001" min="0"></div>
                         <div class="form-group"><label>Impureza</label><input type="number" id="cadImpurezaClass" step="0.0001" min="0"></div>
                     </div>
                 </div>
@@ -10466,6 +10466,7 @@ function abrirModalCadastroClass() {
     document.getElementById('formCadastroClass').reset();
     document.getElementById('cadDataClass').value = dataHoje();
     classFornecedorAutoFill('');
+    classAtualizarCamposProduto(''); // garante todos os campos ativos no novo cadastro
     const btnDel = document.getElementById('btnDeletarClassModal');
     if (btnDel) btnDel.style.display = 'none';
     document.getElementById('modalCadastroClass').classList.add('show');
@@ -10491,6 +10492,7 @@ function abrirModalEdicaoClass(id) {
     document.getElementById('cadFornecedorClass').value           = r.fornecedor;
     classFornecedorAutoFill(r.fornecedor);
     document.getElementById('cadProdutoClass').value              = r.produto;
+    classAtualizarCamposProduto(r.produto || '');
     document.getElementById('cadQueimadoClass').value             = r.queimado;
     document.getElementById('cadEsverdeadoClass').value           = r.esverdeado;
     document.getElementById('cadPicadoClass').value               = r.picado;
@@ -10528,6 +10530,54 @@ function deletarClassModal() {
     fecharModalCadastroClass();
 }
 
+// ── Lógica de campos por produto (Milho pula Esverdeado/Picado; Soja pula Gessado/Carunchado) ──
+function classAtualizarCamposProduto(produto) {
+    const isMilho = produto.toUpperCase().includes('MILHO');
+    const isSoja  = produto.toUpperCase().includes('SOJA');
+
+    // IDs dos campos controlados
+    const camposMilho = ['cadEsverdeadoClass', 'cadPicadoClass'];   // pular se MILHO
+    const camposSoja  = ['cadGessadoClass', 'cadCarunchadoClass'];   // pular se SOJA
+
+    function aplicarSkip(ids, skip) {
+        ids.forEach(function(id) {
+            const input = document.getElementById(id);
+            if (!input) return;
+            const grupo = input.closest('.form-group');
+            if (skip) {
+                input.setAttribute('tabindex', '-1');
+                input.setAttribute('data-skip-class', '1');
+                input.value = '';
+                if (grupo) {
+                    grupo.style.opacity   = '0.35';
+                    grupo.style.pointerEvents = 'none';
+                    grupo.title = 'Campo não aplicável para este produto';
+                }
+            } else {
+                input.removeAttribute('tabindex');
+                input.removeAttribute('data-skip-class');
+                if (grupo) {
+                    grupo.style.opacity   = '';
+                    grupo.style.pointerEvents = '';
+                    grupo.title = '';
+                }
+            }
+        });
+    }
+
+    if (isMilho) {
+        aplicarSkip(camposMilho, true);
+        aplicarSkip(camposSoja, false);
+    } else if (isSoja) {
+        aplicarSkip(camposSoja, true);
+        aplicarSkip(camposMilho, false);
+    } else {
+        // Produto desconhecido: libera todos
+        aplicarSkip(camposMilho, false);
+        aplicarSkip(camposSoja, false);
+    }
+}
+
 function fecharModalCadastroClass() {
     document.getElementById('modalCadastroClass').classList.remove('show');
     idEdicaoClass = null;
@@ -10539,6 +10589,7 @@ function limparFormularioClass() {
     const obsEl = document.getElementById('cadObsClass');
     if (obsEl) { obsEl.value = ''; const tog = obsEl.closest('.obs-body').previousElementSibling; tog.classList.remove('open'); obsEl.closest('.obs-body').classList.remove('open'); }
     classFornecedorAutoFill('');
+    classAtualizarCamposProduto(''); // reativa todos os campos
 }
 
 function salvarClassificacao(event) {
