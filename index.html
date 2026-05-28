@@ -10545,20 +10545,19 @@ function classAtualizarCamposProduto(produto) {
             if (!input) return;
             const grupo = input.closest('.form-group');
             if (skip) {
+                input.disabled = true;
                 input.setAttribute('tabindex', '-1');
                 input.setAttribute('data-skip-class', '1');
-                input.value = '';
                 if (grupo) {
-                    grupo.style.opacity   = '0.35';
-                    grupo.style.pointerEvents = 'none';
+                    grupo.style.opacity = '0.45';
                     grupo.title = 'Campo não aplicável para este produto';
                 }
             } else {
+                input.disabled = false;
                 input.removeAttribute('tabindex');
                 input.removeAttribute('data-skip-class');
                 if (grupo) {
-                    grupo.style.opacity   = '';
-                    grupo.style.pointerEvents = '';
+                    grupo.style.opacity = '';
                     grupo.title = '';
                 }
             }
