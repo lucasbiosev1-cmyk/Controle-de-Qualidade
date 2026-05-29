@@ -7286,6 +7286,10 @@
 
                 <!-- PAINEL PRODUÇÃO -->
                 <div id="paramCat-producao" class="param-cat-panel param-cat-ativo" data-modulo="prod">
+                    <div style="margin-bottom:10px;">
+                        <button onclick="diagnosticarProd()" style="background:#e67e22;color:white;padding:7px 16px;border:none;border-radius:4px;font-weight:bold;font-size:11px;cursor:pointer;text-transform:uppercase;" title="Verifica o que está salvo no banco para a ração selecionada">🔬 Diagnóstico Produção</button>
+                    </div>
+                    <div id="diagProdBox" style="display:none;background:#1e1e2e;color:#cdd6f4;font-family:monospace;font-size:11px;padding:14px;border-radius:6px;margin-bottom:12px;overflow-x:auto;white-space:pre;max-height:400px;overflow-y:auto;"></div>
                     <div id="paramPanelProd"></div>
                 </div>
 
@@ -16263,6 +16267,63 @@ function diagnosticarClass() {
             out += `    carunchado=${r.carunchado}  → limite max=${cfgC.max} → ${r.carunchado>cfgC.max?'🔴 FORA':'✅ OK'}\n`;
             out += `    avariados=${av}    → limite max=${cfgA.max} → ${av>cfgA.max?'🔴 FORA':'✅ OK'}\n`;
         });
+        out += '\n';
+    });
+
+    box.textContent = out;
+    box.style.display = 'block';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DIAGNÓSTICO DE PRODUÇÃO — verifica parâmetros salvos para todas as rações
+// ─────────────────────────────────────────────────────────────────────────────
+function diagnosticarProd() {
+    const box = document.getElementById('diagProdBox');
+    if (box.style.display !== 'none') { box.style.display = 'none'; return; }
+
+    const modulo = 'prod';
+    const prodParams = PARAMETROS[modulo] || {};
+
+    // Rações que aparecem nos registros carregados
+    const racoesUnicas = [...new Set(producoes.map(r => r.racao))].sort();
+
+    let out = '=== DIAGNÓSTICO PARÂMETROS DE PRODUÇÃO ===\n';
+    out += `Chaves salvas no banco para "prod": ${JSON.stringify(Object.keys(prodParams))}\n\n`;
+
+    racoesUnicas.forEach(racao => {
+        const chave = racao.replace(/ /g, '_');
+        const hist  = prodParams[chave];
+        out += `--- Ração: "${racao}" → chave: "${chave}" ---\n`;
+
+        if (!hist || !hist.length) {
+            out += `  ⚠️ NENHUM parâmetro salvo no banco! → exibe "S/ PARÂM."\n\n`;
+            return;
+        }
+
+        hist.forEach((s, i) => {
+            out += `  Snapshot ${i+1}: vigência=${s.vigencia}${s._temporario ? ' [⚠️ TEMPORÁRIO — não salvo!]' : ''}\n`;
+            CAMPOS_PROD.forEach(c => {
+                const cfg = s.campos && s.campos[c.key];
+                if (!cfg) { out += `    ${c.key}: não configurado\n`; return; }
+                const semLimite = cfg.min === 0 && cfg.max >= 9999;
+                const status = !cfg.ativo ? '  ❌ inativo' : semLimite ? '  ℹ️ ativo mas sem limite real' : `  ✅ ATIVO min=${cfg.min} max=${cfg.max}`;
+                out += `    ${c.key}: ativo=${cfg.ativo} min=${cfg.min} max=${cfg.max} →${status}\n`;
+            });
+        });
+
+        // Verifica os últimos 5 registros desta ração
+        const regs = producoes.filter(r => r.racao === racao).sort((a,b) => b.data.localeCompare(a.data)).slice(0, 5);
+        if (regs.length) {
+            out += `  Últimos registros:\n`;
+            regs.forEach(r => {
+                const snap = getSnapshotVigente(modulo, chave, r.data);
+                const cfgProt = getParam(modulo, chave, 'proteina', r.data);
+                const statusProt = cfgProt.ativo
+                    ? (cfgProt.min === 0 && cfgProt.max >= 9999 ? 'ativo/sem limite' : `min=${cfgProt.min} max=${cfgProt.max}`)
+                    : 'inativo';
+                out += `    ${r.data} ${r.hora}: snap vigente="${snap ? snap.vigencia : 'NENHUM'}" | proteina lançada=${r.proteina ?? '-'} | parâm proteína: ${statusProt}\n`;
+            });
+        }
         out += '\n';
     });
 
