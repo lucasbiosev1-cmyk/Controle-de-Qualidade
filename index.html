@@ -28243,6 +28243,8 @@ function autoFornecedorClass(local) {
     }
     // Sempre atualiza NF com base no fornecedor resultante
     classFornecedorAutoFill(campForn ? campForn.value : '');
+    // Atualiza bloqueio de campos com base no produto preenchido automaticamente
+    classAtualizarCamposProduto(campProd ? campProd.value : '');
     // Se vínculo com AGRONOR, posiciona cursor no primeiro campo analítico
     if (mapa[local]) {
         setTimeout(() => {
