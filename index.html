@@ -10548,32 +10548,45 @@ function deletarClassModal() {
 
 // ── Lógica de campos por produto (Milho pula Esverdeado/Picado; Soja pula Gessado/Carunchado) ──
 function classAtualizarCamposProduto(produto) {
-    const isMilho = produto.toUpperCase().includes('MILHO');
-    const isSoja  = produto.toUpperCase().includes('SOJA');
+    const p = (produto || '').toUpperCase().trim();
+    const isMilho = p.includes('MILHO');
+    const isSoja  = p.includes('SOJA');
 
-    // IDs dos campos controlados
-    const camposMilho = ['cadEsverdeadoClass', 'cadPicadoClass'];   // pular se MILHO
-    const camposSoja  = ['cadGessadoClass', 'cadCarunchadoClass'];   // pular se SOJA
+    const camposMilho = ['cadEsverdeadoClass', 'cadPicadoClass'];   // bloqueados para MILHO
+    const camposSoja  = ['cadGessadoClass', 'cadCarunchadoClass'];   // bloqueados para SOJA
 
     function aplicarSkip(ids, skip) {
         ids.forEach(function(id) {
             const input = document.getElementById(id);
             if (!input) return;
-            const grupo = input.closest('.form-group');
+            // Sobe pelo DOM até achar o form-group (tenta closest, depois parentElement)
+            let grupo = null;
+            if (input.closest) grupo = input.closest('.form-group');
+            if (!grupo) grupo = input.parentElement;
             if (skip) {
                 input.disabled = true;
                 input.setAttribute('tabindex', '-1');
                 input.setAttribute('data-skip-class', '1');
+                input.style.background = '#0a0a0a';
+                input.style.color = '#333';
+                input.style.cursor = 'not-allowed';
+                input.style.borderColor = '#222';
                 if (grupo) {
-                    grupo.style.opacity = '0.45';
-                    grupo.title = 'Campo não aplicável para este produto';
+                    grupo.style.opacity = '0.4';
+                    grupo.style.pointerEvents = 'none';
+                    grupo.title = 'Não aplicável para este produto';
                 }
             } else {
                 input.disabled = false;
                 input.removeAttribute('tabindex');
                 input.removeAttribute('data-skip-class');
+                input.style.background = '';
+                input.style.color = '';
+                input.style.cursor = '';
+                input.style.borderColor = '';
                 if (grupo) {
                     grupo.style.opacity = '';
+                    grupo.style.pointerEvents = '';
                     grupo.title = '';
                 }
             }
@@ -10587,7 +10600,6 @@ function classAtualizarCamposProduto(produto) {
         aplicarSkip(camposSoja, true);
         aplicarSkip(camposMilho, false);
     } else {
-        // Produto desconhecido: libera todos
         aplicarSkip(camposMilho, false);
         aplicarSkip(camposSoja, false);
     }
