@@ -3190,6 +3190,21 @@
         .form-usuario-group input:focus { outline: none; border-color: #0a1e7f; box-shadow: 0 0 0 3px rgba(10,30,127,0.1); }
         .form-usuario-hint { color: #888; font-size: 10px; margin-top: 3px; display: block; }
         .input-disabled-senha { background: #f5f5f5; color: #aaa; }
+
+        /* Campos bloqueados por tipo de produto (ex: esverdeado/picado no milho) */
+        .form-group input[disabled],
+        .form-group input[data-skip-class] {
+            background: #1a1a1a !important;
+            color: #444 !important;
+            cursor: not-allowed !important;
+            border-color: #333 !important;
+        }
+        html[data-theme="dark"] .form-group input[disabled],
+        html[data-theme="dark"] .form-group input[data-skip-class] {
+            background: #0d1117 !important;
+            color: #333 !important;
+            border-color: #21262d !important;
+        }
         .perm-section-title { font-size: 11px; font-weight: bold; color: #555; text-transform: uppercase; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 1px solid #eee; }
         .perm-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .perm-modal-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; cursor: pointer; transition: all 0.15s; }
@@ -10465,7 +10480,9 @@ function abrirModalCadastroClass() {
     document.getElementById('formCadastroClass').reset();
     document.getElementById('cadDataClass').value = dataHoje();
     classFornecedorAutoFill('');
-    classAtualizarCamposProduto(''); // garante todos os campos ativos no novo cadastro
+    // Aplica bloqueio correto baseado no valor padrão do select após reset
+    const _selProdClass = document.getElementById('cadProdutoClass');
+    classAtualizarCamposProduto(_selProdClass ? _selProdClass.value : '');
     const btnDel = document.getElementById('btnDeletarClassModal');
     if (btnDel) btnDel.style.display = 'none';
     document.getElementById('modalCadastroClass').classList.add('show');
