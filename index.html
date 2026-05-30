@@ -22401,9 +22401,8 @@ async function salvarParametros() {
 
     if (!modulo || !racaKey) { showMsg('msgErroParam','❌ Selecione uma ração/produto.',4000); return; }
 
-    const hist0    = PARAMETROS[modulo] && PARAMETROS[modulo][racaKey];
-    const tempTudo = hist0 && hist0.find(s => s._temporario && s.vigencia === '2000-01-01');
-    const vigencia = tempTudo ? '2000-01-01' : vigenciaInput;
+    // u2705 FIX: sempre usa a data digitada. Override para '2000-01-01' removido (causava sequestro de vigencia quando havia temporarios na memoria).
+    const vigencia = vigenciaInput;
 
     const campos = {};
     const _prefixo2 = `pinput_${modulo}_`;
