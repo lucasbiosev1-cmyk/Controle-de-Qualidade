@@ -22446,9 +22446,7 @@ async function salvarParametros() {
     }
 
     exibirTabelaProd(); exibirTabelaClass(); exibirTabelaMP();
-    const dFmt = tempTudo
-        ? 'todos os registros (retroativo)'
-        : new Date(vigencia+'T00:00:00').toLocaleDateString('pt-BR');
+    const dFmt = new Date(vigencia+'T00:00:00').toLocaleDateString('pt-BR');
     const motivoMsg = motivo ? ` | Motivo: "${motivo}"` : '';
     sgqToast(`✓ Parâmetros de "${racaKey.replace(/_/g,' ')}" salvos para ${dFmt}.${motivoMsg} Tabelas atualizadas.`, 'success');
     renderizarPainelRacao(catAtiva, modulo, racaKey);
