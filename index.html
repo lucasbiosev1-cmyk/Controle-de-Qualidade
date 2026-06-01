@@ -15502,10 +15502,14 @@ async function _carregarDashboardFast() {
         });
 
         // Preenche os arrays com dados do mês — suficiente para os KPIs
-        if (rP.data && rP.data.length) producoes      = rP.data;
-        if (rC.data && rC.data.length) classificacoes = rC.data.map(normClass);
-        if (rM.data && rM.data.length) materiasPrimas = rM.data.map(normMat);
-        if (rNC.data && rNC.data.length) listaNC      = rNC.data;
+        // FIX: só sobrescreve se o carregamento completo ainda não terminou.
+        // Se _dadosCarregados já é true, os arrays já têm todo o histórico — não truncar.
+        if (!_dadosCarregados) {
+            if (rP.data && rP.data.length) producoes      = rP.data;
+            if (rC.data && rC.data.length) classificacoes = rC.data.map(normClass);
+            if (rM.data && rM.data.length) materiasPrimas = rM.data.map(normMat);
+            if (rNC.data && rNC.data.length) listaNC      = rNC.data;
+        }
 
         // Renderiza o dashboard imediatamente com os dados do mês
         atualizarKpisCapa();
