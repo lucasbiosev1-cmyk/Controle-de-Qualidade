@@ -9859,8 +9859,14 @@ function preencherFiltrosMesAtual(aba) {
     function setVal(id, val) {
         const el = document.getElementById(id);
         if (!el) return;
-        // só preenche se estiver vazio (respeita filtro já definido pelo usuário)
-        if (!el.value) el.value = el.type === 'month' ? mesStr : val;
+        // FIX: abas de lançamentos sempre resetam para o mês atual ao abrir
+        // (relatórios respeitam o valor existente para não perder filtros manuais)
+        const abasLancamentos = ['producao', 'classificacao', 'materiaPrima'];
+        if (abasLancamentos.includes(aba)) {
+            el.value = el.type === 'month' ? mesStr : val;
+        } else {
+            if (!el.value) el.value = el.type === 'month' ? mesStr : val;
+        }
     }
     setVal(idIni, inicio);
     setVal(idFim,  fim);
@@ -9909,7 +9915,14 @@ function kpiNavegar(delta) {
     const minOffset = -(agora.getMonth() + (agora.getFullYear() - 2020) * 12); // não vai antes de 2020
     _kpiMesOffset = Math.min(0, _kpiMesOffset + delta); // não passa do mês atual
     _kpiMesOffset = Math.max(minOffset, _kpiMesOffset);
-    atualizarKpisCapa();
+
+    // FIX: se os dados completos ainda não foram carregados (fast-path só tem 2 meses),
+    // força carregamento total antes de renderizar o mês histórico
+    if (_kpiMesOffset < 0 && !_dadosCarregados) {
+        carregarTodosAsync().then(() => atualizarKpisCapa()).catch(() => atualizarKpisCapa());
+    } else {
+        atualizarKpisCapa();
+    }
 }
 
 function atualizarKpisCapa() {
@@ -10445,8 +10458,9 @@ function _inicializarFiltrosDataMesAtual() {
     ].forEach(([idIni, idFim]) => {
         const elIni = document.getElementById(idIni);
         const elFim = document.getElementById(idFim);
-        if (elIni && !elIni.value) elIni.value = inicio;
-        if (elFim && !elFim.value) elFim.value = fim;
+        // FIX: sempre sobrescreve — garante que o filtro reflita o mês atual
+        if (elIni) elIni.value = inicio;
+        if (elFim) elFim.value = fim;
     });
 }
 
