@@ -20824,11 +20824,13 @@ function imprimirRelatorioNC(tipo) {
             const rowsHtml = classifRows.map(tr => {
                 const inputs    = tr.querySelectorAll('input');
                 const defeito   = inputs[0]?.value || '-';
-                const unidade   = tr.querySelector('input[data-unidade]')?.dataset?.unidade || '%';
+                const _parInp  = tr.querySelector('input[data-unidade]');
+                const unidade   = _parInp?.dataset?.unidade || '%';
+                const _dir3     = _parInp?.dataset?.dir || 'max';
                 const isTexto   = unidade === 'Neg.' || isNaN(parseFloat(inputs[1]?.value));
                 const resultado = isTexto ? (inputs[1]?.value || '-') : parseFloat(inputs[1]?.value || 0);
                 const parametro = isTexto ? (inputs[2]?.value || '-') : parseFloat(inputs[2]?.value || 0);
-                const nc        = isTexto ? false : (resultado > parametro);
+                const nc        = isTexto ? false : (_dir3 === 'min' ? resultado < parametro : resultado > parametro);
                 const resStr    = isTexto ? resultado : resultado.toFixed(2) + ' ' + unidade;
                 const parStr    = isTexto ? parametro : parametro.toFixed(2) + ' ' + unidade;
                 return `<tr>
@@ -21235,7 +21237,7 @@ function abrirModalDev(id = null) {
         limparClassif();
         const classifDev = typeof dev.classificacao === 'string' ? JSON.parse(dev.classificacao || '[]') : (dev.classificacao || []);
         if (classifDev && classifDev.length > 0) {
-            classifDev.forEach(c => adicionarLinhaClassif(c.defeito, c.resultado, c.parametro, c.unidade));
+            classifDev.forEach(c => adicionarLinhaClassif(c.defeito, c.resultado, c.parametro, c.unidade, c.dir || 'max'));
             // Ajusta cabeçalhos conforme o produto do registro
             const _prod = (dev.produto || '').toUpperCase();
             const _th1 = document.getElementById('thResultado');
@@ -21330,9 +21332,11 @@ async function salvarDev() {
     }
 
     const classifData = Array.from(document.querySelectorAll('#classifBody tr')).map(tr => {
-        const inputs  = tr.querySelectorAll('input');
-        const unidade = tr.querySelector('input[data-unidade]')?.dataset?.unidade || '%';
-        return { defeito: inputs[0]?.value||'', resultado: inputs[1]?.value||'', parametro: inputs[2]?.value||'', unidade };
+        const inputs   = tr.querySelectorAll('input');
+        const parInput = tr.querySelector('input[data-unidade]');
+        const unidade  = parInput?.dataset?.unidade || '%';
+        const dir      = parInput?.dataset?.dir || 'max';
+        return { defeito: inputs[0]?.value||'', resultado: inputs[1]?.value||'', parametro: inputs[2]?.value||'', unidade, dir };
     }).filter(c => c.defeito);
 
     const dev = {
@@ -21546,13 +21550,13 @@ const CLASSIF_SOJA = [
 // Tabela de parâmetros para FARELO DE SOJA
 // unidade: '%' para percentual, 'g/L' para densidade, 'pH' para pH, 'µS/cm' para condutividade
 const CLASSIF_FARELO_SOJA = [
-    { nome: 'Umidade',              param: 13.50,  unidade: '%'    },
-    { nome: 'Densidade',            param: 700,    unidade: 'g/L'  },
-    { nome: 'Atividade Ureática',   param: 0.05,   unidade: 'pH'   },
-    { nome: 'Matéria Mineral',      param: 7.50,   unidade: '%'    },
-    { nome: 'Proteína Bruta',       param: 46.00,  unidade: '%'    },
-    { nome: 'Solubilidade Proteica',param: 80.00,  unidade: '%'    },
-    { nome: 'Extrato Etéreo',       param: 5.00,   unidade: '%'    },
+    { nome: 'Umidade',              param: 13.50,  unidade: '%',   dir: 'max' },
+    { nome: 'Densidade',            param: 700,    unidade: 'g/L', dir: 'min' },
+    { nome: 'Atividade Ureática',   param: 0.05,   unidade: 'pH',  dir: 'max' },
+    { nome: 'Matéria Mineral',      param: 7.50,   unidade: '%',   dir: 'max' },
+    { nome: 'Proteína Bruta',       param: 46.00,  unidade: '%',   dir: 'min' },
+    { nome: 'Solubilidade Proteica',param: 80.00,  unidade: '%',   dir: 'min' },
+    { nome: 'Extrato Etéreo',       param: 5.00,   unidade: '%',   dir: 'max' },
 ];
 
 // Tabela de parâmetros para FCO (Farelo de Carne e Ossos)
@@ -21624,12 +21628,12 @@ function carregarClassifFareloSoja() {
     const th2 = document.getElementById('thParametro');
     if (th1) th1.textContent = 'Resultado';
     if (th2) th2.textContent = 'Parâmetro';
-    CLASSIF_FARELO_SOJA.forEach(d => adicionarLinhaClassif(d.nome, '', d.param, d.unidade));
+    CLASSIF_FARELO_SOJA.forEach(d => adicionarLinhaClassif(d.nome, '', d.param, d.unidade, d.dir || 'max'));
     const bf = document.getElementById('btnClassifFareloSoja');
     if (bf) { bf.style.background='#8e44ad'; bf.style.color='#fff'; }
 }
 
-function adicionarLinhaClassif(nome='', resultado='', parametro='', unidade='%') {
+function adicionarLinhaClassif(nome='', resultado='', parametro='', unidade='%', dir='max') {
     const tbody = document.getElementById('classifBody');
     if (!tbody) return;
     const tr = document.createElement('tr');
@@ -21647,7 +21651,7 @@ function adicionarLinhaClassif(nome='', resultado='', parametro='', unidade='%')
         </td>
         <td style="position:relative;">
             <div style="display:flex;align-items:center;gap:4px;">
-                <input class="nc-classif-input" type="${unidade==='Neg.'?'text':'number'}" step="0.01" min="0" placeholder="${unidade==='Neg.'?'Negativo':'0,00'}" value="${inputPar}" oninput="ncAtualizarCorLinha(this)" style="flex:1;min-width:0;" data-unidade="${unidade}">
+                <input class="nc-classif-input" type="${unidade==='Neg.'?'text':'number'}" step="0.01" min="0" placeholder="${unidade==='Neg.'?'Negativo':'0,00'}" value="${inputPar}" oninput="ncAtualizarCorLinha(this)" style="flex:1;min-width:0;" data-unidade="${unidade}" data-dir="${dir}">
                 <span style="font-size:9px;color:#888;white-space:nowrap;max-width:48px;overflow:hidden;text-overflow:ellipsis;" title="${unidade}">${unidade}</span>
             </div>
         </td>
@@ -21663,7 +21667,9 @@ function ncAtualizarCorLinha(input) {
     const inputs = tr.querySelectorAll('input[type=number]');
     const res = parseFloat(inputs[0]?.value || 0);
     const par = parseFloat(inputs[1]?.value || 0);
-    inputs[0].parentElement.style.color = res > par ? '#e74c3c' : '#27ae60';
+    const dir = inputs[1]?.dataset?.dir || 'max';
+    const isNC = dir === 'min' ? res < par : res > par;
+    inputs[0].parentElement.style.color = isNC ? '#e74c3c' : '#27ae60';
 }
 
 function limparClassif() { const tb = document.getElementById('classifBody'); if(tb) tb.innerHTML = ''; }
@@ -22090,7 +22096,8 @@ function visualizarDev(id) {
                 const isTexto  = unidade === 'Neg.' || isNaN(parseFloat(c.resultado));
                 const r = isTexto ? (c.resultado || '-') : parseFloat(c.resultado || 0);
                 const p = isTexto ? (c.parametro || '-') : parseFloat(c.parametro || 0);
-                const nc2 = isTexto ? false : (r > p);
+                const _dirV    = c.dir || 'max';
+                const nc2 = isTexto ? false : (_dirV === 'min' ? r < p : r > p);
                 const resStr = isTexto ? r : r.toFixed(2) + ' ' + unidade;
                 const parStr = isTexto ? p : p.toFixed(2) + ' ' + unidade;
                 return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
@@ -22172,7 +22179,8 @@ function _imprimirDevPorObj(id) {
             const isTexto   = unidade === 'Neg.' || isNaN(parseFloat(c.resultado));
             const resultado = isTexto ? (c.resultado || '-') : parseFloat(c.resultado || 0);
             const parametro = isTexto ? (c.parametro || '-') : parseFloat(c.parametro || 0);
-            const nc        = isTexto ? false : resultado > parametro;
+            const _dir1     = c.dir || 'max';
+            const nc        = isTexto ? false : (_dir1 === 'min' ? resultado < parametro : resultado > parametro);
             const resStr    = isTexto ? resultado : resultado.toFixed(2) + ' ' + unidade;
             const parStr    = isTexto ? parametro : parametro.toFixed(2) + ' ' + unidade;
             return `<tr>
@@ -22338,7 +22346,8 @@ function imprimirVisualizacao() {
             const isTexto = isNaN(parseFloat(c.resultado));
             const r = isTexto ? (c.resultado || '-') : parseFloat(c.resultado || 0);
             const p = isTexto ? (c.parametro || '-') : parseFloat(c.parametro || 0);
-            const nc2 = isTexto ? false : (r > p);
+            const _dir2 = c.dir || 'max';
+            const nc2 = isTexto ? false : (_dir2 === 'min' ? r < p : r > p);
             const resStr = isTexto ? r : r.toFixed(2) + ' ' + unidade;
             const parStr = isTexto ? p : p.toFixed(2) + ' ' + unidade;
             return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
