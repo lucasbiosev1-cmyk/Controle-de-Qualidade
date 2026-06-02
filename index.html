@@ -71,8 +71,18 @@
         }
 
         @media print {
-            .tr-row-even, html[data-theme="dark"] .tr-row-even { background: #ffffff !important; color: #222 !important; }
-            .tr-row-odd,  html[data-theme="dark"] .tr-row-odd  { background: #f5f7fa !important; color: #222 !important; }
+            .tr-row-even,
+            html[data-theme="dark"]  .tr-row-even,
+            html[data-theme="azul"]  .tr-row-even,
+            html[data-theme="verde"] .tr-row-even,
+            html[data-theme="cinza"] .tr-row-even,
+            html[data-theme="vinho"] .tr-row-even { background: #ffffff !important; color: #222 !important; }
+            .tr-row-odd,
+            html[data-theme="dark"]  .tr-row-odd,
+            html[data-theme="azul"]  .tr-row-odd,
+            html[data-theme="verde"] .tr-row-odd,
+            html[data-theme="cinza"] .tr-row-odd,
+            html[data-theme="vinho"] .tr-row-odd  { background: #f5f7fa !important; color: #222 !important; }
             .tr-row-selected { background: #ffffff !important; color: #222 !important; box-shadow: none !important; }
         }
 
@@ -1863,64 +1873,168 @@
            Sobrescreve qualquer tema dark ativo na tela
            ══════════════════════════════════════════════════════ */
         @media print {
-            /* Reset geral: fundo branco, texto preto */
+            /* Reset geral: fundo branco, texto preto — cobre dark E todos os temas coloridos */
             html, body,
-            html[data-theme="dark"], html[data-theme="dark"] body {
+            html[data-theme="dark"], html[data-theme="dark"] body,
+            html[data-theme="azul"],  html[data-theme="azul"]  body,
+            html[data-theme="verde"], html[data-theme="verde"] body,
+            html[data-theme="cinza"], html[data-theme="cinza"] body,
+            html[data-theme="vinho"], html[data-theme="vinho"] body {
                 background: #fff !important;
                 color: #222 !important;
             }
-            /* Containers de relatório */
-            html[data-theme="dark"] .tab-content,
-            html[data-theme="dark"] #relClassConteudo,
-            html[data-theme="dark"] #rankingConteudo,
-            html[data-theme="dark"] #boletimConteudo,
-            html[data-theme="dark"] #relatorioConteudo,
-            html[data-theme="dark"] .relatorio-container,
-            html[data-theme="dark"] .grafico-container,
-            html[data-theme="dark"] .tabela-container,
-            html[data-theme="dark"] #rcMicoSecao {
+            /* Containers de relatório — dark E temas coloridos */
+            html[data-theme="dark"]  .tab-content,
+            html[data-theme="azul"]  .tab-content,
+            html[data-theme="verde"] .tab-content,
+            html[data-theme="cinza"] .tab-content,
+            html[data-theme="vinho"] .tab-content,
+            html[data-theme="dark"]  #relClassConteudo,
+            html[data-theme="azul"]  #relClassConteudo,
+            html[data-theme="verde"] #relClassConteudo,
+            html[data-theme="cinza"] #relClassConteudo,
+            html[data-theme="vinho"] #relClassConteudo,
+            html[data-theme="dark"]  #rankingConteudo,
+            html[data-theme="azul"]  #rankingConteudo,
+            html[data-theme="verde"] #rankingConteudo,
+            html[data-theme="cinza"] #rankingConteudo,
+            html[data-theme="vinho"] #rankingConteudo,
+            html[data-theme="dark"]  #boletimConteudo,
+            html[data-theme="azul"]  #boletimConteudo,
+            html[data-theme="verde"] #boletimConteudo,
+            html[data-theme="cinza"] #boletimConteudo,
+            html[data-theme="vinho"] #boletimConteudo,
+            html[data-theme="dark"]  #relatorioConteudo,
+            html[data-theme="azul"]  #relatorioConteudo,
+            html[data-theme="verde"] #relatorioConteudo,
+            html[data-theme="cinza"] #relatorioConteudo,
+            html[data-theme="vinho"] #relatorioConteudo,
+            html[data-theme="dark"]  .relatorio-container,
+            html[data-theme="azul"]  .relatorio-container,
+            html[data-theme="verde"] .relatorio-container,
+            html[data-theme="cinza"] .relatorio-container,
+            html[data-theme="vinho"] .relatorio-container,
+            html[data-theme="dark"]  .grafico-container,
+            html[data-theme="azul"]  .grafico-container,
+            html[data-theme="verde"] .grafico-container,
+            html[data-theme="cinza"] .grafico-container,
+            html[data-theme="vinho"] .grafico-container,
+            html[data-theme="dark"]  .tabela-container,
+            html[data-theme="azul"]  .tabela-container,
+            html[data-theme="verde"] .tabela-container,
+            html[data-theme="cinza"] .tabela-container,
+            html[data-theme="vinho"] .tabela-container,
+            html[data-theme="dark"]  #rcMicoSecao,
+            html[data-theme="azul"]  #rcMicoSecao,
+            html[data-theme="verde"] #rcMicoSecao,
+            html[data-theme="cinza"] #rcMicoSecao,
+            html[data-theme="vinho"] #rcMicoSecao {
                 background: #fff !important;
                 color: #222 !important;
                 border-color: #ddd !important;
                 box-shadow: none !important;
             }
             /* Títulos e seções */
-            html[data-theme="dark"] .secao-title,
-            html[data-theme="dark"] .grafico-title,
-            html[data-theme="dark"] .relatorio-title {
+            html[data-theme="dark"]  .secao-title,
+            html[data-theme="azul"]  .secao-title,
+            html[data-theme="verde"] .secao-title,
+            html[data-theme="cinza"] .secao-title,
+            html[data-theme="vinho"] .secao-title,
+            html[data-theme="dark"]  .grafico-title,
+            html[data-theme="azul"]  .grafico-title,
+            html[data-theme="verde"] .grafico-title,
+            html[data-theme="cinza"] .grafico-title,
+            html[data-theme="vinho"] .grafico-title,
+            html[data-theme="dark"]  .relatorio-title,
+            html[data-theme="azul"]  .relatorio-title,
+            html[data-theme="verde"] .relatorio-title,
+            html[data-theme="cinza"] .relatorio-title,
+            html[data-theme="vinho"] .relatorio-title {
                 color: #333 !important;
                 border-bottom-color: #ddd !important;
             }
-            /* Cabeçalhos de tabela: manter cor original (não dark) */
-            html[data-theme="dark"] table th {
+            /* Cabeçalhos de tabela */
+            html[data-theme="dark"]  table th,
+            html[data-theme="azul"]  table th,
+            html[data-theme="verde"] table th,
+            html[data-theme="cinza"] table th,
+            html[data-theme="vinho"] table th {
                 background: #1a2a6e !important;
                 color: #fff !important;
             }
             /* Linhas de tabela: fundo branco/cinza claro alternado */
-            html[data-theme="dark"] table tr {
+            html[data-theme="dark"]  table tr,
+            html[data-theme="azul"]  table tr,
+            html[data-theme="verde"] table tr,
+            html[data-theme="cinza"] table tr,
+            html[data-theme="vinho"] table tr {
                 background: #fff !important;
                 color: #222 !important;
             }
-            html[data-theme="dark"] table tr:nth-child(even) {
+            html[data-theme="dark"]  table tr:nth-child(even),
+            html[data-theme="azul"]  table tr:nth-child(even),
+            html[data-theme="verde"] table tr:nth-child(even),
+            html[data-theme="cinza"] table tr:nth-child(even),
+            html[data-theme="vinho"] table tr:nth-child(even) {
                 background: #f5f7fa !important;
                 color: #222 !important;
             }
-            html[data-theme="dark"] table td {
+            html[data-theme="dark"]  table td,
+            html[data-theme="azul"]  table td,
+            html[data-theme="verde"] table td,
+            html[data-theme="cinza"] table td,
+            html[data-theme="vinho"] table td {
                 color: #222 !important;
                 border-color: #dce3ef !important;
             }
+            /* Linhas com classes tr-row-even/odd (usadas por JS) */
+            .tr-row-even { background: #fff    !important; color: #222 !important; }
+            .tr-row-odd  { background: #f5f7fa !important; color: #222 !important; }
             /* Cards de KPI */
-            html[data-theme="dark"] .fase-card,
-            html[data-theme="dark"] .stat-item,
-            html[data-theme="dark"] .bol-resumo-card {
+            html[data-theme="dark"]  .fase-card,
+            html[data-theme="azul"]  .fase-card,
+            html[data-theme="verde"] .fase-card,
+            html[data-theme="cinza"] .fase-card,
+            html[data-theme="vinho"] .fase-card,
+            html[data-theme="dark"]  .stat-item,
+            html[data-theme="azul"]  .stat-item,
+            html[data-theme="verde"] .stat-item,
+            html[data-theme="cinza"] .stat-item,
+            html[data-theme="vinho"] .stat-item,
+            html[data-theme="dark"]  .bol-resumo-card,
+            html[data-theme="azul"]  .bol-resumo-card,
+            html[data-theme="verde"] .bol-resumo-card,
+            html[data-theme="cinza"] .bol-resumo-card,
+            html[data-theme="vinho"] .bol-resumo-card {
                 background: #f9f9f9 !important;
                 border-color: #ddd !important;
                 color: #222 !important;
             }
-            html[data-theme="dark"] .fase-value,
-            html[data-theme="dark"] .stat-value { color: #333 !important; }
-            html[data-theme="dark"] .fase-label,
-            html[data-theme="dark"] .stat-label { color: #666 !important; }
+            html[data-theme="dark"]  .fase-value,
+            html[data-theme="azul"]  .fase-value,
+            html[data-theme="verde"] .fase-value,
+            html[data-theme="cinza"] .fase-value,
+            html[data-theme="vinho"] .fase-value,
+            html[data-theme="dark"]  .stat-value,
+            html[data-theme="azul"]  .stat-value,
+            html[data-theme="verde"] .stat-value,
+            html[data-theme="cinza"] .stat-value,
+            html[data-theme="vinho"] .stat-value { color: #333 !important; }
+            html[data-theme="dark"]  .fase-label,
+            html[data-theme="azul"]  .fase-label,
+            html[data-theme="verde"] .fase-label,
+            html[data-theme="cinza"] .fase-label,
+            html[data-theme="vinho"] .fase-label,
+            html[data-theme="dark"]  .stat-label,
+            html[data-theme="azul"]  .stat-label,
+            html[data-theme="verde"] .stat-label,
+            html[data-theme="cinza"] .stat-label,
+            html[data-theme="vinho"] .stat-label { color: #666 !important; }
+            /* Período e textos secundários */
+            html[data-theme="azul"]  .relatorio-periodo,
+            html[data-theme="verde"] .relatorio-periodo,
+            html[data-theme="cinza"] .relatorio-periodo,
+            html[data-theme="vinho"] .relatorio-periodo { color: #666 !important; }
         }
         @media print {
             .rel-capa-wrap { display: block !important; }
@@ -9030,6 +9144,19 @@ document.addEventListener('mouseover', function(e) {
 // TEMAS DE COR
 // ===================================================
 const TEMAS = ['azul','verde','cinza','vinho','dark'];
+
+// ── Helpers dinâmicos de cor para Chart.js ─────────────────────
+// Leem o tema ATUAL do DOM — use estas funções ao criar gráficos,
+// assim as cores ficam corretas independente do tema ativo.
+function _chartTextColor() {
+    const t = document.documentElement.getAttribute('data-theme') || 'dark';
+    return t === 'dark' ? '#e6edf3' : '#444444';
+}
+function _chartGridColor() {
+    const t = document.documentElement.getAttribute('data-theme') || 'dark';
+    return t === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
+}
+
 // ── Chart.js: atualiza cores globais conforme tema ──────────────
 function _aplicarChartTema(tema) {
     if (typeof Chart === 'undefined') return;
@@ -11499,8 +11626,8 @@ function renderGraficoLinha(di, df, dados, analise, analNome, cor, racoesAlvo) {
                 }
             },
             scales: {
-                y: { beginAtZero:false, ticks:{font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} },
-                x: { ticks:{font:{size:9}, maxRotation:45, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} }
+                y: { beginAtZero:false, ticks:{font:{size:10}, color:_chartTextColor()}, grid:{color:_chartGridColor()} },
+                x: { ticks:{font:{size:9}, maxRotation:45, color:_chartTextColor()}, grid:{color:_chartGridColor()} }
             }
         }
     });
@@ -11556,10 +11683,10 @@ function renderGraficoBar(base, subFases, analise, analNome) {
         },
         options: {
             responsive:true, maintainAspectRatio:true,
-            plugins: { legend:{ display:true, labels:{font:{size:11}, padding:12, color:'#e6edf3'} } },
+            plugins: { legend:{ display:true, labels:{font:{size:11}, padding:12, color:_chartTextColor()} } },
             scales: {
-                y:  { beginAtZero:false, ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true, text:analNome,    font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} },
-                y2: { position:'right',  ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true, text:'C.V (%)',   font:{size:10}, color:'#e6edf3'}, grid:{drawOnChartArea:false} }
+                y:  { beginAtZero:false, ticks:{font:{size:10}, color:_chartTextColor()}, title:{display:true, text:analNome,    font:{size:10}, color:_chartTextColor()}, grid:{color:_chartGridColor()} },
+                y2: { position:'right',  ticks:{font:{size:10}, color:_chartTextColor()}, title:{display:true, text:'C.V (%)',   font:{size:10}, color:_chartTextColor()}, grid:{drawOnChartArea:false} }
             }
         }
     });
@@ -12387,10 +12514,10 @@ function renderRCGraficoBar(base, prods) {
     window._rcGraficoBarInst = new Chart(ctx, {
         type:'bar', data:{ labels, datasets },
         options:{ responsive:true, maintainAspectRatio:true,
-            plugins:{ legend:{ display:true, labels:{ font:{size:10}, padding:8, color:'#e6edf3' } } },
+            plugins:{ legend:{ display:true, labels:{ font:{size:10}, padding:8, color:_chartTextColor() } } },
             scales:{
-                x:{ ticks:{font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} },
-                y:{ beginAtZero:true, ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true, text:'Média (%)', font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} }
+                x:{ ticks:{font:{size:10}, color:_chartTextColor()}, grid:{color:_chartGridColor()} },
+                y:{ beginAtZero:true, ticks:{font:{size:10}, color:_chartTextColor()}, title:{display:true, text:'Média (%)', font:{size:10}, color:_chartTextColor()}, grid:{color:_chartGridColor()} }
             }
         }
     });
@@ -18640,11 +18767,11 @@ function renderRCMicotoxinas(dados, di, df) {
             },
             options: {
                 responsive:true, maintainAspectRatio:true,
-                plugins:{ legend:{ labels:{font:{size:10},padding:8, color:'#e6edf3'} } },
+                plugins:{ legend:{ labels:{font:{size:10},padding:8, color:_chartTextColor()} } },
                 scales:{
-                    yA:{ type:'linear', position:'left',  beginAtZero:true, ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true,text:'Aflatoxina (ppb)',font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} },
-                    yF:{ type:'linear', position:'right', beginAtZero:true, ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true,text:'Fumonisina (ppb÷1000)',font:{size:10}, color:'#e6edf3'}, grid:{drawOnChartArea:false} },
-                    x: { ticks:{font:{size:9}, maxRotation:45, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} }
+                    yA:{ type:'linear', position:'left',  beginAtZero:true, ticks:{font:{size:10}, color:_chartTextColor()}, title:{display:true,text:'Aflatoxina (ppb)',font:{size:10}, color:_chartTextColor()}, grid:{color:_chartGridColor()} },
+                    yF:{ type:'linear', position:'right', beginAtZero:true, ticks:{font:{size:10}, color:_chartTextColor()}, title:{display:true,text:'Fumonisina (ppb÷1000)',font:{size:10}, color:_chartTextColor()}, grid:{drawOnChartArea:false} },
+                    x: { ticks:{font:{size:9}, maxRotation:45, color:_chartTextColor()}, grid:{color:_chartGridColor()} }
                 }
             }
         });
