@@ -19112,11 +19112,26 @@ function aplicarFiltrosRelMP() {
     const denVals = dados.map(r => r.densidade||0);
     const prods   = [...new Set(dados.map(r=>r.produto))];
 
+    // 4º card: mostra a análise selecionada quando não for umidade nem densidade
+    const ANALISE_ICONS_RMP = {
+        proteina:'🧬', solubil:'🔬', fibra:'🌿', mineral:'🪨',
+        acidez:'⚗️', ureatica:'🧪', rancidez:'🫙', peroxido:'💊',
+        digestibilidade:'📊', densidade:'⚖️', umidade:'💧'
+    };
+    const analVals      = dados.map(r => parseFloat(r[analise]||0));
+    const analMed       = _rmpMed(analVals);
+    const analMax       = _rmpMax(analVals);
+    const analIsPercent = !['densidade','acidez','peroxido'].includes(analise);
+    const analFmt       = v => analIsPercent ? v.toFixed(2)+'%' : v.toFixed(analise==='densidade'?0:2);
+    const card4 = (analise === 'umidade' || analise === 'densidade')
+        ? { icon:'⚖️', label:'DENSIDADE MÉD.', value: _rmpMed(denVals).toFixed(0), sub:'média do período', cor:'#e67e22' }
+        : { icon: ANALISE_ICONS_RMP[analise]||'📊', label: analiseLabel.toUpperCase()+' MÉD.', value: analFmt(analMed), sub:'máx: '+analFmt(analMax), cor:'#8e44ad' };
+
     document.getElementById('rmpCards').innerHTML = [
         { icon:'📋', label:'REGISTROS',       value: dados.length,                        sub:'no período',              cor:'#2980b9' },
         { icon:'🧪', label:'PRODUTOS',        value: prods.length,                        sub:'tipos diferentes',        cor:'#8e44ad' },
         { icon:'💧', label:'UMIDADE MÉD.(%)', value: _rmpMed(umVals).toFixed(2)+'%',      sub:'máx: '+_rmpMax(umVals).toFixed(2)+'%', cor: _rmpMed(umVals)>14?'#e74c3c':'#27ae60' },
-        { icon:'⚖️', label:'DENSIDADE MÉD.', value: _rmpMed(denVals).toFixed(0),          sub:'média do período',        cor:'#e67e22' },
+        card4,
     ].map(i=>`
         <div style="background:#f9f9f9;border:1px solid #ddd;border-radius:6px;padding:14px;text-align:center;border-top:4px solid ${i.cor};">
             <div style="font-size:20px;margin-bottom:4px;">${i.icon}</div>
