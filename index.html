@@ -20560,6 +20560,18 @@ listaDev = listaDev.map(dev => {
     return dev;
 });
 if (_migracaoFeita) { try { ncStorage.setItem('sgq_dev', JSON.stringify(listaDev)); } catch(e){} }
+// Migração: injeta campo dir em registros do localStorage sem esse campo
+listaDev = listaDev.map(dev => {
+    if (!dev.classificacao) return dev;
+    try {
+        const classif = typeof dev.classificacao === 'string' ? JSON.parse(dev.classificacao || '[]') : (dev.classificacao || []);
+        if (classif.some(c => !c.dir)) {
+            const fixed = classif.map(c => ({ ...c, dir: _resolverDir(c) }));
+            return { ...dev, classificacao: JSON.stringify(fixed) };
+        }
+    } catch(e) {}
+    return dev;
+});
 // Sequências por fornecedor: { "NUTRITINS": 3, "OUTRO": 1, ... }
 let ncSeqPorFornecedor = JSON.parse(ncStorage.getItem('sgq_nc_seq_forn') || '{}');
 let devIdSeq = parseInt(ncStorage.getItem('sgq_dev_seq') || '1');
@@ -21937,7 +21949,17 @@ async function carregarNCeDevSupabase() {
             }
         }
         if (devData.data) {
-            listaDev = devData.data;
+            // Normaliza campo 'dir' em registros antigos que vieram do Supabase sem esse campo
+            listaDev = devData.data.map(dev => {
+                if (!dev.classificacao) return dev;
+                try {
+                    const classif = typeof dev.classificacao === 'string'
+                        ? JSON.parse(dev.classificacao || '[]')
+                        : (dev.classificacao || []);
+                    const normalizada = classif.map(c => ({ ...c, dir: _resolverDir(c) }));
+                    return { ...dev, classificacao: JSON.stringify(normalizada) };
+                } catch(e) { return dev; }
+            });
 
             // ✅ Correção automática de sequência por fornecedor (silenciosa, roda uma vez se necessário)
             // ✅ OTIMIZAÇÃO EGRESS: reutiliza listaDev já carregado em vez de nova query ao Supabase
