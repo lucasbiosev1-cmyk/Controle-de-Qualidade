@@ -4482,6 +4482,7 @@
                 <div class="form-group">
                     <label>VISUALIZAR POR</label>
                     <select id="relModo" onchange="alterarModoRel()">
+                        <option value="todos">(TODOS)</option>
                         <option value="fase">POR FASE</option>
                         <option value="racao">POR RAÇÃO</option>
                         <option value="calcario">CALCÁRIO</option>
@@ -4497,7 +4498,8 @@
                 </div>
                 <div class="form-group" id="grupoFase">
                     <label>FASE / RAÇÃO</label>
-                    <select id="relFase">
+                    <select id="relFase" onchange="aplicarFiltrosRel()">
+                        <option value="todos_fase">(TODOS)</option>
                         <option value="corte_pre">PRÉ INICIAL CORTE (R1 - WISIUM + MCASSAB)</option>
                         <option value="corte_ini">INICIAL CORTE (R2 - WISIUM + MCASSAB)</option>
                         <option value="corte_fin">FINAL CORTE (R3-R5 - WISIUM + MCASSAB)</option>
@@ -11272,7 +11274,57 @@ function aplicarFiltrosRel() {
     // Definir racoes alvo
     let racoesAlvo, tituloSel, corPrincipal, isTodas = false;
 
-    if (modo === 'racao') {
+    if (modo === 'todos') {
+        // Todas as rações que possuem a análise selecionada com valor > 0 (não zero, não nulo, não ítem sem dado)
+        const todasRacoes = [...new Set(base.map(r => r.racao).filter(Boolean))].sort();
+        // Filtra apenas rações que têm ao menos 1 registro com valor > 0 nessa análise
+        racoesAlvo = todasRacoes.filter(rac => {
+            return base.some(r => r.racao === rac && getValor(r, analise) > 0);
+        });
+        tituloSel    = `TODAS AS RAÇÕES — ${analNome}`;
+        corPrincipal = '#2980b9';
+        // Renderização especial: tabela por ração com médias
+        const dados = base.filter(r => racoesAlvo.includes(r.racao));
+        // Período legível
+        const diStr = new Date(di+'T00:00:00').toLocaleDateString('pt-BR');
+        const dfStr = new Date(df+'T00:00:00').toLocaleDateString('pt-BR');
+        document.getElementById('relPeriodo').textContent  = `PERÍODO: ${diStr} ATÉ ${dfStr}  |  ${racoesAlvo.length} ração(ões) com ${analNome}`;
+        document.getElementById('relTitulo').textContent   = `RELATÓRIO: TODAS AS RAÇÕES`;
+        document.getElementById('relGraficoTitulo').textContent = `EVOLUÇÃO GERAL — ${analNome}`;
+        document.getElementById('thValor').textContent    = analNome;
+        if (document.getElementById('thDPG')) document.getElementById('thDPG').textContent = 'DPG (µm)';
+        document.getElementById('thAnalise').textContent  = `MÉDIA ${analNome}`;
+        if (document.getElementById('relCapaPeriodo'))
+            document.getElementById('relCapaPeriodo').textContent = `${diStr} a ${dfStr}`;
+        if (document.getElementById('relCapaDataEmissao'))
+            document.getElementById('relCapaDataEmissao').textContent = new Date().toLocaleDateString('pt-BR');
+        if (document.getElementById('relCapaTituloTexto'))
+            document.getElementById('relCapaTituloTexto').textContent = 'TODAS AS RAÇÕES';
+
+        // Cards consolidados de todas as rações
+        const vals    = dados.map(r => getValor(r, analise)).filter(v => v > 0);
+        const estat   = calcEstat(vals);
+        const valsDGM = dados.map(r => parseFloat(r.dgm)||0).filter(v=>v>0);
+        const estatDGM = calcEstat(valsDGM);
+        const valsDPG = dados.map(r => parseFloat(r.dpg)||0).filter(v=>v>0);
+        const estatDPG = calcEstat(valsDPG);
+        const eDGMref = analise !== 'dgm' ? (valsDGM.length ? estatDGM : null) : null;
+        const eDPGref = valsDPG.length ? estatDPG : null;
+        renderCards(estat, analNome, eDGMref, eDPGref, analise, dados.length);
+
+        // Gráfico de linha com todas as rações juntas
+        renderGraficoLinha(di, df, dados, analise, analNome, corPrincipal, racoesAlvo);
+
+        // Tabela comparativa por ração (usando renderTabelaRacoes)
+        renderTabelaRacoes(base, racoesAlvo, analise, analNome);
+        renderGraficoBarRacoes(base, racoesAlvo, analise, analNome);
+        document.getElementById('relTabelaFases').style.display = '';
+        document.getElementById('relGraficoComp').style.display = '';
+
+        // Detalhe
+        renderDetalhe(dados, analise, analNome);
+        return;
+    } else if (modo === 'racao') {
         const racSel = document.getElementById('relRacao').value;
         // Valores prefixados com "g:" são grupos (múltiplas rações separadas por |)
         if (racSel.startsWith('g:')) {
@@ -11296,11 +11348,21 @@ function aplicarFiltrosRel() {
         corPrincipal = '#546e7a';
     } else {
         const faseSel = document.getElementById('relFase').value;
-        const fase    = FASES_MAP[faseSel];
-        racoesAlvo    = fase.racoes;
-        tituloSel     = fase.label;
-        corPrincipal  = fase.cor;
-        isTodas       = faseSel.endsWith('_all');
+        if (faseSel === 'todos_fase') {
+            // Todas as rações de FASES_MAP filtradas pela análise
+            const todasRacoesFase = Object.values(FASES_MAP).flatMap(f => f.racoes);
+            const unicas = [...new Set(todasRacoesFase)];
+            racoesAlvo = unicas.filter(rac => base.some(r => r.racao === rac && getValor(r, analise) > 0));
+            tituloSel    = 'TODAS AS FASES';
+            corPrincipal = '#2980b9';
+            isTodas      = true;
+        } else {
+            const fase    = FASES_MAP[faseSel];
+            racoesAlvo    = fase.racoes;
+            tituloSel     = fase.label;
+            corPrincipal  = fase.cor;
+            isTodas       = faseSel.endsWith('_all');
+        }
     }
 
     const dados = base.filter(r => racoesAlvo.includes(r.racao));
@@ -11347,11 +11409,21 @@ function aplicarFiltrosRel() {
     // ---- TABELA / GRÁFICO COMPARATIVO (modo todas as fases) ----
     if (isTodas && modo === 'fase') {
         const faseSel  = document.getElementById('relFase').value;
-        const subFases = faseSel.startsWith('corte')
-            ? ['corte_pre','corte_ini','corte_fin']
-            : ['pos_pre','pos_ini','pos_fin'];
-        renderTabelaFases(base, subFases, analise, analNome);
-        renderGraficoBar(base, subFases, analise, analNome);
+        let subFases;
+        if (faseSel === 'todos_fase') {
+            // Todas as fases de todos os grupos, filtradas pelas rações que têm dados
+            subFases = Object.keys(FASES_MAP).filter(fk =>
+                FASES_MAP[fk].racoes.some(rac => base.some(r => r.racao === rac && getValor(r, analise) > 0))
+            );
+            renderTabelaFases(base, subFases, analise, analNome);
+            renderGraficoBar(base, subFases, analise, analNome);
+        } else {
+            subFases = faseSel.startsWith('corte')
+                ? ['corte_pre','corte_ini','corte_fin']
+                : ['pos_pre','pos_ini','pos_fin'];
+            renderTabelaFases(base, subFases, analise, analNome);
+            renderGraficoBar(base, subFases, analise, analNome);
+        }
         document.getElementById('relTabelaFases').style.display = '';
         document.getElementById('relGraficoComp').style.display = '';
     } else {
@@ -11564,6 +11636,72 @@ function renderGraficoBar(base, subFases, analise, analNome) {
         }
     });
 }
+
+// ── MODO TODOS: tabela comparativa por ração ──────────────────────────────────
+function renderTabelaRacoes(base, racoes, analise, analNome) {
+    const PALETA = ['#2980b9','#27ae60','#e67e22','#c0392b','#8e44ad','#16a085','#d35400','#2c3e50','#1a3a9f','#7f8c8d'];
+    const tbody = document.getElementById('relTbodyFases');
+    // Cabeçalho da tabela comparativa — reutiliza a mesma tabela de fases
+    const thFase = document.querySelector('#relTabelaFases table thead tr th:first-child');
+    if (thFase) thFase.textContent = 'RAÇÃO';
+    tbody.innerHTML = racoes.map((rac, i) => {
+        const cor  = PALETA[i % PALETA.length];
+        const dd   = base.filter(r => r.racao === rac);
+        const vals = dd.map(r => getValor(r, analise)).filter(v => v > 0);
+        const e    = calcEstat(vals);
+        const cvCor= e.cv<=10?'#27ae60':e.cv<=15?'#e67e22':'#e74c3c';
+        const fmt  = analise === 'dgm' ? (v => Math.round(v)) : (v => v.toFixed(2));
+        return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
+            <td style="padding:7px 10px;font-weight:bold;color:${cor};border-left:4px solid ${cor};">${rac}</td>
+            <td style="padding:7px;text-align:center;">${e.n}</td>
+            <td style="padding:7px;text-align:center;font-weight:bold;">${e.n ? fmt(e.media) : '—'}</td>
+            <td style="padding:7px;text-align:center;">${e.n ? fmt(e.min) : '—'}</td>
+            <td style="padding:7px;text-align:center;">${e.n ? fmt(e.max) : '—'}</td>
+            <td style="padding:7px;text-align:center;">${e.n ? e.dp.toFixed(2) : '—'}</td>
+            <td style="padding:7px;text-align:center;font-weight:bold;color:${cvCor};">${e.n ? e.cv.toFixed(2)+'%' : '—'}</td>
+        </tr>`;
+    }).join('');
+}
+
+function renderGraficoBarRacoes(base, racoes, analise, analNome) {
+    const PALETA = ['#2980b9','#27ae60','#e67e22','#c0392b','#8e44ad','#16a085','#d35400','#2c3e50','#1a3a9f','#7f8c8d'];
+    const labels = racoes;
+    const cores  = racoes.map((_,i) => PALETA[i % PALETA.length]);
+    const medias = racoes.map(rac => {
+        const dd = base.filter(r => r.racao === rac);
+        const vs = dd.map(r => getValor(r, analise)).filter(v => v > 0);
+        return vs.length ? parseFloat((vs.reduce((a,b)=>a+b,0)/vs.length).toFixed(2)) : 0;
+    });
+    const cvs = racoes.map(rac => {
+        const dd = base.filter(r => r.racao === rac);
+        const vs = dd.map(r => getValor(r, analise)).filter(v => v > 0);
+        return parseFloat(calcEstat(vs).cv.toFixed(2));
+    });
+
+    document.getElementById('relGraficoCompTitulo').textContent = `COMPARATIVO POR RAÇÃO — ${analNome}`;
+
+    const ctx = document.getElementById('relGraficoBar').getContext('2d');
+    if (window._relGraficoBarInst) window._relGraficoBarInst.destroy();
+    window._relGraficoBarInst = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                { label: `Média ${analNome}`, data: medias, backgroundColor: cores.map(c=>c+'cc'), borderColor: cores, borderWidth: 2, yAxisID:'y' },
+                { label: 'C.V (%)',           data: cvs,    backgroundColor: '#95a5a622', borderColor: '#7f8c8d', borderWidth:2, type:'line', yAxisID:'y2', tension:0.3, pointRadius:5, pointBackgroundColor:'#7f8c8d' }
+            ]
+        },
+        options: {
+            responsive:true, maintainAspectRatio:true,
+            plugins: { legend:{ display:true, labels:{font:{size:11}, padding:12, color:'#e6edf3'} } },
+            scales: {
+                y:  { beginAtZero:false, ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true, text:analNome, font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} },
+                y2: { position:'right',  ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true, text:'C.V (%)', font:{size:10}, color:'#e6edf3'}, grid:{drawOnChartArea:false} }
+            }
+        }
+    });
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 function renderDetalhe(dados, analise, analNome) {
     const tbody = document.getElementById('relTbodyDetalhe');
