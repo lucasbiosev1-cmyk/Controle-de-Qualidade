@@ -21237,7 +21237,7 @@ function abrirModalDev(id = null) {
         limparClassif();
         const classifDev = typeof dev.classificacao === 'string' ? JSON.parse(dev.classificacao || '[]') : (dev.classificacao || []);
         if (classifDev && classifDev.length > 0) {
-            classifDev.forEach(c => adicionarLinhaClassif(c.defeito, c.resultado, c.parametro, c.unidade, c.dir || 'max'));
+            classifDev.forEach(c => adicionarLinhaClassif(c.defeito, c.resultado, c.parametro, c.unidade, _resolverDir(c)));
             // Ajusta cabeçalhos conforme o produto do registro
             const _prod = (dev.produto || '').toUpperCase();
             const _th1 = document.getElementById('thResultado');
@@ -21558,6 +21558,14 @@ const CLASSIF_FARELO_SOJA = [
     { nome: 'Solubilidade Proteica',param: 80.00,  unidade: '%',   dir: 'min' },
     { nome: 'Extrato Etéreo',       param: 5.00,   unidade: '%',   dir: 'max' },
 ];
+
+// Retrocompatibilidade: resolve dir de registros salvos sem o campo dir
+function _resolverDir(c) {
+    if (c.dir) return c.dir;
+    const nome = (c.defeito || c.nome || '').toLowerCase();
+    const MIN_PARAMS = ['densidade', 'proteína bruta', 'proteina bruta', 'solubilidade proteica'];
+    return MIN_PARAMS.some(p => nome.includes(p)) ? 'min' : 'max';
+}
 
 // Tabela de parâmetros para FCO (Farelo de Carne e Ossos)
 const CLASSIF_FCO = [
@@ -22096,7 +22104,7 @@ function visualizarDev(id) {
                 const isTexto  = unidade === 'Neg.' || isNaN(parseFloat(c.resultado));
                 const r = isTexto ? (c.resultado || '-') : parseFloat(c.resultado || 0);
                 const p = isTexto ? (c.parametro || '-') : parseFloat(c.parametro || 0);
-                const _dirV    = c.dir || 'max';
+                const _dirV    = _resolverDir(c);
                 const nc2 = isTexto ? false : (_dirV === 'min' ? r < p : r > p);
                 const resStr = isTexto ? r : r.toFixed(2) + ' ' + unidade;
                 const parStr = isTexto ? p : p.toFixed(2) + ' ' + unidade;
@@ -22179,7 +22187,7 @@ function _imprimirDevPorObj(id) {
             const isTexto   = unidade === 'Neg.' || isNaN(parseFloat(c.resultado));
             const resultado = isTexto ? (c.resultado || '-') : parseFloat(c.resultado || 0);
             const parametro = isTexto ? (c.parametro || '-') : parseFloat(c.parametro || 0);
-            const _dir1     = c.dir || 'max';
+            const _dir1     = _resolverDir(c);
             const nc        = isTexto ? false : (_dir1 === 'min' ? resultado < parametro : resultado > parametro);
             const resStr    = isTexto ? resultado : resultado.toFixed(2) + ' ' + unidade;
             const parStr    = isTexto ? parametro : parametro.toFixed(2) + ' ' + unidade;
@@ -22346,7 +22354,7 @@ function imprimirVisualizacao() {
             const isTexto = isNaN(parseFloat(c.resultado));
             const r = isTexto ? (c.resultado || '-') : parseFloat(c.resultado || 0);
             const p = isTexto ? (c.parametro || '-') : parseFloat(c.parametro || 0);
-            const _dir2 = c.dir || 'max';
+            const _dir2 = _resolverDir(c);
             const nc2 = isTexto ? false : (_dir2 === 'min' ? r < p : r > p);
             const resStr = isTexto ? r : r.toFixed(2) + ' ' + unidade;
             const parStr = isTexto ? p : p.toFixed(2) + ' ' + unidade;
