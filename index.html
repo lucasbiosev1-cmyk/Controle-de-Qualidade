@@ -20836,20 +20836,69 @@ function imprimirRelatorioNC(tipo) {
             const rowsHtml = classifRows.map(tr => {
                 const inputs    = tr.querySelectorAll('input');
                 const defeito   = inputs[0]?.value || '-';
-                const _parInp  = tr.querySelector('input[data-unidade]');
+                const _parInp   = tr.querySelector('input[data-unidade]');
                 const unidade   = _parInp?.dataset?.unidade || '%';
                 const _dir3     = _parInp?.dataset?.dir || 'max';
-                const isTexto   = unidade === 'Neg.' || isNaN(parseFloat(inputs[1]?.value));
-                const resultado = isTexto ? (inputs[1]?.value || '-') : parseFloat(inputs[1]?.value || 0);
-                const parametro = isTexto ? (inputs[2]?.value || '-') : parseFloat(inputs[2]?.value || 0);
-                const nc        = isTexto ? false : (_dir3 === 'min' ? resultado < parametro : resultado > parametro);
-                const resStr    = isTexto ? resultado : resultado.toFixed(2) + ' ' + unidade;
-                const parStr    = isTexto ? parametro : parametro.toFixed(2) + ' ' + unidade;
+                const resVal    = inputs[1]?.value || '';
+                const semValor  = resVal === '' || resVal === '-';
+                const isTexto   = unidade === 'Neg.' || (!semValor && isNaN(parseFloat(resVal)));
+                const isFaixa   = _dir3 === 'faixa';
+                // Helper para montar string de parâmetro com null aceito
+                const _mkParStr = (pMin, pMax) => {
+                    const hMin = pMin !== null && pMin !== undefined && pMin !== '' && !isNaN(parseFloat(pMin));
+                    const hMax = pMax !== null && pMax !== undefined && pMax !== '' && !isNaN(parseFloat(pMax));
+                    const nMin = hMin ? parseFloat(pMin) : null;
+                    const nMax = hMax ? parseFloat(pMax) : null;
+                    if (hMin && hMax) return nMin.toFixed(2) + ' – ' + nMax.toFixed(2) + ' ' + unidade;
+                    if (hMin) return '≥ ' + nMin.toFixed(2) + ' ' + unidade;
+                    if (hMax) return '≤ ' + nMax.toFixed(2) + ' ' + unidade;
+                    return '-';
+                };
+                let nc = false, resStr = '-', parStr = '-';
+                if (!semValor) {
+                    if (isFaixa) {
+                        const faixaInputs = tr.querySelectorAll('input[data-dir="faixa"]');
+                        const minVal = faixaInputs[0]?.value;
+                        const maxVal = faixaInputs[1]?.value;
+                        const pMin = (minVal !== '' && minVal !== undefined) ? parseFloat(minVal) : null;
+                        const pMax = (maxVal !== '' && maxVal !== undefined) ? parseFloat(maxVal) : null;
+                        const res = parseFloat(resVal);
+                        const ncMin = pMin !== null && res < pMin;
+                        const ncMax = pMax !== null && res > pMax;
+                        nc = ncMin || ncMax;
+                        resStr = res.toFixed(2) + ' ' + unidade;
+                        if (nc) {
+                            parStr = ncMin ? '≥ ' + pMin.toFixed(2) + ' ' + unidade : '≤ ' + pMax.toFixed(2) + ' ' + unidade;
+                        } else {
+                            parStr = _mkParStr(minVal, maxVal);
+                        }
+                    } else if (isTexto) {
+                        resStr = resVal || '-';
+                        parStr = inputs[2]?.value || '-';
+                    } else {
+                        const resultado = parseFloat(resVal);
+                        const parametro = parseFloat(inputs[2]?.value || 0);
+                        nc = _dir3 === 'min' ? resultado < parametro : resultado > parametro;
+                        resStr = resultado.toFixed(2) + ' ' + unidade;
+                        parStr = (_dir3 === 'min' ? '≥ ' : '≤ ') + parametro.toFixed(2) + ' ' + unidade;
+                    }
+                } else if (isFaixa) {
+                    const faixaInputs = tr.querySelectorAll('input[data-dir="faixa"]');
+                    parStr = _mkParStr(faixaInputs[0]?.value, faixaInputs[1]?.value);
+                } else if (!isTexto) {
+                    const parametro = parseFloat(inputs[2]?.value || 0);
+                    parStr = (_dir3 === 'min' ? '≥ ' : '≤ ') + parametro.toFixed(2) + ' ' + unidade;
+                } else {
+                    parStr = inputs[2]?.value || '-';
+                }
+                const resColor = semValor ? '#aaa' : (nc ? '#e74c3c' : '#27ae60');
+                const sitLabel = semValor ? '-' : (nc ? '▲ NC' : '✔ OK');
+                const sitColor = semValor ? '#aaa' : (nc ? '#e74c3c' : '#27ae60');
                 return `<tr>
                     <td style="text-align:left;font-weight:600;">${defeito}</td>
-                    <td style="font-weight:bold;color:${nc ? '#e74c3c' : '#27ae60'};">${resStr}</td>
+                    <td style="font-weight:bold;color:${resColor};">${resStr}</td>
                     <td style="color:#7f8c8d;">${parStr}</td>
-                    <td style="color:${nc ? '#e74c3c' : '#27ae60'};font-weight:bold;">${nc ? '▲ NC' : '✔ OK'}</td>
+                    <td style="color:${sitColor};font-weight:bold;">${sitLabel}</td>
                 </tr>`;
             }).join('');
             classifHtml = `
@@ -21249,7 +21298,7 @@ function abrirModalDev(id = null) {
         limparClassif();
         const classifDev = typeof dev.classificacao === 'string' ? JSON.parse(dev.classificacao || '[]') : (dev.classificacao || []);
         if (classifDev && classifDev.length > 0) {
-            classifDev.forEach(c => adicionarLinhaClassif(c.defeito, c.resultado, c.parametro, c.unidade, _resolverDir(c)));
+            classifDev.forEach(c => adicionarLinhaClassif(c.defeito, c.resultado, c.parametro, c.unidade, _resolverDir(c), c.param_min, c.param_max));
             // Ajusta cabeçalhos conforme o produto do registro
             const _prod = (dev.produto || '').toUpperCase();
             const _th1 = document.getElementById('thResultado');
@@ -21344,10 +21393,23 @@ async function salvarDev() {
     }
 
     const classifData = Array.from(document.querySelectorAll('#classifBody tr')).map(tr => {
-        const inputs   = tr.querySelectorAll('input');
-        const parInput = tr.querySelector('input[data-unidade]');
-        const unidade  = parInput?.dataset?.unidade || '%';
-        const dir      = parInput?.dataset?.dir || 'max';
+        const inputs      = tr.querySelectorAll('input');
+        const parInput    = tr.querySelector('input[data-unidade]');
+        const unidade     = parInput?.dataset?.unidade || '%';
+        const dir         = parInput?.dataset?.dir || 'max';
+        if (dir === 'faixa') {
+            const faixaInputs = tr.querySelectorAll('input[data-dir="faixa"]');
+            const minVal = faixaInputs[0]?.value;
+            const maxVal = faixaInputs[1]?.value;
+            return {
+                defeito:   inputs[0]?.value || '',
+                resultado: inputs[1]?.value || '',
+                param_min: (minVal !== '' && minVal !== undefined) ? parseFloat(minVal) : null,
+                param_max: (maxVal !== '' && maxVal !== undefined) ? parseFloat(maxVal) : null,
+                parametro: '',
+                unidade, dir
+            };
+        }
         return { defeito: inputs[0]?.value||'', resultado: inputs[1]?.value||'', parametro: inputs[2]?.value||'', unidade, dir };
     }).filter(c => c.defeito);
 
@@ -21562,21 +21624,88 @@ const CLASSIF_SOJA = [
 // Tabela de parâmetros para FARELO DE SOJA
 // unidade: '%' para percentual, 'g/L' para densidade, 'pH' para pH, 'µS/cm' para condutividade
 const CLASSIF_FARELO_SOJA = [
-    { nome: 'Umidade',              param: 13.50,  unidade: '%',   dir: 'max' },
-    { nome: 'Densidade',            param: 700,    unidade: 'g/L', dir: 'min' },
-    { nome: 'Atividade Ureática',   param: 0.05,   unidade: 'pH',  dir: 'max' },
-    { nome: 'Matéria Mineral',      param: 7.50,   unidade: '%',   dir: 'max' },
-    { nome: 'Proteína Bruta',       param: 46.00,  unidade: '%',   dir: 'min' },
-    { nome: 'Solubilidade Proteica',param: 80.00,  unidade: '%',   dir: 'min' },
-    { nome: 'Extrato Etéreo',       param: 5.00,   unidade: '%',   dir: 'max' },
+    { nome: 'Umidade',              param_min: null,  param_max: 13.50, unidade: '%',   dir: 'faixa' },
+    { nome: 'Densidade',            param_min: 700,   param_max: null,  unidade: 'g/L', dir: 'faixa' },
+    { nome: 'Atividade Ureática',   param_min: 0.05,  param_max: 0.30,  unidade: 'pH',  dir: 'faixa' },
+    { nome: 'Matéria Mineral',      param_min: null,  param_max: 7.50,  unidade: '%',   dir: 'faixa' },
+    { nome: 'Proteína Bruta',       param_min: 46.00, param_max: null,  unidade: '%',   dir: 'faixa' },
+    { nome: 'Solubilidade Proteica',param_min: 70.00, param_max: 85.00, unidade: '%',   dir: 'faixa' },
+    { nome: 'Extrato Etéreo',       param_min: null,  param_max: 5.00,  unidade: '%',   dir: 'faixa' },
 ];
 
 // Retrocompatibilidade: resolve dir de registros salvos sem o campo dir
 function _resolverDir(c) {
     if (c.dir) return c.dir;
+    // Retrocompatibilidade: se tem param_min e param_max salvos sem o campo dir
+    if (c.param_min !== undefined && c.param_max !== undefined) return 'faixa';
     const nome = (c.defeito || c.nome || '').toLowerCase();
     const MIN_PARAMS = ['densidade', 'proteína bruta', 'proteina bruta', 'solubilidade proteica'];
     return MIN_PARAMS.some(p => nome.includes(p)) ? 'min' : 'max';
+}
+
+// Calcula NC e strings de exibição para uma linha de classificação
+// Suporta dir: 'max', 'min', 'faixa' (usa param_min/param_max)
+function _calcClassifLinha(c) {
+    const unidade  = c.unidade || '%';
+    const isTexto  = unidade === 'Neg.' || (c.resultado !== undefined && c.resultado !== '' && c.resultado !== '-' && isNaN(parseFloat(c.resultado)));
+    const semValor = c.resultado === '' || c.resultado === undefined || c.resultado === '-' || c.resultado === null;
+    const dir      = _resolverDir(c);
+    const isFaixa  = dir === 'faixa' || (c.param_min !== undefined || c.param_max !== undefined);
+
+    // Monta string do parâmetro para exibição (null = sem limite naquele lado)
+    function _parStr(pMin, pMax) {
+        const hasMin = pMin !== null && pMin !== undefined && !isNaN(pMin);
+        const hasMax = pMax !== null && pMax !== undefined && !isNaN(pMax);
+        if (hasMin && hasMax) return pMin.toFixed(2) + ' – ' + pMax.toFixed(2) + ' ' + unidade;
+        if (hasMin)           return '≥ ' + pMin.toFixed(2) + ' ' + unidade;
+        if (hasMax)           return '≤ ' + pMax.toFixed(2) + ' ' + unidade;
+        return '-';
+    }
+
+    let r, p, pMin, pMax, nc, resStr, parStr;
+
+    if (semValor) {
+        resStr = '-';
+        if (isFaixa) {
+            pMin = c.param_min !== null && c.param_min !== undefined ? parseFloat(c.param_min) : null;
+            pMax = c.param_max !== null && c.param_max !== undefined ? parseFloat(c.param_max) : null;
+            parStr = _parStr(pMin, pMax);
+        } else {
+            p = isTexto ? (c.parametro || '-') : parseFloat(c.parametro || 0);
+            parStr = isTexto ? p : (dir === 'min' ? '≥ ' : '≤ ') + p.toFixed(2) + ' ' + unidade;
+        }
+        return { nc: false, semValor: true, resStr, parStr };
+    }
+
+    if (isFaixa) {
+        r    = parseFloat(c.resultado || 0);
+        pMin = c.param_min !== null && c.param_min !== undefined ? parseFloat(c.param_min) : null;
+        pMax = c.param_max !== null && c.param_max !== undefined ? parseFloat(c.param_max) : null;
+        const ncMin = pMin !== null && r < pMin;
+        const ncMax = pMax !== null && r > pMax;
+        nc   = ncMin || ncMax;
+        resStr = r.toFixed(2) + ' ' + unidade;
+        if (nc) {
+            // Mostra apenas o limite violado
+            if (ncMin) parStr = '≥ ' + pMin.toFixed(2) + ' ' + unidade;
+            else        parStr = '≤ ' + pMax.toFixed(2) + ' ' + unidade;
+        } else {
+            parStr = _parStr(pMin, pMax);
+        }
+    } else if (isTexto) {
+        r = c.resultado || '-';
+        p = c.parametro || '-';
+        nc = false;
+        resStr = r;
+        parStr = p;
+    } else {
+        r = parseFloat(c.resultado || 0);
+        p = parseFloat(c.parametro || 0);
+        nc = dir === 'min' ? r < p : r > p;
+        resStr = r.toFixed(2) + ' ' + unidade;
+        parStr = (dir === 'min' ? '≥ ' : '≤ ') + p.toFixed(2) + ' ' + unidade;
+    }
+    return { nc, semValor: false, resStr, parStr };
 }
 
 // Tabela de parâmetros para FCO (Farelo de Carne e Ossos)
@@ -21648,48 +21777,76 @@ function carregarClassifFareloSoja() {
     const th2 = document.getElementById('thParametro');
     if (th1) th1.textContent = 'Resultado';
     if (th2) th2.textContent = 'Parâmetro';
-    CLASSIF_FARELO_SOJA.forEach(d => adicionarLinhaClassif(d.nome, '', d.param, d.unidade, d.dir || 'max'));
+    CLASSIF_FARELO_SOJA.forEach(d => adicionarLinhaClassif(d.nome, '', d.param || '', d.unidade, d.dir || 'max', d.param_min, d.param_max));
     const bf = document.getElementById('btnClassifFareloSoja');
     if (bf) { bf.style.background='#8e44ad'; bf.style.color='#fff'; }
 }
 
-function adicionarLinhaClassif(nome='', resultado='', parametro='', unidade='%', dir='max') {
+function adicionarLinhaClassif(nome='', resultado='', parametro='', unidade='%', dir='max', param_min=undefined, param_max=undefined) {
     const tbody = document.getElementById('classifBody');
     if (!tbody) return;
+    // Detecta faixa: dir === 'faixa' OU param_min/param_max presentes
+    const isFaixa = dir === 'faixa' || (param_min !== undefined || param_max !== undefined);
+    const dirReal = isFaixa ? 'faixa' : dir;
     const tr = document.createElement('tr');
-    // Para unidades longas, trunca na coluna resultado mas mostra completo no parâmetro
-    const unidCurta = unidade.length > 5 ? unidade.substring(0,5)+'…' : unidade;
     const inputRes = resultado === '' ? '' : resultado;
-    const inputPar = parametro === '' ? '' : parametro;
+    // Valores dos inputs de parâmetro: null → string vazia (placeholder)
+    const vMin = (param_min !== null && param_min !== undefined) ? param_min : '';
+    const vMax = (param_max !== null && param_max !== undefined) ? param_max : '';
+    // Para não-faixa, usa campo único de parâmetro
+    const inputPar = isFaixa ? '' : (parametro === '' ? '' : parametro);
     tr.innerHTML = `
         <td><input class="nc-classif-input nc-classif-input-nome" type="text" placeholder="Ex: Ardido" value="${nome}"></td>
         <td style="position:relative;">
             <div style="display:flex;align-items:center;gap:4px;">
-                <input class="nc-classif-input" type="${unidade==='Neg.'?'text':'number'}" step="0.01" min="0" placeholder="${unidade==='Neg.'?'Neg./Pos.':'0,00'}" value="${inputRes}" oninput="ncAtualizarCorLinha(this)" style="flex:1;min-width:0;">
+                <input class="nc-classif-input" type="${unidade==='Neg.'?'text':'number'}" step="0.01" placeholder="${unidade==='Neg.'?'Neg./Pos.':'0,00'}" value="${inputRes}" oninput="ncAtualizarCorLinha(this)" style="flex:1;min-width:0;">
                 <span style="font-size:9px;color:#888;white-space:nowrap;max-width:48px;overflow:hidden;text-overflow:ellipsis;" title="${unidade}">${unidade}</span>
             </div>
         </td>
         <td style="position:relative;">
             <div style="display:flex;align-items:center;gap:4px;">
-                <input class="nc-classif-input" type="${unidade==='Neg.'?'text':'number'}" step="0.01" min="0" placeholder="${unidade==='Neg.'?'Negativo':'0,00'}" value="${inputPar}" oninput="ncAtualizarCorLinha(this)" style="flex:1;min-width:0;" data-unidade="${unidade}" data-dir="${dir}">
+                ${isFaixa
+                    ? `<input class="nc-classif-input" type="number" step="0.01" placeholder="Mín" value="${vMin}" oninput="ncAtualizarCorLinha(this)" style="flex:1;min-width:0;" data-unidade="${unidade}" data-dir="faixa" data-hasnull="${vMin===''?'min':''}">
+                       <span style="font-size:9px;color:#888;padding:0 2px;">–</span>
+                       <input class="nc-classif-input" type="number" step="0.01" placeholder="Máx" value="${vMax}" oninput="ncAtualizarCorLinha(this)" style="flex:1;min-width:0;" data-unidade="${unidade}" data-dir="faixa" data-hasnull="${vMax===''?'max':''}">`
+                    : `<input class="nc-classif-input" type="${unidade==='Neg.'?'text':'number'}" step="0.01" placeholder="${unidade==='Neg.'?'Negativo':'0,00'}" value="${inputPar}" oninput="ncAtualizarCorLinha(this)" style="flex:1;min-width:0;" data-unidade="${unidade}" data-dir="${dirReal}">`
+                }
                 <span style="font-size:9px;color:#888;white-space:nowrap;max-width:48px;overflow:hidden;text-overflow:ellipsis;" title="${unidade}">${unidade}</span>
             </div>
         </td>
         <td style="text-align:center;"><button class="nc-btn-rem-row" onclick="removerLinhaClassif(this)" title="Remover">−</button></td>`;
     tbody.appendChild(tr);
-    if (inputRes !== '' && inputPar !== '') ncAtualizarCorLinha(tr.querySelector('input'));
+    if (inputRes !== '') ncAtualizarCorLinha(tr.querySelector('input'));
 }
 
 function removerLinhaClassif(btn) { btn.closest('tr').remove(); }
 
 function ncAtualizarCorLinha(input) {
     const tr = input.closest('tr');
-    const inputs = tr.querySelectorAll('input[type=number]');
-    const res = parseFloat(inputs[0]?.value || 0);
-    const par = parseFloat(inputs[1]?.value || 0);
-    const dir = inputs[1]?.dataset?.dir || 'max';
-    const isNC = dir === 'min' ? res < par : res > par;
-    inputs[0].parentElement.style.color = isNC ? '#e74c3c' : '#27ae60';
+    const resInput = tr.querySelector('input[type=number]');
+    if (!resInput) return;
+    const resVal = resInput.value;
+    const semValor = resVal === '' || resVal === '-';
+    if (semValor) { resInput.parentElement.style.color = ''; return; }
+    const res = parseFloat(resVal);
+    const faixaInputs = tr.querySelectorAll('input[data-dir="faixa"]');
+    if (faixaInputs.length >= 2) {
+        // Faixa: min e/ou max podem ser vazios (sem limite naquele lado)
+        const minVal = faixaInputs[0]?.value;
+        const maxVal = faixaInputs[1]?.value;
+        const hasMin = minVal !== '' && minVal !== undefined;
+        const hasMax = maxVal !== '' && maxVal !== undefined;
+        const pMin = hasMin ? parseFloat(minVal) : null;
+        const pMax = hasMax ? parseFloat(maxVal) : null;
+        const isNC = (hasMin && res < pMin) || (hasMax && res > pMax);
+        resInput.parentElement.style.color = isNC ? '#e74c3c' : '#27ae60';
+    } else {
+        const parInput = tr.querySelector('input[data-dir]');
+        const par = parseFloat(parInput?.value || 0);
+        const dir = parInput?.dataset?.dir || 'max';
+        const isNC = dir === 'min' ? res < par : res > par;
+        resInput.parentElement.style.color = isNC ? '#e74c3c' : '#27ae60';
+    }
 }
 
 function limparClassif() { const tb = document.getElementById('classifBody'); if(tb) tb.innerHTML = ''; }
@@ -22122,19 +22279,15 @@ function visualizarDev(id) {
                 <th style="padding:7px 10px;">Status</th>
             </tr></thead>
             <tbody>${classif.map((c, i) => {
-                const unidade  = c.unidade || '%';
-                const isTexto  = unidade === 'Neg.' || isNaN(parseFloat(c.resultado));
-                const r = isTexto ? (c.resultado || '-') : parseFloat(c.resultado || 0);
-                const p = isTexto ? (c.parametro || '-') : parseFloat(c.parametro || 0);
-                const _dirV    = _resolverDir(c);
-                const nc2 = isTexto ? false : (_dirV === 'min' ? r < p : r > p);
-                const resStr = isTexto ? r : r.toFixed(2) + ' ' + unidade;
-                const parStr = isTexto ? p : p.toFixed(2) + ' ' + unidade;
+                const { nc, semValor, resStr, parStr } = _calcClassifLinha(c);
+                const resColor  = semValor ? '#aaa' : (nc ? '#e74c3c' : '#27ae60');
+                const sitLabel  = semValor ? '-' : (nc ? '⚠ NC' : '✔ OK');
+                const sitColor  = semValor ? '#aaa' : (nc ? '#e74c3c' : '#27ae60');
                 return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
                     <td style="padding:5px 10px;font-weight:600;">${c.defeito||'-'}</td>
-                    <td style="text-align:center;color:${nc2?'#e74c3c':'#27ae60'};font-weight:bold;">${resStr}</td>
+                    <td style="text-align:center;color:${resColor};font-weight:bold;">${resStr}</td>
                     <td style="text-align:center;color:#7f8c8d;">${parStr}</td>
-                    <td style="text-align:center;color:${nc2?'#e74c3c':'#27ae60'};font-weight:bold;">${nc2?'⚠ NC':'✔ OK'}</td>
+                    <td style="text-align:center;color:${sitColor};font-weight:bold;">${sitLabel}</td>
                 </tr>`;
             }).join('')}</tbody>
         </table>`;
@@ -22205,19 +22358,15 @@ function _imprimirDevPorObj(id) {
     let classifHtml = '';
     if (classif.length) {
         const rowsHtml = classif.map(c => {
-            const unidade   = c.unidade || '%';
-            const isTexto   = unidade === 'Neg.' || isNaN(parseFloat(c.resultado));
-            const resultado = isTexto ? (c.resultado || '-') : parseFloat(c.resultado || 0);
-            const parametro = isTexto ? (c.parametro || '-') : parseFloat(c.parametro || 0);
-            const _dir1     = _resolverDir(c);
-            const nc        = isTexto ? false : (_dir1 === 'min' ? resultado < parametro : resultado > parametro);
-            const resStr    = isTexto ? resultado : resultado.toFixed(2) + ' ' + unidade;
-            const parStr    = isTexto ? parametro : parametro.toFixed(2) + ' ' + unidade;
+            const { nc, semValor, resStr, parStr } = _calcClassifLinha(c);
+            const resColor = semValor ? '#aaa' : (nc ? '#e74c3c' : '#27ae60');
+            const sitLabel = semValor ? '-' : (nc ? '▲ NC' : '✔ OK');
+            const sitColor = semValor ? '#aaa' : (nc ? '#e74c3c' : '#27ae60');
             return `<tr>
                 <td style="text-align:left;font-weight:600;">${c.defeito||'-'}</td>
-                <td style="font-weight:bold;color:${nc ? '#e74c3c' : '#27ae60'};">${resStr}</td>
+                <td style="font-weight:bold;color:${resColor};">${resStr}</td>
                 <td style="color:#7f8c8d;">${parStr}</td>
-                <td style="color:${nc ? '#e74c3c' : '#27ae60'};font-weight:bold;">${nc ? '▲ NC' : '✔ OK'}</td>
+                <td style="color:${sitColor};font-weight:bold;">${sitLabel}</td>
             </tr>`;
         }).join('');
         classifHtml = `
@@ -22372,22 +22521,16 @@ function imprimirVisualizacao() {
         };
 
         const classifRows = classif.map((c, i) => {
-            const unidade = c.unidade || '%';
-            const isTexto = isNaN(parseFloat(c.resultado));
-            const r = isTexto ? (c.resultado || '-') : parseFloat(c.resultado || 0);
-            const p = isTexto ? (c.parametro || '-') : parseFloat(c.parametro || 0);
-            const _dir2 = _resolverDir(c);
-            const nc2 = isTexto ? false : (_dir2 === 'min' ? r < p : r > p);
-            const resStr = isTexto ? r : r.toFixed(2) + ' ' + unidade;
-            const parStr = isTexto ? p : p.toFixed(2) + ' ' + unidade;
+            const { nc, semValor, resStr, parStr } = _calcClassifLinha(c);
+            const resColor = semValor ? '#aaa' : (nc ? '#c0392b' : '#27ae60');
+            const sitLabel = semValor ? '-' : (nc ? '▲ NC' : '✔ OK');
+            const sitColor = semValor ? '#aaa' : (nc ? '#c0392b' : '#27ae60');
             return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
                 <td style="padding:6px 10px;font-weight:600;border-bottom:1px solid #f0d9c0;">${c.defeito || '-'}</td>
-                <td style="text-align:center;color:${nc2 ? '#c0392b' : '#27ae60'};font-weight:bold;border-bottom:1px solid #f0d9c0;">${resStr}</td>
+                <td style="text-align:center;color:${resColor};font-weight:bold;border-bottom:1px solid #f0d9c0;">${resStr}</td>
                 <td style="text-align:center;color:#7f8c8d;border-bottom:1px solid #f0d9c0;">${parStr}</td>
                 <td style="text-align:center;border-bottom:1px solid #f0d9c0;">
-                    <span style="color:${nc2 ? '#c0392b' : '#27ae60'};font-weight:bold;font-size:11px;">
-                        ${nc2 ? '▲ NC' : '✔ OK'}
-                    </span>
+                    <span style="color:${sitColor};font-weight:bold;font-size:11px;">${sitLabel}</span>
                 </td>
             </tr>`;
         }).join('');
