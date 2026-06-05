@@ -8760,20 +8760,20 @@
                 <div class="form-section">
                     <h3>Resultados da Classificação (%)</h3>
                     <div class="form-grid form-grid-4">
-                        <div class="form-group"><label>Queimado</label><input type="number" id="cadQueimadoClass" step="0.0001" min="0"></div>
-                        <div class="form-group"><label>Ardido</label><input type="number" id="cadArdidoClass" step="0.0001" min="0"></div>
-                        <div class="form-group"><label>Mofado</label><input type="number" id="cadMofadoClass" step="0.0001" min="0"></div>
-                        <div class="form-group"><label>Fermentando</label><input type="number" id="cadFermentandoClass" step="0.0001" min="0"></div>
-                        <div class="form-group"><label>Chocho</label><input type="number" id="cadChochoClass" step="0.0001" min="0"></div>
-                        <div class="form-group"><label>Esverdeado</label><input type="number" id="cadEsverdeadoClass" step="0.0001" min="0"></div>
-                        <div class="form-group"><label>Picado</label><input type="number" id="cadPicadoClass" step="0.0001" min="0"></div>
-                        <div class="form-group"><label>Gessado</label><input type="number" id="cadGessadoClass" step="0.0001" min="0"></div>
-                        <div class="form-group"><label>Germinado</label><input type="number" id="cadGerminadoClass" step="0.0001" min="0"></div>
-                        <div class="form-group"><label>Quebrado</label><input type="number" id="cadQuebradoClass" step="0.0001" min="0"></div>
-                        <div class="form-group"><label>Carunchado</label><input type="number" id="cadCarunchadoClass" step="0.0001" min="0"></div>
-                        <div class="form-group"><label>Impureza</label><input type="number" id="cadImpurezaClass" step="0.0001" min="0"></div>
-                        <div class="form-group"><label>Umidade (%)</label><input type="number" id="cadUmidadeClass" step="0.01" min="0"></div>
-                        <div class="form-group"><label>Densidade</label><input type="number" id="cadDensidadeClass" step="0.01" min="0"></div>
+                        <div class="form-group" id="grpQueimadoClass"><label>Queimado</label><input type="number" id="cadQueimadoClass" step="0.0001" min="0"></div>
+                        <div class="form-group" id="grpArdidoClass"><label>Ardido</label><input type="number" id="cadArdidoClass" step="0.0001" min="0"></div>
+                        <div class="form-group" id="grpMofadoClass"><label>Mofado</label><input type="number" id="cadMofadoClass" step="0.0001" min="0"></div>
+                        <div class="form-group" id="grpEsverdeadoClass"><label>Esverdeado</label><input type="number" id="cadEsverdeadoClass" step="0.0001" min="0"></div>
+                        <div class="form-group" id="grpFermentandoClass"><label>Fermentando</label><input type="number" id="cadFermentandoClass" step="0.0001" min="0"></div>
+                        <div class="form-group" id="grpChochoClass"><label>Chocho</label><input type="number" id="cadChochoClass" step="0.0001" min="0"></div>
+                        <div class="form-group" id="grpPicadoClass"><label>Picado</label><input type="number" id="cadPicadoClass" step="0.0001" min="0"></div>
+                        <div class="form-group" id="grpGessadoClass"><label>Gessado</label><input type="number" id="cadGessadoClass" step="0.0001" min="0"></div>
+                        <div class="form-group" id="grpGerminadoClass"><label>Germinado</label><input type="number" id="cadGerminadoClass" step="0.0001" min="0"></div>
+                        <div class="form-group" id="grpQuebradoClass"><label>Quebrado</label><input type="number" id="cadQuebradoClass" step="0.0001" min="0"></div>
+                        <div class="form-group" id="grpCarunchadoClass"><label>Carunchado</label><input type="number" id="cadCarunchadoClass" step="0.0001" min="0"></div>
+                        <div class="form-group" id="grpImpurezaClass"><label>Impureza</label><input type="number" id="cadImpurezaClass" step="0.0001" min="0"></div>
+                        <div class="form-group" id="grpUmidadeClass"><label>Umidade (%)</label><input type="number" id="cadUmidadeClass" step="0.01" min="0"></div>
+                        <div class="form-group" id="grpDensidadeClass"><label>Densidade</label><input type="number" id="cadDensidadeClass" step="0.01" min="0"></div>
                     </div>
                 </div>
                 <div class="form-section">
@@ -10618,6 +10618,23 @@ function classAtualizarCamposProduto(produto) {
     } else {
         aplicarSkip(camposMilho, false);
         aplicarSkip(camposSoja, false);
+    }
+
+    // Reordenar campos visualmente conforme o produto
+    // Ordem SOJA:  Queimado, Ardido, Mofado, Esverdeado, Fermentando, Chocho, Picado, Germinado, Quebrado, Impureza, Umidade, Densidade
+    // Ordem padrão (MILHO/outros): Queimado, Ardido, Mofado, Fermentando, Chocho, Esverdeado, Picado, Gessado, Germinado, Quebrado, Carunchado, Impureza, Umidade, Densidade
+    const ordemSoja   = ['grpQueimadoClass','grpArdidoClass','grpMofadoClass','grpEsverdeadoClass','grpFermentandoClass','grpChochoClass','grpPicadoClass','grpGerminadoClass','grpQuebradoClass','grpImpurezaClass','grpUmidadeClass','grpDensidadeClass'];
+    const ordemPadrao = ['grpQueimadoClass','grpArdidoClass','grpMofadoClass','grpFermentandoClass','grpChochoClass','grpEsverdeadoClass','grpPicadoClass','grpGessadoClass','grpGerminadoClass','grpQuebradoClass','grpCarunchadoClass','grpImpurezaClass','grpUmidadeClass','grpDensidadeClass'];
+    const ordemAtual  = isSoja ? ordemSoja : ordemPadrao;
+    const grpQueimado = document.getElementById('grpQueimadoClass');
+    if (grpQueimado) {
+        const grid = grpQueimado.parentElement;
+        if (grid) {
+            ordemAtual.forEach(function(id) {
+                const el = document.getElementById(id);
+                if (el) grid.appendChild(el);
+            });
+        }
     }
 }
 
