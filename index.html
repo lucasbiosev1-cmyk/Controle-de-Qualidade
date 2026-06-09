@@ -19163,13 +19163,14 @@ function _bkAutoAtualizarStatus() {
 let _rmpChart1 = null;
 let _rmpChart2 = null;
 
-function _rmpMed(arr) {
-    const v = arr.filter(x => x > 0);
-    return v.length ? v.reduce((a,b)=>a+b,0)/v.length : 0;
+function _rmpMed(arr, nullIfEmpty) {
+    const v = arr.filter(x => x !== null && x !== undefined && x !== '' && !isNaN(x) && parseFloat(x) > 0);
+    if (!v.length) return nullIfEmpty ? null : 0;
+    return v.reduce((a,b)=>a+parseFloat(b),0)/v.length;
 }
 function _rmpMax(arr) {
-    const v = arr.filter(x => x > 0);
-    return v.length ? Math.max(...v) : 0;
+    const v = arr.filter(x => x !== null && x !== undefined && !isNaN(x) && parseFloat(x) > 0);
+    return v.length ? Math.max(...v.map(x=>parseFloat(x))) : 0;
 }
 function _rmpFmt(v) {
     if (v === undefined || v === null || v === '') return '-';
@@ -19273,9 +19274,9 @@ function aplicarFiltrosRelMP() {
         acidez:'⚗️', ureatica:'🧪', rancidez:'🫙', peroxido:'💊',
         digestibilidade:'📊', densidade:'⚖️', umidade:'💧'
     };
-    const analVals      = dados.map(r => parseFloat(r[analise]||0));
-    const analMed       = _rmpMed(analVals);
-    const analMax       = _rmpMax(analVals);
+    const analVals      = dados.map(r => { const n = parseFloat(r[analise]); return isNaN(n) ? null : n; });
+    const analMed       = _rmpMed(analVals) || 0;
+    const analMax       = _rmpMax(analVals) || 0;
     const analIsPercent = !['densidade','acidez','peroxido'].includes(analise);
     const analFmt       = v => analIsPercent ? v.toFixed(2)+'%' : v.toFixed(analise==='densidade'?0:2);
     const card4 = (analise === 'umidade' || analise === 'densidade')
@@ -19314,7 +19315,7 @@ function aplicarFiltrosRelMP() {
                 data: diasSet.map(d => {
                     const regs = dados.filter(r=>r.data===d && r.produto===p);
                     if (!regs.length) return null;
-                    return _rmpMed(regs.map(r=>parseFloat(r[analise])||0));
+                    return _rmpMed(regs.map(r => { const n = parseFloat(r[analise]); return isNaN(n) ? null : n; }), true);
                 }),
                 borderColor: CORES[i % CORES.length],
                 backgroundColor: CORES[i % CORES.length]+'22',
@@ -19340,7 +19341,7 @@ function aplicarFiltrosRelMP() {
                 label: analiseLabel + ' Média',
                 data: prods.map(p => {
                     const regs = dados.filter(r=>r.produto===p);
-                    return _rmpMed(regs.map(r=>parseFloat(r[analise])||0));
+                    return _rmpMed(regs.map(r => { const n = parseFloat(r[analise]); return isNaN(n) ? null : n; })) || 0;
                 }),
                 backgroundColor: prods.map((_,i) => CORES[i%CORES.length]+'bb'),
                 borderColor:     prods.map((_,i) => CORES[i%CORES.length]),
