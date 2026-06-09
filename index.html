@@ -19298,7 +19298,11 @@ function aplicarFiltrosRelMP() {
 
     // GRÁFICO LINHA — análise selecionada por dia por produto
     const CORES = ['#3498db','#27ae60','#e74c3c','#f39c12','#8e44ad','#1abc9c','#e67e22','#2c3e50'];
-    const diasSet = [...new Set(dados.map(r=>r.data))].sort();
+    // Só inclui dias que têm ao menos um registro com valor válido (>0) na análise selecionada
+    const diasSet = [...new Set(
+        dados.filter(r => { const n = parseFloat(r[analise]); return !isNaN(n) && n > 0; })
+             .map(r => r.data)
+    )].sort();
     if (_rmpChart1) { _rmpChart1.destroy(); _rmpChart1 = null; }
     const ctx1 = document.getElementById('rmpGraficoLinha').getContext('2d');
 
