@@ -4567,6 +4567,9 @@
                         <option value="mineral">MATERIAL MINERAL (%)</option>
                         <option value="calcio">CÁLCIO (%)</option>
                         <option value="fosforo">FÓSFORO (%)</option>
+                        <option value="granulo1">RETENÇÃO PENEIRA 4mm (%)</option>
+                        <option value="granulo2">RETENÇÃO PENEIRA 2mm (%)</option>
+                        <option value="granulo3">RETENÇÃO PENEIRA 0,60mm (%)</option>
                     </select>
                 </div>
                 <div style="display:flex;gap:5px;align-items:flex-end;">
@@ -11232,7 +11235,9 @@ const FASES_MAP = {
 const ANALISE_LABELS = {
     dgm:      'DGM (µm)', dpg: 'DPG (µm)', umidade: 'UMIDADE (%)',
     densidade:'DENSIDADE', proteina: 'PROTEÍNA (%)', fibra: 'FIBRA (%)',
-    mineral:  'MATERIAL MINERAL (%)', calcio: 'CÁLCIO (%)', fosforo: 'FÓSFORO (%)'
+    mineral:  'MATERIAL MINERAL (%)', calcio: 'CÁLCIO (%)', fosforo: 'FÓSFORO (%)',
+    granulo1: 'RETENÇÃO PENEIRA 4mm (%)', granulo2: 'RETENÇÃO PENEIRA 2mm (%)',
+    granulo3: 'RETENÇÃO PENEIRA 0,60mm (%)'
 };
 
 // Limites de referência por análise
@@ -11261,7 +11266,8 @@ function limparFiltrosRel() { inicializarRelatorio(); }
 function getValor(r, analise) {
     const m = { dgm:'dgm', dpg:'dpg', umidade:'umidade', densidade:'densidade',
                 proteina:'proteina', fibra:'fibra', mineral:'mineral',
-                calcio:'calcio', fosforo:'fosforo' };
+                calcio:'calcio', fosforo:'fosforo',
+                granulo1:'granulo1', granulo2:'granulo2', granulo3:'granulo3' };
     return parseFloat(r[m[analise]]) || 0;
 }
 
