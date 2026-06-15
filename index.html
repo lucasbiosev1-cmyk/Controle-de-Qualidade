@@ -25857,7 +25857,7 @@ document.addEventListener('DOMContentLoaded', function() {
   /* ── prompt livre ── */
   #modalRelatorioMensalIA #rml_prompt_livre_area { display:none; margin-top:9px; }
   #modalRelatorioMensalIA #rml_prompt_livre_texto {
-    width:100%; min-height:78px; border:2px solid #b7410e; border-radius:7px;
+    width:100%; min-height:110px; border:2px solid #b7410e; border-radius:7px;
     padding:9px 11px; font-size:12px; font-family:Arial,sans-serif;
     resize:vertical; outline:none; color:#333; background:#fff9f7;
     box-sizing:border-box;
@@ -25865,6 +25865,25 @@ document.addEventListener('DOMContentLoaded', function() {
   #modalRelatorioMensalIA .rml-prompt-av {
     font-size:10px; color:#b7410e; margin-top:4px; font-weight:600;
   }
+  #modalRelatorioMensalIA .rml-prompt-toolbar {
+    display:flex; gap:6px; margin-bottom:6px; flex-wrap:wrap;
+  }
+  #modalRelatorioMensalIA .rml-btn-modelo {
+    font-size:10px; font-weight:700; padding:4px 10px; border-radius:5px;
+    border:1.5px solid #b7410e; background:#fff5f0; color:#b7410e;
+    cursor:pointer; transition:all .15s;
+  }
+  #modalRelatorioMensalIA .rml-btn-modelo:hover { background:#b7410e; color:#fff; }
+  #modalRelatorioMensalIA .rml-btn-limpar {
+    font-size:10px; font-weight:700; padding:4px 10px; border-radius:5px;
+    border:1.5px solid #aaa; background:#f5f5f5; color:#666;
+    cursor:pointer; transition:all .15s; margin-left:auto;
+  }
+  #modalRelatorioMensalIA .rml-btn-limpar:hover { background:#ddd; color:#333; }
+  html[data-theme="dark"] #modalRelatorioMensalIA .rml-btn-modelo { background:rgba(183,65,14,0.15); color:#e8856a; border-color:#b7410e; }
+  html[data-theme="dark"] #modalRelatorioMensalIA .rml-btn-modelo:hover { background:#b7410e; color:#fff; }
+  html[data-theme="dark"] #modalRelatorioMensalIA .rml-btn-limpar { background:#2a2a2a; border-color:#555; color:#aaa; }
+  html[data-theme="dark"] #modalRelatorioMensalIA .rml-btn-limpar:hover { background:#444; color:#fff; }
   /* ── conteúdo ── */
   #relMensalIA_conteudo { flex:1; overflow-y:auto; padding:20px 22px; }
 
@@ -26112,7 +26131,13 @@ document.addEventListener('DOMContentLoaded', function() {
           </label>
         </div>
         <div id="rml_prompt_livre_area">
-          <textarea id="rml_prompt_livre_texto" placeholder="Digite aqui seu prompt personalizado. Os dados do período selecionado serão incluídos automaticamente..."></textarea>
+          <div class="rml-prompt-toolbar">
+            <button class="rml-btn-modelo" onclick="_rmlInserirModelo('mp')">📋 Modelo — Matéria Prima</button>
+            <button class="rml-btn-modelo" onclick="_rmlInserirModelo('prod')">📋 Modelo — Produção</button>
+            <button class="rml-btn-modelo" onclick="_rmlInserirModelo('class')">📋 Modelo — Classificação</button>
+            <button class="rml-btn-limpar" onclick="document.getElementById('rml_prompt_livre_texto').value=''">🗑️ Limpar</button>
+          </div>
+          <textarea id="rml_prompt_livre_texto" placeholder="Descreva o que deseja analisar ou use um modelo acima..."></textarea>
           <div class="rml-prompt-av">⚠️ Ao selecionar "Prompt Livre", os analistas padrão são ignorados e apenas este prompt é utilizado na análise.</div>
         </div>
         <div id="rml_aviso_analistas" class="rml-aviso">⚠️ Selecione ao menos um analista.</div>
@@ -26152,6 +26177,12 @@ document.addEventListener('DOMContentLoaded', function() {
 .rml-subtitulo-resultado { font-size:11px;color:#888;margin-top:3px; }
 .rml-caixa-texto { background:#f8faff;border:1px solid #dce4f5;border-radius:8px;padding:18px 20px; }
 .rml-texto-ia { font-size:12px;line-height:1.8;color:#2c3e50;white-space:pre-wrap; }
+.rml-texto-ia table { border-collapse:collapse; width:100%; margin:10px 0 16px; white-space:normal; font-size:12px; }
+.rml-texto-ia table th { background:#0a1e7f; color:#fff; font-weight:700; padding:7px 10px; text-align:left; border:1px solid #dce4f5; }
+.rml-texto-ia table td { padding:6px 10px; border:1px solid #dce4f5; color:#2c3e50; }
+.rml-texto-ia table tr:first-child td { background:#eaf3fb; font-weight:700; color:#0a1e7f; }
+.rml-texto-ia table tr:nth-child(even) td { background:#f7fafd; }
+.rml-texto-ia .rml-mp-titulo { font-size:14px; font-weight:900; color:#0a1e7f; margin:20px 0 6px; padding:6px 10px; background:#eaf3fb; border-left:4px solid #0a1e7f; border-radius:4px; }
 .rml-rodape-aviso { margin-top:14px;font-size:10px;color:#bdc3c7;text-align:right; }
 .rml-ia-heading { font-size:13px;font-weight:900;color:#0a1e7f;margin:16px 0 6px;border-bottom:1px solid #dce4f5;padding-bottom:4px; }
 .rml-ia-item { margin-left:12px;margin-bottom:3px;color:#2c3e50; }
@@ -26176,6 +26207,11 @@ html[data-theme="dark"] .rml-titulo-resultado { color:#58a6ff!important; }
 html[data-theme="dark"] .rml-subtitulo-resultado { color:#8b949e!important; }
 html[data-theme="dark"] .rml-caixa-texto { background:#0d1117!important;border-color:#30363d!important; }
 html[data-theme="dark"] .rml-texto-ia { color:#e6edf3!important; }
+html[data-theme="dark"] .rml-texto-ia table th { background:#1a3a6e!important; color:#c9d1d9!important; border-color:#30363d!important; }
+html[data-theme="dark"] .rml-texto-ia table td { background:#161b22!important; color:#c9d1d9!important; border-color:#30363d!important; }
+html[data-theme="dark"] .rml-texto-ia table tr:first-child td { background:#0d2137!important; color:#58a6ff!important; }
+html[data-theme="dark"] .rml-texto-ia table tr:nth-child(even) td { background:#1c2128!important; }
+html[data-theme="dark"] .rml-texto-ia .rml-mp-titulo { background:#0d2137!important; color:#58a6ff!important; border-left-color:#58a6ff!important; }
 html[data-theme="dark"] .rml-rodape-aviso { color:#6e7681!important; }
 html[data-theme="dark"] .rml-ia-heading { color:#58a6ff!important;border-bottom-color:#30363d!important; }
 html[data-theme="dark"] .rml-ia-item { color:#c9d1d9!important; }
@@ -27499,6 +27535,49 @@ const _rmlCores  = { prod:'#0a1e7f', mp:'#8e44ad', class:'#e67e22', nc:'#e74c3c'
 const _rmlBgs    = { prod:'#eef2ff', mp:'#f5eeff', class:'#fef9f0', nc:'#fef5f5', dev:'#f0faf4' };
 
 // ---- ANALISTAS ----
+function _rmlInserirModelo(tipo) {
+    const el = document.getElementById('rml_prompt_livre_texto');
+    if (!el) return;
+    const modelos = {
+        mp: `Gere um relatório das matérias primas com os seguintes parâmetros: proteína bruta e solubilidade proteica.
+
+Matérias primas a incluir: farelo de soja, soja integral extrusada.
+(deixe em branco ou escreva "todas" para incluir todas as matérias primas do período)
+
+Formato desejado:
+- Uma tabela separada por tipo de matéria prima
+- Primeira linha da tabela: MÉDIA, MÍNIMO e MÁXIMO de cada parâmetro
+- Linhas seguintes: registros individuais em ordem cronológica por data
+- Ao final: observações sobre desvios encontrados, se houver`,
+
+        prod: `Gere um relatório da produção com os seguintes parâmetros: DGM e DPG.
+
+Rações a incluir: todas.
+(substitua "todas" pelos nomes específicos das rações se quiser filtrar)
+
+Formato desejado:
+- Uma tabela separada por tipo de ração
+- Primeira linha da tabela: MÉDIA, MÍNIMO e MÁXIMO de cada parâmetro
+- Linhas seguintes: registros individuais em ordem cronológica por data
+- Ao final: observações sobre desvios encontrados, se houver`,
+
+        class: `Gere um relatório de classificação de grãos com os seguintes parâmetros: umidade, impureza e avariados totais.
+
+Produtos a incluir: todos.
+(substitua "todos" pelos nomes específicos se quiser filtrar)
+
+Formato desejado:
+- Uma tabela separada por tipo de grão/produto
+- Primeira linha da tabela: MÉDIA, MÍNIMO e MÁXIMO de cada parâmetro
+- Linhas seguintes: registros individuais em ordem cronológica por data
+- Ao final: observações sobre desvios encontrados, se houver`
+    };
+    const atual = el.value.trim();
+    if (atual && !confirm('Substituir o texto atual pelo modelo?')) return;
+    el.value = modelos[tipo] || '';
+    el.focus();
+}
+
 const _rmlAnalistas = { cq: true, nut: true, vet: true, prompt: false };
 const _rmlAnalistaCores = { cq:'#1a5276', nut:'#117a65', vet:'#6e2fa0', prompt:'#b7410e' };
 const _rmlAnalistaBgs   = { cq:'#eaf3fb', nut:'#e8f8f5', vet:'#f5eeff', prompt:'#fff5f0' };
@@ -28009,8 +28088,66 @@ Use linguagem executiva clara e técnica. Cite valores exatos dos dados. Inclua 
             btn.innerHTML = '📊 Gerar Análise Comparativa';
             return;
         }
+        const _blocoInstrucaoPromptLivre = `
+---
+INSTRUÇÃO DO USUÁRIO (linguagem natural):
+"${_promptLivreTexto}"
+
+MAPEAMENTO DE CAMPOS NOS DADOS (use estes nomes ao buscar nos dados):
+- Proteína Bruta → campo "proteina"
+- Solubilidade Proteica / Solubilidade → campo "solubil"
+- Umidade → campo "umidade"
+- Índice de Peróxido / Peróxido → campo "peroxido"
+- Atividade Ureática / Ureática → campo "ureatica"
+- Extrato Etéreo → campo "extrato"
+- Fibra Bruta → campo "fibra"
+- Densidade → campo "densidade"
+- Mineral / Cinzas → campo "mineral"
+- Acidez → campo "acidez"
+- Digestibilidade → campo "digestibilidade"
+- DGM → campo "dgm"
+- DPG → campo "dpg"
+
+REGRAS OBRIGATÓRIAS PARA EXECUTAR ESTA INSTRUÇÃO:
+
+1. INTERPRETAÇÃO: Leia o pedido acima e identifique:
+   - Quais PARÂMETROS foram solicitados (consulte o mapeamento acima)
+   - Quais MATÉRIAS PRIMAS ou PRODUTOS foram mencionados
+   - Se nenhuma matéria prima for mencionada, inclua TODAS as disponíveis nos dados
+   - Se nenhum parâmetro for mencionado, inclua TODOS os disponíveis com valores
+
+2. BUSCA NOS DADOS: Nos dados da SÉRIE TEMPORAL COMPLETA acima:
+   - Filtre apenas os registros das matérias primas/produtos solicitados
+   - Para cada registro, busque apenas os campos solicitados
+   - Ignore registros sem valor (N/D, null, 0) para os campos solicitados
+   - Um registro com valor N/D em um campo significa que aquele campo não foi preenchido naquela data — omita essa célula ou exiba "—"
+
+3. FORMATO OBRIGATÓRIO DE SAÍDA:
+   Para cada matéria prima/produto encontrado, gere a seguinte estrutura:
+
+   ### 🌾 [NOME DA MATÉRIA PRIMA]
+
+   #### 📊 Resumo Estatístico
+   | Parâmetro | Média | Mínimo | Máximo |
+   |-----------|-------|--------|--------|
+   | [Parâmetro 1] | X,XX | X,XX | X,XX |
+   | [Parâmetro 2] | X,XX | X,XX | X,XX |
+
+   #### 📋 Resultados das Análises
+   | Data | [Parâmetro 1] | [Parâmetro 2] |
+   |------|---------------|---------------|
+   | DD/MM/AAAA | X,XX | X,XX |
+   | DD/MM/AAAA | X,XX | X,XX |
+
+4. DATAS: Formatar como DD/MM/AAAA (ex: 2026-06-02 → 02/06/2026)
+5. NÚMEROS: Usar vírgula como separador decimal (ex: 47,15)
+6. Se os dados solicitados NÃO existirem no período, informe: "Não foram encontrados registros de [parâmetro] para [matéria prima] no período selecionado."
+7. Ao final das tabelas, adicione um breve parágrafo de observações técnicas se houver desvios relevantes.
+`;
+
+
         const promptFinal = _usaPromptLivre
-            ? `${blocoSistema}\nRELATÓRIO — ${nomeMes.toUpperCase()}${temComparacao?' VS '+nomeMesAnt.toUpperCase():''}\nMÓDULOS: ${_modulosNomes}\n${_blocosProd}${_blocosMP}${_blocosClass}${_blocosNC}${_blocosDev}\n---\nINSTRUÇÃO DO USUÁRIO:\n${_promptLivreTexto}`
+            ? `${blocoSistema}\nRELATÓRIO — ${nomeMes.toUpperCase()}${temComparacao?' VS '+nomeMesAnt.toUpperCase():''}\nMÓDULOS: ${_modulosNomes}\n${_blocosProd}${_blocosMP}${_blocosClass}${_blocosNC}${_blocosDev}${_blocoInstrucaoPromptLivre}`
             : prompt;
 
         const _systemPromptFinal = _usaPromptLivre ? _IA_SYSTEM_RELATORIO_MULTI : _rmlGetSystemPrompt(_anAtivos);
@@ -28331,13 +28468,60 @@ async function sgqCarregarHistoricoAcessos() {
 }
 
 function _formatIATextoRelatorio(t) {
-    return _escapeHtml(t)
+    // Converter tabelas markdown para HTML antes de escapar
+    function _converterTabelas(texto) {
+        const linhas = texto.split('\n');
+        const resultado = [];
+        let i = 0;
+        while (i < linhas.length) {
+            const linha = linhas[i];
+            // Detecta início de tabela markdown (linha com |)
+            if (/^\s*\|.+\|/.test(linha)) {
+                const linhasTabela = [];
+                while (i < linhas.length && /^\s*\|/.test(linhas[i])) {
+                    linhasTabela.push(linhas[i]);
+                    i++;
+                }
+                // Separar cabeçalho, separador e dados
+                const cabecalho = linhasTabela[0];
+                const dados = linhasTabela.filter((l, idx) => idx !== 1 && !/^\s*\|[-:\s|]+\|\s*$/.test(l));
+                const cols = cabecalho.split('|').map(c => c.trim()).filter(c => c !== '');
+                let html = '<table>';
+                html += '<thead><tr>' + cols.map(c => `<th>${c.replace(/\*\*/g,'')}</th>`).join('') + '</tr></thead>';
+                html += '<tbody>';
+                dados.slice(1).forEach(linha => {
+                    const cells = linha.split('|').map(c => c.trim()).filter(c => c !== '');
+                    html += '<tr>' + cells.map(c => `<td>${c.replace(/\*\*/g,'')}</td>`).join('') + '</tr>';
+                });
+                html += '</tbody></table>';
+                resultado.push(html);
+            } else {
+                resultado.push(linha);
+                i++;
+            }
+        }
+        return resultado.join('\n');
+    }
+
+    const comTabelas = _converterTabelas(t);
+
+    // Agora aplicar o restante da formatação (sem escapar HTML pois tabelas já estão em HTML)
+    return comTabelas
+        .replace(/&/g, '&amp;').replace(/(?<!<[^>]*)>/g, match => match)  // não escapar tags HTML já inseridas
+        .split('\n').map(linha => {
+            if (linha.startsWith('<table>') || linha.startsWith('<thead>') || linha.startsWith('<tbody>') ||
+                linha.startsWith('<tr>') || linha.startsWith('</')) return linha;
+            return _escapeHtml(linha);
+        }).join('\n')
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/^#+\s(.+)$/gm, '<div class="rml-ia-heading">$1</div>')
+        .replace(/^###\s(.+)$/gm, '<div class="rml-mp-titulo">$1</div>')
+        .replace(/^##\s(.+)$/gm, '<div class="rml-ia-heading" style="font-size:14px;">$1</div>')
+        .replace(/^#\s(.+)$/gm, '<div class="rml-ia-heading" style="font-size:15px;">$1</div>')
+        .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #dce4f5;margin:12px 0;">')
         .replace(/^- (.+)$/gm, '<div class="rml-ia-item">• $1</div>')
         .replace(/\n\n/g, '<br><br>')
-        .replace(/\n/g, '<br>');
+        .replace(/\n(?!<)/g, '<br>');
 }
 
 function copiarRelMensalIA() {
