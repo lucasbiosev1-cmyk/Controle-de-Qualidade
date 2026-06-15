@@ -26184,7 +26184,8 @@ document.addEventListener('DOMContentLoaded', function() {
 .rml-texto-ia table th:first-child { text-align:left; }
 .rml-texto-ia table td { padding:6px 10px; border:1px solid #dce4f5; color:#2c3e50; text-align:center; }
 .rml-texto-ia table td:first-child { text-align:left; }
-.rml-texto-ia table tr:first-child td { background:#eaf3fb; font-weight:700; color:#0a1e7f; }
+.rml-texto-ia table tr:first-child td { background:#eaf3fb; font-weight:700; color:#0a1e7f; text-align:center; }
+.rml-texto-ia table tr:first-child td:first-child { text-align:left; }
 .rml-texto-ia table tr:nth-child(even) td { background:#f7fafd; }
 .rml-texto-ia .rml-mp-titulo { font-size:14px; font-weight:900; color:#0a1e7f; margin:20px 0 6px; padding:6px 10px; background:#eaf3fb; border-left:4px solid #0a1e7f; border-radius:4px; }
 .rml-rodape-aviso { margin-top:14px;font-size:10px;color:#bdc3c7;text-align:right; }
@@ -28348,7 +28349,7 @@ REGRA CRÍTICA — COMPLETUDE OBRIGATÓRIA:
                     <div class="rml-titulo-resultado">${tituloRel}</div>
                     <div class="rml-subtitulo-resultado">Emitido em: ${new Date().toLocaleString('pt-BR')}</div>
                     <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;">
-                        ${_anAtivos.map(k => {
+                        ${_anAtivos.filter(k => k !== 'prompt').map(k => {
                             const icones = {cq:'🔬',nut:'🌿',vet:'🩺'};
                             const cores  = {cq:'#1a5276',nut:'#117a65',vet:'#6e2fa0'};
                             const bgs    = {cq:'rgba(88,166,255,0.1)',nut:'rgba(63,185,80,0.1)',vet:'rgba(142,68,173,0.1)'};
@@ -28595,11 +28596,15 @@ function _formatIATextoRelatorio(t) {
                 const dados = linhasTabela.filter((l, idx) => idx !== 1 && !/^\s*\|[-:\s|]+\|\s*$/.test(l));
                 const cols = cabecalho.split('|').map(c => c.trim()).filter(c => c !== '');
                 let html = '<table>';
-                html += '<thead><tr>' + cols.map(c => `<th>${c.replace(/\*\*/g,'')}</th>`).join('') + '</tr></thead>';
+                html += '<thead><tr>' + cols.map((c, ci) => `<th style="text-align:${ci===0?'left':'center'}">${c.replace(/\*\*/g,'')}</th>`).join('') + '</tr></thead>';
                 html += '<tbody>';
                 dados.slice(1).forEach(linha => {
                     const cells = linha.split('|').map(c => c.trim()).filter(c => c !== '');
-                    html += '<tr>' + cells.map(c => `<td>${c.replace(/\*\*/g,'')}</td>`).join('') + '</tr>';
+                    // Omitir linhas onde todas as colunas (exceto Data/primeira) são N/D
+                    const valoresDados = cells.slice(1);
+                    const todosND = valoresDados.length > 0 && valoresDados.every(c => c === 'N/D' || c === 'ND' || c === '-' || c === '');
+                    if (todosND) return; // pular linha
+                    html += '<tr>' + cells.map((c, ci) => `<td style="text-align:${ci===0?'left':'center'}">${c.replace(/\*\*/g,'')}</td>`).join('') + '</tr>';
                 });
                 html += '</tbody></table>';
                 resultado.push(html);
