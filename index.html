@@ -27868,6 +27868,11 @@ async function gerarRelatorioMensalIA() {
                     return !isNaN(parseFloat(v));
                 }));
                 if (!camposComValor.length) return null;
+                // Detectar datas com múltiplos registros para avisar a IA
+                const contPorData = {};
+                regs.forEach(r => { contPorData[r.data||''] = (contPorData[r.data||''] || 0) + 1; });
+                const datasComDuplicata = new Set(Object.entries(contPorData).filter(([,n])=>n>1).map(([d])=>d));
+
                 const linhasReg = regs.map(r => {
                     const vals = camposComValor.map(c => {
                         const valorBruto = c.calculado ? getAvariados(r) : r[c.key];
@@ -27881,7 +27886,10 @@ async function gerarRelatorioMensalIA() {
                         if (isNaN(v)) return `${c.label}:[NÃO_ANALISADO]`;
                         return `${c.label}:${v}`;
                     }).join(' | ');
-                    return vals ? `    ${r.data||'—'}${r.hora?(' '+r.hora):''} → ${vals}` : null;
+                    const dataLabel = r.data||'—';
+                    const horaLabel = r.hora ? (' '+r.hora) : '';
+                    const dupTag = datasComDuplicata.has(r.data||'') ? ' [ATENÇÃO: múltiplos registros nesta data — cada linha é uma análise distinta]' : '';
+                    return vals ? `    ${dataLabel}${horaLabel}${dupTag} → ${vals}` : null;
                 }).filter(Boolean).join('\n');
                 // Estatísticas apenas para campos numéricos com valor real
                 const camposNum = camposComValor.filter(c => {
@@ -28269,7 +28277,7 @@ REGRA ABSOLUTA — PROIBIDO INVENTAR VALORES:
 
 REGRA CRÍTICA — COMPLETUDE OBRIGATÓRIA:
 - A tabela "Resultados das Análises" DEVE conter UMA LINHA PARA CADA REGISTRO presente na SÉRIE DIÁRIA do produto/parâmetro solicitado, sem exceção. NÃO resuma, NÃO agrupe, NÃO omita, NÃO selecione "exemplos" ou "principais" registros.
-- Se houver mais de um registro na mesma data (horários diferentes), cada um deve aparecer em sua própria linha da tabela.
+- Se houver mais de um registro na mesma data (horários diferentes), cada um deve aparecer em sua própria linha da tabela. Nesse caso, a coluna "Data" deve exibir Data + Hora (ex: 11/05/2026 08:00 e 11/05/2026 13:20 como duas linhas separadas). NUNCA mescle, some ou faça média de dois registros do mesmo dia — cada lançamento é uma análise distinta e independente.
 - REGRA DE INCLUSÃO DE LINHA: inclua a linha se o registro tiver valor NUMÉRICO REAL (diferente de [NÃO_ANALISADO]) em AO MENOS UM dos parâmetros SOLICITADOS PELO USUÁRIO. Se um dos parâmetros solicitados estiver ausente naquela data (marcado como [NÃO_ANALISADO]), coloque "N/D" nessa célula — mas NÃO descarte a linha. ATENÇÃO CRÍTICA: a presença de [NÃO_ANALISADO] em campos NÃO solicitados NÃO afeta a inclusão da linha. SOMENTE omita a linha se TODOS os parâmetros SOLICITADOS (e apenas esses) estiverem com [NÃO_ANALISADO] ou ausentes naquele registro.
 - Antes de finalizar, CONTE quantos registros existem na SÉRIE DIÁRIA do produto/grupo solicitado e CONFIRME que a tabela tem exatamente esse mesmo número de linhas (descontando apenas os que têm TODOS os parâmetros SOLICITADOS como [NÃO_ANALISADO]). Se houver divergência, corrija a tabela antes de responder. EXEMPLO CONCRETO: se o usuário pediu Proteína e Solubilidade e a série mostra o dia 20/05 com Proteína:47.5 e Solubilidade:82.3 (mesmo que Umidade, Fibra e outros campos sejam [NÃO_ANALISADO]), esse dia DEVE aparecer na tabela.
 - Inclua, no final da seção, a contagem total: "Total de análises consideradas: N".
