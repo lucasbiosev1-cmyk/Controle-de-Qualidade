@@ -16002,6 +16002,7 @@ const CAMPOS_PROD = [
     { key:'fundo',     label:'Fundo'                },
 ];
 const CAMPOS_CLASS = [
+    { key:'fornecedor',  label:'Fornecedor'            },
     { key:'queimado',    label:'Queimado (%)'          },
     { key:'ardido',      label:'Ardido (%)'            },
     { key:'mofado',      label:'Mofado (%)'            },
@@ -27848,6 +27849,66 @@ async function gerarRelatorioMensalIA() {
             }).filter(Boolean);
         }
 
+        // Versão estendida para Prompt Livre — inclui TODOS os campos com valor, mesmo sem limite configurado
+        function _montarSerieCompletaTotal(registros, campos, chaveKey) {
+            const grupos = [...new Set(registros.map(r => r[chaveKey]).filter(Boolean))];
+            return grupos.map(grupo => {
+                const regs = registros.filter(r => r[chaveKey] === grupo).sort((a,b) => (a.data||'').localeCompare(b.data||''));
+                // Detecta quais campos têm ao menos um valor preenchido neste grupo
+                const camposComValor = campos.filter(c => regs.some(r => {
+                    const v = c.calculado ? getAvariados(r) : r[c.key];
+                    if (v === null || v === undefined || v === '') return false;
+                    // aceita campos texto (fornecedor) e numéricos
+                    if (typeof v === 'string' && isNaN(parseFloat(v))) return v.trim().length > 0;
+                    return !isNaN(parseFloat(v));
+                }));
+                if (!camposComValor.length) return null;
+                const linhasReg = regs.map(r => {
+                    const vals = camposComValor.map(c => {
+                        const valorBruto = c.calculado ? getAvariados(r) : r[c.key];
+                        if (valorBruto === null || valorBruto === undefined || valorBruto === '') return null;
+                        // campo texto (ex: fornecedor)
+                        if (typeof valorBruto === 'string' && isNaN(parseFloat(valorBruto))) {
+                            return valorBruto.trim() ? `${c.label}:${valorBruto.trim()}` : null;
+                        }
+                        const v = parseFloat(valorBruto);
+                        if (isNaN(v)) return null;
+                        return `${c.label}:${v}`;
+                    }).filter(Boolean).join(' | ');
+                    return vals ? `    ${r.data||'—'} → ${vals}` : null;
+                }).filter(Boolean).join('\n');
+                // Estatísticas apenas para campos numéricos
+                const camposNum = camposComValor.filter(c => {
+                    return regs.some(r => {
+                        const v = c.calculado ? getAvariados(r) : r[c.key];
+                        return !isNaN(parseFloat(v));
+                    }) && !regs.every(r => {
+                        const v = c.calculado ? getAvariados(r) : r[c.key];
+                        return typeof v === 'string' && isNaN(parseFloat(v));
+                    });
+                });
+                const resumoEst = camposNum.map(c => {
+                    const vals = regs.map(r => {
+                        const valorBruto = c.calculado ? getAvariados(r) : r[c.key];
+                        const v = parseFloat(valorBruto);
+                        return (!isNaN(v) && valorBruto !== '' && valorBruto !== null && valorBruto !== undefined) ? v : null;
+                    }).filter(v => v !== null);
+                    if (!vals.length) return null;
+                    const med = (vals.reduce((s,x)=>s+x,0)/vals.length).toFixed(3);
+                    const mn  = Math.min(...vals).toFixed(3);
+                    const mx  = Math.max(...vals).toFixed(3);
+                    return `${c.label} → Mín:${mn} | Méd:${med} | Máx:${mx} | N:${vals.length}`;
+                }).filter(Boolean).join('\n    ');
+                // Fornecedores distintos para campos texto
+                const camposTexto = camposComValor.filter(c => !camposNum.includes(c));
+                const resumoTexto = camposTexto.map(c => {
+                    const vals = [...new Set(regs.map(r => r[c.key]).filter(v => v && v.trim()))];
+                    return vals.length ? `${c.label}: ${vals.join(', ')}` : null;
+                }).filter(Boolean).join('\n    ');
+                return `  [${grupo}] ${regs.length} registros | Campos: ${camposComValor.map(c=>c.label).join(', ')}\n  SÉRIE DIÁRIA:\n${linhasReg}${resumoEst || resumoTexto ? `\n  ESTATÍSTICAS:\n    ${[resumoEst, resumoTexto].filter(Boolean).join('\n    ')}` : ''}`;
+            }).filter(Boolean);
+        }
+
         const prodBlocos    = _montarBlocos(prodMes, 'prod', CAMPOS_PROD, 'racao');
         const prodBlocosAnt = temComparacao ? _montarBlocos(prodAnt, 'prod', CAMPOS_PROD, 'racao') : [];
         const mpBlocos      = _montarBlocos(mpMes, 'mp', CAMPOS_MP, 'produto');
@@ -27872,6 +27933,14 @@ async function gerarRelatorioMensalIA() {
         ncMes.forEach(n => { const f = n.fornecedor||'Interno'; ncFornece[f] = (ncFornece[f]||0)+1; });
         const topFornNC = Object.entries(ncFornece).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([f,n])=>`${f} (${n})`).join(', ');
 
+        // ── Gerar séries temporais estendidas para Prompt Livre (todos os campos com valor) ──
+        const mpSerieTotal    = _usaPromptLivre ? _montarSerieCompletaTotal(mpMes,   CAMPOS_MP,   'produto') : [];
+        const prodSerieTotal  = _usaPromptLivre ? _montarSerieCompletaTotal(prodMes, CAMPOS_PROD, 'racao')   : [];
+        const classSerieTotal = _usaPromptLivre ? _montarSerieCompletaTotal(classMes,CAMPOS_CLASS,'produto') : [];
+        const mpSerieAntTotal    = (_usaPromptLivre && temComparacao) ? _montarSerieCompletaTotal(mpAnt,   CAMPOS_MP,   'produto') : [];
+        const prodSerieAntTotal  = (_usaPromptLivre && temComparacao) ? _montarSerieCompletaTotal(prodAnt, CAMPOS_PROD, 'racao')   : [];
+        const classSerieAntTotal = (_usaPromptLivre && temComparacao) ? _montarSerieCompletaTotal(classAnt,CAMPOS_CLASS,'produto') : [];
+
         // ---- MONTAR BLOCOS DO PROMPT ----
         const _blocosMesAtual = (blocos, nome, total) => !blocos.length ? `Nenhum registro de ${nome}.` : blocos.join('\n\n');
         const _blocosMesAnt   = (blocos, nome, total) => !temComparacao ? '' : (!blocos.length ? `Nenhum registro de ${nome}.` : blocos.join('\n\n'));
@@ -27882,24 +27951,24 @@ async function gerarRelatorioMensalIA() {
 [RESUMO DE DESVIOS — MÊS ATUAL (${nomeMes}) — ${totalProd} registros]
 ${_blocosMesAtual(prodBlocos,'produção',totalProd)}
 [SÉRIE TEMPORAL COMPLETA — registro a registro, ordenada por data]
-${_serieJoin(prodSerie)}
-${temComparacao ? `[RESUMO DE DESVIOS — MÊS ANTERIOR (${nomeMesAnt}) — ${prodAnt.length} registros]\n${_blocosMesAnt(prodBlocosAnt,'produção',prodAnt.length)}\n[SÉRIE TEMPORAL COMPLETA — MÊS ANTERIOR]\n${_serieJoin(prodSerieAnt)}` : ''}`;
+${_serieJoin(_usaPromptLivre ? prodSerieTotal : prodSerie)}
+${temComparacao ? `[RESUMO DE DESVIOS — MÊS ANTERIOR (${nomeMesAnt}) — ${prodAnt.length} registros]\n${_blocosMesAnt(prodBlocosAnt,'produção',prodAnt.length)}\n[SÉRIE TEMPORAL COMPLETA — MÊS ANTERIOR]\n${_serieJoin(_usaPromptLivre ? prodSerieAntTotal : prodSerieAnt)}` : ''}`;
 
         const _blocosMP = !_usaMP ? '' : `
 == MATÉRIA PRIMA ==
 [RESUMO DE DESVIOS — MÊS ATUAL (${nomeMes}) — ${totalMP} registros]
 ${_blocosMesAtual(mpBlocos,'matéria-prima',totalMP)}
 [SÉRIE TEMPORAL COMPLETA — registro a registro, ordenada por data]
-${_serieJoin(mpSerie)}
-${temComparacao ? `[RESUMO DE DESVIOS — MÊS ANTERIOR (${nomeMesAnt}) — ${mpAnt.length} registros]\n${_blocosMesAnt(mpBlocosAnt,'matéria-prima',mpAnt.length)}\n[SÉRIE TEMPORAL COMPLETA — MÊS ANTERIOR]\n${_serieJoin(mpSerieAnt)}` : ''}`;
+${_serieJoin(_usaPromptLivre ? mpSerieTotal : mpSerie)}
+${temComparacao ? `[RESUMO DE DESVIOS — MÊS ANTERIOR (${nomeMesAnt}) — ${mpAnt.length} registros]\n${_blocosMesAnt(mpBlocosAnt,'matéria-prima',mpAnt.length)}\n[SÉRIE TEMPORAL COMPLETA — MÊS ANTERIOR]\n${_serieJoin(_usaPromptLivre ? mpSerieAntTotal : mpSerieAnt)}` : ''}`;
 
         const _blocosClass = !_usaClass ? '' : `
 == CLASSIFICAÇÃO DE GRÃOS ==
 [RESUMO DE DESVIOS — MÊS ATUAL (${nomeMes}) — ${totalClass} registros]
 ${_blocosMesAtual(classBlocos,'classificação',totalClass)}
 [SÉRIE TEMPORAL COMPLETA — registro a registro, ordenada por data]
-${_serieJoin(classSerie)}
-${temComparacao ? `[RESUMO DE DESVIOS — MÊS ANTERIOR (${nomeMesAnt}) — ${classAnt.length} registros]\n${_blocosMesAnt(classBlocosAnt,'classificação',classAnt.length)}\n[SÉRIE TEMPORAL COMPLETA — MÊS ANTERIOR]\n${_serieJoin(classSerieAnt)}` : ''}`;
+${_serieJoin(_usaPromptLivre ? classSerieTotal : classSerie)}
+${temComparacao ? `[RESUMO DE DESVIOS — MÊS ANTERIOR (${nomeMesAnt}) — ${classAnt.length} registros]\n${_blocosMesAnt(classBlocosAnt,'classificação',classAnt.length)}\n[SÉRIE TEMPORAL COMPLETA — MÊS ANTERIOR]\n${_serieJoin(_usaPromptLivre ? classSerieAntTotal : classSerieAnt)}` : ''}`;
 
         const _blocosNC = !_usaNC ? '' : `
 == NÃO CONFORMIDADES ==
@@ -28093,57 +28162,73 @@ Use linguagem executiva clara e técnica. Cite valores exatos dos dados. Inclua 
 INSTRUÇÃO DO USUÁRIO (linguagem natural):
 "${_promptLivreTexto}"
 
-MAPEAMENTO DE CAMPOS NOS DADOS (use estes nomes ao buscar nos dados):
-- Proteína Bruta → campo "proteina"
-- Solubilidade Proteica / Solubilidade → campo "solubil"
-- Umidade → campo "umidade"
-- Índice de Peróxido / Peróxido → campo "peroxido"
-- Atividade Ureática / Ureática → campo "ureatica"
-- Extrato Etéreo → campo "extrato"
-- Fibra Bruta → campo "fibra"
-- Densidade → campo "densidade"
-- Mineral / Cinzas → campo "mineral"
-- Acidez → campo "acidez"
-- Digestibilidade → campo "digestibilidade"
-- DGM → campo "dgm"
-- DPG → campo "dpg"
+MÓDULOS DE DADOS DISPONÍVEIS NESTE PROMPT:
+${_usaProd  ? '- PRODUTO ACABADO / PRODUÇÃO (rações, granulometria DGM/DPG, umidade, proteína...)' : ''}
+${_usaMP    ? '- MATÉRIA PRIMA (farelo de soja, milho, soja integral, etc. — proteína, solubilidade, umidade...)' : ''}
+${_usaClass ? '- CLASSIFICAÇÃO DE GRÃOS (milho, soja — grãos avariados, fermentando, mofado, fornecedor...)' : ''}
+${_usaNC    ? '- NÃO CONFORMIDADES' : ''}
+${_usaDev   ? '- DEVOLUÇÕES' : ''}
 
-REGRAS OBRIGATÓRIAS PARA EXECUTAR ESTA INSTRUÇÃO:
+MAPEAMENTO — como o usuário pode se referir a cada campo:
+CLASSIFICAÇÃO DE GRÃOS:
+- "fermentado" ou "fermentando" → "Fermentando (%)"
+- "mofado" → "Mofado (%)"
+- "ardido" → "Ardido (%)"
+- "queimado" → "Queimado (%)"
+- "avariados" ou "avariados totais" → "Avariados Totais (%)"
+- "impureza" → "Impureza (%)"
+- "umidade" → "Umidade (%)"
+- "fornecedor" → "Fornecedor"
 
-1. INTERPRETAÇÃO: Leia o pedido acima e identifique:
-   - Quais PARÂMETROS foram solicitados (consulte o mapeamento acima)
-   - Quais MATÉRIAS PRIMAS ou PRODUTOS foram mencionados
-   - Se nenhuma matéria prima for mencionada, inclua TODAS as disponíveis nos dados
-   - Se nenhum parâmetro for mencionado, inclua TODOS os disponíveis com valores
+MATÉRIA PRIMA:
+- "proteína bruta" ou "proteína" → "Proteína (%)"
+- "solubilidade" ou "solubilidade proteica" → "Solubilidade Protéica (%)"
+- "umidade" → "Umidade (%)"
+- "peróxido" → "Peróxido"
+- "ureática" ou "urease" → "Urease/Ureática"
+- "fibra" → "Fibra (%)"
+- "mineral" ou "cinzas" → "Mat. Mineral (%)"
 
-2. BUSCA NOS DADOS: Nos dados da SÉRIE TEMPORAL COMPLETA acima:
-   - Filtre apenas os registros das matérias primas/produtos solicitados
-   - Para cada registro, busque apenas os campos solicitados
-   - Ignore registros sem valor (N/D, null, 0) para os campos solicitados
-   - Um registro com valor N/D em um campo significa que aquele campo não foi preenchido naquela data — omita essa célula ou exiba "—"
+PRODUÇÃO:
+- "dgm" ou "granulometria" → "DGM (µm)"
+- "dpg" → "DPG (µm)"
+- "proteína" → "Proteína (%)"
+- "umidade" → "Umidade (%)"
 
-3. FORMATO OBRIGATÓRIO DE SAÍDA:
-   Para cada matéria prima/produto encontrado, gere a seguinte estrutura:
+REGRAS OBRIGATÓRIAS:
 
-   ### 🌾 [NOME DA MATÉRIA PRIMA]
+1. IDENTIFIQUE o módulo correto para responder o pedido:
+   - Pedido sobre grãos fermentados, avariados, mofados, fornecedor → use CLASSIFICAÇÃO DE GRÃOS
+   - Pedido sobre proteína bruta, solubilidade, ureática, peróxido → use MATÉRIA PRIMA
+   - Pedido sobre DGM, DPG, ração, granulometria → use PRODUÇÃO
+   - IGNORE completamente os outros módulos — não mencione nem inclua dados deles na resposta
+
+2. FILTRE por fornecedor se mencionado: compare o nome digitado com o campo "Fornecedor" nos dados (busca parcial, case-insensitive)
+
+3. FILTRE por produto/matéria prima se mencionado: compare com os nomes entre colchetes [ ] nos dados
+
+4. USE os valores exatos da SÉRIE DIÁRIA — não recalcule
+
+5. FORMATO DE SAÍDA para cada produto/grupo encontrado:
+
+   ### 🌾 [NOME DO PRODUTO] — Fornecedor: [FORNECEDOR se aplicável]
 
    #### 📊 Resumo Estatístico
    | Parâmetro | Média | Mínimo | Máximo |
    |-----------|-------|--------|--------|
-   | [Parâmetro 1] | X,XX | X,XX | X,XX |
-   | [Parâmetro 2] | X,XX | X,XX | X,XX |
+   | [Parâmetro] | X,XX | X,XX | X,XX |
 
    #### 📋 Resultados das Análises
    | Data | [Parâmetro 1] | [Parâmetro 2] |
    |------|---------------|---------------|
    | DD/MM/AAAA | X,XX | X,XX |
-   | DD/MM/AAAA | X,XX | X,XX |
 
-4. DATAS: Formatar como DD/MM/AAAA (ex: 2026-06-02 → 02/06/2026)
-5. NÚMEROS: Usar vírgula como separador decimal (ex: 47,15)
-6. Se os dados solicitados NÃO existirem no período, informe: "Não foram encontrados registros de [parâmetro] para [matéria prima] no período selecionado."
-7. Ao final das tabelas, adicione um breve parágrafo de observações técnicas se houver desvios relevantes.
+6. DATAS: DD/MM/AAAA. NÚMEROS: vírgula decimal, 2 casas (ex: 47.150 → 47,15)
+7. Se não encontrar os dados solicitados, informe claramente.
+8. Ao final, observações técnicas breves sobre desvios relevantes encontrados.
 `;
+
+
 
 
         const promptFinal = _usaPromptLivre
