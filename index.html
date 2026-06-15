@@ -28246,7 +28246,8 @@ REGRA ABSOLUTA — PROIBIDO INVENTAR VALORES:
 REGRA CRÍTICA — COMPLETUDE OBRIGATÓRIA:
 - A tabela "Resultados das Análises" DEVE conter UMA LINHA PARA CADA REGISTRO presente na SÉRIE DIÁRIA do produto/parâmetro solicitado, sem exceção. NÃO resuma, NÃO agrupe, NÃO omita, NÃO selecione "exemplos" ou "principais" registros.
 - Se houver mais de um registro na mesma data (horários diferentes), cada um deve aparecer em sua própria linha da tabela.
-- Antes de finalizar, CONTE quantos registros existem na SÉRIE DIÁRIA do produto/grupo solicitado e CONFIRME que a tabela tem exatamente esse mesmo número de linhas. Se houver divergência, corrija a tabela antes de responder.
+- REGRA DE INCLUSÃO DE LINHA: inclua a linha se o registro tiver valor NUMÉRICO REAL (diferente de [NÃO_ANALISADO]) em AO MENOS UM dos parâmetros SOLICITADOS PELO USUÁRIO. Se um dos parâmetros solicitados estiver ausente naquela data (marcado como [NÃO_ANALISADO]), coloque "N/D" nessa célula — mas NÃO descarte a linha. ATENÇÃO CRÍTICA: a presença de [NÃO_ANALISADO] em campos NÃO solicitados NÃO afeta a inclusão da linha. SOMENTE omita a linha se TODOS os parâmetros SOLICITADOS (e apenas esses) estiverem com [NÃO_ANALISADO] ou ausentes naquele registro.
+- Antes de finalizar, CONTE quantos registros existem na SÉRIE DIÁRIA do produto/grupo solicitado e CONFIRME que a tabela tem exatamente esse mesmo número de linhas (descontando apenas os que têm TODOS os parâmetros SOLICITADOS como [NÃO_ANALISADO]). Se houver divergência, corrija a tabela antes de responder. EXEMPLO CONCRETO: se o usuário pediu Proteína e Solubilidade e a série mostra o dia 20/05 com Proteína:47.5 e Solubilidade:82.3 (mesmo que Umidade, Fibra e outros campos sejam [NÃO_ANALISADO]), esse dia DEVE aparecer na tabela.
 - Inclua, no final da seção, a contagem total: "Total de análises consideradas: N".
 `;
 
@@ -28600,10 +28601,13 @@ function _formatIATextoRelatorio(t) {
                 html += '<tbody>';
                 dados.slice(1).forEach(linha => {
                     const cells = linha.split('|').map(c => c.trim()).filter(c => c !== '');
-                    // Omitir linhas onde todas as colunas (exceto Data/primeira) são N/D
+                    // Omitir linha SOMENTE se todos os campos de dados (exceto Data) forem N/D, ND, - ou vazio
                     const valoresDados = cells.slice(1);
-                    const todosND = valoresDados.length > 0 && valoresDados.every(c => c === 'N/D' || c === 'ND' || c === '-' || c === '');
-                    if (todosND) return; // pular linha
+                    const todosND = valoresDados.length > 0 && valoresDados.every(c => {
+                        const v = c.replace(/\*\*/g,'').trim();
+                        return v === 'N/D' || v === 'ND' || v === '-' || v === '';
+                    });
+                    if (todosND) return; // pular linha apenas quando NENHUM campo tem valor
                     html += '<tr>' + cells.map((c, ci) => `<td style="text-align:${ci===0?'left':'center'}">${c.replace(/\*\*/g,'')}</td>`).join('') + '</tr>';
                 });
                 html += '</tbody></table>';
