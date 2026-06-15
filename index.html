@@ -27867,18 +27867,19 @@ async function gerarRelatorioMensalIA() {
                 const linhasReg = regs.map(r => {
                     const vals = camposComValor.map(c => {
                         const valorBruto = c.calculado ? getAvariados(r) : r[c.key];
-                        if (valorBruto === null || valorBruto === undefined || valorBruto === '') return null;
+                        // Marca explicitamente campos ausentes para a IA não inventar
+                        if (valorBruto === null || valorBruto === undefined || valorBruto === '') return `${c.label}:[NÃO_ANALISADO]`;
                         // campo texto (ex: fornecedor)
                         if (typeof valorBruto === 'string' && isNaN(parseFloat(valorBruto))) {
-                            return valorBruto.trim() ? `${c.label}:${valorBruto.trim()}` : null;
+                            return valorBruto.trim() ? `${c.label}:${valorBruto.trim()}` : `${c.label}:[NÃO_ANALISADO]`;
                         }
                         const v = parseFloat(valorBruto);
-                        if (isNaN(v)) return null;
+                        if (isNaN(v)) return `${c.label}:[NÃO_ANALISADO]`;
                         return `${c.label}:${v}`;
-                    }).filter(Boolean).join(' | ');
+                    }).join(' | ');
                     return vals ? `    ${r.data||'—'}${r.hora?(' '+r.hora):''} → ${vals}` : null;
                 }).filter(Boolean).join('\n');
-                // Estatísticas apenas para campos numéricos
+                // Estatísticas apenas para campos numéricos com valor real
                 const camposNum = camposComValor.filter(c => {
                     return regs.some(r => {
                         const v = c.calculado ? getAvariados(r) : r[c.key];
@@ -27898,7 +27899,7 @@ async function gerarRelatorioMensalIA() {
                     const med = (vals.reduce((s,x)=>s+x,0)/vals.length).toFixed(3);
                     const mn  = Math.min(...vals).toFixed(3);
                     const mx  = Math.max(...vals).toFixed(3);
-                    return `${c.label} → Mín:${mn} | Méd:${med} | Máx:${mx} | N:${vals.length}`;
+                    return `${c.label} → Mín:${mn} | Méd:${med} | Máx:${mx} | N:${vals.length} (apenas registros com valor real, ignorar [NÃO_ANALISADO])`;
                 }).filter(Boolean).join('\n    ');
                 // Fornecedores distintos para campos texto
                 const camposTexto = camposComValor.filter(c => !camposNum.includes(c));
@@ -27906,7 +27907,7 @@ async function gerarRelatorioMensalIA() {
                     const vals = [...new Set(regs.map(r => r[c.key]).filter(v => v && v.trim()))];
                     return vals.length ? `${c.label}: ${vals.join(', ')}` : null;
                 }).filter(Boolean).join('\n    ');
-                return `  [${grupo}] ${regs.length} registros | Campos: ${camposComValor.map(c=>c.label).join(', ')}\n  SÉRIE DIÁRIA:\n${linhasReg}${resumoEst || resumoTexto ? `\n  ESTATÍSTICAS:\n    ${[resumoEst, resumoTexto].filter(Boolean).join('\n    ')}` : ''}`;
+                return `  [${grupo}] ${regs.length} registros | Campos: ${camposComValor.map(c=>c.label).join(', ')}\n  ATENÇÃO: registros marcados como [NÃO_ANALISADO] significam que o campo não foi analisado naquele dia — exibir como N/D na tabela, NUNCA inventar valor.\n  SÉRIE DIÁRIA:\n${linhasReg}${resumoEst || resumoTexto ? `\n  ESTATÍSTICAS (somente valores reais):\n    ${[resumoEst, resumoTexto].filter(Boolean).join('\n    ')}` : ''}`;
             }).filter(Boolean);
         }
 
@@ -28314,7 +28315,7 @@ REGRA CRÍTICA — COMPLETUDE OBRIGATÓRIA:
             </div>`;
         };
 
-        const kpiDgmFaseHtml = _usaProd ? `
+        const kpiDgmFaseHtml = (_usaProd && !_usaPromptLivre) ? `
         <div style="margin-bottom:16px;">
             <div style="font-size:11px;font-weight:900;color:#0a1e7f;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #dce4f5;">
                 📏 DGM Médio por Fase (µm)
@@ -28329,7 +28330,9 @@ REGRA CRÍTICA — COMPLETUDE OBRIGATÓRIA:
             </div>
         </div>` : '';
 
-        const kpiHtml = `${badgeComparacaoHtml}<div class="rml-grid" style="margin-bottom:12px;">${_kpiItems.join('')}</div>${kpiDgmFaseHtml}`;
+        const kpiHtml = _usaPromptLivre
+            ? ''
+            : `${badgeComparacaoHtml}<div class="rml-grid" style="margin-bottom:12px;">${_kpiItems.join('')}</div>${kpiDgmFaseHtml}`;
         const textoHtml = `<div class="rml-texto-ia">${_formatIATextoRelatorio(respTexto)}</div>`;
 
         const tituloRel = temComparacao
