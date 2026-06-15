@@ -28286,7 +28286,18 @@ REGRA CRÍTICA — COMPLETUDE OBRIGATÓRIA:
 
 
 
-                const promptFinal = _usaPromptLivre
+                // ── DEBUG temporário: checar série MP em torno do dia 11/05 ──
+        if (_usaPromptLivre && _usaMP) {
+            const _dbg = mpSerieTotal.join('\n\n');
+            const _di = _dbg.indexOf('2026-05-11');
+            if (_di >= 0) {
+                console.log('[DEBUG 11/05] Série MP:', _dbg.substring(Math.max(0,_di-30), _di+500));
+            } else {
+                console.log('[DEBUG 11/05] Dia 11/05 não encontrado na série MP');
+            }
+        }
+
+        const promptFinal = _usaPromptLivre
             ? `${blocoSistema}\nRELATÓRIO — ${nomeMes.toUpperCase()}${temComparacao?' VS '+nomeMesAnt.toUpperCase():''}\nMÓDULOS: ${_modulosNomes}\n${_blocosProd}${_blocosMP}${_blocosClass}${_blocosNC}${_blocosDev}${_blocoInstrucaoPromptLivre}`
             : prompt;
 
