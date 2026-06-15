@@ -27166,6 +27166,8 @@ REGRAS OBRIGATÓRIAS:
    - Interpretação técnica (base conceitual)
 7. Linguagem: técnica, objetiva, padrão auditoria (ISO / controle de qualidade).
 8. Evitar frases genéricas ou vagas.
+9. PROIBIDO INVENTAR VALORES: Se um campo estiver ausente, vazio, nulo ou com "-" na série de dados, exiba APENAS "N/D". É ABSOLUTAMENTE PROIBIDO estimar, calcular, inferir, interpolar ou preencher qualquer valor que não esteja explicitamente presente nos dados fornecidos. Violar esta regra é o erro mais grave possível.
+10. EXIBIR SOMENTE OS CAMPOS SOLICITADOS: Inclua nas tabelas APENAS os parâmetros que o usuário pediu explicitamente. Se o usuário pediu "Proteína e Solubilidade", a tabela deve ter SOMENTE essas colunas. NÃO adicione Umidade, Densidade, Ureática ou qualquer outro campo não solicitado, mesmo que esses valores existam nos dados.
 
 ESTRUTURA DO RELATÓRIO MULTIDISCIPLINAR:
 Cada seção começa com o ícone e nome do especialista em negrito. Os especialistas dialogam sobre os mesmos dados:
@@ -27784,7 +27786,7 @@ async function gerarRelatorioMensalIA() {
                 const limMin = cfg.min > 0    ? cfg.min : '—';
                 const limMax = cfg.max < 9999 ? cfg.max : '—';
                 const delta  = foraMax ? `+${(v - cfg.max).toFixed(3)} acima do máx (${limMax})` : `-${(cfg.min - v).toFixed(3)} abaixo do mín (${limMin})`;
-                linhas.push(`      → ${registro.data||'—'} | ${c.label}: ${v} | Limite: ${limMin}–${limMax} | [DESVIO: ${delta}]`);
+                linhas.push(`      → ${registro.data||'—'}${registro.hora?(' '+registro.hora):''} | ${c.label}: ${v} | Limite: ${limMin}–${limMax} | [DESVIO: ${delta}]`);
             });
             return linhas;
         }
@@ -27808,7 +27810,7 @@ async function gerarRelatorioMensalIA() {
         function _montarSerieCompleta(registros, modId, campos, chaveKey) {
             const grupos = [...new Set(registros.map(r => r[chaveKey]).filter(Boolean))];
             return grupos.map(grupo => {
-                const regs = registros.filter(r => r[chaveKey] === grupo).sort((a,b) => (a.data||'').localeCompare(b.data||''));
+                const regs = registros.filter(r => r[chaveKey] === grupo).sort((a,b) => (a.data||'').localeCompare(b.data||'') || (a.hora||'').localeCompare(b.hora||''));
                 const chave = grupo.replace(/ /g, '_');
                 const dataRef = regs[0]?.data || null;
                 const paramsAtivos = campos.filter(c => { const cfg = getParam(modId, chave, c.key, dataRef); return cfg && cfg.ativo; });
@@ -27828,7 +27830,7 @@ async function gerarRelatorioMensalIA() {
                         const flag = foraMin ? '[⚠️BAIXO]' : foraMax ? '[⚠️ALTO]' : '[✅]';
                         return `${c.label}:${v}${flag}`;
                     }).join(' | ');
-                    return `    ${r.data||'—'} → ${vals}`;
+                    return `    ${r.data||'—'}${r.hora?(' '+r.hora):''} → ${vals}`;
                 }).join('\n');
                 const resumoEst = paramsAtivos.map(c => {
                     const cfg = getParam(modId, chave, c.key, dataRef);
@@ -27853,8 +27855,7 @@ async function gerarRelatorioMensalIA() {
         function _montarSerieCompletaTotal(registros, campos, chaveKey) {
             const grupos = [...new Set(registros.map(r => r[chaveKey]).filter(Boolean))];
             return grupos.map(grupo => {
-                const regs = registros.filter(r => r[chaveKey] === grupo).sort((a,b) => (a.data||'').localeCompare(b.data||''));
-                // Detecta quais campos têm ao menos um valor preenchido neste grupo
+                const regs = registros.filter(r => r[chaveKey] === grupo).sort((a,b) => (a.data||'').localeCompare(b.data||'') || (a.hora||'').localeCompare(b.hora||''));
                 const camposComValor = campos.filter(c => regs.some(r => {
                     const v = c.calculado ? getAvariados(r) : r[c.key];
                     if (v === null || v === undefined || v === '') return false;
@@ -27875,7 +27876,7 @@ async function gerarRelatorioMensalIA() {
                         if (isNaN(v)) return null;
                         return `${c.label}:${v}`;
                     }).filter(Boolean).join(' | ');
-                    return vals ? `    ${r.data||'—'} → ${vals}` : null;
+                    return vals ? `    ${r.data||'—'}${r.hora?(' '+r.hora):''} → ${vals}` : null;
                 }).filter(Boolean).join('\n');
                 // Estatísticas apenas para campos numéricos
                 const camposNum = camposComValor.filter(c => {
@@ -27932,6 +27933,16 @@ async function gerarRelatorioMensalIA() {
         const ncFornece = {};
         ncMes.forEach(n => { const f = n.fornecedor||'Interno'; ncFornece[f] = (ncFornece[f]||0)+1; });
         const topFornNC = Object.entries(ncFornece).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([f,n])=>`${f} (${n})`).join(', ');
+
+        // ---- PROMPT LIVRE: detectar uso antecipado (necessário para séries totais abaixo) ----
+        const _usaPromptLivre = _rmlAnalistas['prompt'];
+        const _promptLivreTexto = _usaPromptLivre ? (document.getElementById('rml_prompt_livre_texto')?.value || '').trim() : '';
+        if (_usaPromptLivre && !_promptLivreTexto) {
+            sgqToast('⚠️ Digite o prompt personalizado antes de gerar a análise.', 'warning');
+            btn.disabled = false;
+            btn.innerHTML = '📊 Gerar Análise Comparativa';
+            return;
+        }
 
         // ── Gerar séries temporais estendidas para Prompt Livre (todos os campos com valor) ──
         const mpSerieTotal    = _usaPromptLivre ? _montarSerieCompletaTotal(mpMes,   CAMPOS_MP,   'produto') : [];
@@ -28104,7 +28115,8 @@ REGRAS OBRIGATÓRIAS:
 - Ignorar totalmente valores "-" ou não informados
 - Comparar mês atual (${nomeMes}) vs mês anterior (${nomeMesAnt}) OBRIGATORIAMENTE
 - NÃO apresentar apenas médias do mês — usar a SÉRIE TEMPORAL COMPLETA para análise REGISTRO A REGISTRO
-- Para cada parâmetro fora do padrão, listar TODAS as ocorrências: data | valor medido | limite | magnitude do desvio | flag (ALTO/BAIXO)
+- ATENÇÃO: pode haver MAIS DE UM REGISTRO NA MESMA DATA (horários diferentes). Cada linha da SÉRIE DIÁRIA é uma análise distinta e DEVE ser considerada individualmente — NUNCA mesclar, descartar ou tratar como duplicata registros do mesmo dia
+- Para cada parâmetro fora do padrão, listar TODAS as ocorrências: data (e horário, se houver mais de um registro no dia) | valor medido | limite | magnitude do desvio | flag (ALTO/BAIXO)
 - Identificar padrões: desvios isolados vs. recorrentes vs. tendência crescente vs. concentrados em período/lote
 - Calcular e informar taxa de conformidade por parâmetro: (nº conformes / total) × 100%
 - Não inferir valores ausentes
@@ -28113,7 +28125,8 @@ SISTEMA: Análise Técnica Mensal — Levantamento Crítico de Desvios
 REGRAS OBRIGATÓRIAS:
 - Ignorar totalmente valores "-" ou não informados
 - NÃO apresentar apenas médias do mês — usar a SÉRIE TEMPORAL COMPLETA para análise REGISTRO A REGISTRO
-- Para cada parâmetro fora do padrão, listar TODAS as ocorrências: data | valor medido | limite | magnitude do desvio | flag (ALTO/BAIXO)
+- ATENÇÃO: pode haver MAIS DE UM REGISTRO NA MESMA DATA (horários diferentes). Cada linha da SÉRIE DIÁRIA é uma análise distinta e DEVE ser considerada individualmente — NUNCA mesclar, descartar ou tratar como duplicata registros do mesmo dia
+- Para cada parâmetro fora do padrão, listar TODAS as ocorrências: data (e horário, se houver mais de um registro no dia) | valor medido | limite | magnitude do desvio | flag (ALTO/BAIXO)
 - Identificar padrões: desvios isolados vs. recorrentes vs. tendência crescente vs. concentrados em período/lote
 - Calcular e informar taxa de conformidade por parâmetro: (nº conformes / total) × 100%
 - Não inferir valores ausentes
@@ -28148,15 +28161,7 @@ ${_secsRel.join('\n')}
 ${_multi ? '\nCada seção de especialista deve começar com o ícone e nome do analista em negrito (ex: **🔬 CQ — Controle de Qualidade**).' : ''}
 Use linguagem executiva clara e técnica. Cite valores exatos dos dados. Inclua referência bibliográfica em cada ponto técnico.`;
 
-        // ---- PROMPT LIVRE: sobrescreve o prompt padrão ----
-        const _usaPromptLivre = _rmlAnalistas['prompt'];
-        const _promptLivreTexto = _usaPromptLivre ? (document.getElementById('rml_prompt_livre_texto')?.value || '').trim() : '';
-        if (_usaPromptLivre && !_promptLivreTexto) {
-            sgqToast('⚠️ Digite o prompt personalizado antes de gerar a análise.', 'warning');
-            btn.disabled = false;
-            btn.innerHTML = '📊 Gerar Análise Comparativa';
-            return;
-        }
+        // ---- PROMPT LIVRE: sobrescreve o prompt padrão (variáveis já declaradas acima) ----
         const _blocoInstrucaoPromptLivre = `
 ---
 INSTRUÇÃO DO USUÁRIO (linguagem natural):
@@ -28226,6 +28231,18 @@ REGRAS OBRIGATÓRIAS:
 6. DATAS: DD/MM/AAAA. NÚMEROS: vírgula decimal, 2 casas (ex: 47.150 → 47,15)
 7. Se não encontrar os dados solicitados, informe claramente.
 8. Ao final, observações técnicas breves sobre desvios relevantes encontrados.
+
+REGRA ABSOLUTA — SOMENTE CAMPOS SOLICITADOS:
+- Inclua nas tabelas EXCLUSIVAMENTE os parâmetros que o usuário pediu. Se pediu "Proteína e Solubilidade", a tabela terá SOMENTE as colunas Data, Proteína e Solubilidade. NÃO adicione Umidade, Densidade, Ureática, Fibra ou qualquer outro campo não mencionado pelo usuário, mesmo que esses valores existam nos dados. Adicionar campos não solicitados é uma violação grave desta instrução.
+
+REGRA ABSOLUTA — PROIBIDO INVENTAR VALORES:
+- Se um campo estiver ausente, vazio, nulo ou com "-" na série de dados, exiba APENAS "N/D" naquela célula. É COMPLETAMENTE PROIBIDO estimar, calcular, inferir, interpolar ou preencher qualquer valor ausente com base em médias, literatura ou conhecimento geral. Se TODOS os registros de um produto tiverem "N/D" no parâmetro solicitado, informe: "Nenhum registro com valor de [parâmetro] encontrado para [produto] no período." e NÃO gere tabela para esse produto/parâmetro.
+
+REGRA CRÍTICA — COMPLETUDE OBRIGATÓRIA:
+- A tabela "Resultados das Análises" DEVE conter UMA LINHA PARA CADA REGISTRO presente na SÉRIE DIÁRIA do produto/parâmetro solicitado, sem exceção. NÃO resuma, NÃO agrupe, NÃO omita, NÃO selecione "exemplos" ou "principais" registros.
+- Se houver mais de um registro na mesma data (horários diferentes), cada um deve aparecer em sua própria linha da tabela.
+- Antes de finalizar, CONTE quantos registros existem na SÉRIE DIÁRIA do produto/grupo solicitado e CONFIRME que a tabela tem exatamente esse mesmo número de linhas. Se houver divergência, corrija a tabela antes de responder.
+- Inclua, no final da seção, a contagem total: "Total de análises consideradas: N".
 `;
 
 
@@ -28237,7 +28254,7 @@ REGRAS OBRIGATÓRIAS:
 
         const _systemPromptFinal = _usaPromptLivre ? _IA_SYSTEM_RELATORIO_MULTI : _rmlGetSystemPrompt(_anAtivos);
 
-        const respTexto = await _iaCallComFallback(_systemPromptFinal, [{ role:'user', content: promptFinal }], 6000);
+        const respTexto = await _iaCallComFallback(_systemPromptFinal, [{ role:'user', content: promptFinal }], _usaPromptLivre ? 8000 : 6000);
         _relMensalIA_ultimoTexto = respTexto;
 
         // ---- KPIs VISUAIS ----
