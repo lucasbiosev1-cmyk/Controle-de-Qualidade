@@ -26176,11 +26176,14 @@ document.addEventListener('DOMContentLoaded', function() {
 .rml-cabecalho-resultado { display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #eef2ff; }
 .rml-titulo-resultado { font-size:17px;font-weight:900;color:#0a1e7f; }
 .rml-subtitulo-resultado { font-size:11px;color:#888;margin-top:3px; }
+        .rml-ia-subheading { font-size:12px;font-weight:700;color:#1a5276;margin:10px 0 5px 0;padding-bottom:3px;border-bottom:1px solid #dce4f5; }
 .rml-caixa-texto { background:#f8faff;border:1px solid #dce4f5;border-radius:8px;padding:18px 20px; }
 .rml-texto-ia { font-size:12px;line-height:1.8;color:#2c3e50;white-space:pre-wrap; }
 .rml-texto-ia table { border-collapse:collapse; width:100%; margin:10px 0 16px; white-space:normal; font-size:12px; }
-.rml-texto-ia table th { background:#0a1e7f; color:#fff; font-weight:700; padding:7px 10px; text-align:left; border:1px solid #dce4f5; }
-.rml-texto-ia table td { padding:6px 10px; border:1px solid #dce4f5; color:#2c3e50; }
+.rml-texto-ia table th { background:#0a1e7f; color:#fff; font-weight:700; padding:7px 10px; text-align:center; border:1px solid #dce4f5; }
+.rml-texto-ia table th:first-child { text-align:left; }
+.rml-texto-ia table td { padding:6px 10px; border:1px solid #dce4f5; color:#2c3e50; text-align:center; }
+.rml-texto-ia table td:first-child { text-align:left; }
 .rml-texto-ia table tr:first-child td { background:#eaf3fb; font-weight:700; color:#0a1e7f; }
 .rml-texto-ia table tr:nth-child(even) td { background:#f7fafd; }
 .rml-texto-ia .rml-mp-titulo { font-size:14px; font-weight:900; color:#0a1e7f; margin:20px 0 6px; padding:6px 10px; background:#eaf3fb; border-left:4px solid #0a1e7f; border-radius:4px; }
@@ -28343,7 +28346,7 @@ REGRA CRÍTICA — COMPLETUDE OBRIGATÓRIA:
             <div class="rml-cabecalho-resultado">
                 <div>
                     <div class="rml-titulo-resultado">${tituloRel}</div>
-                    <div class="rml-subtitulo-resultado">Gerado por IA com base nas normas Embrapa e Compêndio Brasileiro de Nutrição Animal • ${new Date().toLocaleString('pt-BR')}</div>
+                    <div class="rml-subtitulo-resultado">Emitido em: ${new Date().toLocaleString('pt-BR')}</div>
                     <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;">
                         ${_anAtivos.map(k => {
                             const icones = {cq:'🔬',nut:'🌿',vet:'🩺'};
@@ -28359,7 +28362,7 @@ REGRA CRÍTICA — COMPLETUDE OBRIGATÓRIA:
                 ${textoHtml}
             </div>
             <div class="rml-rodape-aviso">
-                ⚠️ Este relatório foi gerado por inteligência artificial com base nos dados cadastrados no sistema. Sempre valide com o responsável técnico antes de tomar decisões.
+                ⚠️ Este relatório foi gerado com base nos dados cadastrados no sistema. Sempre valide com o responsável técnico antes de tomar decisões.
             </div>`;
 
     } catch(e) {
@@ -28620,6 +28623,7 @@ function _formatIATextoRelatorio(t) {
         }).join('\n')
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/^####\s(.+)$/gm, '<div class="rml-ia-subheading">$1</div>')
         .replace(/^###\s(.+)$/gm, '<div class="rml-mp-titulo">$1</div>')
         .replace(/^##\s(.+)$/gm, '<div class="rml-ia-heading" style="font-size:14px;">$1</div>')
         .replace(/^#\s(.+)$/gm, '<div class="rml-ia-heading" style="font-size:15px;">$1</div>')
