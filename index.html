@@ -28169,6 +28169,13 @@ Use linguagem executiva clara e técnica. Cite valores exatos dos dados. Inclua 
         // ---- PROMPT LIVRE: sobrescreve o prompt padrão (variáveis já declaradas acima) ----
         const _blocoInstrucaoPromptLivre = `
 ---
+PASSO 1 — EXTRAIR CAMPOS SOLICITADOS (faça isso antes de qualquer outra coisa):
+Leia a instrução abaixo e identifique EXATAMENTE quais parâmetros o usuário pediu, usando o MAPEAMENTO de campos abaixo.
+Liste os campos identificados aqui antes de gerar a tabela. Exemplo:
+  Campos solicitados: Proteína (%), Solubilidade Protéica (%)
+Se o usuário escreveu "proteína bruta e solubilidade", os campos são SOMENTE esses dois.
+NÃO adicione nenhum outro campo (ex: Ureática, Umidade, Fibra) mesmo que pareça relacionado.
+
 INSTRUÇÃO DO USUÁRIO (linguagem natural):
 "${_promptLivreTexto}"
 
@@ -28207,9 +28214,17 @@ PRODUÇÃO:
 
 REGRAS OBRIGATÓRIAS:
 
+⚠️ REGRA ZERO — CAMPOS PERMITIDOS:
+Antes de gerar qualquer tabela, liste os campos que o usuário pediu (usando o MAPEAMENTO acima).
+A tabela terá SOMENTE a coluna Data + esses campos. NENHUM outro campo pode aparecer.
+Exemplo: pediu "proteína bruta e solubilidade" → colunas: Data | Proteína (%) | Solubilidade Protéica (%)
+Exemplo: pediu "ureática" → colunas: Data | Urease/Ureática
+NÃO adicione campos "relacionados", "complementares" ou que "normalmente acompanham" o pedido.
+
 1. IDENTIFIQUE o módulo correto para responder o pedido:
    - Pedido sobre grãos fermentados, avariados, mofados, fornecedor → use CLASSIFICAÇÃO DE GRÃOS
-   - Pedido sobre proteína bruta, solubilidade, ureática, peróxido → use MATÉRIA PRIMA
+   - Pedido sobre proteína bruta, solubilidade → use MATÉRIA PRIMA
+   - Pedido sobre ureática, peróxido, umidade de MP → use MATÉRIA PRIMA
    - Pedido sobre DGM, DPG, ração, granulometria → use PRODUÇÃO
    - IGNORE completamente os outros módulos — não mencione nem inclua dados deles na resposta
 
@@ -28238,10 +28253,10 @@ REGRAS OBRIGATÓRIAS:
 8. Ao final, observações técnicas breves sobre desvios relevantes encontrados.
 
 REGRA ABSOLUTA — SOMENTE CAMPOS SOLICITADOS:
-- Inclua nas tabelas EXCLUSIVAMENTE os parâmetros que o usuário pediu. Se pediu "Proteína e Solubilidade", a tabela terá SOMENTE as colunas Data, Proteína e Solubilidade. NÃO adicione Umidade, Densidade, Ureática, Fibra ou qualquer outro campo não mencionado pelo usuário, mesmo que esses valores existam nos dados. Adicionar campos não solicitados é uma violação grave desta instrução.
+- Inclua nas tabelas EXCLUSIVAMENTE os parâmetros que o usuário pediu. Se pediu "Proteína Bruta e Solubilidade", a tabela terá SOMENTE as colunas: Data | Proteína (%) | Solubilidade Protéica (%). NÃO adicione Urease/Ureática, Umidade, Densidade, Fibra ou qualquer outro campo não mencionado — mesmo que apareçam juntos na série de dados ou que sejam "normalmente analisados em conjunto". Cada campo só entra na tabela se o usuário escreveu explicitamente aquela palavra (ou sinônimo do MAPEAMENTO). Adicionar campos não solicitados é uma violação grave desta instrução.
 
 REGRA ABSOLUTA — PROIBIDO INVENTAR VALORES:
-- Se um campo estiver ausente, vazio, nulo ou com "-" na série de dados, exiba APENAS "N/D" naquela célula. É COMPLETAMENTE PROIBIDO estimar, calcular, inferir, interpolar ou preencher qualquer valor ausente com base em médias, literatura ou conhecimento geral. Se TODOS os registros de um produto tiverem "N/D" no parâmetro solicitado, informe: "Nenhum registro com valor de [parâmetro] encontrado para [produto] no período." e NÃO gere tabela para esse produto/parâmetro.
+- Se um campo estiver marcado como [NÃO_ANALISADO] na série de dados, exiba APENAS "N/D" naquela célula. ATENÇÃO: se o valor for um número (mesmo que seja 0,00), exiba o número — NUNCA converta um valor numérico em N/D. É COMPLETAMENTE PROIBIDO estimar, calcular, inferir, interpolar ou preencher qualquer valor ausente com base em médias, literatura ou conhecimento geral. Se TODOS os registros de um produto tiverem [NÃO_ANALISADO] no parâmetro solicitado, informe: "Nenhum registro com valor de [parâmetro] encontrado para [produto] no período." e NÃO gere tabela para esse produto/parâmetro.
 
 REGRA CRÍTICA — COMPLETUDE OBRIGATÓRIA:
 - A tabela "Resultados das Análises" DEVE conter UMA LINHA PARA CADA REGISTRO presente na SÉRIE DIÁRIA do produto/parâmetro solicitado, sem exceção. NÃO resuma, NÃO agrupe, NÃO omita, NÃO selecione "exemplos" ou "principais" registros.
@@ -28253,6 +28268,17 @@ REGRA CRÍTICA — COMPLETUDE OBRIGATÓRIA:
 
 
 
+
+        // ── DEBUG: log da série MP para o console (remover após diagnóstico) ──
+        if (_usaPromptLivre && _usaMP) {
+            const _debugMP = mpSerieTotal.join('\n\n');
+            const _debugIdx = _debugMP.indexOf('20/05') !== -1 ? _debugMP.indexOf('20/05') : _debugMP.indexOf('2026-05-20');
+            if (_debugIdx >= 0) {
+                console.log('[DEBUG prompt livre] Série MP — trecho 20/05:', _debugMP.substring(Math.max(0,_debugIdx-50), _debugIdx+300));
+            } else {
+                console.log('[DEBUG prompt livre] Dia 20/05 NÃO encontrado na série MP. Total chars:', _debugMP.length);
+            }
+        }
 
         const promptFinal = _usaPromptLivre
             ? `${blocoSistema}\nRELATÓRIO — ${nomeMes.toUpperCase()}${temComparacao?' VS '+nomeMesAnt.toUpperCase():''}\nMÓDULOS: ${_modulosNomes}\n${_blocosProd}${_blocosMP}${_blocosClass}${_blocosNC}${_blocosDev}${_blocoInstrucaoPromptLivre}`
