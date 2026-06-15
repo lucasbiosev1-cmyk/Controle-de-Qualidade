@@ -28169,12 +28169,14 @@ Use linguagem executiva clara e técnica. Cite valores exatos dos dados. Inclua 
         // ---- PROMPT LIVRE: sobrescreve o prompt padrão (variáveis já declaradas acima) ----
         const _blocoInstrucaoPromptLivre = `
 ---
-PASSO 1 — EXTRAIR CAMPOS SOLICITADOS (faça isso antes de qualquer outra coisa):
-Leia a instrução abaixo e identifique EXATAMENTE quais parâmetros o usuário pediu, usando o MAPEAMENTO de campos abaixo.
-Liste os campos identificados aqui antes de gerar a tabela. Exemplo:
-  Campos solicitados: Proteína (%), Solubilidade Protéica (%)
-Se o usuário escreveu "proteína bruta e solubilidade", os campos são SOMENTE esses dois.
-NÃO adicione nenhum outro campo (ex: Ureática, Umidade, Fibra) mesmo que pareça relacionado.
+PASSO 1 — EXTRAIR CAMPOS SOLICITADOS (obrigatório antes de qualquer outra coisa):
+Leia a instrução do usuário abaixo e identifique EXATAMENTE quais parâmetros foram pedidos usando o MAPEAMENTO.
+Escreva na sua resposta: "Campos identificados: [lista]" — SOMENTE os campos que o usuário mencionou.
+NÃO adicione campos relacionados, complementares ou que tenham mais dados preenchidos.
+NÃO substitua um campo pedido por outro — mesmo que o pedido tenha poucos registros com valor real.
+Exemplos:
+  "proteína bruta e solubilidade" → Campos identificados: Proteína (%), Solubilidade Protéica (%)  [Ureática NÃO entra]
+  "ureática e peróxido" → Campos identificados: Urease/Ureática, Peróxido  [Proteína NÃO entra]
 
 INSTRUÇÃO DO USUÁRIO (linguagem natural):
 "${_promptLivreTexto}"
@@ -28214,12 +28216,19 @@ PRODUÇÃO:
 
 REGRAS OBRIGATÓRIAS:
 
-⚠️ REGRA ZERO — CAMPOS PERMITIDOS:
-Antes de gerar qualquer tabela, liste os campos que o usuário pediu (usando o MAPEAMENTO acima).
-A tabela terá SOMENTE a coluna Data + esses campos. NENHUM outro campo pode aparecer.
-Exemplo: pediu "proteína bruta e solubilidade" → colunas: Data | Proteína (%) | Solubilidade Protéica (%)
-Exemplo: pediu "ureática" → colunas: Data | Urease/Ureática
-NÃO adicione campos "relacionados", "complementares" ou que "normalmente acompanham" o pedido.
+⚠️ REGRA ZERO — CAMPOS PERMITIDOS (executar antes de qualquer outra coisa):
+1. Leia a instrução do usuário e mapeie EXATAMENTE quais campos foram pedidos usando a tabela de MAPEAMENTO.
+2. Escreva no início da sua resposta: "Campos identificados: X, Y" — onde X e Y são APENAS os campos que o usuário mencionou.
+3. A tabela terá SOMENTE a coluna Data + esses campos. NENHUM outro campo pode aparecer.
+
+Exemplos corretos:
+- Usuário pediu "proteína bruta e solubilidade" → Campos identificados: Proteína (%), Solubilidade Protéica (%) → tabela: Data | Proteína (%) | Solubilidade Protéica (%)
+- Usuário pediu "ureática" → Campos identificados: Urease/Ureática → tabela: Data | Urease/Ureática
+
+PROIBIDO em qualquer hipótese:
+- Substituir um campo pedido por outro que tenha mais dados preenchidos no mês
+- Adicionar campos porque "normalmente acompanham" os pedidos (ex: não adicione Ureática só porque ela aparece junto com Proteína na série)
+- Omitir um campo pedido porque ele tem muitos [NÃO_ANALISADO] — nesse caso, mostre N/D nas células e mantenha a coluna
 
 1. IDENTIFIQUE o módulo correto para responder o pedido:
    - Pedido sobre grãos fermentados, avariados, mofados, fornecedor → use CLASSIFICAÇÃO DE GRÃOS
@@ -28269,18 +28278,7 @@ REGRA CRÍTICA — COMPLETUDE OBRIGATÓRIA:
 
 
 
-        // ── DEBUG: log da série MP para o console (remover após diagnóstico) ──
-        if (_usaPromptLivre && _usaMP) {
-            const _debugMP = mpSerieTotal.join('\n\n');
-            const _debugIdx = _debugMP.indexOf('20/05') !== -1 ? _debugMP.indexOf('20/05') : _debugMP.indexOf('2026-05-20');
-            if (_debugIdx >= 0) {
-                console.log('[DEBUG prompt livre] Série MP — trecho 20/05:', _debugMP.substring(Math.max(0,_debugIdx-50), _debugIdx+300));
-            } else {
-                console.log('[DEBUG prompt livre] Dia 20/05 NÃO encontrado na série MP. Total chars:', _debugMP.length);
-            }
-        }
-
-        const promptFinal = _usaPromptLivre
+                const promptFinal = _usaPromptLivre
             ? `${blocoSistema}\nRELATÓRIO — ${nomeMes.toUpperCase()}${temComparacao?' VS '+nomeMesAnt.toUpperCase():''}\nMÓDULOS: ${_modulosNomes}\n${_blocosProd}${_blocosMP}${_blocosClass}${_blocosNC}${_blocosDev}${_blocoInstrucaoPromptLivre}`
             : prompt;
 
