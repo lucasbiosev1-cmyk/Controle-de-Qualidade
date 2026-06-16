@@ -27159,6 +27159,16 @@ Responda em português do Brasil. Linguagem técnica e sanitária. Cite normas e
 const _IA_SYSTEM_RELATORIO_MULTI = `Você é um especialista em nutrição animal e controle de qualidade de rações, com base em literatura técnica reconhecida (Embrapa, Compêndio Brasileiro de Nutrição Animal, Leeson & Summers, Rostagno).
 Sua função é analisar dados laboratoriais como equipe multidisciplinar e gerar relatórios técnicos com rigor científico.
 
+FORMATO DOS DADOS (quando via consulta direta ao banco):
+Os dados chegam em formato tabular: cada linha é um registro, colunas separadas por " | ", valor "N/D" significa campo não preenchido.
+Primeira linha de cada tabela é o cabeçalho. Interprete corretamente cada coluna pelo nome do cabeçalho.
+As tabelas disponíveis são: PRODUÇÃO (rações), MATÉRIAS-PRIMAS, CLASSIFICAÇÃO DE GRÃOS, NÃO CONFORMIDADES, DEVOLUÇÕES, HOMOGENEIDADE, ENTRADAS DE MP.
+Nomes de campos:
+- producoes: racao=nome da ração, dgm=diâmetro geométrico médio(µm), dpg=desvio padrão geométrico, granulo1=retenção peneira 4mm(%), granulo2=retenção peneira 2mm(%), granulo3=retenção peneira 0,60mm(%), fundo=fundo(%)
+- materias_primas: ureatica=atividade ureática, solubil=solubilidade proteica, extrato=extrato etéreo, peroxido=índice de peróxido
+- classificacoes: fermentando=grãos fermentando(%), ardido=grãos ardidos(%), mofado=grãos mofados(%), impureza=impureza(%)
+- homogeneidade: cv=coeficiente de variação(%), n=número de amostras, media=média do marcador, dp=desvio padrão
+
 REGRAS OBRIGATÓRIAS:
 1. NÃO inventar referências.
 2. NÃO citar autores se não tiver certeza da fonte.
@@ -27677,6 +27687,248 @@ function _rmlRenderizar(mod) {
     const nenhum = Object.values(_rmlEstado).every(v => !v);
     const aviso = document.getElementById('rml_aviso_modulos');
     if (aviso) aviso.style.display = nenhum ? 'block' : 'none';
+}
+
+// ============================================================
+// AGENTE SUPABASE INTELIGENTE — Prompt Livre
+// Passo 1: IA interpreta o pedido e decide tabela+campos
+// Passo 2: Query cirúrgica só no que foi pedido
+// ============================================================
+
+// Mapeamento completo: linguagem natural → banco
+const _AGENTE_SCHEMA = {
+    tabelas: {
+        materias_primas: {
+            sinonimos: ['matéria prima','materia prima','mp','materias primas','matérias primas'],
+            campData: 'data',
+            camposPadrao: 'data,hora,produto,fornecedor,nf',
+            campos: {
+                proteina:        ['proteína','proteina','proteina bruta','pb'],
+                fibra:           ['fibra','fibra bruta'],
+                umidade:         ['umidade'],
+                densidade:       ['densidade'],
+                mineral:         ['mineral','cinzas','matéria mineral'],
+                acidez:          ['acidez'],
+                ureatica:        ['uréatica','ureastica','ureatica','urease','atividade ureática'],
+                peroxido:        ['peróxido','peroxido','índice de peróxido'],
+                digestibilidade: ['digestibilidade'],
+                extrato:         ['extrato etéreo','extrato etereo','extrato','ee'],
+                solubil:         ['solubilidade','solubil','solubilidade proteica'],
+                granulo1:        ['granulo1','grânulo 1','peneira 4mm','retenção 4mm','g1'],
+                granulo2:        ['granulo2','grânulo 2','peneira 2mm','retenção 2mm','g2'],
+                granulo3:        ['granulo3','grânulo 3','peneira 0,60mm','g3'],
+                granulo4:        ['granulo4','grânulo 4','g4'],
+                calcio:          ['cálcio','calcio','ca'],
+                fosforo:         ['fósforo','fosforo','p'],
+                tempResfriador:  ['temperatura resfriador','temp resfriador'],
+                tempCanhao:      ['temperatura canhão','temp canhão','temp canhao'],
+                alimentacaoHz:   ['alimentação hz','frequencia alimentacao','hz'],
+            }
+        },
+        producoes: {
+            sinonimos: ['produção','producao','ração','racao','produto acabado','pa'],
+            campData: 'data',
+            camposPadrao: 'data,hora,racao,lote',
+            campos: {
+                dgm:      ['dgm','diâmetro geométrico','granulometria'],
+                dpg:      ['dpg','desvio padrão geométrico'],
+                granulo1: ['granulo1','grânulo 1','peneira 4mm','retenção 4mm','g1','retenção peneira 4'],
+                granulo2: ['granulo2','grânulo 2','peneira 2mm','retenção 2mm','g2'],
+                granulo3: ['granulo3','grânulo 3','peneira 0,60mm','g3'],
+                fundo:    ['fundo','fundo de peneira','passante'],
+                proteina: ['proteína','proteina','pb'],
+                fibra:    ['fibra','fibra bruta'],
+                umidade:  ['umidade'],
+                densidade:['densidade'],
+                mineral:  ['mineral','cinzas'],
+                calcio:   ['cálcio','calcio'],
+                fosforo:  ['fósforo','fosforo'],
+                extrato:  ['extrato etéreo','extrato','ee'],
+                solubil:  ['solubilidade','solubil'],
+            }
+        },
+        classificacoes: {
+            sinonimos: ['classificação','classificacao','grãos','graos','classificação de grãos'],
+            campData: 'data',
+            camposPadrao: 'data,hora,produto,fornecedor,nf',
+            campos: {
+                queimado:    ['queimado'],
+                ardido:      ['ardido'],
+                mofado:      ['mofado'],
+                esverdeado:  ['esverdeado'],
+                fermentando: ['fermentando','fermentado'],
+                chocho:      ['chocho'],
+                picado:      ['picado'],
+                gessado:     ['gessado'],
+                quebrado:    ['quebrado'],
+                germinado:   ['germinado'],
+                carunchado:  ['carunchado'],
+                impureza:    ['impureza'],
+                umidade:     ['umidade'],
+                densidade:   ['densidade'],
+                aflatoxinas: ['aflatoxinas','aflatoxina'],
+                fumonisinas: ['fumonisinas','fumonisina'],
+                zearalenona: ['zearalenona'],
+                don:         ['don','deoxinivalenol'],
+            }
+        },
+        nao_conformidades: {
+            sinonimos: ['não conformidade','nao conformidade','nc','ncs','não conformidades'],
+            campData: 'data',
+            camposPadrao: 'data,numero,tipo,gravidade,produto,fornecedor,descricao,causas,acao_imediata,causa_raiz,acao_corretiva,status,responsavel,prazo,data_enc,eficacia',
+            campos: {}
+        },
+        devolucoes: {
+            sinonimos: ['devolução','devolucao','devoluções','devolucoes'],
+            campData: 'data',
+            camposPadrao: 'data,numero,produto,fornecedor,motivo,tipo,lote,status,classificacao,desc_motivo,parametro',
+            campos: {}
+        },
+        homogeneidade: {
+            sinonimos: ['homogeneidade','homogenidade','cv','coeficiente de variação'],
+            campData: 'data',
+            camposPadrao: 'data,dataResultado,produto,equipamento,marcador,tempo,n,media,dp,cv',
+            campos: {}
+        },
+        entradas_mp: {
+            sinonimos: ['entradas','entrada mp','recebimento','entradas de mp','entrada de matéria prima'],
+            campData: 'data',
+            camposPadrao: 'data,hora,fornecedor,materia_prima,quantidade,nf,status,status_descarga,obs',
+            campos: {}
+        },
+    }
+};
+
+// Interpreta o pedido em linguagem natural e decide tabela + campos + filtro de produto
+async function _agenteInterpretar(pedido, mesVal) {
+    const pedidoLower = pedido.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+
+    // 1. Identificar tabela
+    let tabelaKey = null;
+    for (const [key, cfg] of Object.entries(_AGENTE_SCHEMA.tabelas)) {
+        const normalSin = cfg.sinonimos.map(s => s.normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase());
+        if (normalSin.some(s => pedidoLower.includes(s))) { tabelaKey = key; break; }
+    }
+    if (!tabelaKey) tabelaKey = 'producoes'; // fallback
+
+    const cfg = _AGENTE_SCHEMA.tabelas[tabelaKey];
+
+    // 2. Identificar campos pedidos
+    const camposSelecionados = [];
+    for (const [campo, sinonimos] of Object.entries(cfg.campos)) {
+        const normalSin = sinonimos.map(s => s.normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase());
+        if (normalSin.some(s => pedidoLower.includes(s))) {
+            camposSelecionados.push(campo);
+        }
+    }
+
+    // 3. Identificar filtro de produto/ração (texto entre aspas ou após vírgula)
+    // Heurística: palavras após identificar tabela que não são parâmetros conhecidos
+    let filtroProduto = null;
+    const palavrasChave = ['relatório','relatorio','media','média','analise','análise','resultado','periodo','período','mes','mês'];
+    const todosSinonimos = Object.values(_AGENTE_SCHEMA.tabelas).flatMap(t => t.sinonimos);
+    const todosCampos    = Object.values(_AGENTE_SCHEMA.tabelas).flatMap(t => Object.values(t.campos).flat());
+    const excluir = [...palavrasChave, ...todosSinonimos, ...todosCampos].map(s =>
+        s.normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase());
+
+    // Tenta extrair produto: fragmentos de 2-4 palavras que não são palavras-chave
+    const tokens = pedidoLower.split(/[\s,]+/).filter(t => t.length > 2);
+    const candidatos = [];
+    for (let i = 0; i < tokens.length; i++) {
+        for (let len = 4; len >= 2; len--) {
+            if (i + len > tokens.length) continue;
+            const frag = tokens.slice(i, i+len).join(' ');
+            if (!excluir.some(e => e === frag || frag.includes(e) && e.length > 4)) {
+                candidatos.push(frag);
+                break;
+            }
+        }
+    }
+    if (candidatos.length > 0) filtroProduto = candidatos[0];
+
+    return { tabelaKey, cfg, camposSelecionados, filtroProduto };
+}
+
+// Executa query cirúrgica no Supabase
+async function _consultarSupabasePromptLivre(mesVal, mesAntVal, pedido) {
+    const { tabelaKey, cfg, camposSelecionados, filtroProduto } = await _agenteInterpretar(pedido || '', mesVal);
+
+    // Monta select: colunas padrão + campos pedidos
+    const campoExtra = camposSelecionados.length > 0 ? camposSelecionados : Object.keys(cfg.campos);
+    const selectCols = [...cfg.camposPadrao.split(','), ...campoExtra].filter((v,i,a)=>a.indexOf(v)===i).join(',');
+
+    async function _query(prefixo) {
+        try {
+            let q = _sbClient.from(tabelaKey)
+                .select(selectCols)
+                .gte(cfg.campData, prefixo + '-01')
+                .lte(cfg.campData, prefixo + '-31')
+                .order(cfg.campData, { ascending: true })
+                .limit(500);
+
+            // Filtro de produto (busca parcial — ilike)
+            if (filtroProduto) {
+                const campoFiltro = tabelaKey === 'producoes' ? 'racao' :
+                                    tabelaKey === 'entradas_mp' ? 'materia_prima' : 'produto';
+                q = q.ilike(campoFiltro, `%${filtroProduto}%`);
+            }
+
+            const { data, error } = await q;
+            if (error) { console.warn('[AGENTE]', tabelaKey, error.message); return []; }
+            return data || [];
+        } catch(e) { console.warn('[AGENTE] erro query:', e); return []; }
+    }
+
+    const registros    = await _query(mesVal);
+    const registrosAnt = mesAntVal ? await _query(mesAntVal) : [];
+
+    // Serializa para texto estruturado
+    const cols = selectCols.split(',');
+    function _serializar(regs, nomePeriodo) {
+        if (!regs.length) return `=== ${tabelaKey.toUpperCase()} — ${nomePeriodo} ===\nNenhum registro encontrado.\n`;
+        const header = cols.join(' | ');
+        const linhas = regs.map(r => cols.map(c => {
+            const v = r[c];
+            return (v === null || v === undefined || v === '') ? 'N/D' : String(v);
+        }).join(' | ')).join('\n');
+        return `=== ${tabelaKey.toUpperCase()} — ${nomePeriodo} === (${regs.length} registros)\n${header}\n${linhas}\n`;
+    }
+
+    const nomeMes  = new Date(parseInt(mesVal.split('-')[0]), parseInt(mesVal.split('-')[1])-1, 1)
+        .toLocaleDateString('pt-BR', { month:'long', year:'numeric' });
+    const nomeMesA = mesAntVal ? new Date(parseInt(mesAntVal.split('-')[0]), parseInt(mesAntVal.split('-')[1])-1, 1)
+        .toLocaleDateString('pt-BR', { month:'long', year:'numeric' }) : null;
+
+    // Labels amigáveis dos campos
+    const labelsMap = {
+        proteina:'Proteína (%)', fibra:'Fibra Bruta (%)', umidade:'Umidade (%)',
+        densidade:'Densidade', mineral:'Mat. Mineral (%)', acidez:'Acidez',
+        ureatica:'Ureática/Urease', peroxido:'Peróxido', digestibilidade:'Digestibilidade',
+        extrato:'Extrato Etéreo (%)', solubil:'Solubilidade Proteica (%)',
+        granulo1:'Grânulo 1 - 4mm (%)', granulo2:'Grânulo 2 - 2mm (%)',
+        granulo3:'Grânulo 3 - 0,60mm (%)', granulo4:'Grânulo 4', fundo:'Fundo (%)',
+        calcio:'Cálcio (%)', fosforo:'Fósforo (%)', dgm:'DGM (µm)', dpg:'DPG (µm)',
+        cv:'CV (%)', media:'Média', dp:'Desvio Padrão', n:'Nº Amostras',
+        racao:'Ração', produto:'Produto', fornecedor:'Fornecedor',
+    };
+
+    const camposDesc = camposSelecionados.length > 0
+        ? camposSelecionados.map(c => labelsMap[c] || c).join(', ')
+        : '(todos os campos disponíveis)';
+
+    let blocos = `CONSULTA DIRETA AO BANCO — TABELA: ${tabelaKey.toUpperCase()}\n`;
+    blocos += `Período: ${nomeMes.toUpperCase()}\n`;
+    blocos += `Campos solicitados: ${camposDesc}\n`;
+    if (filtroProduto) blocos += `Filtro de produto/ração: "${filtroProduto}"\n`;
+    blocos += `\n`;
+    blocos += _serializar(registros, nomeMes);
+    if (registrosAnt.length > 0 || mesAntVal) {
+        blocos += `\n`;
+        blocos += _serializar(registrosAnt, nomeMesA || 'Mês Anterior');
+    }
+    blocos += `\n--- ${registros.length} registros no período principal | ${registrosAnt.length} no período anterior ---\n`;
+
+    return blocos;
 }
 
 async function gerarRelatorioMensalIA() {
@@ -28221,6 +28473,10 @@ PRODUÇÃO:
 - "dpg" → "DPG (µm)"
 - "proteína" → "Proteína (%)"
 - "umidade" → "Umidade (%)"
+- "peneira 4mm" ou "retenção 4mm" ou "granulo 1" ou "granulo1" ou "grânulo 4mm" ou "g1" → "Grânulo 1 - 4mm"
+- "peneira 2mm" ou "retenção 2mm" ou "granulo 2" ou "granulo2" ou "grânulo 2mm" ou "g2" → "Grânulo 2 - 2mm"
+- "peneira 0,60mm" ou "0.60mm" ou "granulo 3" ou "granulo3" ou "grânulo fino" ou "g3" → "Grânulo 3 - 0,60mm"
+- "fundo" ou "fundo de peneira" ou "passante" → "Fundo"
 
 REGRAS OBRIGATÓRIAS:
 
@@ -28232,6 +28488,8 @@ REGRAS OBRIGATÓRIAS:
 Exemplos corretos:
 - Usuário pediu "proteína bruta e solubilidade" → Campos identificados: Proteína (%), Solubilidade Protéica (%) → tabela: Data | Proteína (%) | Solubilidade Protéica (%)
 - Usuário pediu "ureática" → Campos identificados: Urease/Ureática → tabela: Data | Urease/Ureática
+- Usuário pediu "retenção na peneira de 4mm" → Campos identificados: Grânulo 1 - 4mm → tabela: Data | Ração | Grânulo 1 - 4mm
+- Usuário pediu "média de retenção 4mm por ração" → Campos identificados: Grânulo 1 - 4mm → agrupar por ração, calcular média
 
 PROIBIDO em qualquer hipótese:
 - Substituir um campo pedido por outro que tenha mais dados preenchidos no mês
@@ -28242,7 +28500,7 @@ PROIBIDO em qualquer hipótese:
    - Pedido sobre grãos fermentados, avariados, mofados, fornecedor → use CLASSIFICAÇÃO DE GRÃOS
    - Pedido sobre proteína bruta, solubilidade → use MATÉRIA PRIMA
    - Pedido sobre ureática, peróxido, umidade de MP → use MATÉRIA PRIMA
-   - Pedido sobre DGM, DPG, ração, granulometria → use PRODUÇÃO
+   - Pedido sobre DGM, DPG, ração, granulometria, peneira 4mm, peneira 2mm, retenção em peneira, granulo1, grânulo → use PRODUÇÃO
    - IGNORE completamente os outros módulos — não mencione nem inclua dados deles na resposta
 
 2. FILTRE por fornecedor se mencionado: compare o nome digitado com o campo "Fornecedor" nos dados (busca parcial, case-insensitive)
@@ -28297,8 +28555,21 @@ REGRA CRÍTICA — COMPLETUDE OBRIGATÓRIA:
             }
         }
 
+        // ── PROMPT LIVRE: consulta direta ao Supabase ──
+        let _dadosSupabase = '';
+        if (_usaPromptLivre) {
+            try {
+                conteudoEl.innerHTML = `<div class="rml-loading"><div class="spinner"></div>🔍 Consultando banco de dados diretamente...<br><small style="color:#aaa;">Buscando dados frescos de todas as tabelas</small></div>`;
+                _dadosSupabase = await _consultarSupabasePromptLivre(mesVal, mesAntVal || null, _promptLivreTexto);
+            } catch(e) {
+                console.warn('[AGENTE] Erro ao consultar Supabase:', e);
+                // Fallback: usa dados já carregados em memória
+                _dadosSupabase = `(Dados da memória — consulta direta falhou: ${e.message})\n${_blocosProd}${_blocosMP}${_blocosClass}${_blocosNC}${_blocosDev}`;
+            }
+        }
+
         const promptFinal = _usaPromptLivre
-            ? `${blocoSistema}\nRELATÓRIO — ${nomeMes.toUpperCase()}${temComparacao?' VS '+nomeMesAnt.toUpperCase():''}\nMÓDULOS: ${_modulosNomes}\n${_blocosProd}${_blocosMP}${_blocosClass}${_blocosNC}${_blocosDev}${_blocoInstrucaoPromptLivre}`
+            ? `${blocoSistema}\nRELATÓRIO — ${nomeMes.toUpperCase()}${temComparacao?' VS '+nomeMesAnt.toUpperCase():''}\n\n${_dadosSupabase}\n${_blocoInstrucaoPromptLivre}`
             : prompt;
 
         const _systemPromptFinal = _usaPromptLivre ? _IA_SYSTEM_RELATORIO_MULTI : _rmlGetSystemPrompt(_anAtivos);
