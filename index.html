@@ -27801,50 +27801,80 @@ const _AGENTE_SCHEMA = {
 
 // Interpreta o pedido em linguagem natural e decide tabela + campos + filtro de produto
 async function _agenteInterpretar(pedido, mesVal) {
-    const pedidoLower = pedido.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+    // Normaliza: minúsculas, sem acento
+    const _norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const pedidoN = _norm(pedido);
 
-    // 1. Identificar tabela
+    // ── 1. IDENTIFICAR TABELA ──────────────────────────────────
     let tabelaKey = null;
     for (const [key, cfg] of Object.entries(_AGENTE_SCHEMA.tabelas)) {
-        const normalSin = cfg.sinonimos.map(s => s.normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase());
-        if (normalSin.some(s => pedidoLower.includes(s))) { tabelaKey = key; break; }
+        if (cfg.sinonimos.map(_norm).some(s => pedidoN.includes(s))) {
+            tabelaKey = key; break;
+        }
     }
-    if (!tabelaKey) tabelaKey = 'producoes'; // fallback
-
+    if (!tabelaKey) tabelaKey = 'producoes'; // fallback padrão
     const cfg = _AGENTE_SCHEMA.tabelas[tabelaKey];
 
-    // 2. Identificar campos pedidos
+    // ── 2. IDENTIFICAR CAMPOS ──────────────────────────────────
     const camposSelecionados = [];
     for (const [campo, sinonimos] of Object.entries(cfg.campos)) {
-        const normalSin = sinonimos.map(s => s.normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase());
-        if (normalSin.some(s => pedidoLower.includes(s))) {
+        if (sinonimos.map(_norm).some(s => pedidoN.includes(s))) {
             camposSelecionados.push(campo);
         }
     }
 
-    // 3. Identificar filtro de produto/ração (texto entre aspas ou após vírgula)
-    // Heurística: palavras após identificar tabela que não são parâmetros conhecidos
-    let filtroProduto = null;
-    const palavrasChave = ['relatório','relatorio','media','média','analise','análise','resultado','periodo','período','mes','mês'];
-    const todosSinonimos = Object.values(_AGENTE_SCHEMA.tabelas).flatMap(t => t.sinonimos);
-    const todosCampos    = Object.values(_AGENTE_SCHEMA.tabelas).flatMap(t => Object.values(t.campos).flat());
-    const excluir = [...palavrasChave, ...todosSinonimos, ...todosCampos].map(s =>
-        s.normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase());
+    // ── 3. IDENTIFICAR PRODUTO/RAÇÃO — abordagem direta ────────
+    // Lista de padrões de produto conhecidos (por ordem de especificidade)
+    const _PADROES_PRODUTO = [
+        // Rações de corte — Wisium
+        { padrao: /corte\s*r1\s*wisium/i,  valor: 'CORTE R1 WISIUM'  },
+        { padrao: /corte\s*r2\s*wisium/i,  valor: 'CORTE R2 WISIUM'  },
+        { padrao: /corte\s*r3\s*wisium/i,  valor: 'CORTE R3 WISIUM'  },
+        { padrao: /corte\s*r4\s*wisium/i,  valor: 'CORTE R4 WISIUM'  },
+        { padrao: /corte\s*r5\s*wisium/i,  valor: 'CORTE R5 WISIUM'  },
+        // Rações de corte — Mcassab
+        { padrao: /corte\s*r3\s*mc/i,     valor: 'CORTE R3 MCASSAB' },
+        { padrao: /corte\s*r4\s*mc/i,     valor: 'CORTE R4 MCASSAB' },
+        { padrao: /corte\s*r5\s*mc/i,     valor: 'CORTE R5 MCASSAB' },
+        // Rações de corte — genéricas (sem marca)
+        { padrao: /corte\s*r1/i,           valor: 'CORTE R1'  },
+        { padrao: /corte\s*r2/i,           valor: 'CORTE R2'  },
+        { padrao: /corte\s*r3/i,           valor: 'CORTE R3'  },
+        { padrao: /corte\s*r4/i,           valor: 'CORTE R4'  },
+        { padrao: /corte\s*r5/i,           valor: 'CORTE R5'  },
+        // Todas as rações de corte
+        { padrao: /todas.*corte|corte.*todas/i, valor: 'CORTE' },
+        // Matérias-primas comuns
+        { padrao: /farelo\s*de\s*soja/i,  valor: 'farelo de soja'  },
+        { padrao: /soja\s*integral/i,      valor: 'soja integral'    },
+        { padrao: /soja\s*extrusada/i,     valor: 'soja extrusada'   },
+        { padrao: /milho/i,                 valor: 'milho'            },
+        { padrao: /sorgo/i,                 valor: 'sorgo'            },
+        { padrao: /trigo/i,                 valor: 'trigo'            },
+        { padrao: /farinha\s*de\s*carne/i,valor: 'farinha de carne' },
+        { padrao: /farinha\s*de\s*peixe/i,valor: 'farinha de peixe' },
+        { padrao: /calcario/i,              valor: 'calcario'         },
+        { padrao: /fosfato/i,               valor: 'fosfato'          },
+        { padrao: /sal\s*mineral/i,        valor: 'sal mineral'      },
+        { padrao: /premix/i,                valor: 'premix'           },
+        { padrao: /lisina/i,                valor: 'lisina'           },
+        { padrao: /metionina/i,             valor: 'metionina'        },
+        { padrao: /treonina/i,              valor: 'treonina'         },
+    ];
 
-    // Tenta extrair produto: fragmentos de 2-4 palavras que não são palavras-chave
-    const tokens = pedidoLower.split(/[\s,]+/).filter(t => t.length > 2);
-    const candidatos = [];
-    for (let i = 0; i < tokens.length; i++) {
-        for (let len = 4; len >= 2; len--) {
-            if (i + len > tokens.length) continue;
-            const frag = tokens.slice(i, i+len).join(' ');
-            if (!excluir.some(e => e === frag || frag.includes(e) && e.length > 4)) {
-                candidatos.push(frag);
-                break;
-            }
+    let filtroProduto = null;
+    for (const { padrao, valor } of _PADROES_PRODUTO) {
+        if (padrao.test(pedido)) {
+            filtroProduto = valor;
+            break;
         }
     }
-    if (candidatos.length > 0) filtroProduto = candidatos[0];
+
+    // Se não achou na lista fixa, tenta extrair padrão livre entre aspas
+    if (!filtroProduto) {
+        const mAspas = pedido.match(/[""]([^""]+)[""]/);
+        if (mAspas) filtroProduto = mAspas[1].trim();
+    }
 
     return { tabelaKey, cfg, camposSelecionados, filtroProduto };
 }
@@ -27870,7 +27900,9 @@ async function _consultarSupabasePromptLivre(mesVal, mesAntVal, pedido) {
             if (filtroProduto) {
                 const campoFiltro = tabelaKey === 'producoes' ? 'racao' :
                                     tabelaKey === 'entradas_mp' ? 'materia_prima' : 'produto';
-                q = q.ilike(campoFiltro, `%${filtroProduto}%`);
+                // Remove marca da busca se for genérico (ex: "CORTE R3" pega Wisium e Mcassab)
+                const termoBusca = filtroProduto.replace(/\s*(wisium|mcassab)$/i,'').trim();
+                q = q.ilike(campoFiltro, `%${termoBusca}%`);
             }
 
             const { data, error } = await q;
