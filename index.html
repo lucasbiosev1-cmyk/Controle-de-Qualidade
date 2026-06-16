@@ -27593,6 +27593,10 @@ Formato desejado:
     if (atual && !confirm('Substituir o texto atual pelo modelo?')) return;
     el.value = modelos[tipo] || '';
     el.focus();
+    // Ativar automaticamente o analista "Prompt Livre" ao inserir um modelo
+    if (!_rmlAnalistas['prompt']) {
+        _rmlToggleAnalista('prompt');
+    }
 }
 
 const _rmlAnalistas = { cq: true, nut: true, vet: true, prompt: false };
