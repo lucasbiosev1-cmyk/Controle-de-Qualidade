@@ -27889,14 +27889,14 @@ async function _consultarSupabasePromptLivre(mesVal, mesAntVal, pedido) {
 
     async function _query(prefixo) {
         try {
+            // Usa LIKE 'YYYY-MM%' — mais seguro para colunas data do tipo text
             let q = _sbClient.from(tabelaKey)
                 .select(selectCols)
-                .gte(cfg.campData, prefixo + '-01')
-                .lte(cfg.campData, prefixo + '-31')
+                .like(cfg.campData, prefixo + '%')
                 .order(cfg.campData, { ascending: true })
                 .limit(500);
 
-            // Filtro de produto (busca parcial — ilike)
+            // Filtro de produto (busca parcial — ilike, case-insensitive)
             if (filtroProduto) {
                 const campoFiltro = tabelaKey === 'producoes' ? 'racao' :
                                     tabelaKey === 'entradas_mp' ? 'materia_prima' : 'produto';
