@@ -17268,6 +17268,13 @@ function fmtDate(d) {
     const [y,m,day] = d.split('-');
     return `${day}/${m}/${y}`;
 }
+// Versão curta (dia/mês) usada nas colunas estreitas das tabelas do boletim,
+// para evitar que a data seja cortada na impressão/PDF.
+function fmtDateCurta(d) {
+    if (!d) return '-';
+    const [, m, day] = d.split('-');
+    return `${day}/${m}`;
+}
 function fmtN(v, dec=2) {
     if (v === undefined || v === null || v === '') return '-';
     const n = parseFloat(v);
@@ -17333,9 +17340,12 @@ function gerarBoletim() {
         if (temValBol(r,'granulo1') || temValBol(r,'granulo2') || temValBol(r,'granulo3') || temValBol(r,'fundo')) n++;
         return n;
     };
-    let analisesBoletim = 0;
+    // Totais de ANÁLISES (não confundir com total de REGISTROS) — um registro
+    // pode conter várias análises/parâmetros. Guardamos o subtotal de cada
+    // módulo separadamente para exibir no Resumo Executivo (página 2).
+    let analisesProdTotal = 0, analisesClassTotal = 0, analisesMPTotal = 0;
     if (incProd) {
-        prod_f.forEach(r => { analisesBoletim += contarProdBol(r); });
+        prod_f.forEach(r => { analisesProdTotal += contarProdBol(r); });
     }
     // Classificação: igual ao KPI (defeitos = 1, umidade +1, densidade +1, aflatoxinas +1, fumonisinas +1)
     const camposDefeitosBol = ['queimado','ardido','mofado','esverdeado','fermentando','chocho','picado','gessado','quebrado','germinado','carunchado','impureza'];
@@ -17349,13 +17359,22 @@ function gerarBoletim() {
         return n;
     };
     if (incClass) {
-        class_f.forEach(r => { analisesBoletim += contarClassBol(r); });
+        class_f.forEach(r => { analisesClassTotal += contarClassBol(r); });
     }
     // Matéria Prima: igual ao KPI
     const camposMPBol = ['proteina','solubil','umidade','densidade','mineral','acidez','ureatica','rancidez','peroxido','digestibilidade'];
     if (incMP) {
-        mp_f.forEach(r => { camposMPBol.forEach(c => { if (temValBol(r, c)) analisesBoletim++; }); });
+        mp_f.forEach(r => { camposMPBol.forEach(c => { if (temValBol(r, c)) analisesMPTotal++; }); });
     }
+    const analisesBoletim = analisesProdTotal + analisesClassTotal + analisesMPTotal;
+    // Disponibiliza os subtotais de análises para a página de Resumo Executivo
+    // (imprimirBoletim), evitando depender de regex sobre o HTML renderizado.
+    window._bolAnalisesPorCategoria = {
+        prod: analisesProdTotal,
+        class: analisesClassTotal,
+        mp: analisesMPTotal,
+        total: analisesBoletim
+    };
 
     // Contadores
     const nProd  = incProd  ? prod_f.length  : 0;
@@ -17677,7 +17696,7 @@ function gerarGrupoProd(racao, rows, resumo, destNC) {
 
 function gerarTabelaProd(rows, compacto, destNC) {
     const th = (t,w='') => `<th${w?` style="width:${w}"`:''}>${t}</th>`;
-    let thead = `<tr>${th('Data')}${th('Hora')}`;
+    let thead = `<tr>${th('Data','34px')}${th('Hora')}`;
     if (!compacto) thead += th('Ração');
     thead += `${th('Lote')}${th('DGM µm')}${th('DPG')}${th('Extr.%')}${th('Prot.%')}${th('Fibra%')}${th('Solub.%')}${th('Umid.%')}${th('Dens.')}${th('Min.%')}${th('Cálcio%')}${th('Fósf.%')}${th('G1%')}${th('G2%')}${th('G3%')}${th('Fundo%')}${th('Status','72px')}</tr>`;
 
@@ -17685,7 +17704,7 @@ function gerarTabelaProd(rows, compacto, destNC) {
         const status = statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data);
         const cl = (v,campo) => destNC ? estiloFora(v,'prod',r.racao,campo,r.data).replace(' class="td-fora"',' class="bol-td-fora"') : '';
         return `<tr>
-            <td class="left">${fmtDate(r.data)}</td>
+            <td style="text-align:right;padding-right:4px;">${fmtDateCurta(r.data)}</td>
             <td>${r.hora||'-'}</td>
             ${!compacto?`<td class="left" style="max-width:120px;white-space:normal;">${r.racao}</td>`:''}
             <td>${r.lote||'-'}</td>
@@ -17766,7 +17785,7 @@ function gerarGrupoClass(prod, rows, resumo, destNC) {
 
 function gerarTabelaClass(rows, compacto, destNC) {
     const th = (t,s='') => `<th${s}>${t}</th>`;
-    let thead = `<tr>${th('Data')}${th('Hora')}`;
+    let thead = `<tr>${th('Data',' style="width:34px"')}${th('Hora')}`;
     if (!compacto) thead += th('Produto');
     thead += `${th('Fornecedor')}${th('NF')}${th('Queimado')}${th('Ardido')}${th('Mofado')}${th('Esverdeado')}${th('Ferment.')}${th('Chocho')}${th('Picado')}${th('Gessado')}${th('Quebrado')}${th('Germin.')}${th('Carunch.')}${th('Impureza')}${th('Umidade%')}${th('Densidade')}${th('Aflatox.')}${th('Fumonisinas')}${th('Local')}${th('Status',' style="width:72px"')}</tr>`;
 
@@ -17775,7 +17794,7 @@ function gerarTabelaClass(rows, compacto, destNC) {
         const status = statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data);
         const cl = (v,campo) => destNC ? estiloFora(v,'class',r.produto,campo,r.data).replace(' class="td-fora"',' class="bol-td-fora"') : '';
         return `<tr>
-            <td class="left">${fmtDate(r.data)}</td>
+            <td style="text-align:right;padding-right:4px;">${fmtDateCurta(r.data)}</td>
             <td>${r.hora||'-'}</td>
             ${!compacto?`<td class="left">${r.produto||'-'}</td>`:''}
             <td class="left" style="max-width:90px;white-space:normal;">${(r.fornecedor||'-').substring(0,18)}</td>
@@ -17882,7 +17901,7 @@ function gerarGrupoMP(prod, rows, resumo, destNC, mostrarAnalises, temValBol, ca
 
 function gerarTabelaMP(rows, compacto, destNC) {
     const th = (t,w='') => `<th${w?` style="width:${w}"`:''}>${t}</th>`;
-    let thead = `<tr>${th('Data')}${th('Hora')}`;
+    let thead = `<tr>${th('Data','34px')}${th('Hora')}`;
     if (!compacto) thead += th('Produto');
     thead += `${th('Fornecedor')}${th('NF')}${th('Umid.%')}${th('Dens.')}${th('Extrato%')}${th('Prot.%')}${th('Fibra%')}${th('Solub.%')}${th('Min.%')}${th('Acidez')}${th('Ureática')}${th('Rancidez')}${th('Peróxido')}${th('Digest.%')}${th('Status','72px')}</tr>`;
 
@@ -17891,7 +17910,7 @@ function gerarTabelaMP(rows, compacto, destNC) {
         const status = statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data);
         const cl = (v,campo) => destNC ? estiloFora(v,'mp',r.produto,campo,r.data).replace(' class="td-fora"',' class="bol-td-fora"') : '';
         return `<tr>
-            <td class="left">${fmtDate(r.data)}</td>
+            <td style="text-align:right;padding-right:4px;">${fmtDateCurta(r.data)}</td>
             <td>${r.hora||'-'}</td>
             ${!compacto?`<td class="left">${r.produto||'-'}</td>`:''}
             <td class="left" style="max-width:90px;white-space:normal;">${(r.fornecedor||'-').substring(0,18)}</td>
@@ -17988,11 +18007,15 @@ function imprimirBoletim() {
         const m = bolHTML.match(re);
         return m ? m[1] : null;
     };
-    const nProd  = extrairPorLabel('Prod') || extrairPorLabel('prod') || '—';
-    const nClass = extrairPorLabel('Class') || extrairPorLabel('class') || '—';
-    const nMP    = extrairPorLabel('Matéria') || extrairPorLabel('Prima') || '—';
+    // ✅ Usa os subtotais REAIS de análises por módulo (calculados em gerarBoletim),
+    // em vez do número de registros — antes a coluna "Total Análises" mostrava
+    // a contagem de registros de cada módulo, só o total geral estava correto.
+    const _bolAnalises = window._bolAnalisesPorCategoria || null;
+    const nProd  = _bolAnalises ? _bolAnalises.prod  : (extrairPorLabel('Prod') || extrairPorLabel('prod') || '—');
+    const nClass = _bolAnalises ? _bolAnalises.class : (extrairPorLabel('Class') || extrairPorLabel('class') || '—');
+    const nMP    = _bolAnalises ? _bolAnalises.mp    : (extrairPorLabel('Matéria') || extrairPorLabel('Prima') || '—');
     const nTotal = extrairPorLabel('Total Registros') || extrairPorLabel('Registros') || '—';
-    const nAnal  = extrairPorLabel('Total Análises') || extrairPorLabel('Análises') || '—';
+    const nAnal  = _bolAnalises ? _bolAnalises.total : (extrairPorLabel('Total Análises') || extrairPorLabel('Análises') || '—');
 
     // ── Extrai devoluções do período do boletim ───────────────────────────────
     // bolDataInicio e bolDataFim vêm dos filtros já usados para gerar o boletim
