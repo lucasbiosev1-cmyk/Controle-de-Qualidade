@@ -18054,6 +18054,19 @@ function imprimirBoletim() {
           </div>
         </div>`;
 
+    // ── Lê conformidade do mês atual direto dos KPIs já calculados na tela ──────
+    const _kpiPctProd  = document.getElementById('kpiConfProd')?.textContent?.trim()  || '—';
+    const _kpiPctMP    = document.getElementById('kpiConfMP')?.textContent?.trim()    || '—';
+    const _kpiPctClass = document.getElementById('kpiConfClassVal')?.textContent?.trim() || '—';
+    const _kpiPctGeral = document.getElementById('kpiConfGeralVal')?.textContent?.trim() || '—';
+
+    // Função auxiliar: cor baseada no valor de conformidade
+    const _corConf = (pctStr) => {
+        const v = parseInt(pctStr);
+        if (isNaN(v)) return '#C0392B';
+        return v >= 80 ? '#27ae60' : v >= 60 ? '#e67e22' : '#C0392B';
+    };
+
     // Usa valores fixos se a extração por regex não funcionar (dados vêm do conteudo já renderizado)
     const resumoHTML = `
     <div style="width:210mm;max-height:296mm;background:#fff;display:block;font-family:Arial,sans-serif;box-sizing:border-box;page-break-after:always;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
@@ -18096,30 +18109,31 @@ function imprimirBoletim() {
         <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;margin-bottom:14mm;">
           <thead>
             <tr style="-webkit-print-color-adjust:exact;print-color-adjust:exact;">
-              <th style="text-align:left;padding:5mm 6mm;font-size:9px;font-weight:900;color:#fff;background:#0B3C5D;letter-spacing:1.5px;text-transform:uppercase;border:none;width:70%;">Indicador</th>
-              <th style="text-align:right;padding:5mm 6mm;font-size:9px;font-weight:900;color:#fff;background:#0B3C5D;letter-spacing:1.5px;text-transform:uppercase;border:none;width:30%;">Registros</th>
+              <th style="text-align:left;padding:5mm 6mm;font-size:9px;font-weight:900;color:#fff;background:#0B3C5D;letter-spacing:1.5px;text-transform:uppercase;border:none;width:55%;">Indicador</th>
+              <th style="text-align:right;padding:5mm 6mm;font-size:9px;font-weight:900;color:#fff;background:#0B3C5D;letter-spacing:1.5px;text-transform:uppercase;border:none;width:25%;">Conformidade (Mês)</th>
+              <th style="text-align:right;padding:5mm 6mm;font-size:9px;font-weight:900;color:#fff;background:#0B3C5D;letter-spacing:1.5px;text-transform:uppercase;border:none;width:20%;">Total Análises</th>
             </tr>
           </thead>
           <tbody>
             <tr style="border-bottom:1px solid #eaecef;">
-              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Produção</td>
-              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:#C0392B;text-align:right;">${nProd !== '—' ? nProd : '39'}</td>
+              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Conformidade — Produção</td>
+              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:${_corConf(_kpiPctProd)};text-align:right;-webkit-print-color-adjust:exact;print-color-adjust:exact;">${_kpiPctProd}</td>
+              <td style="padding:4.5mm 6mm;font-size:12px;font-weight:700;color:#555;text-align:right;">${nProd !== '—' ? nProd : '—'}</td>
             </tr>
             <tr style="background:#fafbfe;border-bottom:1px solid #eaecef;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
-              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Classificação</td>
-              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:#C0392B;text-align:right;">${nClass !== '—' ? nClass : '53'}</td>
+              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Conformidade — Mat. Prima</td>
+              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:${_corConf(_kpiPctMP)};text-align:right;-webkit-print-color-adjust:exact;print-color-adjust:exact;">${_kpiPctMP}</td>
+              <td style="padding:4.5mm 6mm;font-size:12px;font-weight:700;color:#555;text-align:right;">${nMP !== '—' ? nMP : '—'}</td>
             </tr>
             <tr style="border-bottom:1px solid #eaecef;">
-              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Matéria-prima</td>
-              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:#C0392B;text-align:right;">${nMP !== '—' ? nMP : '20'}</td>
+              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Classificação de Grãos</td>
+              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:${_corConf(_kpiPctClass)};text-align:right;-webkit-print-color-adjust:exact;print-color-adjust:exact;">${_kpiPctClass}</td>
+              <td style="padding:4.5mm 6mm;font-size:12px;font-weight:700;color:#555;text-align:right;">${nClass !== '—' ? nClass : '—'}</td>
             </tr>
-            <tr style="background:#fafbfe;border-bottom:2px solid #dce4f5;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
-              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Total de Registros</td>
-              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:#C0392B;text-align:right;">${nTotal !== '—' ? nTotal : '112'}</td>
-            </tr>
-            <tr style="border-bottom:2px solid #0B3C5D;">
-              <td style="padding:5mm 6mm;font-size:11px;color:#0B3C5D;font-weight:700;">Total de Análises</td>
-              <td style="padding:5mm 6mm;font-size:16px;font-weight:900;color:#C0392B;text-align:right;">${nAnal !== '—' ? nAnal : '474'}</td>
+            <tr style="background:#fafbfe;border-bottom:2px solid #0B3C5D;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+              <td style="padding:5mm 6mm;font-size:11px;color:#0B3C5D;font-weight:700;">Conformidade Geral (Mês)</td>
+              <td style="padding:5mm 6mm;font-size:16px;font-weight:900;color:${_corConf(_kpiPctGeral)};text-align:right;-webkit-print-color-adjust:exact;print-color-adjust:exact;">${_kpiPctGeral}</td>
+              <td style="padding:5mm 6mm;font-size:14px;font-weight:900;color:#C0392B;text-align:right;">${nAnal !== '—' ? nAnal : '—'}</td>
             </tr>
           </tbody>
         </table>
