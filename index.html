@@ -17376,6 +17376,46 @@ function gerarBoletim() {
         total: analisesBoletim
     };
 
+    // ── Calcula conformidade do PERÍODO DO BOLETIM (não do mês atual do dashboard) ──
+    // Usa a mesma lógica dos KPIs, mas sobre os dados já filtrados por período.
+    {
+        const _isConf_b  = s => (s.includes('CONFORME') && !s.includes('NÃO')) || (s.includes('>C<') && !s.includes('NC'));
+        const _isNConf_b = s => s.includes('NÃO') || s.includes('>NC<');
+        const _temParam_b = s => !s.includes('S/ PARÂM');
+        const _spProd_b  = r => statusPorParametros(r, 'prod',  r.racao,   CAMPOS_PROD,  r.data);
+        const _spMP_b    = r => statusPorParametros(r, 'mp',    r.produto,  CAMPOS_MP,    r.data);
+        const _spClass_b = r => statusPorParametros(r, 'class', r.produto,  CAMPOS_CLASS, r.data);
+        const _ESTOQUE_EXC = ['MILHO ESTOQUE 01','MILHO ESTOQUE 02','SOJA ESTOQUE 01'];
+        const _naoEstoque_b = r => !_ESTOQUE_EXC.includes((r.produto||'').toUpperCase().trim());
+
+        const _pProd  = incProd  ? prod_f  : [];
+        const _pMP    = incMP    ? mp_f    : [];
+        const _pClass = incClass ? class_f.filter(_naoEstoque_b) : [];
+
+        const confProd_b  = _pProd.filter(r => _isConf_b(_spProd_b(r))).length;
+        const totalProd_b = _pProd.filter(r => _temParam_b(_spProd_b(r))).length;
+        const pctProd_b   = totalProd_b > 0 ? Math.round(confProd_b / totalProd_b * 100) : 0;
+
+        const confMP_b    = _pMP.filter(r => _isConf_b(_spMP_b(r))).length;
+        const totalMP_b   = _pMP.filter(r => _temParam_b(_spMP_b(r))).length;
+        const pctMP_b     = totalMP_b > 0 ? Math.round(confMP_b / totalMP_b * 100) : 0;
+
+        const confClass_b  = _pClass.filter(r => _isConf_b(_spClass_b(r))).length;
+        const totalClass_b = _pClass.filter(r => _temParam_b(_spClass_b(r))).length;
+        const pctClass_b   = totalClass_b > 0 ? Math.round(confClass_b / totalClass_b * 100) : 0;
+
+        const confTotal_b  = confProd_b + confMP_b + confClass_b;
+        const totalTudo_b  = totalProd_b + totalMP_b + totalClass_b;
+        const pctGeral_b   = totalTudo_b > 0 ? Math.round(confTotal_b / totalTudo_b * 100) : 0;
+
+        window._bolConformancia = {
+            pctProd:  incProd  ? pctProd_b  + '%' : '—',
+            pctMP:    incMP    ? pctMP_b    + '%' : '—',
+            pctClass: incClass ? pctClass_b + '%' : '—',
+            pctGeral: totalTudo_b > 0 ? pctGeral_b + '%' : '—'
+        };
+    }
+
     // Contadores
     const nProd  = incProd  ? prod_f.length  : 0;
     const nClass = incClass ? class_f.length : 0;
@@ -18077,11 +18117,15 @@ function imprimirBoletim() {
           </div>
         </div>`;
 
-    // ── Lê conformidade do mês atual direto dos KPIs já calculados na tela ──────
-    const _kpiPctProd  = document.getElementById('kpiConfProd')?.textContent?.trim()  || '—';
-    const _kpiPctMP    = document.getElementById('kpiConfMP')?.textContent?.trim()    || '—';
-    const _kpiPctClass = document.getElementById('kpiConfClassVal')?.textContent?.trim() || '—';
-    const _kpiPctGeral = document.getElementById('kpiConfGeralVal')?.textContent?.trim() || '—';
+    // ── Lê conformidade do PERÍODO DO BOLETIM (calculada em gerarBoletim) ──────
+    // Antes usava os KPIs da tela (mês atual), o que causava dados errados ao
+    // imprimir boletins de meses anteriores. Agora usa window._bolConformancia,
+    // que é calculada sobre os dados filtrados pelo período selecionado.
+    const _bolConf = window._bolConformancia || {};
+    const _kpiPctProd  = _bolConf.pctProd  || '—';
+    const _kpiPctMP    = _bolConf.pctMP    || '—';
+    const _kpiPctClass = _bolConf.pctClass || '—';
+    const _kpiPctGeral = _bolConf.pctGeral || '—';
 
     // Função auxiliar: cor baseada no valor de conformidade
     const _corConf = (pctStr) => {
