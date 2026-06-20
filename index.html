@@ -8663,7 +8663,7 @@
                         <div class="form-group required"><label>DGM</label><input type="number" id="cadDGMProd" step="0.01" min="0" required></div>
                         <div class="form-group"><label>DPG</label><input type="number" id="cadDPGProd" step="0.01" min="0"></div>
                         <div class="form-group"><label>Material Mineral (%)</label><input type="number" id="cadMineralProd" step="0.01" min="0"></div>
-                        <div class="form-group"><label>Tela Moinho</label><input type="text" id="cadTelaMoinhoProd" placeholder="0/0" maxlength="3" inputmode="numeric" autocomplete="off" oninput="mascaraTelaMoinho(this)"></div>
+                        <div class="form-group"><label>Tela Moinho</label><input type="text" id="cadTelaMoinhoProd" placeholder="0/0" maxlength="5" inputmode="numeric" autocomplete="off" oninput="mascaraTelaMoinho(this)"></div>
                     </div>
                 </div>
                 <!-- Linha 3: Físico-Químicos (4 campos) -->
@@ -8978,8 +8978,8 @@ function mascaraHora(el) {
 
 // Máscara automática para campo de Tela Moinho: digita 44 → 4/4
 function mascaraTelaMoinho(el) {
-    let v = el.value.replace(/\D/g, '').slice(0, 2);
-    if (v.length > 1) v = v.slice(0,1) + '/' + v.slice(1);
+    let v = el.value.replace(/\D/g, '').slice(0, 4);
+    if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
     el.value = v;
 }
 
