@@ -4339,13 +4339,14 @@
                             <th>Data</th><th>Hora</th><th>Ração</th><th>Lote</th>
                             <th>DGM µm</th><th>DPG µm</th><th>Extrato Etério %</th><th>Proteína %</th><th>Fibra %</th><th>Solubilidade %</th><th>Umidade %</th><th>Densidade</th>
                             <th>Material Min %</th>
+                            <th>Tela Moinho</th>
                             <th>Cálcio %</th><th>Fósforo %</th>
                             <th>Granulo 1 (4mm)</th><th>Granulo 2 (2mm)</th>
                             <th>Granulo 3 (0,60mm)</th><th>Fundo</th>
                             <th style="text-align:center;">Status</th>
                         </tr>
                     </thead>
-                    <tbody id="tabelaProducoes"><tr><td colspan="20" style="text-align:center;color:#999;">Nenhum registro encontrado</td></tr></tbody>
+                    <tbody id="tabelaProducoes"><tr><td colspan="21" style="text-align:center;color:#999;">Nenhum registro encontrado</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -8662,6 +8663,7 @@
                         <div class="form-group required"><label>DGM</label><input type="number" id="cadDGMProd" step="0.01" min="0" required></div>
                         <div class="form-group"><label>DPG</label><input type="number" id="cadDPGProd" step="0.01" min="0"></div>
                         <div class="form-group"><label>Material Mineral (%)</label><input type="number" id="cadMineralProd" step="0.01" min="0"></div>
+                        <div class="form-group"><label>Tela Moinho</label><input type="text" id="cadTelaMoinhoProd" placeholder="0/0" maxlength="3" inputmode="numeric" autocomplete="off" oninput="mascaraTelaMoinho(this)"></div>
                     </div>
                 </div>
                 <!-- Linha 3: Físico-Químicos (4 campos) -->
@@ -8971,6 +8973,13 @@ function mascaraData(el) {
 function mascaraHora(el) {
     let v = el.value.replace(/\D/g, '').slice(0, 4);
     if (v.length > 2) v = v.slice(0,2) + ':' + v.slice(2);
+    el.value = v;
+}
+
+// Máscara automática para campo de Tela Moinho: digita 44 → 4/4
+function mascaraTelaMoinho(el) {
+    let v = el.value.replace(/\D/g, '').slice(0, 2);
+    if (v.length > 1) v = v.slice(0,1) + '/' + v.slice(1);
     el.value = v;
 }
 
@@ -10301,6 +10310,7 @@ function abrirModalEdicaoProd(id) {
     document.getElementById('cadUmidadeProd').value           = r.umidade ?? '';
     document.getElementById('cadDensidadeProd').value         = r.densidade ?? '';
     document.getElementById('cadMineralProd').value           = r.mineral ?? '';
+    document.getElementById('cadTelaMoinhoProd').value        = r.telaMoinho ?? '';
     document.getElementById('cadCalcioProd').value            = r.calcio ?? '';
     document.getElementById('cadFosforoProd').value           = r.fosforo ?? '';
     document.getElementById('cadGranulo1Prod').value          = r.granulo1 ?? '';
@@ -10374,6 +10384,7 @@ function salvarProducao(event) {
         umidade:   _pfP('cadUmidadeProd'),
         densidade: _pfP('cadDensidadeProd'),
         mineral:   _pfP('cadMineralProd'),
+        telaMoinho: (document.getElementById('cadTelaMoinhoProd').value || '').trim(),
         calcio:    _pfP('cadCalcioProd'),
         fosforo:   _pfP('cadFosforoProd'),
         granulo1:  _pfP('cadGranulo1Prod'),
@@ -10400,7 +10411,7 @@ function exibirTabelaProd() {
     const filtrados = filtrarDadosProd();
     document.getElementById('totalRegistrosProd').textContent = filtrados.length;
     if (filtrados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="20" style="text-align:center;color:#999;">Nenhum registro encontrado</td></tr>'; return;
+        tbody.innerHTML = '<tr><td colspan="21" style="text-align:center;color:#999;">Nenhum registro encontrado</td></tr>'; return;
     }
     const isAdmin = perfilAtual === 'admin';
     const _uExib = USUARIOS[usuarioAtual] || {};
@@ -10426,6 +10437,7 @@ function exibirTabelaProd() {
             <td${estiloFora(r.umidade,'prod',r.racao,'umidade',r.data)}>${fmtN(r.umidade,2)}</td>
             <td${estiloFora(r.densidade,'prod',r.racao,'densidade',r.data)}>${fmtN(r.densidade,2)}</td>
             <td${estiloFora(r.mineral,'prod',r.racao,'mineral',r.data)}>${fmtN(r.mineral,2)}</td>
+            <td style="text-align:center;">${r.telaMoinho || ''}</td>
             <td${estiloFora(r.calcio,'prod',r.racao,'calcio',r.data)}>${fmtN(r.calcio,2)}</td>
             <td${estiloFora(r.fosforo,'prod',r.racao,'fosforo',r.data)}>${fmtN(r.fosforo,2)}</td>
             <td${estiloFora(r.granulo1,'prod',r.racao,'granulo1',r.data)}>${fmtN(r.granulo1,2)}</td>
@@ -15603,7 +15615,7 @@ let _dadosCarregados = false;
 
 // ✅ MELHORIA: Colunas mínimas por tabela — evita select * e reduz Egress
 const _COLUNAS_TABELA = {
-    producoes:          'id,data,hora,racao,lote,dgm,dpg,extrato,proteina,fibra,solubil,umidade,densidade,mineral,calcio,fosforo,granulo1,granulo2,granulo3,fundo,obs',
+    producoes:          'id,data,hora,racao,lote,dgm,dpg,extrato,proteina,fibra,solubil,umidade,densidade,mineral,telaMoinho,calcio,fosforo,granulo1,granulo2,granulo3,fundo,obs',
     classificacoes:     'id,data,hora,produto,fornecedor,nf,local,queimado,ardido,mofado,esverdeado,fermentando,chocho,picado,gessado,quebrado,germinado,carunchado,impureza,umidade,densidade,aflatoxinas,fumonisinas,zearalenona,don,obs',
     materias_primas:    'id,data,hora,produto,fornecedor,nf,umidade,densidade,extrato,proteina,fibra,solubil,mineral,acidez,ureatica,rancidez,peroxido,digestibilidade,granulo1,granulo2,granulo3,granulo4,tempResfriador,tempCanhao,alimentacaoHz,calcio,fosforo,obs',
     entradas_mp:        'id,data,hora,fornecedor,materia_prima,nf,usuario,status,status_descarga,criado_em,placa,seq,obs,quantidade',
