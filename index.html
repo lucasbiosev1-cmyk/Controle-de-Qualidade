@@ -8156,6 +8156,12 @@
             </div>
 
             <div class="filtros" id="empFiltrosAvancados">
+                <div class="form-group">
+                    <label>Matéria Prima:</label>
+                    <select id="filterMateriaPrimaEMP">
+                        <option value="">TODAS</option>
+                    </select>
+                </div>
                 <div class="form-group"><label>Filtrar por NF:</label><input type="text" id="filterNFEMP" placeholder="NÚMERO DA NOTA"></div>
                 <div class="form-group"><label>Data Início:</label><input type="date" id="filterDataInicioEMP"></div>
                 <div class="form-group"><label>Data Fim:</label><input type="date" id="filterDataFimEMP"></div>
@@ -8246,7 +8252,7 @@
                             <label>MATÉRIA PRIMA</label>
                             <div style="display:flex;gap:6px;align-items:center;">
                                 <div class="sgq-autocomplete-wrap" style="position:relative;flex:1;">
-                                    <input type="text" id="cadMateriaPrimaEMP" required autocomplete="new-password"
+                                    <input type="text" id="cadMateriaPrimaEMP" required autocomplete="off" name="x_sgq_mp_emp_no_autofill"
                                         placeholder="Digite para pesquisar..."
                                         style="width:100%;padding:5px 8px;border:1px solid #bdc3c7;border-radius:4px;font-size:11px;text-transform:uppercase;font-weight:bold;box-sizing:border-box;"
                                         oninput="sgqAutocompleteFiltrar(this,'cadMateriaPrimaEMP','emp_mp')"
@@ -8264,7 +8270,7 @@
                             <div class="form-group required">
                                 <label>FORNECEDOR</label>
                                 <div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
-                                    <input type="text" id="cadFornecedorEMP" required autocomplete="new-password"
+                                    <input type="text" id="cadFornecedorEMP" required autocomplete="off" name="x_sgq_forn_emp_no_autofill"
                                         style="width:100%;text-transform:uppercase;"
                                         oninput="this.value=this.value.toUpperCase();sgqAutocompleteFiltrar(this,'cadFornecedorEMP','emp')"
                                         onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorEMP','emp')"
@@ -8275,11 +8281,11 @@
                             </div>
                             <div class="form-group">
                                 <label>NÚMERO DA NOTA FISCAL <span style="font-weight:400;font-size:10px;color:#888;">(opcional)</span></label>
-                                <input type="text" id="cadNFEMP" placeholder="Deixe em branco se não houver" style="text-align:center;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+                                <input type="text" id="cadNFEMP" autocomplete="off" name="x_sgq_nf_emp_no_autofill" placeholder="Deixe em branco se não houver" style="text-align:center;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
                             </div>
                             <div class="form-group">
                                 <label>PLACA DO VEÍCULO</label>
-                                <input type="text" id="cadPlacaEMP" maxlength="8" placeholder="Ex: ABC-1D23"
+                                <input type="text" id="cadPlacaEMP" maxlength="8" placeholder="Ex: ABC-1D23" autocomplete="off" name="x_sgq_placa_emp_no_autofill"
                                     style="text-transform:uppercase;text-align:center;letter-spacing:2px;font-weight:bold;"
                                     oninput="this.value=this.value.toUpperCase()">
                             </div>
@@ -8638,7 +8644,7 @@
                             <label>Ração</label>
                             <div style="display:flex;align-items:center;gap:4px;width:100%;">
                                 <div class="sgq-autocomplete-wrap" style="position:relative;flex:1;min-width:0;">
-                                    <input type="text" id="cadRacaoProdSelect" placeholder="Digite para filtrar..." required autocomplete="new-password" style="width:100%;text-transform:uppercase;"
+                                    <input type="text" id="cadRacaoProdSelect" placeholder="Digite para filtrar..." required autocomplete="off" name="x_sgq_racao_prod_no_autofill" style="width:100%;text-transform:uppercase;"
                                         oninput="sgqAutocompleteFiltrar(this,'cadRacaoProdSelect','racao'); gerarLoteAutomatico();"
                                         onfocus="sgqAutocompleteFiltrar(this,'cadRacaoProdSelect','racao')"
                                         onblur="setTimeout(()=>{const l=document.getElementById('cadRacaoProdSelect_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadRacaoProdSelect');},180)"
@@ -8742,11 +8748,11 @@
                                 <option value="Produção Silo 2">Produção Silo 2</option>
                             </select>
                         </div>
-                        <div class="form-group required"><label>Nota Fiscal</label><input type="text" id="cadNFClass" autocomplete="new-password"></div>
+                        <div class="form-group required"><label>Nota Fiscal</label><input type="text" id="cadNFClass" autocomplete="off" name="x_sgq_nf_class_no_autofill"></div>
                     </div>
                     <div class="form-grid form-grid-2">
                         <div class="form-group required"><label>Fornecedor</label><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
-<input type="text" id="cadFornecedorClass" required autocomplete="new-password" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class');classFornecedorAutoFill(this.value)" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorClass_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorClass');classFornecedorAutoFill(document.getElementById('cadFornecedorClass').value)},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorClass')">
+<input type="text" id="cadFornecedorClass" required autocomplete="off" name="x_sgq_forn_class_no_autofill" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class');classFornecedorAutoFill(this.value)" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorClass_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorClass');classFornecedorAutoFill(document.getElementById('cadFornecedorClass').value)},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorClass')">
 <ul id="cadFornecedorClass_list" class="sgq-autocomplete-list"></ul>
 </div></div>
                         <div class="form-group required">
@@ -8840,11 +8846,11 @@
                                 <button type="button" style="padding:4px 7px;background:#3498db;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:10px;" onclick="abrirModalNovaMateria()" title="Adicionar nova matéria prima">+</button>
                             </div>
                         </div>
-                        <div class="form-group"><label>Nota Fiscal</label><input type="text" id="cadNFMP" autocomplete="new-password"></div>
+                        <div class="form-group"><label>Nota Fiscal</label><input type="text" id="cadNFMP" autocomplete="off" name="x_sgq_nf_mp_no_autofill"></div>
                     </div>
                     <div class="form-grid" style="grid-template-columns:1fr 1fr;">
                         <div class="form-group required"><label>Fornecedor</label><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
-<input type="text" id="cadFornecedorMP" required autocomplete="new-password" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp');mpFornecedorAutoFill(this.value)" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorMP_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorMP');mpFornecedorAutoFill(document.getElementById('cadFornecedorMP').value)},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorMP')">
+<input type="text" id="cadFornecedorMP" required autocomplete="off" name="x_sgq_forn_mp_no_autofill" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp');mpFornecedorAutoFill(this.value)" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorMP_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorMP');mpFornecedorAutoFill(document.getElementById('cadFornecedorMP').value)},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorMP')">
 <ul id="cadFornecedorMP_list" class="sgq-autocomplete-list"></ul>
 </div></div>
                     </div>
@@ -13854,6 +13860,8 @@ async function _empAtualizarStatusConclusoes() {
 function exibirTabelaEMP(lista) {
     if (!lista) lista = entradasMP;
 
+    _empPopularFiltroMateriaPrima();
+
     // ── Atualiza banner de alerta retroativo (sempre, independente do modo) ──
     _empAtualizarAlertaRetroativo();
 
@@ -13862,6 +13870,7 @@ function exibirTabelaEMP(lista) {
     const df       = (document.getElementById('filterDataFimEMP')?.value || '').trim();
     const forn     = (document.getElementById('filterFornecedorEMP')?.value || '').trim().toUpperCase();
     const statusF  = document.getElementById('filterStatusEMP')?.value || '';
+    const mpF      = (document.getElementById('filterMateriaPrimaEMP')?.value || '').trim().toUpperCase();
 
     // Normaliza data do registro para YYYY-MM-DD (garante comparação correta independente do formato vindo do banco)
     function _normData(d) {
@@ -13885,6 +13894,7 @@ function exibirTabelaEMP(lista) {
         if (df && rd > df) return false;
         if (forn && !(r.fornecedor||'').toUpperCase().includes(forn)) return false;
         if (statusF && r.status !== statusF) return false;
+        if (mpF && (r.materia_prima||'').toUpperCase() !== mpF) return false;
         return true;
     });
 
@@ -14259,8 +14269,19 @@ function limparFiltrosEMP() {
     ['filterNFEMP','filterFornecedorEMP'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
     ['filterDataInicioEMP','filterDataFimEMP'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
     const sel = document.getElementById('filterStatusEMP'); if(sel) sel.value='';
+    const selMP = document.getElementById('filterMateriaPrimaEMP'); if(selMP) selMP.value='';
     // Volta ao modo pendentes ao limpar
     empSetModo('pendentes');
+}
+
+// Popula o select de filtro por matéria-prima com os valores distintos presentes em entradasMP
+function _empPopularFiltroMateriaPrima() {
+    const sel = document.getElementById('filterMateriaPrimaEMP');
+    if (!sel) return;
+    const valorAtual = sel.value;
+    const tipos = [...new Set((entradasMP || []).map(r => (r.materia_prima || '').trim().toUpperCase()).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="">TODAS</option>' + tipos.map(t => `<option value="${t}">${t}</option>`).join('');
+    if (tipos.includes(valorAtual)) sel.value = valorAtual;
 }
 
 // Lista fixa de matérias primas para o modal EMP
