@@ -4396,7 +4396,7 @@
                     <thead>
                         <tr>
                             <th>Data</th><th>Hora</th><th>Ração</th><th>Lote</th>
-                            <th>DGM µm</th><th>DPG µm</th><th>Extrato Etério %</th><th>Proteína %</th><th>Fibra %</th><th>Solubilidade %</th><th>Umidade %</th><th>Densidade</th>
+                            <th>DGM µm</th><th>DPG µm</th><th>Tela Moinho</th><th>Extrato Etério %</th><th>Proteína %</th><th>Fibra %</th><th>Solubilidade %</th><th>Umidade %</th><th>Densidade</th>
                             <th>Material Min %</th>
                             <th>Cálcio %</th><th>Fósforo %</th>
                             <th>Granulo 1 (4mm)</th><th>Granulo 2 (2mm)</th>
@@ -4404,7 +4404,7 @@
                             <th style="text-align:center;">Status</th>
                         </tr>
                     </thead>
-                    <tbody id="tabelaProducoes"><tr><td colspan="20" style="text-align:center;color:#999;">Nenhum registro encontrado</td></tr></tbody>
+                    <tbody id="tabelaProducoes"><tr><td colspan="21" style="text-align:center;color:#999;">Nenhum registro encontrado</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -11073,6 +11073,7 @@ function exibirTabelaProd() {
             <td style="text-transform:uppercase;">${r.lote}</td>
             <td${estiloFora(r.dgm,'prod',r.racao,'dgm',r.data)}>${fmtN(r.dgm,0)}</td>
             <td${estiloFora(r.dpg,'prod',r.racao,'dpg',r.data)}>${fmtN(r.dpg,2)}</td>
+            <td style="text-align:center;">${r.tela_moinho || '-'}</td>
             <td${estiloFora(r.extrato,'prod',r.racao,'extrato',r.data)}>${fmtN(r.extrato,2)}</td>
             <td${estiloFora(r.proteina,'prod',r.racao,'proteina',r.data)}>${fmtN(r.proteina,2)}</td>
             <td${estiloFora(r.fibra,'prod',r.racao,'fibra',r.data)}>${fmtN(r.fibra,2)}</td>
