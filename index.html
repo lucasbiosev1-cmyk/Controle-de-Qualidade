@@ -9301,6 +9301,7 @@
                         <div class="form-group required"><label>DGM</label><input type="number" id="cadDGMProd" step="0.01" min="0" required></div>
                         <div class="form-group"><label>DPG</label><input type="number" id="cadDPGProd" step="0.01" min="0"></div>
                         <div class="form-group"><label>Material Mineral (%)</label><input type="number" id="cadMineralProd" step="0.01" min="0"></div>
+                        <div class="form-group"><label>Tela Moinho</label><input type="text" id="cadTelaMoinhoProd" placeholder="ex: 4/4" maxlength="10" inputmode="text" oninput="sgqMascaraTelaMoinho(this)"></div>
                     </div>
                 </div>
                 <!-- Linha 3: Físico-Químicos (4 campos) -->
@@ -10947,6 +10948,7 @@ function abrirModalEdicaoProd(id) {
     document.getElementById('cadGranulo2Prod').value          = r.granulo2 ?? '';
     document.getElementById('cadGranulo3Prod').value          = r.granulo3 ?? '';
     document.getElementById('cadFundoProd').value             = r.fundo ?? '';
+    document.getElementById('cadTelaMoinhoProd').value        = r.tela_moinho ?? '';
     // Observação
     const obsProd = document.getElementById('cadObsProd');
     obsProd.value = r.obs || '';
@@ -10971,6 +10973,17 @@ function excluirProdDoModal() {
 function fecharModalCadastroProd() {
     document.getElementById('modalCadastroProd').classList.remove('show');
     idEdicaoProd = null;
+}
+
+// ── Máscara Tela Moinho: dígitos → N/N (ex: "44" → "4/4", "34" → "3/4") ──
+function sgqMascaraTelaMoinho(input) {
+    const digits = input.value.replace(/[^\d]/g, '');
+    if (digits.length === 0) { input.value = ''; return; }
+    if (digits.length === 1) { input.value = digits; return; }
+    const mid = Math.ceil(digits.length / 2);
+    const p1 = digits.slice(0, mid);
+    const p2 = digits.slice(mid);
+    input.value = p2 ? p1 + '/' + p2 : p1;
 }
 
 function limparFormularioProd() {
@@ -11020,6 +11033,7 @@ function salvarProducao(event) {
         granulo2:  _pfP('cadGranulo2Prod'),
         granulo3:  _pfP('cadGranulo3Prod'),
         fundo:     _pfP('cadFundoProd'),
+        tela_moinho: (document.getElementById('cadTelaMoinhoProd').value || '').trim() || null,
         obs:       (document.getElementById('cadObsProd').value || '').trim()
     };
     if (idEdicaoProd) {
@@ -14021,6 +14035,7 @@ function xlsxBuildProd(rows) {
          'calcio','fosforo','granulo1','granulo2','granulo3','fundo'].forEach(c => {
             obj[c] = xlsxParseNum(m[c]);
         });
+        obj.tela_moinho = m.tela_moinho ? String(m.tela_moinho).trim() : null;
         return obj;
     }).filter(r => r.data && r.racao);
 }
@@ -16239,7 +16254,7 @@ let _dadosCarregados = false;
 
 // ✅ MELHORIA: Colunas mínimas por tabela — evita select * e reduz Egress
 const _COLUNAS_TABELA = {
-    producoes:          'id,data,hora,racao,lote,dgm,dpg,extrato,proteina,fibra,solubil,umidade,densidade,mineral,calcio,fosforo,granulo1,granulo2,granulo3,fundo,obs',
+    producoes:          'id,data,hora,racao,lote,dgm,dpg,extrato,proteina,fibra,solubil,umidade,densidade,mineral,calcio,fosforo,granulo1,granulo2,granulo3,fundo,tela_moinho,obs',
     classificacoes:     'id,data,hora,produto,fornecedor,nf,local,queimado,ardido,mofado,esverdeado,fermentando,chocho,picado,gessado,quebrado,germinado,carunchado,impureza,umidade,densidade,aflatoxinas,fumonisinas,zearalenona,don,obs',
     materias_primas:    'id,data,hora,produto,fornecedor,nf,umidade,densidade,extrato,proteina,fibra,solubil,mineral,acidez,ureatica,rancidez,peroxido,digestibilidade,granulo1,granulo2,granulo3,granulo4,tempResfriador,tempCanhao,alimentacaoHz,calcio,fosforo,obs',
     entradas_mp:        'id,data,hora,fornecedor,materia_prima,nf,usuario,status,status_descarga,criado_em,placa,seq,obs,quantidade',
