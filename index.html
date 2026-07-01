@@ -16523,7 +16523,7 @@ const _COLUNAS_TABELA = {
     entradas_mp:        'id,data,hora,fornecedor,materia_prima,nf,usuario,status,status_descarga,criado_em,placa,seq,obs,quantidade',
     mp_produtos_custom: 'id,nome',
     homogeneidade:      'id,dataISO,data,dataResultadoISO,dataResultado,produto,equipamento,marcador,tempo,responsavel,local,laboratorio,textoPadrao,amostras,n,media,dp,cv,complemento',
-    ensaios_proficiencia: 'id,modulo_origem,registro_id_interno,produto,fonte,nome_laboratorio,parametro,replica,valor,data_amostra,data_resultado,responsavel,observacoes,criado_em',
+    ensaios_proficiencia: 'id,modulo_origem,registro_id_interno,produto,fonte,nome_laboratorio,parametro,replica,valor,valor_texto,data_amostra,data_resultado,responsavel,observacoes,criado_em',
 };
 
 // ── FAST-PATH: busca só o mês atual para mostrar o dashboard instantaneamente ──────────
@@ -19163,6 +19163,16 @@ const EP_LABELS_PARAM = {
 const EP_LABELS_MODULO = { classificacao:'Classificação', materia_prima:'Matéria-Prima', producao:'Produção' };
 const EP_LABELS_FONTE  = { interno:'Interno', externo:'Externo', fornecedor:'Fornecedor' };
 
+// Parâmetros qualitativos (texto) — usam a coluna valor_texto em vez de valor (numérico)
+const EP_PARAMS_QUALITATIVOS = {
+    rancidez: { negativo: 'Negativo', positivo: 'Positivo' }
+};
+function epEhQualitativo(parametro) { return !!EP_PARAMS_QUALITATIVOS[parametro]; }
+function epLabelQuali(parametro, valor) {
+    const opts = EP_PARAMS_QUALITATIVOS[parametro];
+    return (opts && opts[valor]) ? opts[valor] : (valor || '—');
+}
+
 let _epDados = [];
 let _epGraficoInst = null;
 
@@ -19257,13 +19267,25 @@ function epAgrupar(dados) {
         if (!grupos[chave]) {
             grupos[chave] = {
                 modulo_origem: r.modulo_origem, produto: r.produto, parametro: r.parametro,
-                data_amostra: r.data_amostra, valores: { interno: [], externo: [], fornecedor: [] }
+                data_amostra: r.data_amostra, qualitativo: epEhQualitativo(r.parametro),
+                valores: { interno: [], externo: [], fornecedor: [] }
             };
         }
-        const v = parseFloat(r.valor);
-        if (!isNaN(v) && grupos[chave].valores[r.fonte]) grupos[chave].valores[r.fonte].push(v);
+        if (epEhQualitativo(r.parametro)) {
+            if (r.valor_texto && grupos[chave].valores[r.fonte]) grupos[chave].valores[r.fonte].push(r.valor_texto);
+        } else {
+            const v = parseFloat(r.valor);
+            if (!isNaN(v) && grupos[chave].valores[r.fonte]) grupos[chave].valores[r.fonte].push(v);
+        }
     });
     return Object.values(grupos).map(g => {
+        if (g.qualitativo) {
+            const ultimo = arr => arr.length ? arr[arr.length - 1] : null;
+            const vInt = ultimo(g.valores.interno), vExt = ultimo(g.valores.externo), vForn = ultimo(g.valores.fornecedor);
+            const presentes = [vInt, vExt, vForn].filter(Boolean);
+            const concorda = presentes.length > 1 ? presentes.every(v => v === presentes[0]) : null;
+            return { ...g, mInt: vInt, mExt: vExt, mForn: vForn, maiorDif: null, concorda };
+        }
         const media = arr => arr.length ? arr.reduce((a,b)=>a+b,0) / arr.length : null;
         const mInt = media(g.valores.interno), mExt = media(g.valores.externo), mForn = media(g.valores.fornecedor);
         const diffs = [];
@@ -19271,7 +19293,7 @@ function epAgrupar(dados) {
         if (mInt !== null && mForn !== null) diffs.push(Math.abs(mInt - mForn) / (mInt || 1) * 100);
         if (mExt !== null && mForn !== null) diffs.push(Math.abs(mExt - mForn) / (mExt || 1) * 100);
         const maiorDif = diffs.length ? Math.max(...diffs) : null;
-        return { ...g, mInt, mExt, mForn, maiorDif };
+        return { ...g, mInt, mExt, mForn, maiorDif, concorda: null };
     });
 }
 
@@ -19306,6 +19328,11 @@ function epRenderGrafico(dados, paramSelecionado) {
 
     if (!paramSelecionado) {
         document.getElementById('epGraficoTitulo').textContent = 'EVOLUÇÃO DO PARÂMETRO POR FONTE — selecione um parâmetro acima';
+        return;
+    }
+    if (epEhQualitativo(paramSelecionado)) {
+        document.getElementById('epGraficoTitulo').textContent =
+            (EP_LABELS_PARAM[paramSelecionado] || paramSelecionado).toUpperCase() + ' é um parâmetro qualitativo — veja o resultado na tabela abaixo.';
         return;
     }
     document.getElementById('epGraficoTitulo').textContent =
@@ -19343,18 +19370,21 @@ function epRenderTabela(dados) {
         return;
     }
     const TOLERANCIA = 10;
+    const fmtVal = (g, v) => v === null ? '—' : (g.qualitativo ? epLabelQuali(g.parametro, v) : v.toFixed(2));
     tbody.innerHTML = grupos.map(g => {
-        const status = g.maiorDif === null ? '—'
-            : (g.maiorDif <= TOLERANCIA ? '<span style="color:#27ae60;font-weight:bold;">✅ OK</span>' : '<span style="color:#c0392b;font-weight:bold;">⚠️ Divergente</span>');
+        const status = g.qualitativo
+            ? (g.concorda === null ? '—' : (g.concorda ? '<span style="color:#27ae60;font-weight:bold;">✅ OK</span>' : '<span style="color:#c0392b;font-weight:bold;">⚠️ Divergente</span>'))
+            : (g.maiorDif === null ? '—'
+                : (g.maiorDif <= TOLERANCIA ? '<span style="color:#27ae60;font-weight:bold;">✅ OK</span>' : '<span style="color:#c0392b;font-weight:bold;">⚠️ Divergente</span>'));
         return `<tr style="border-bottom:1px solid #eee;">
             <td style="padding:5px;text-align:center;">${epFmtData(g.data_amostra)}</td>
             <td style="padding:5px;">${EP_LABELS_MODULO[g.modulo_origem] || g.modulo_origem || '—'}</td>
             <td style="padding:5px;">${g.produto || '—'}</td>
             <td style="padding:5px;">${EP_LABELS_PARAM[g.parametro] || g.parametro}</td>
-            <td style="padding:5px;text-align:center;">${g.mInt  !== null ? g.mInt.toFixed(2)  : '—'}</td>
-            <td style="padding:5px;text-align:center;">${g.mExt  !== null ? g.mExt.toFixed(2)  : '—'}</td>
-            <td style="padding:5px;text-align:center;">${g.mForn !== null ? g.mForn.toFixed(2) : '—'}</td>
-            <td style="padding:5px;text-align:center;">${g.maiorDif !== null ? g.maiorDif.toFixed(1) + '%' : '—'}</td>
+            <td style="padding:5px;text-align:center;">${fmtVal(g, g.mInt)}</td>
+            <td style="padding:5px;text-align:center;">${fmtVal(g, g.mExt)}</td>
+            <td style="padding:5px;text-align:center;">${fmtVal(g, g.mForn)}</td>
+            <td style="padding:5px;text-align:center;">${g.qualitativo ? '—' : (g.maiorDif !== null ? g.maiorDif.toFixed(1) + '%' : '—')}</td>
             <td style="padding:5px;text-align:center;">${status}</td>
         </tr>`;
     }).join('');
@@ -19427,19 +19457,24 @@ function epMontarCamposParametros(suffix, modulo, registro) {
     if (!cont) return;
     const campos = epCamposDoModulo(modulo);
     cont.innerHTML = campos.map(c => {
+        const quali = EP_PARAMS_QUALITATIVOS[c.key];
         let refHtml = '';
         if (registro) {
             const valorInterno = registro[c.key];
-            const valorRef = (valorInterno === null || valorInterno === undefined || valorInterno === '') ? '—' : valorInterno;
+            const valorRef = (valorInterno === null || valorInterno === undefined || valorInterno === '')
+                ? '—' : (quali ? epLabelQuali(c.key, valorInterno) : valorInterno);
             refHtml = `<span style="font-weight:normal;color:#888;font-size:10px;">Interno: ${valorRef}</span>`;
         }
+        const inputHtml = quali
+            ? `<select id="epParam_${suffix}_${c.key}"><option value="">Selecione...</option>${Object.entries(quali).map(([v,l]) => `<option value="${v}">${l}</option>`).join('')}</select>`
+            : `<input type="number" step="0.01" id="epParam_${suffix}_${c.key}" placeholder="Valor obtido">`;
         return `
         <div class="form-group">
             <label style="display:flex;justify-content:space-between;">
                 <span>${c.label}</span>
                 ${refHtml}
             </label>
-            <input type="number" step="0.01" id="epParam_${suffix}_${c.key}" placeholder="Valor obtido">
+            ${inputHtml}
         </div>`;
     }).join('');
 }
@@ -19505,7 +19540,7 @@ async function epRenderRegistrosAnterioresAba(suffix, modulo, registroId) {
             <td style="padding:3px 6px;">${r.nome_laboratorio || '—'}</td>
             <td style="padding:3px 6px;">${EP_LABELS_PARAM[r.parametro] || r.parametro}</td>
             <td style="padding:3px 6px;text-align:center;">${r.replica}</td>
-            <td style="padding:3px 6px;text-align:center;">${r.valor}</td>
+            <td style="padding:3px 6px;text-align:center;">${epEhQualitativo(r.parametro) ? epLabelQuali(r.parametro, r.valor_texto) : r.valor}</td>
             <td style="padding:3px 6px;text-align:center;"><button type="button" onclick="epExcluirLancamento('${suffix}','${modulo}','${registroId}',${r.id})" title="Excluir este lançamento" style="background:#e74c3c;color:#fff;border:none;border-radius:3px;width:20px;height:20px;line-height:1;cursor:pointer;font-size:12px;">🗑️</button></td>
         </tr>`).join('');
         cont.innerHTML = `<div style="font-size:11px;color:#555;margin-bottom:4px;">Resultados externos já lançados para esta amostra:</div>
@@ -19553,11 +19588,13 @@ async function epSalvarResultadoSuffix(suffix) {
     camposNumericos.forEach(c => {
         const vInt = registro[c.key];
         if (vInt === null || vInt === undefined || vInt === '') return;
+        const quali = EP_PARAMS_QUALITATIVOS[c.key];
         novosRegistros.push({
             id: _epNovoId(),
             modulo_origem: modulo, registro_id_interno: registro.id, produto: produtoNome,
             fonte: 'interno', nome_laboratorio: 'Laboratório Interno', parametro: c.key, replica: 1,
-            valor: vInt, data_amostra: registro.data, data_resultado: registro.data,
+            valor: quali ? null : vInt, valor_texto: quali ? String(vInt) : null,
+            data_amostra: registro.data, data_resultado: registro.data,
             responsavel: responsavel || null, observacoes: null
         });
     });
@@ -19568,11 +19605,13 @@ async function epSalvarResultadoSuffix(suffix) {
         const el = document.getElementById('epParam_' + suffix + '_' + c.key);
         if (!el || el.value === '') return;
         algumPreenchido = true;
+        const quali = EP_PARAMS_QUALITATIVOS[c.key];
         novosRegistros.push({
             id: _epNovoId(),
             modulo_origem: modulo, registro_id_interno: registro.id, produto: produtoNome,
             fonte, nome_laboratorio: nomeLaboratorio || null, parametro: c.key, replica,
-            valor: parseFloat(el.value), data_amostra: registro.data, data_resultado: dataResultado || null,
+            valor: quali ? null : parseFloat(el.value), valor_texto: quali ? el.value : null,
+            data_amostra: registro.data, data_resultado: dataResultado || null,
             responsavel: responsavel || null, observacoes: observacoes || null
         });
     });
