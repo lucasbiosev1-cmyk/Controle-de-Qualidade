@@ -19478,14 +19478,27 @@ async function epRenderRegistrosAnterioresAba(suffix, modulo, registroId) {
             <td style="padding:3px 6px;">${EP_LABELS_PARAM[r.parametro] || r.parametro}</td>
             <td style="padding:3px 6px;text-align:center;">${r.replica}</td>
             <td style="padding:3px 6px;text-align:center;">${r.valor}</td>
+            <td style="padding:3px 6px;text-align:center;"><button type="button" onclick="epExcluirLancamento('${suffix}','${modulo}','${registroId}',${r.id})" title="Excluir este lançamento" style="background:#e74c3c;color:#fff;border:none;border-radius:3px;width:20px;height:20px;line-height:1;cursor:pointer;font-size:12px;">🗑️</button></td>
         </tr>`).join('');
         cont.innerHTML = `<div style="font-size:11px;color:#555;margin-bottom:4px;">Resultados externos já lançados para esta amostra:</div>
             <table style="width:100%;font-size:11px;border-collapse:collapse;background:#f8f9fa;">
-                <thead><tr style="color:#888;"><th style="text-align:left;padding:3px 6px;">Fonte</th><th style="text-align:left;padding:3px 6px;">Laboratório</th><th style="text-align:left;padding:3px 6px;">Parâmetro</th><th style="padding:3px 6px;">Réplica</th><th style="padding:3px 6px;">Valor</th></tr></thead>
+                <thead><tr style="color:#888;"><th style="text-align:left;padding:3px 6px;">Fonte</th><th style="text-align:left;padding:3px 6px;">Laboratório</th><th style="text-align:left;padding:3px 6px;">Parâmetro</th><th style="padding:3px 6px;">Réplica</th><th style="padding:3px 6px;">Valor</th><th style="padding:3px 6px;"></th></tr></thead>
                 <tbody>${linhas}</tbody>
             </table>`;
     } catch (e) {
         cont.innerHTML = '';
+    }
+}
+
+// Exclui um único lançamento de proficiência (a partir da lista de "resultados já lançados" na aba)
+async function epExcluirLancamento(suffix, modulo, registroId, id) {
+    if (!confirm('Excluir este lançamento de proficiência? Esta ação não pode ser desfeita.')) return;
+    try {
+        await dbDeleteOne('ensaios_proficiencia', id);
+        sgqToast('🗑️ Lançamento de proficiência excluído.', 'success');
+        await epRenderRegistrosAnterioresAba(suffix, modulo, registroId);
+    } catch (e) {
+        sgqToast('Erro ao excluir lançamento: ' + e.message, 'error');
     }
 }
 
@@ -19505,12 +19518,15 @@ async function epSalvarResultadoSuffix(suffix) {
 
     const camposNumericos = epCamposDoModulo(modulo);
     const novosRegistros = [];
+    let _epIdSeq = 0;
+    const _epNovoId = () => Date.now() * 1000 + (_epIdSeq++); // garante id único mesmo em loop rápido
 
     // 1) Garante a referência "interno" (1 lançamento por parâmetro, réplica 1) caso ainda não exista
     camposNumericos.forEach(c => {
         const vInt = registro[c.key];
         if (vInt === null || vInt === undefined || vInt === '') return;
         novosRegistros.push({
+            id: _epNovoId(),
             modulo_origem: modulo, registro_id_interno: registro.id, produto: produtoNome,
             fonte: 'interno', nome_laboratorio: 'Laboratório Interno', parametro: c.key, replica: 1,
             valor: vInt, data_amostra: registro.data, data_resultado: registro.data,
@@ -19525,6 +19541,7 @@ async function epSalvarResultadoSuffix(suffix) {
         if (!el || el.value === '') return;
         algumPreenchido = true;
         novosRegistros.push({
+            id: _epNovoId(),
             modulo_origem: modulo, registro_id_interno: registro.id, produto: produtoNome,
             fonte, nome_laboratorio: nomeLaboratorio || null, parametro: c.key, replica,
             valor: parseFloat(el.value), data_amostra: registro.data, data_resultado: dataResultado || null,
@@ -23083,6 +23100,48 @@ function _resetarBotoesClassif() {
     if (bc) { bc.style.background='rgba(41,128,185,0.15)'; bc.style.color='#2980b9'; }
 }
 
+// ===== PERSISTÊNCIA DO ÚLTIMO PARÂMETRO INFORMADO (Classificação da Devolução) =====
+// Guarda, por tipo de grão + item, o último valor de parâmetro (limite) que o usuário
+// digitou, e usa esse valor como padrão da próxima vez que o formulário for aberto.
+const CLASSIF_OVERRIDES_KEY = 'sgq_classif_param_overrides_v1';
+
+function _classifOverridesLoad() {
+    try { return JSON.parse(localStorage.getItem(CLASSIF_OVERRIDES_KEY) || '{}'); }
+    catch(e) { return {}; }
+}
+function _classifOverridesSave(obj) {
+    try { localStorage.setItem(CLASSIF_OVERRIDES_KEY, JSON.stringify(obj)); } catch(e) {}
+}
+// Aplica o override salvo (se existir) em cima de um item padrão { nome, param, unidade, param_min, param_max }
+function _classifOverrideAplicar(tipo, nome, item) {
+    const overrides = _classifOverridesLoad();
+    const o = overrides[tipo + '|' + nome];
+    if (!o) return item;
+    const novo = Object.assign({}, item);
+    if (o.param !== undefined)     novo.param = o.param;
+    if (o.param_min !== undefined) novo.param_min = o.param_min;
+    if (o.param_max !== undefined) novo.param_max = o.param_max;
+    return novo;
+}
+// Lê os valores atuais da linha e salva como novo "último valor informado" para aquele item
+function _classifSalvarOverrideLinha(tr, tipo, nome) {
+    const overrides = _classifOverridesLoad();
+    const chave = tipo + '|' + nome;
+    const faixaInputs = tr.querySelectorAll('input[data-dir="faixa"]');
+    if (faixaInputs.length >= 2) {
+        const vMin = faixaInputs[0].value === '' ? null : parseFloat(faixaInputs[0].value);
+        const vMax = faixaInputs[1].value === '' ? null : parseFloat(faixaInputs[1].value);
+        overrides[chave] = Object.assign({}, overrides[chave], { param_min: vMin, param_max: vMax });
+    } else {
+        const parInput = tr.querySelector('input[data-dir]');
+        if (!parInput) return;
+        const raw = parInput.value;
+        const v = (parInput.type === 'text') ? raw : (raw === '' ? '' : parseFloat(raw));
+        overrides[chave] = Object.assign({}, overrides[chave], { param: v });
+    }
+    _classifOverridesSave(overrides);
+}
+
 function carregarClassifFCO() {
     limparClassif();
     _resetarBotoesClassif();
@@ -23090,7 +23149,10 @@ function carregarClassifFCO() {
     const th2 = document.getElementById('thParametro');
     if (th1) th1.textContent = 'Resultado';
     if (th2) th2.textContent = 'Parâmetro';
-    CLASSIF_FCO.forEach(d => adicionarLinhaClassif(d.nome, '', d.param, d.unidade));
+    CLASSIF_FCO.forEach(d => {
+        const o = _classifOverrideAplicar('fco', d.nome, d);
+        adicionarLinhaClassif(o.nome, '', o.param, o.unidade, 'max', undefined, undefined, 'fco');
+    });
     const bc = document.getElementById('btnClassifFCO');
     if (bc) { bc.style.background='#2980b9'; bc.style.color='#fff'; }
 }
@@ -23102,7 +23164,10 @@ function carregarClassifMilho() {
     const th2 = document.getElementById('thParametro');
     if (th1) th1.textContent = 'Resultado';
     if (th2) th2.textContent = 'Parâmetro';
-    CLASSIF_MILHO.forEach(d => adicionarLinhaClassif(d.nome, '', d.param, d.unidade));
+    CLASSIF_MILHO.forEach(d => {
+        const o = _classifOverrideAplicar('milho', d.nome, d);
+        adicionarLinhaClassif(o.nome, '', o.param, o.unidade, 'max', undefined, undefined, 'milho');
+    });
     const bm = document.getElementById('btnClassifMilho');
     if (bm) { bm.style.background='#e67e22'; bm.style.color='#fff'; }
 }
@@ -23114,7 +23179,10 @@ function carregarClassifSoja() {
     const th2 = document.getElementById('thParametro');
     if (th1) th1.textContent = 'Resultado (%)';
     if (th2) th2.textContent = 'Parâmetro (%)';
-    CLASSIF_SOJA.forEach(d => adicionarLinhaClassif(d.nome, '', d.param));
+    CLASSIF_SOJA.forEach(d => {
+        const o = _classifOverrideAplicar('soja', d.nome, d);
+        adicionarLinhaClassif(o.nome, '', o.param, o.unidade, 'max', undefined, undefined, 'soja');
+    });
     const bs = document.getElementById('btnClassifSoja');
     if (bs) { bs.style.background='#27ae60'; bs.style.color='#fff'; }
 }
@@ -23126,12 +23194,15 @@ function carregarClassifFareloSoja() {
     const th2 = document.getElementById('thParametro');
     if (th1) th1.textContent = 'Resultado';
     if (th2) th2.textContent = 'Parâmetro';
-    CLASSIF_FARELO_SOJA.forEach(d => adicionarLinhaClassif(d.nome, '', d.param || '', d.unidade, d.dir || 'max', d.param_min, d.param_max));
+    CLASSIF_FARELO_SOJA.forEach(d => {
+        const o = _classifOverrideAplicar('farelo_soja', d.nome, d);
+        adicionarLinhaClassif(o.nome, '', o.param || '', o.unidade, o.dir || 'max', o.param_min, o.param_max, 'farelo_soja');
+    });
     const bf = document.getElementById('btnClassifFareloSoja');
     if (bf) { bf.style.background='#8e44ad'; bf.style.color='#fff'; }
 }
 
-function adicionarLinhaClassif(nome='', resultado='', parametro='', unidade='%', dir='max', param_min=undefined, param_max=undefined) {
+function adicionarLinhaClassif(nome='', resultado='', parametro='', unidade='%', dir='max', param_min=undefined, param_max=undefined, tipo='') {
     const tbody = document.getElementById('classifBody');
     if (!tbody) return;
     // Detecta faixa: dir === 'faixa' OU param_min/param_max presentes
@@ -23166,6 +23237,13 @@ function adicionarLinhaClassif(nome='', resultado='', parametro='', unidade='%',
         <td style="text-align:center;"><button class="nc-btn-rem-row" onclick="removerLinhaClassif(this)" title="Remover">−</button></td>`;
     tbody.appendChild(tr);
     if (inputRes !== '') ncAtualizarCorLinha(tr.querySelector('input'));
+    // Memoriza o último valor de parâmetro (limite) informado pelo usuário para este item,
+    // por tipo de grão, para pré-preencher da próxima vez que o formulário for aberto.
+    if (tipo && nome) {
+        tr.querySelectorAll('input[data-dir]').forEach(inp => {
+            inp.addEventListener('change', () => _classifSalvarOverrideLinha(tr, tipo, nome));
+        });
+    }
 }
 
 function removerLinhaClassif(btn) { btn.closest('tr').remove(); }
