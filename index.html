@@ -1084,6 +1084,17 @@
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow-y: auto; padding: 20px; }
         .modal.show { display: flex; align-items: center; justify-content: center; }
         .modal-content { background-color: #ffffff; padding: 0; border-radius: 10px; max-width: 1000px; width: 95%; height: auto; max-height: 95vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.18); border: 1px solid #dce3ef; }
+        .modal-subtabs { display: flex; gap: 2px; padding: 0 14px; background: #f1f3f5; border-bottom: 1px solid #dde2e7; }
+        .modal-subtab { padding: 9px 16px; font-size: 11px; font-weight: 700; color: #7a7a7a; background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase; letter-spacing: .3px; transition: all .15s; }
+        .modal-subtab:hover { color: #444; background: rgba(0,0,0,0.03); }
+        .modal-subtab.active { color: #8e44ad; border-bottom-color: #8e44ad; background: #ffffff; }
+        .modal-subtab-content { display: none; }
+        .modal-subtab-content.active { display: block; }
+        .ep-aviso-salvar { display: block; background: #fff3cd; border: 1px solid #ffe69c; color: #664d03; padding: 10px 14px; border-radius: 6px; font-size: 11px; margin-bottom: 12px; }
+        html[data-theme="dark"] .modal-subtabs { background: #0d1117 !important; border-bottom: 1px solid #21262d !important; }
+        html[data-theme="dark"] .modal-subtab { color: rgba(255,255,255,0.45) !important; }
+        html[data-theme="dark"] .modal-subtab:hover { color: rgba(255,255,255,0.85) !important; background: rgba(255,255,255,0.04) !important; }
+        html[data-theme="dark"] .modal-subtab.active { color: #58a6ff !important; border-bottom-color: #58a6ff !important; background: rgba(88,166,255,0.08) !important; }
         /* Modal Matéria Prima reduzido proporcionalmente */
         #modalCadastroMP { display: none; align-items: flex-start; justify-content: center; }
         #modalCadastroMP.show { display: flex; }
@@ -4084,6 +4095,7 @@
                 <button class="nav-dropdown-item" id="tabRelMP" onclick="trocarAba('relMP', this);closeDropdowns()">🧪 Rel. Matéria Prima</button>
                 <button class="nav-dropdown-item" id="tabRanking" onclick="trocarAba('ranking', this);closeDropdowns()">🏆 Ranking </button>
                 <button class="nav-dropdown-item" id="tabBoletim" onclick="trocarAba('boletim', this);closeDropdowns()">📋 Boletim Industrial</button>
+                <button class="nav-dropdown-item" id="tabEnsaioProf" onclick="trocarAba('ensaioProf', this);closeDropdowns()">🔬 Proficiência</button>
                 <button class="nav-dropdown-item" id="tabRelMensalIA" onclick="abrirRelatorioMensalIA_seguro();closeDropdowns()" style="display:none;border-top:1px solid rgba(255,255,255,0.15);background:linear-gradient(135deg,rgba(26,58,159,0.4),rgba(41,128,185,0.3));color:#a8d4f5;">📋 Análise Técnica <span style="font-size:9px;background:#c0392b;color:#fff;border-radius:3px;padding:1px 5px;margin-left:4px;vertical-align:middle;">ADMIN</span></button>
             </div>
         </div>
@@ -9251,6 +9263,82 @@
         </div>
     </div><!-- fim aba-boletim -->
 
+    <!-- ===== ABA ENSAIO DE PROFICIÊNCIA ===== -->
+    <div id="aba-ensaioProf" class="tab-content">
+        <div class="container">
+            <div class="filtros">
+                <div class="form-group">
+                    <label>Data Início</label>
+                    <input type="date" id="epDataIni">
+                </div>
+                <div class="form-group">
+                    <label>Data Fim</label>
+                    <input type="date" id="epDataFim">
+                </div>
+                <div class="form-group">
+                    <label>Módulo</label>
+                    <select id="epModulo">
+                        <option value="">Todos</option>
+                        <option value="classificacao">Classificação de Grãos</option>
+                        <option value="materia_prima">Matéria-Prima</option>
+                        <option value="producao">Produção</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Parâmetro</label>
+                    <select id="epParametro">
+                        <option value="">Selecione...</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:5px;align-items:flex-end;">
+                    <button class="btn-filtrar" style="height:34px;line-height:1;" onclick="epAplicarFiltros()">FILTRAR</button>
+                    <button class="btn-limpar" style="height:34px;line-height:1;" onclick="epLimparFiltros()">LIMPAR</button>
+                    <button class="btn-filtrar" style="background:#2c3e50;height:34px;line-height:1;display:inline-flex;align-items:center;gap:4px;" onclick="epImprimir()"><span style="font-size:13px;">🖨️</span> IMPRIMIR</button>
+                </div>
+            </div>
+
+            <div id="epConteudo" style="background:white;border-radius:4px;padding:20px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+
+                <div class="relatorio-title">ENSAIO DE PROFICIÊNCIA</div>
+                <div class="relatorio-periodo" style="text-align:center;color:#888;font-size:11px;margin-bottom:10px;">Comparação Interlaboratorial — Interno × Externo × Fornecedor</div>
+                <div class="relatorio-periodo" id="epPeriodo"></div>
+
+                <!-- CARDS RESUMO -->
+                <div id="epCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px;"></div>
+
+                <!-- GRÁFICO LINHA DO TEMPO POR PARÂMETRO -->
+                <div class="grafico-container" style="margin-bottom:20px;">
+                    <div class="grafico-title" id="epGraficoTitulo">EVOLUÇÃO DO PARÂMETRO POR FONTE</div>
+                    <canvas id="epGraficoLinha" style="max-height:340px;min-height:240px;"></canvas>
+                </div>
+
+                <!-- TABELA DETALHADA -->
+                <div style="margin-bottom:20px;">
+                    <div class="secao-title" style="margin-bottom:10px;">DETALHAMENTO POR AMOSTRA</div>
+                    <div class="tabela-container">
+                    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                        <thead>
+                            <tr style="background:#2c3e50;color:#fff;">
+                                <th style="padding:6px;">Data</th>
+                                <th style="padding:6px;">Módulo</th>
+                                <th style="padding:6px;">Produto</th>
+                                <th style="padding:6px;">Parâmetro</th>
+                                <th style="padding:6px;">Interno (méd.)</th>
+                                <th style="padding:6px;">Externo (méd.)</th>
+                                <th style="padding:6px;">Fornecedor (méd.)</th>
+                                <th style="padding:6px;">Maior Dif. (%)</th>
+                                <th style="padding:6px;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="epTabelaCorpo"><tr><td colspan="9" style="text-align:center;color:#999;padding:14px;">Nenhum registro encontrado</td></tr></tbody>
+                    </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div><!-- fim aba-ensaioProf -->
+
     <!-- ===== ABA ALERTA WHATSAPP ===== -->
 
     </div>
@@ -9263,7 +9351,11 @@
             <h2 id="modalTituloProd">Cadastro de Produção</h2>
             <button class="close" onclick="fecharModalCadastroProd()">&times;</button>
         </div>
-        <div class="form-wrapper">
+        <div class="modal-subtabs">
+            <button type="button" class="modal-subtab active" id="subtabBtnDadosProd" onclick="trocarSubabaModal('Prod','dados')">📋 Dados do Registro</button>
+            <button type="button" class="modal-subtab" id="subtabBtnProfProd" onclick="trocarSubabaModal('Prod','prof')">🔬 Análise de Proficiência</button>
+        </div>
+        <div class="form-wrapper modal-subtab-content active" id="subabaDadosProd">
             <form id="formCadastroProd" onsubmit="return false;">
                 <input type="hidden" id="cadIdProd">
                 <!-- Linha 1: Dados de Registro (4 campos) -->
@@ -9351,6 +9443,54 @@
                 </div>
             </form>
         </div>
+        <div class="form-wrapper modal-subtab-content" id="subabaProfProd">
+            <div id="epAvisoSalvarProd" class="ep-aviso-salvar">⚠️ Salve o registro na aba "Dados do Registro" antes de lançar o resultado de proficiência.</div>
+            <div class="form-section">
+                <h3>Dados do Resultado Externo</h3>
+                <div class="form-grid form-grid-3">
+                    <div class="form-group required">
+                        <label>Fonte do Resultado</label>
+                        <select id="epFonteProd">
+                            <option value="externo">Laboratório Externo</option>
+                            <option value="fornecedor">Laboratório do Fornecedor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nome do Laboratório</label>
+                        <input type="text" id="epNomeLaboratorioProd" placeholder="Ex: Laboratório CBO">
+                    </div>
+                    <div class="form-group">
+                        <label>Réplica</label>
+                        <select id="epReplicaProd">
+                            <option value="1">1ª (única ou primeira)</option>
+                            <option value="2">2ª (duplicata)</option>
+                            <option value="3">3ª (triplicata)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Data do Resultado</label>
+                        <input type="date" id="epDataResultadoProd">
+                    </div>
+                    <div class="form-group" style="grid-column:span 2;">
+                        <label>Responsável</label>
+                        <input type="text" id="epResponsavelProd" placeholder="Nome de quem está lançando">
+                    </div>
+                </div>
+            </div>
+            <div class="form-section">
+                <h3>Valores por Parâmetro <span style="font-weight:normal;font-size:11px;color:#888;">— o valor interno já lançado aparece como referência</span></h3>
+                <div id="epCamposParametrosProd" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;"></div>
+            </div>
+            <div class="form-section">
+                <h3>Observações</h3>
+                <textarea id="epObservacoesProd" rows="2" style="width:100%;" placeholder="Opcional"></textarea>
+            </div>
+            <div id="epRegistrosAnterioresProd" style="margin-top:6px;"></div>
+            <div class="form-buttons">
+                <button type="button" class="btn-salvar" onclick="epSalvarResultadoSuffix('Prod')">💾 Salvar</button>
+                <button type="button" class="btn-cancelar" onclick="fecharModalCadastroProd()">Cancelar</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -9361,7 +9501,11 @@
             <h2 id="modalTituloClass">Cadastro de Classificação</h2>
             <button class="close" onclick="fecharModalCadastroClass()">&times;</button>
         </div>
-        <div class="form-wrapper">
+        <div class="modal-subtabs">
+            <button type="button" class="modal-subtab active" id="subtabBtnDadosClass" onclick="trocarSubabaModal('Class','dados')">📋 Dados do Registro</button>
+            <button type="button" class="modal-subtab" id="subtabBtnProfClass" onclick="trocarSubabaModal('Class','prof')">🔬 Análise de Proficiência</button>
+        </div>
+        <div class="form-wrapper modal-subtab-content active" id="subabaDadosClass">
             <form id="formCadastroClass" onsubmit="return false;">
                 <input type="hidden" id="cadIdClass">
                 <div class="form-section">
@@ -9444,6 +9588,54 @@
                 </div>
             </form>
         </div>
+        <div class="form-wrapper modal-subtab-content" id="subabaProfClass">
+            <div id="epAvisoSalvarClass" class="ep-aviso-salvar">⚠️ Salve o registro na aba "Dados do Registro" antes de lançar o resultado de proficiência.</div>
+            <div class="form-section">
+                <h3>Dados do Resultado Externo</h3>
+                <div class="form-grid form-grid-3">
+                    <div class="form-group required">
+                        <label>Fonte do Resultado</label>
+                        <select id="epFonteClass">
+                            <option value="externo">Laboratório Externo</option>
+                            <option value="fornecedor">Laboratório do Fornecedor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nome do Laboratório</label>
+                        <input type="text" id="epNomeLaboratorioClass" placeholder="Ex: Laboratório CBO">
+                    </div>
+                    <div class="form-group">
+                        <label>Réplica</label>
+                        <select id="epReplicaClass">
+                            <option value="1">1ª (única ou primeira)</option>
+                            <option value="2">2ª (duplicata)</option>
+                            <option value="3">3ª (triplicata)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Data do Resultado</label>
+                        <input type="date" id="epDataResultadoClass">
+                    </div>
+                    <div class="form-group" style="grid-column:span 2;">
+                        <label>Responsável</label>
+                        <input type="text" id="epResponsavelClass" placeholder="Nome de quem está lançando">
+                    </div>
+                </div>
+            </div>
+            <div class="form-section">
+                <h3>Valores por Parâmetro <span style="font-weight:normal;font-size:11px;color:#888;">— o valor interno já lançado aparece como referência</span></h3>
+                <div id="epCamposParametrosClass" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;"></div>
+            </div>
+            <div class="form-section">
+                <h3>Observações</h3>
+                <textarea id="epObservacoesClass" rows="2" style="width:100%;" placeholder="Opcional"></textarea>
+            </div>
+            <div id="epRegistrosAnterioresClass" style="margin-top:6px;"></div>
+            <div class="form-buttons">
+                <button type="button" class="btn-salvar" onclick="epSalvarResultadoSuffix('Class')">💾 Salvar</button>
+                <button type="button" class="btn-cancelar" onclick="fecharModalCadastroClass()">Cancelar</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -9454,7 +9646,11 @@
             <h2 id="modalTituloMP">Cadastro de Matéria Prima</h2>
             <button class="close" onclick="fecharModalCadastroMP()">&times;</button>
         </div>
-        <div class="form-wrapper">
+        <div class="modal-subtabs">
+            <button type="button" class="modal-subtab active" id="subtabBtnDadosMP" onclick="trocarSubabaModal('MP','dados')">📋 Dados do Registro</button>
+            <button type="button" class="modal-subtab" id="subtabBtnProfMP" onclick="trocarSubabaModal('MP','prof')">🔬 Análise de Proficiência</button>
+        </div>
+        <div class="form-wrapper modal-subtab-content active" id="subabaDadosMP">
             <form id="formCadastroMP" onsubmit="return false;">
                 <input type="hidden" id="cadIdMP">
 
@@ -9531,6 +9727,54 @@
                     <button type="button" id="btnExcluirMP" class="btn-delete btn-action" style="margin-left:auto;padding:6px 16px;font-size:11px;font-weight:bold;display:none;" onclick="excluirMPDoModal()">🗑️ Excluir</button>
                 </div>
             </form>
+        </div>
+        <div class="form-wrapper modal-subtab-content" id="subabaProfMP">
+            <div id="epAvisoSalvarMP" class="ep-aviso-salvar">⚠️ Salve o registro na aba "Dados do Registro" antes de lançar o resultado de proficiência.</div>
+            <div class="form-section">
+                <h3>Dados do Resultado Externo</h3>
+                <div class="form-grid form-grid-3">
+                    <div class="form-group required">
+                        <label>Fonte do Resultado</label>
+                        <select id="epFonteMP">
+                            <option value="externo">Laboratório Externo</option>
+                            <option value="fornecedor">Laboratório do Fornecedor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nome do Laboratório</label>
+                        <input type="text" id="epNomeLaboratorioMP" placeholder="Ex: Laboratório CBO">
+                    </div>
+                    <div class="form-group">
+                        <label>Réplica</label>
+                        <select id="epReplicaMP">
+                            <option value="1">1ª (única ou primeira)</option>
+                            <option value="2">2ª (duplicata)</option>
+                            <option value="3">3ª (triplicata)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Data do Resultado</label>
+                        <input type="date" id="epDataResultadoMP">
+                    </div>
+                    <div class="form-group" style="grid-column:span 2;">
+                        <label>Responsável</label>
+                        <input type="text" id="epResponsavelMP" placeholder="Nome de quem está lançando">
+                    </div>
+                </div>
+            </div>
+            <div class="form-section">
+                <h3>Valores por Parâmetro <span style="font-weight:normal;font-size:11px;color:#888;">— o valor interno já lançado aparece como referência</span></h3>
+                <div id="epCamposParametrosMP" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;"></div>
+            </div>
+            <div class="form-section">
+                <h3>Observações</h3>
+                <textarea id="epObservacoesMP" rows="2" style="width:100%;" placeholder="Opcional"></textarea>
+            </div>
+            <div id="epRegistrosAnterioresMP" style="margin-top:6px;"></div>
+            <div class="form-buttons">
+                <button type="button" class="btn-salvar" onclick="epSalvarResultadoSuffix('MP')">💾 Salvar</button>
+                <button type="button" class="btn-cancelar" onclick="fecharModalCadastroMP()">Cancelar</button>
+            </div>
         </div>
     </div>
 </div>
@@ -10447,6 +10691,7 @@ function trocarAba(aba, btn) {
     if (aba === 'relClass')  inicializarRelClass();
     if (aba === 'ranking')   inicializarRanking();
     if (aba === 'boletim')   inicializarBoletim();
+    if (aba === 'ensaioProf') { try { epInicializar(); } catch(e){} }
     if (aba === 'configuracoes') {
         if (perfilAtual === 'admin') {
             trocarSubCfg('parametros', document.getElementById('cfgBtn-parametros'));
@@ -10911,6 +11156,7 @@ function abrirModalCadastroProd() {
     document.getElementById('cadDataProd').value = dataHoje();
     const btnExcluir = document.getElementById('btnExcluirProd');
     if (btnExcluir) btnExcluir.style.display = 'none';
+    epResetAba('Prod');
     document.getElementById('modalCadastroProd').classList.add('show');
 }
 
@@ -10958,6 +11204,8 @@ function abrirModalEdicaoProd(id) {
     document.getElementById('modalCadastroProd').classList.add('show');
     const btnExcluir = document.getElementById('btnExcluirProd');
     if (btnExcluir) btnExcluir.style.display = perfilAtual === 'admin' ? 'inline-block' : 'none';
+    trocarSubabaModal('Prod', 'dados');
+    epPrepararAba('Prod', id);
 }
 
 function excluirProdDoModal() {
@@ -10973,6 +11221,7 @@ function excluirProdDoModal() {
 function fecharModalCadastroProd() {
     document.getElementById('modalCadastroProd').classList.remove('show');
     idEdicaoProd = null;
+    epResetAba('Prod');
 }
 
 // ── Máscara Tela Moinho: dígitos → N/N (ex: "44" → "4/4", "34" → "3/4") ──
@@ -11159,6 +11408,7 @@ function abrirModalCadastroClass() {
     classAtualizarCamposProduto(_selProdClass ? _selProdClass.value : '');
     const btnDel = document.getElementById('btnDeletarClassModal');
     if (btnDel) btnDel.style.display = 'none';
+    epResetAba('Class');
     document.getElementById('modalCadastroClass').classList.add('show');
 }
 
@@ -11210,6 +11460,8 @@ function abrirModalEdicaoClass(id) {
     const btnDel = document.getElementById('btnDeletarClassModal');
     if (btnDel) btnDel.style.display = (perfilAtual === 'admin') ? 'inline-block' : 'none';
     document.getElementById('modalCadastroClass').classList.add('show');
+    trocarSubabaModal('Class', 'dados');
+    epPrepararAba('Class', id);
 }
 
 function deletarClassModal() {
@@ -11299,6 +11551,7 @@ function classAtualizarCamposProduto(produto) {
 function fecharModalCadastroClass() {
     document.getElementById('modalCadastroClass').classList.remove('show');
     idEdicaoClass = null;
+    epResetAba('Class');
 }
 
 function limparFormularioClass() {
@@ -11480,6 +11733,7 @@ function abrirModalCadastroMP() {
     document.getElementById('cadDataMP').value = dataHoje();
     const btnSalvarNew = document.getElementById('btnSalvarMP');
     if (btnSalvarNew) { btnSalvarNew.textContent = 'Salvar'; btnSalvarNew.style.background = ''; }
+    epResetAba('MP');
     document.getElementById('modalCadastroMP').classList.add('show');
 }
 
@@ -11531,6 +11785,8 @@ function abrirModalEdicaoMP(id) {
     const btnExcMP = document.getElementById('btnExcluirMP');
     if (btnExcMP) btnExcMP.style.display = 'inline-block';
     document.getElementById('modalCadastroMP').classList.add('show');
+    trocarSubabaModal('MP', 'dados');
+    epPrepararAba('MP', id);
 }
 
 function fecharModalCadastroMP() {
@@ -11540,6 +11796,7 @@ function fecharModalCadastroMP() {
     if (btnSalvar) { btnSalvar.textContent = 'Salvar'; btnSalvar.style.background = ''; }
     const btnExcMP = document.getElementById('btnExcluirMP');
     if (btnExcMP) btnExcMP.style.display = 'none';
+    epResetAba('MP');
 }
 
 function limparFormularioMP() {
@@ -16261,6 +16518,7 @@ const _COLUNAS_TABELA = {
     entradas_mp:        'id,data,hora,fornecedor,materia_prima,nf,usuario,status,status_descarga,criado_em,placa,seq,obs,quantidade',
     mp_produtos_custom: 'id,nome',
     homogeneidade:      'id,dataISO,data,dataResultadoISO,dataResultado,produto,equipamento,marcador,tempo,responsavel,local,laboratorio,textoPadrao,amostras,n,media,dp,cv,complemento',
+    ensaios_proficiencia: 'id,modulo_origem,registro_id_interno,produto,fonte,nome_laboratorio,parametro,replica,valor,data_amostra,data_resultado,responsavel,observacoes,criado_em',
 };
 
 // ── FAST-PATH: busca só o mês atual para mostrar o dashboard instantaneamente ──────────
@@ -18881,6 +19139,421 @@ function inicializarBoletim() {
     const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
     document.getElementById('bolDataInicio').value = ini.toISOString().split('T')[0];
     document.getElementById('bolDataFim').value = hoje.toISOString().split('T')[0];
+}
+
+// =====================================================================
+// ENSAIO DE PROFICIÊNCIA — Comparação Interlaboratorial (Interno x Externo x Fornecedor)
+// =====================================================================
+
+const EP_LABELS_PARAM = {
+    proteina:'Proteína (%)', umidade:'Umidade (%)', fibra:'Fibra (%)', solubil:'Solubilidade (%)',
+    mineral:'Material Mineral (%)', densidade:'Densidade', acidez:'Acidez', ureatica:'Atividade Ureática',
+    rancidez:'Rancidez', peroxido:'Peróxido', digestibilidade:'Digestibilidade (%)', impureza:'Impureza (%)',
+    queimado:'Queimado (%)', ardido:'Ardido (%)', mofado:'Mofado (%)', esverdeado:'Esverdeado (%)',
+    fermentando:'Fermentando (%)', chocho:'Chocho (%)', picado:'Picado (%)', gessado:'Gessado (%)',
+    quebrado:'Quebrado (%)', germinado:'Germinado (%)', carunchado:'Carunchado (%)',
+    aflatoxinas:'Aflatoxinas', fumonisinas:'Fumonisinas', zearalenona:'Zearalenona', don:'DON',
+    calcio:'Cálcio (%)', fosforo:'Fósforo (%)', extrato:'Extrato Etéreo (%)', dgm:'DGM', dpg:'DPG'
+};
+const EP_LABELS_MODULO = { classificacao:'Classificação', materia_prima:'Matéria-Prima', producao:'Produção' };
+const EP_LABELS_FONTE  = { interno:'Interno', externo:'Externo', fornecedor:'Fornecedor' };
+
+let _epDados = [];
+let _epGraficoInst = null;
+
+async function epInicializar() {
+    const hoje = new Date();
+    const ini = new Date(hoje.getFullYear(), hoje.getMonth() - 2, 1); // últimos 3 meses por padrão
+    document.getElementById('epDataIni').value = ini.toISOString().split('T')[0];
+    document.getElementById('epDataFim').value = hoje.toISOString().split('T')[0];
+
+    // Popula select de parâmetros a partir do dicionário conhecido
+    const selParam = document.getElementById('epParametro');
+    selParam.innerHTML = '<option value="">Todos</option>' +
+        Object.entries(EP_LABELS_PARAM).map(([k,v]) => `<option value="${k}">${v}</option>`).join('');
+
+    await epAplicarFiltros();
+}
+
+async function epCarregarDados() {
+    try {
+        const dados = await dbGetAll('ensaios_proficiencia');
+        return Array.isArray(dados) ? dados : [];
+    } catch (e) {
+        sgqToast('Erro ao carregar Ensaio de Proficiência: ' + e.message, 'error');
+        return [];
+    }
+}
+
+function epLimparFiltros() {
+    document.getElementById('epModulo').value = '';
+    document.getElementById('epParametro').value = '';
+    epInicializar();
+}
+
+async function epAplicarFiltros() {
+    const dataIni = document.getElementById('epDataIni').value;
+    const dataFim = document.getElementById('epDataFim').value;
+    const modulo  = document.getElementById('epModulo').value;
+    const param   = document.getElementById('epParametro').value;
+
+    const todos = await epCarregarDados();
+    let filtrados = todos.filter(r => {
+        if (dataIni && r.data_amostra && r.data_amostra < dataIni) return false;
+        if (dataFim && r.data_amostra && r.data_amostra > dataFim) return false;
+        if (modulo && r.modulo_origem !== modulo) return false;
+        if (param && r.parametro !== param) return false;
+        return true;
+    });
+    _epDados = filtrados;
+
+    document.getElementById('epPeriodo').textContent = (dataIni && dataFim)
+        ? `Período: ${epFmtData(dataIni)} a ${epFmtData(dataFim)}` : '';
+
+    epRenderCards(filtrados);
+    epRenderGrafico(filtrados, param);
+    epRenderTabela(filtrados);
+}
+
+function epFmtData(iso) {
+    if (!iso) return '';
+    const [y,m,d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+}
+
+// Agrupa registros por chave de amostra+parâmetro, calculando média por fonte
+function epAgrupar(dados) {
+    const grupos = {};
+    dados.forEach(r => {
+        const chave = [r.modulo_origem, r.registro_id_interno, r.parametro, r.data_amostra].join('|');
+        if (!grupos[chave]) {
+            grupos[chave] = {
+                modulo_origem: r.modulo_origem, produto: r.produto, parametro: r.parametro,
+                data_amostra: r.data_amostra, valores: { interno: [], externo: [], fornecedor: [] }
+            };
+        }
+        const v = parseFloat(r.valor);
+        if (!isNaN(v) && grupos[chave].valores[r.fonte]) grupos[chave].valores[r.fonte].push(v);
+    });
+    return Object.values(grupos).map(g => {
+        const media = arr => arr.length ? arr.reduce((a,b)=>a+b,0) / arr.length : null;
+        const mInt = media(g.valores.interno), mExt = media(g.valores.externo), mForn = media(g.valores.fornecedor);
+        const diffs = [];
+        if (mInt !== null && mExt !== null)  diffs.push(Math.abs(mInt - mExt)  / (mInt || 1) * 100);
+        if (mInt !== null && mForn !== null) diffs.push(Math.abs(mInt - mForn) / (mInt || 1) * 100);
+        if (mExt !== null && mForn !== null) diffs.push(Math.abs(mExt - mForn) / (mExt || 1) * 100);
+        const maiorDif = diffs.length ? Math.max(...diffs) : null;
+        return { ...g, mInt, mExt, mForn, maiorDif };
+    });
+}
+
+function epRenderCards(dados) {
+    const grupos = epAgrupar(dados);
+    const totalAmostras = grupos.length;
+    const TOLERANCIA = 10; // % — provisório, ajustável futuramente via Configurações
+    const comDif = grupos.filter(g => g.maiorDif !== null);
+    const dentroTol = comDif.filter(g => g.maiorDif <= TOLERANCIA).length;
+    const pctDentro = comDif.length ? ((dentroTol / comDif.length) * 100).toFixed(0) : '—';
+    let pior = null;
+    comDif.forEach(g => { if (!pior || g.maiorDif > pior.maiorDif) pior = g; });
+
+    const cards = [
+        { label: 'Amostras Comparadas', valor: totalAmostras, cor: '#2c3e50' },
+        { label: 'Dentro da Tolerância (±' + TOLERANCIA + '%)', valor: pctDentro + (pctDentro !== '—' ? '%' : ''), cor: pctDentro !== '—' && pctDentro >= 80 ? '#27ae60' : '#e67e22' },
+        { label: 'Maior Divergência', valor: pior ? (EP_LABELS_PARAM[pior.parametro] || pior.parametro) + ' (' + pior.maiorDif.toFixed(1) + '%)' : '—', cor: '#c0392b' },
+        { label: 'Registros Lançados', valor: dados.length, cor: '#2980b9' },
+    ];
+
+    document.getElementById('epCards').innerHTML = cards.map(c => `
+        <div style="background:#f8f9fa;border-left:4px solid ${c.cor};border-radius:4px;padding:12px;">
+            <div style="font-size:10px;color:#888;text-transform:uppercase;margin-bottom:4px;">${c.label}</div>
+            <div style="font-size:18px;font-weight:bold;color:${c.cor};">${c.valor}</div>
+        </div>`).join('');
+}
+
+function epRenderGrafico(dados, paramSelecionado) {
+    const ctx = document.getElementById('epGraficoLinha');
+    if (!ctx) return;
+    if (_epGraficoInst) { _epGraficoInst.destroy(); _epGraficoInst = null; }
+
+    if (!paramSelecionado) {
+        document.getElementById('epGraficoTitulo').textContent = 'EVOLUÇÃO DO PARÂMETRO POR FONTE — selecione um parâmetro acima';
+        return;
+    }
+    document.getElementById('epGraficoTitulo').textContent =
+        'EVOLUÇÃO — ' + (EP_LABELS_PARAM[paramSelecionado] || paramSelecionado).toUpperCase();
+
+    const doParam = dados.filter(r => r.parametro === paramSelecionado);
+    const datas = [...new Set(doParam.map(r => r.data_amostra))].sort();
+
+    const cores = { interno: '#2980b9', externo: '#e67e22', fornecedor: '#8e44ad' };
+    const datasets = ['interno','externo','fornecedor'].map(fonte => {
+        const pontos = datas.map(d => {
+            const vals = doParam.filter(r => r.data_amostra === d && r.fonte === fonte)
+                .map(r => parseFloat(r.valor)).filter(v => !isNaN(v));
+            if (!vals.length) return null;
+            return +(vals.reduce((a,b)=>a+b,0) / vals.length).toFixed(3);
+        });
+        return {
+            label: EP_LABELS_FONTE[fonte], data: pontos, borderColor: cores[fonte],
+            backgroundColor: cores[fonte], spanGaps: true, tension: 0.25, fill: false
+        };
+    }).filter(ds => ds.data.some(v => v !== null));
+
+    _epGraficoInst = new Chart(ctx, {
+        type: 'line',
+        data: { labels: datas.map(epFmtData), datasets },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+    });
+}
+
+function epRenderTabela(dados) {
+    const grupos = epAgrupar(dados).sort((a,b) => (a.data_amostra||'').localeCompare(b.data_amostra||''));
+    const tbody = document.getElementById('epTabelaCorpo');
+    if (!grupos.length) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#999;padding:14px;">Nenhum registro encontrado</td></tr>';
+        return;
+    }
+    const TOLERANCIA = 10;
+    tbody.innerHTML = grupos.map(g => {
+        const status = g.maiorDif === null ? '—'
+            : (g.maiorDif <= TOLERANCIA ? '<span style="color:#27ae60;font-weight:bold;">✅ OK</span>' : '<span style="color:#c0392b;font-weight:bold;">⚠️ Divergente</span>');
+        return `<tr style="border-bottom:1px solid #eee;">
+            <td style="padding:5px;text-align:center;">${epFmtData(g.data_amostra)}</td>
+            <td style="padding:5px;">${EP_LABELS_MODULO[g.modulo_origem] || g.modulo_origem || '—'}</td>
+            <td style="padding:5px;">${g.produto || '—'}</td>
+            <td style="padding:5px;">${EP_LABELS_PARAM[g.parametro] || g.parametro}</td>
+            <td style="padding:5px;text-align:center;">${g.mInt  !== null ? g.mInt.toFixed(2)  : '—'}</td>
+            <td style="padding:5px;text-align:center;">${g.mExt  !== null ? g.mExt.toFixed(2)  : '—'}</td>
+            <td style="padding:5px;text-align:center;">${g.mForn !== null ? g.mForn.toFixed(2) : '—'}</td>
+            <td style="padding:5px;text-align:center;">${g.maiorDif !== null ? g.maiorDif.toFixed(1) + '%' : '—'}</td>
+            <td style="padding:5px;text-align:center;">${status}</td>
+        </tr>`;
+    }).join('');
+}
+
+function epImprimir() {
+    const conteudo = document.getElementById('epConteudo').innerHTML;
+    const win = window.open('', '_blank');
+    win.document.write(`
+        <html><head><title>Ensaio de Proficiência</title>
+        <style>
+            body{font-family:Arial,sans-serif;padding:20px;color:#222;}
+            table{width:100%;border-collapse:collapse;}
+            th,td{border:1px solid #ddd;}
+            .relatorio-title{font-size:18px;font-weight:bold;text-align:center;margin-bottom:4px;}
+        </style></head>
+        <body>${conteudo}</body></html>`);
+    win.document.close();
+    win.onload = () => { win.focus(); win.print(); };
+    setTimeout(() => { try { win.focus(); win.print(); } catch(e){} }, 400);
+}
+
+// ---------------------------------------------------------------------
+// LANÇAMENTO DE RESULTADO EXTERNO/FORNECEDOR (aba "Análise de Proficiência"
+// dentro do próprio modal de cadastro de cada módulo)
+// ---------------------------------------------------------------------
+
+const EP_MODULO_CONFIG = {
+    classificacao: { arr: () => classificacoes, campos: CAMPOS_CLASS, produtoKey: 'produto', label: 'Classificação de Grãos' },
+    materia_prima: { arr: () => materiasPrimas, campos: CAMPOS_MP,    produtoKey: 'produto', label: 'Matéria-Prima' },
+    producao:      { arr: () => producoes,      campos: CAMPOS_PROD, produtoKey: 'racao',   label: 'Produção' },
+};
+
+// Campos que existem no cadastro mas não fazem sentido como parâmetro analítico de proficiência (ex: texto livre)
+const EP_CAMPOS_EXCLUIR = { classificacao: ['fornecedor'], materia_prima: [], producao: [] };
+
+function epCamposDoModulo(modulo) {
+    const cfg = EP_MODULO_CONFIG[modulo];
+    if (!cfg) return [];
+    const excluir = EP_CAMPOS_EXCLUIR[modulo] || [];
+    return cfg.campos.filter(c => !c.calculado && !excluir.includes(c.key));
+}
+
+// Mapeia o sufixo usado nos IDs do modal (Prod/Class/MP) para a chave do módulo
+const EP_SUFFIX_MODULO = { MP: 'materia_prima', Class: 'classificacao', Prod: 'producao' };
+
+// Registro atualmente carregado em cada aba de proficiência (um por modal)
+let _epRegistroPorAba = { MP: null, Class: null, Prod: null };
+
+// Alterna entre a aba "Dados do Registro" e a aba "Análise de Proficiência" dentro de um modal de cadastro
+function trocarSubabaModal(suffix, aba) {
+    const btnDados = document.getElementById('subtabBtnDados' + suffix);
+    const btnProf  = document.getElementById('subtabBtnProf' + suffix);
+    const abaDados = document.getElementById('subabaDados' + suffix);
+    const abaProf  = document.getElementById('subabaProf' + suffix);
+    if (!btnDados || !btnProf || !abaDados || !abaProf) return;
+    if (aba === 'prof') {
+        btnDados.classList.remove('active'); btnProf.classList.add('active');
+        abaDados.classList.remove('active'); abaProf.classList.add('active');
+    } else {
+        btnProf.classList.remove('active'); btnDados.classList.add('active');
+        abaProf.classList.remove('active'); abaDados.classList.add('active');
+    }
+}
+
+// Monta o grid de campos de parâmetro na aba de proficiência.
+// Se "registro" for informado, mostra o valor interno já lançado como referência; senão mostra os campos vazios (cadastro novo).
+function epMontarCamposParametros(suffix, modulo, registro) {
+    const cont = document.getElementById('epCamposParametros' + suffix);
+    if (!cont) return;
+    const campos = epCamposDoModulo(modulo);
+    cont.innerHTML = campos.map(c => {
+        let refHtml = '';
+        if (registro) {
+            const valorInterno = registro[c.key];
+            const valorRef = (valorInterno === null || valorInterno === undefined || valorInterno === '') ? '—' : valorInterno;
+            refHtml = `<span style="font-weight:normal;color:#888;font-size:10px;">Interno: ${valorRef}</span>`;
+        }
+        return `
+        <div class="form-group">
+            <label style="display:flex;justify-content:space-between;">
+                <span>${c.label}</span>
+                ${refHtml}
+            </label>
+            <input type="number" step="0.01" id="epParam_${suffix}_${c.key}" placeholder="Valor obtido">
+        </div>`;
+    }).join('');
+}
+
+// Limpa/reseta a aba de proficiência de um modal (chamar ao abrir cadastro novo ou ao fechar o modal)
+function epResetAba(suffix) {
+    trocarSubabaModal(suffix, 'dados');
+    _epRegistroPorAba[suffix] = null;
+    const ant = document.getElementById('epRegistrosAnteriores' + suffix);
+    if (ant) ant.innerHTML = '';
+    const obs = document.getElementById('epObservacoes' + suffix);
+    if (obs) obs.value = '';
+    const lab = document.getElementById('epNomeLaboratorio' + suffix);
+    if (lab) lab.value = '';
+    const aviso = document.getElementById('epAvisoSalvar' + suffix);
+    if (aviso) aviso.style.display = 'block';
+    // Mostra os campos de parâmetro mesmo sem registro salvo ainda (sem referência de valor interno)
+    epMontarCamposParametros(suffix, EP_SUFFIX_MODULO[suffix], null);
+}
+
+// Carrega os dados do registro (já salvo) na aba de proficiência — chamado ao abrir um registro para edição
+async function epPrepararAba(suffix, id) {
+    const modulo = EP_SUFFIX_MODULO[suffix];
+    const cfg = EP_MODULO_CONFIG[modulo];
+    const aviso = document.getElementById('epAvisoSalvar' + suffix);
+    if (!cfg || !id) {
+        _epRegistroPorAba[suffix] = null;
+        if (aviso) aviso.style.display = 'block';
+        epMontarCamposParametros(suffix, modulo, null);
+        return;
+    }
+    const registro = (cfg.arr() || []).find(r => String(r.id) === String(id));
+    if (!registro) {
+        _epRegistroPorAba[suffix] = null;
+        if (aviso) aviso.style.display = 'block';
+        epMontarCamposParametros(suffix, modulo, null);
+        return;
+    }
+    _epRegistroPorAba[suffix] = registro;
+    if (aviso) aviso.style.display = 'none';
+
+    const dataResultEl = document.getElementById('epDataResultado' + suffix);
+    if (dataResultEl) dataResultEl.value = new Date().toISOString().split('T')[0];
+    const respEl = document.getElementById('epResponsavel' + suffix);
+    if (respEl) respEl.value = (typeof usuarioAtual !== 'undefined' && USUARIOS[usuarioAtual]) ? (USUARIOS[usuarioAtual].nome || usuarioAtual) : '';
+
+    // Monta campos de parâmetros do módulo, mostrando o valor interno já lançado como referência
+    epMontarCamposParametros(suffix, modulo, registro);
+
+    await epRenderRegistrosAnterioresAba(suffix, modulo, id);
+}
+
+async function epRenderRegistrosAnterioresAba(suffix, modulo, registroId) {
+    const cont = document.getElementById('epRegistrosAnteriores' + suffix);
+    if (!cont) return;
+    cont.innerHTML = '<div style="font-size:11px;color:#888;">Carregando lançamentos anteriores desta amostra...</div>';
+    try {
+        const todos = await dbGetAll('ensaios_proficiencia');
+        const doRegistro = (todos || []).filter(r => r.modulo_origem === modulo && String(r.registro_id_interno) === String(registroId) && r.fonte !== 'interno');
+        if (!doRegistro.length) { cont.innerHTML = ''; return; }
+        const linhas = doRegistro.map(r => `<tr>
+            <td style="padding:3px 6px;">${EP_LABELS_FONTE[r.fonte] || r.fonte}</td>
+            <td style="padding:3px 6px;">${r.nome_laboratorio || '—'}</td>
+            <td style="padding:3px 6px;">${EP_LABELS_PARAM[r.parametro] || r.parametro}</td>
+            <td style="padding:3px 6px;text-align:center;">${r.replica}</td>
+            <td style="padding:3px 6px;text-align:center;">${r.valor}</td>
+        </tr>`).join('');
+        cont.innerHTML = `<div style="font-size:11px;color:#555;margin-bottom:4px;">Resultados externos já lançados para esta amostra:</div>
+            <table style="width:100%;font-size:11px;border-collapse:collapse;background:#f8f9fa;">
+                <thead><tr style="color:#888;"><th style="text-align:left;padding:3px 6px;">Fonte</th><th style="text-align:left;padding:3px 6px;">Laboratório</th><th style="text-align:left;padding:3px 6px;">Parâmetro</th><th style="padding:3px 6px;">Réplica</th><th style="padding:3px 6px;">Valor</th></tr></thead>
+                <tbody>${linhas}</tbody>
+            </table>`;
+    } catch (e) {
+        cont.innerHTML = '';
+    }
+}
+
+async function epSalvarResultadoSuffix(suffix) {
+    const modulo = EP_SUFFIX_MODULO[suffix];
+    const cfg = EP_MODULO_CONFIG[modulo];
+    const registro = _epRegistroPorAba[suffix];
+    if (!cfg || !registro) { sgqToast('Salve o registro na aba "Dados do Registro" antes de lançar o resultado de proficiência.', 'error'); return; }
+
+    const fonte = document.getElementById('epFonte' + suffix).value;
+    const nomeLaboratorio = document.getElementById('epNomeLaboratorio' + suffix).value.trim();
+    const replica = parseInt(document.getElementById('epReplica' + suffix).value) || 1;
+    const dataResultado = document.getElementById('epDataResultado' + suffix).value;
+    const responsavel = document.getElementById('epResponsavel' + suffix).value.trim();
+    const observacoes = document.getElementById('epObservacoes' + suffix).value.trim();
+    const produtoNome = (registro[cfg.produtoKey] || '').toString().toUpperCase();
+
+    const camposNumericos = epCamposDoModulo(modulo);
+    const novosRegistros = [];
+
+    // 1) Garante a referência "interno" (1 lançamento por parâmetro, réplica 1) caso ainda não exista
+    camposNumericos.forEach(c => {
+        const vInt = registro[c.key];
+        if (vInt === null || vInt === undefined || vInt === '') return;
+        novosRegistros.push({
+            modulo_origem: modulo, registro_id_interno: registro.id, produto: produtoNome,
+            fonte: 'interno', nome_laboratorio: 'Laboratório Interno', parametro: c.key, replica: 1,
+            valor: vInt, data_amostra: registro.data, data_resultado: registro.data,
+            responsavel: responsavel || null, observacoes: null
+        });
+    });
+
+    // 2) Resultado da fonte externa/fornecedor — só os campos que o usuário preencheu
+    let algumPreenchido = false;
+    camposNumericos.forEach(c => {
+        const el = document.getElementById('epParam_' + suffix + '_' + c.key);
+        if (!el || el.value === '') return;
+        algumPreenchido = true;
+        novosRegistros.push({
+            modulo_origem: modulo, registro_id_interno: registro.id, produto: produtoNome,
+            fonte, nome_laboratorio: nomeLaboratorio || null, parametro: c.key, replica,
+            valor: parseFloat(el.value), data_amostra: registro.data, data_resultado: dataResultado || null,
+            responsavel: responsavel || null, observacoes: observacoes || null
+        });
+    });
+
+    if (!algumPreenchido) { sgqToast('Preencha ao menos um parâmetro com o valor do laboratório externo/fornecedor.', 'error'); return; }
+
+    try {
+        // Evita duplicar a referência interna: verifica o que já existe para essa amostra
+        const existentes = await dbGetAll('ensaios_proficiencia');
+        const jaTemInterno = new Set((existentes || [])
+            .filter(r => r.modulo_origem === modulo && String(r.registro_id_interno) === String(registro.id) && r.fonte === 'interno')
+            .map(r => r.parametro));
+
+        const aSalvar = novosRegistros.filter(r => r.fonte !== 'interno' || !jaTemInterno.has(r.parametro));
+        for (const reg of aSalvar) {
+            await dbUpsertOne('ensaios_proficiencia', reg);
+        }
+        sgqToast('✓ Resultado do Ensaio de Proficiência salvo com sucesso!', 'success');
+        // Limpa apenas os campos de valor preenchidos e observações, mantendo a aba aberta para novos lançamentos
+        camposNumericos.forEach(c => { const el = document.getElementById('epParam_' + suffix + '_' + c.key); if (el) el.value = ''; });
+        const obsEl = document.getElementById('epObservacoes' + suffix);
+        if (obsEl) obsEl.value = '';
+        await epRenderRegistrosAnterioresAba(suffix, modulo, registro.id);
+    } catch (e) {
+        sgqToast('Erro ao salvar Ensaio de Proficiência: ' + e.message, 'error');
+    }
 }
 
 
