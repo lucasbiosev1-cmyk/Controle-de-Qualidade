@@ -9277,11 +9277,17 @@
                 </div>
                 <div class="form-group">
                     <label>Módulo</label>
-                    <select id="epModulo">
+                    <select id="epModulo" onchange="epAtualizarOpcoesProduto()">
                         <option value="">Todos</option>
                         <option value="classificacao">Classificação de Grãos</option>
                         <option value="materia_prima">Matéria-Prima</option>
                         <option value="producao">Produção</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Produto</label>
+                    <select id="epProduto">
+                        <option value="">Todos</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -9290,10 +9296,9 @@
                         <option value="">Selecione...</option>
                     </select>
                 </div>
-                <div style="display:flex;gap:5px;align-items:flex-end;">
-                    <button class="btn-filtrar" style="height:34px;line-height:1;" onclick="epAplicarFiltros()">FILTRAR</button>
-                    <button class="btn-limpar" style="height:34px;line-height:1;" onclick="epLimparFiltros()">LIMPAR</button>
-                    <button class="btn-filtrar" style="background:#2c3e50;height:34px;line-height:1;display:inline-flex;align-items:center;gap:4px;" onclick="epImprimir()"><span style="font-size:13px;">🖨️</span> IMPRIMIR</button>
+                <div style="display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap;">
+                    <button class="btn-filtrar" style="white-space:nowrap;" onclick="epAplicarFiltros()">FILTRAR</button>
+                    <button class="btn-print" style="white-space:nowrap;padding:8px 14px;font-size:12px;" onclick="epImprimir()">🖨️ IMPRIMIR</button>
                 </div>
             </div>
 
@@ -19172,21 +19177,41 @@ async function epInicializar() {
     selParam.innerHTML = '<option value="">Todos</option>' +
         Object.entries(EP_LABELS_PARAM).map(([k,v]) => `<option value="${k}">${v}</option>`).join('');
 
+    await epCarregarDados();
+    epAtualizarOpcoesProduto();
     await epAplicarFiltros();
 }
+
+let _epTodosCache = [];
 
 async function epCarregarDados() {
     try {
         const dados = await dbGetAll('ensaios_proficiencia');
-        return Array.isArray(dados) ? dados : [];
+        _epTodosCache = Array.isArray(dados) ? dados : [];
+        return _epTodosCache;
     } catch (e) {
         sgqToast('Erro ao carregar Ensaio de Proficiência: ' + e.message, 'error');
         return [];
     }
 }
 
+// Popula o select "Produto" com os produtos existentes nos dados carregados,
+// restrito ao Módulo selecionado (ex: dentro de Matéria-Prima, mostra só Farelo de Soja, FCO, etc.)
+function epAtualizarOpcoesProduto() {
+    const selProduto = document.getElementById('epProduto');
+    if (!selProduto) return;
+    const modulo = document.getElementById('epModulo').value;
+    const valorAtual = selProduto.value;
+    const base = modulo ? _epTodosCache.filter(r => r.modulo_origem === modulo) : _epTodosCache;
+    const produtos = [...new Set(base.map(r => (r.produto || '').trim()).filter(Boolean))].sort();
+    selProduto.innerHTML = '<option value="">Todos</option>' + produtos.map(p => `<option value="${p}">${p}</option>`).join('');
+    // Mantém a seleção anterior se ela ainda fizer sentido para o módulo atual
+    if (produtos.includes(valorAtual)) selProduto.value = valorAtual;
+}
+
 function epLimparFiltros() {
     document.getElementById('epModulo').value = '';
+    document.getElementById('epProduto').value = '';
     document.getElementById('epParametro').value = '';
     epInicializar();
 }
@@ -19195,13 +19220,16 @@ async function epAplicarFiltros() {
     const dataIni = document.getElementById('epDataIni').value;
     const dataFim = document.getElementById('epDataFim').value;
     const modulo  = document.getElementById('epModulo').value;
+    const produto = document.getElementById('epProduto').value;
     const param   = document.getElementById('epParametro').value;
 
     const todos = await epCarregarDados();
+    epAtualizarOpcoesProduto();
     let filtrados = todos.filter(r => {
         if (dataIni && r.data_amostra && r.data_amostra < dataIni) return false;
         if (dataFim && r.data_amostra && r.data_amostra > dataFim) return false;
         if (modulo && r.modulo_origem !== modulo) return false;
+        if (produto && (r.produto || '').trim() !== produto) return false;
         if (param && r.parametro !== param) return false;
         return true;
     });
