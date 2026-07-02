@@ -4040,6 +4040,7 @@
             <button class="mob-item" id="mobBtnRelClass"      onclick="mobNav('relClass','Rel. Classificação')">📊 Rel. Classificação</button>
             <button class="mob-item" id="mobBtnRelMP"         onclick="mobNav('relMP','Rel. Mat. Prima')">🧪 Rel. Mat. Prima</button>
             <button class="mob-item" id="mobBtnRanking"       onclick="mobNav('ranking','Ranking')">🏆 Ranking</button>
+            <button class="mob-item" id="mobBtnRelFabrica"    onclick="mobNav('relFabrica','Relatório Fábrica')">🏭 Relatório Fábrica</button>
             <button class="mob-item" id="mobBtnBoletim"       onclick="mobNav('boletim','Boletim Industrial')">📋 Boletim Industrial</button>
         </div>
         <div class="mob-section" id="mobSecNC">
@@ -4094,6 +4095,7 @@
                 <button class="nav-dropdown-item" id="tabRelClass" onclick="trocarAba('relClass', this);closeDropdowns()">📊 Rel. Classificação</button>
                 <button class="nav-dropdown-item" id="tabRelMP" onclick="trocarAba('relMP', this);closeDropdowns()">🧪 Rel. Matéria Prima</button>
                 <button class="nav-dropdown-item" id="tabRanking" onclick="trocarAba('ranking', this);closeDropdowns()">🏆 Ranking </button>
+                <button class="nav-dropdown-item" id="tabRelFabrica" onclick="trocarAba('relFabrica', this);closeDropdowns()">🏭 Relatório Fábrica</button>
                 <button class="nav-dropdown-item" id="tabBoletim" onclick="trocarAba('boletim', this);closeDropdowns()">📋 Boletim Industrial</button>
                 <button class="nav-dropdown-item" id="tabEnsaioProf" onclick="trocarAba('ensaioProf', this);closeDropdowns()">🔬 Proficiência</button>
                 <button class="nav-dropdown-item" id="tabRelMensalIA" onclick="abrirRelatorioMensalIA_seguro();closeDropdowns()" style="display:none;border-top:1px solid rgba(255,255,255,0.15);background:linear-gradient(135deg,rgba(26,58,159,0.4),rgba(41,128,185,0.3));color:#a8d4f5;">📋 Análise Técnica <span style="font-size:9px;background:#c0392b;color:#fff;border-radius:3px;padding:1px 5px;margin-left:4px;vertical-align:middle;">ADMIN</span></button>
@@ -5357,6 +5359,35 @@
             </div><!-- fim rankingConteudo -->
         </div><!-- fim relatorio-container -->
     </div><!-- fim aba-ranking -->
+
+    <!-- ===== ABA RELATÓRIO FÁBRICA ===== -->
+    <div id="aba-relFabrica" class="tab-content">
+        <div class="relatorio-container">
+
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-bottom:15px;">
+                <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR</button>
+                <button class="btn-pdf" onclick="exportarRelFabricaExcel()">📥 EXPORTAR EXCEL</button>
+            </div>
+
+            <!-- FILTRO DE MÊS -->
+            <div class="rel-filtros" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));gap:12px;align-items:flex-end;">
+                <div class="form-group">
+                    <label>MÊS</label>
+                    <input type="month" id="rfMes" onchange="aplicarFiltroRelFabrica()">
+                </div>
+                <div style="display:flex;gap:5px;">
+                    <button class="btn-filtrar" onclick="aplicarFiltroRelFabrica()">FILTRAR</button>
+                </div>
+            </div>
+
+            <div id="relFabricaConteudo" style="background:white;border-radius:4px;padding:20px;box-shadow:0 2px 4px rgba(0,0,0,0.1);margin-top:15px;">
+                <div class="relatorio-title" id="rfTitulo">RELATÓRIO FÁBRICA — RESUMO POR FASE</div>
+                <div class="relatorio-periodo" id="rfPeriodo"></div>
+
+                <div id="rfGrupos"></div>
+            </div><!-- fim relFabricaConteudo -->
+        </div><!-- fim relatorio-container -->
+    </div><!-- fim aba-relFabrica -->
 
     <!-- ===== ABA NÃO CONFORMIDADE / DEVOLUÇÃO ===== -->
     <div id="aba-naoConformidade" class="tab-content">
@@ -10398,7 +10429,7 @@ function aplicarPermissoes() {
 
     // Relatórios — itens filhos
     const podeRel = isAdmin || perms.relatorios;
-    ['tabRelatorio','tabRelClass','tabRelMP','tabRanking'].forEach(id => {
+    ['tabRelatorio','tabRelClass','tabRelMP','tabRanking','tabRelFabrica'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = podeRel ? 'inline-block' : 'none';
     });
@@ -10695,6 +10726,7 @@ function trocarAba(aba, btn) {
     if (aba === 'relatorio') inicializarRelatorio();
     if (aba === 'relClass')  inicializarRelClass();
     if (aba === 'ranking')   inicializarRanking();
+    if (aba === 'relFabrica') inicializarRelFabrica();
     if (aba === 'boletim')   inicializarBoletim();
     if (aba === 'ensaioProf') { try { epInicializar(); } catch(e){} }
     if (aba === 'configuracoes') {
@@ -12681,6 +12713,159 @@ function renderDetalhe(dados, analise, analNome) {
             <td style="padding:5px 8px;">${status}</td>
         </tr>`;
     }).join('');
+}
+
+// ===================================================
+// RELATÓRIO FÁBRICA — RESUMO DE MÉDIAS POR FASE/MÊS
+// ===================================================
+
+// Fases esperadas por tipo de ração (definem a ordem e quais linhas aparecem
+// mesmo quando não há dados no mês selecionado — mantém o layout estável)
+const RF_FASES = {
+    CORTE:   ['R1','R2','R3','R4','R5'],
+    POSTURA: ['R1','R2','R3','R5','R6','R7','R8','R9','R10']
+};
+
+// Identifica tipo (CORTE/POSTURA) e nível (R1, R2...) a partir do nome da ração
+function _rfExtrairFase(racao) {
+    const up = (racao || '').toUpperCase();
+    let tipo = null;
+    if (up.includes('CORTE'))        tipo = 'CORTE';
+    else if (up.includes('POSTURA')) tipo = 'POSTURA';
+    if (!tipo) return null;
+    const m = up.match(/R\s*(\d+)/);
+    if (!m) return null;
+    return { tipo, nivel: 'R' + m[1] };
+}
+
+function inicializarRelFabrica() {
+    const el = document.getElementById('rfMes');
+    if (el && !el.value) {
+        const hoje = new Date();
+        el.value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+    }
+    aplicarFiltroRelFabrica();
+}
+
+// Monta, para um tipo (CORTE/POSTURA), as estatísticas médias de cada fase presente
+// no mês selecionado. Fases sem nenhum registro aparecem com "-" (igual ao modelo).
+function _rfCalcularGrupo(dadosMes, tipo) {
+    return RF_FASES[tipo].map(nivel => {
+        const regs = dadosMes.filter(r => {
+            const f = _rfExtrairFase(r.racao);
+            return f && f.tipo === tipo && f.nivel === nivel;
+        });
+        if (!regs.length) {
+            return { nivel, temDados: false };
+        }
+        const vUmid = regs.map(r => parseFloat(r.umidade)   || 0).filter(v => v > 0);
+        const vDens = regs.map(r => parseFloat(r.densidade) || 0).filter(v => v > 0);
+        const vDGM  = regs.map(r => parseFloat(r.dgm)        || 0).filter(v => v > 0);
+        const vDPG  = regs.map(r => parseFloat(r.dpg)        || 0).filter(v => v > 0);
+        const eDGM  = calcEstat(vDGM);
+        return {
+            nivel, temDados: true,
+            umidade:   vUmid.length ? vUmid.reduce((a,b)=>a+b,0)/vUmid.length : null,
+            densidade: vDens.length ? vDens.reduce((a,b)=>a+b,0)/vDens.length : null,
+            dgm:       vDGM.length  ? vDGM.reduce((a,b)=>a+b,0)/vDGM.length   : null,
+            dpg:       vDPG.length  ? vDPG.reduce((a,b)=>a+b,0)/vDPG.length   : null,
+            cv:        vDGM.length  ? eDGM.cv : null
+        };
+    });
+}
+
+function _rfRenderTabela(tipo, linhas, mesLabel) {
+    const rotulo = tipo === 'CORTE' ? 'Corte' : 'Postura';
+    const linhasHTML = linhas.map(l => {
+        const f = v => (v === null || v === undefined) ? '-' : fmtN(v, 2);
+        const fInt = v => (v === null || v === undefined) ? '-' : Math.round(v);
+        return `<tr>
+            <td style="padding:6px 10px;text-align:left;">MÉDIA ${rotulo} ${l.nivel}</td>
+            <td style="padding:6px 10px;text-align:center;">${l.temDados ? f(l.umidade) : '-'}</td>
+            <td style="padding:6px 10px;text-align:center;">${l.temDados ? fInt(l.densidade) : '-'}</td>
+            <td style="padding:6px 10px;text-align:center;">${l.temDados ? fInt(l.dgm) : '-'}</td>
+            <td style="padding:6px 10px;text-align:center;">${l.temDados ? f(l.dpg) : '-'}</td>
+            <td style="padding:6px 10px;text-align:center;font-weight:bold;">${l.temDados && l.cv !== null ? f(l.cv) : '-'}</td>
+        </tr>`;
+    }).join('');
+
+    return `
+    <div style="margin-bottom:30px;">
+        <div style="font-weight:bold;text-align:center;text-transform:uppercase;margin-bottom:8px;font-size:13px;">
+            ${rotulo.toUpperCase()} - RESUMO POR FASE
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead>
+                <tr>
+                    <th colspan="6" style="text-align:left;padding:4px 8px;">
+                        <span style="background:#ffff00;color:#000;font-weight:bold;padding:2px 8px;">${mesLabel}</span>
+                    </th>
+                </tr>
+                <tr style="border-bottom:2px solid #333;">
+                    <th style="padding:6px 10px;text-align:left;">Fase</th>
+                    <th style="padding:6px 10px;">Umidade Inf (%)</th>
+                    <th style="padding:6px 10px;">Densidade (kg/L)</th>
+                    <th style="padding:6px 10px;">DGM (µm)</th>
+                    <th style="padding:6px 10px;">DPG (µm)</th>
+                    <th style="padding:6px 10px;">C.V</th>
+                </tr>
+            </thead>
+            <tbody>${linhasHTML}</tbody>
+        </table>
+    </div>`;
+}
+
+// Guarda o último resultado calculado, usado pela exportação para Excel
+let _rfUltimoResultado = null;
+
+function aplicarFiltroRelFabrica() {
+    const mesVal = document.getElementById('rfMes').value; // formato "YYYY-MM"
+    if (!mesVal) return;
+
+    const dadosMes = producoes.filter(r => (r.data || '').startsWith(mesVal));
+
+    const [ano, mesNum] = mesVal.split('-');
+    const nomesMes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho',
+                       'Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const mesLabel = `${nomesMes[parseInt(mesNum,10)-1]} - ${ano}`;
+
+    const grupoCorte   = _rfCalcularGrupo(dadosMes, 'CORTE');
+    const grupoPostura = _rfCalcularGrupo(dadosMes, 'POSTURA');
+
+    document.getElementById('rfPeriodo').textContent = `MÊS: ${mesLabel}  |  ${dadosMes.length} registro(s)`;
+
+    document.getElementById('rfGrupos').innerHTML =
+        _rfRenderTabela('CORTE', grupoCorte, mesLabel) +
+        _rfRenderTabela('POSTURA', grupoPostura, mesLabel);
+
+    _rfUltimoResultado = { mesLabel, grupoCorte, grupoPostura };
+}
+
+function exportarRelFabricaExcel() {
+    if (!_rfUltimoResultado) { sgqToast('Selecione um mês antes de exportar.', 'warning'); return; }
+    const { mesLabel, grupoCorte, grupoPostura } = _rfUltimoResultado;
+
+    function montarLinhas(tipo, linhas) {
+        const rotulo = tipo === 'CORTE' ? 'Corte' : 'Postura';
+        const header = [[mesLabel],
+                         ['Fase','Umidade Inf (%)','Densidade (kg/L)','DGM (µm)','DPG (µm)','C.V']];
+        const corpo = linhas.map(l => [
+            `MÉDIA ${rotulo} ${l.nivel}`,
+            l.temDados && l.umidade   !== null ? Number(l.umidade.toFixed(2))   : '-',
+            l.temDados && l.densidade !== null ? Math.round(l.densidade)        : '-',
+            l.temDados && l.dgm       !== null ? Math.round(l.dgm)              : '-',
+            l.temDados && l.dpg       !== null ? Number(l.dpg.toFixed(2))       : '-',
+            l.temDados && l.cv        !== null ? Number(l.cv.toFixed(2))        : '-'
+        ]);
+        return [...header, ...corpo];
+    }
+
+    const wb = XLSX.utils.book_new();
+    const wsCorte   = XLSX.utils.aoa_to_sheet(montarLinhas('CORTE', grupoCorte));
+    const wsPostura = XLSX.utils.aoa_to_sheet(montarLinhas('POSTURA', grupoPostura));
+    XLSX.utils.book_append_sheet(wb, wsCorte,   'CORTE');
+    XLSX.utils.book_append_sheet(wb, wsPostura, 'POSTURA');
+    XLSX.writeFile(wb, `Relatorio_Fabrica_${mesLabel.replace(/ /g,'')}.xlsx`);
 }
 
 // ===================================================
