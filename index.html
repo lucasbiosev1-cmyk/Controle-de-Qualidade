@@ -4396,11 +4396,11 @@
                         <option value="POSTURA MCASSAB R6">POSTURA MCASSAB R6</option>
                         <option value="POSTURA MCASSAB R7">POSTURA MCASSAB R7</option>
                         <option value="POSTURA MCASSAB R9">POSTURA MCASSAB R9</option>
-                        <option value="POSTURA MCASSAB R 10">POSTURA MCASSAB R 10</option>
+                        <option value="POSTURA MCASSAB R10">POSTURA MCASSAB R10</option>
                         <option value="POSTURA TECTRON R7">POSTURA TECTRON R7</option>
                         <option value="POSTURA TECTRON R8">POSTURA TECTRON R8</option>
                         <option value="POSTURA TECTRON R9">POSTURA TECTRON R9</option>
-                        <option value="POSTURA TECTRON R 10">POSTURA TECTRON R 10</option>
+                        <option value="POSTURA TECTRON R10">POSTURA TECTRON R10</option>
                         <option value="BEPEL CALCÁRIO FINO">BEPEL CALCÁRIO FINO</option>
                         <option value="BEPEL CALCÁRIO GROSSO">BEPEL CALCÁRIO GROSSO</option>
                     </select>
@@ -4629,9 +4629,9 @@
                         <option value="g:POSTURA MCASSAB R9|POSTURA TECTRON R9">POSTURA R9 — TODOS</option>
                         <option value="POSTURA MCASSAB R9">POSTURA MCASSAB R9</option>
                         <option value="POSTURA TECTRON R9">POSTURA TECTRON R9</option>
-                        <option value="g:POSTURA MCASSAB R 10|POSTURA TECTRON R 10">POSTURA R10 — TODOS</option>
-                        <option value="POSTURA MCASSAB R 10">POSTURA MCASSAB R 10</option>
-                        <option value="POSTURA TECTRON R 10">POSTURA TECTRON R 10</option>
+                        <option value="g:POSTURA MCASSAB R10|POSTURA TECTRON R10">POSTURA R10 — TODOS</option>
+                        <option value="POSTURA MCASSAB R10">POSTURA MCASSAB R10</option>
+                        <option value="POSTURA TECTRON R10">POSTURA TECTRON R10</option>
                         <option value="g:BEPEL CALCÁRIO FINO|BEPEL CALCÁRIO GROSSO">CALCÁRIO — TODOS</option>
                         <option value="BEPEL CALCÁRIO FINO">BEPEL CALCÁRIO FINO</option>
                         <option value="BEPEL CALCÁRIO GROSSO">BEPEL CALCÁRIO GROSSO</option>
@@ -4771,6 +4771,7 @@
                                     <th style="padding:6px;">DATA</th>
                                     <th style="padding:6px;">HORA</th>
                                     <th style="padding:6px;text-align:left;">RAÇÃO</th>
+                                    <th style="padding:6px;">TELA/MOINHO</th>
                                     <th style="padding:6px;">LOTE</th>
                                     <th style="padding:6px;" id="thValor">DGM (µm)</th>
                                     <th style="padding:6px;" id="thDPG">DPG (µm)</th>
@@ -11395,7 +11396,7 @@ function filtrarDadosProd() {
     return producoes.filter(r =>
         (!lote  || r.lote.toLowerCase().includes(lote))
      && (!di    || r.data >= di) && (!df || r.data <= df)
-     && (!racao || r.racao === racao)
+     && (!racao || _racaoEq(r.racao, racao))
     ).sort((a, b) => new Date(b.data) - new Date(a.data));
 }
 
@@ -12148,6 +12149,17 @@ async function adicionarNovaMateria() {
 // RELATÓRIO DE PRODUÇÃO POR FASE
 // ===================================================
 
+// Compara nomes de ração ignorando diferenças de espaçamento (ex: "POSTURA MCASSAB R10"
+// vs "POSTURA MCASSAB R 10") — evita que um registro deixe de ser encontrado nos filtros
+// por causa de um espaço a mais/a menos antes do número da fase.
+function _racaoEq(a, b) {
+    return (a || '').toString().toUpperCase().replace(/\s+/g, '') ===
+           (b || '').toString().toUpperCase().replace(/\s+/g, '');
+}
+function _racaoIn(racao, lista) {
+    return (lista || []).some(x => _racaoEq(racao, x));
+}
+
 const FASES_MAP = {
     corte_pre: { label: 'PRÉ INICIAL CORTE (R1)',
                  racoes: ['CORTE R1 WISIUM','CORTE R1 MCASSAB'],
@@ -12176,17 +12188,17 @@ const FASES_MAP = {
     pos_fin:   { label: 'FINAL POSTURA (R3-R10)',
                  racoes: ['POSTURA MCASSAB R3','POSTURA MCASSAB R5',
                           'POSTURA MCASSAB R6','POSTURA MCASSAB R7',
-                          'POSTURA MCASSAB R9','POSTURA MCASSAB R 10',
+                          'POSTURA MCASSAB R9','POSTURA MCASSAB R10',
                           'POSTURA TECTRON R7','POSTURA TECTRON R8',
-                          'POSTURA TECTRON R9','POSTURA TECTRON R 10'],
+                          'POSTURA TECTRON R9','POSTURA TECTRON R10'],
                  cor: '#16a085' },
     pos_all:   { label: 'TODAS AS FASES POSTURA',
                  racoes: ['POSTURA MCASSAB R1','POSTURA MCASSAB R2',
                           'POSTURA MCASSAB R3','POSTURA MCASSAB R5',
                           'POSTURA MCASSAB R6','POSTURA MCASSAB R7',
-                          'POSTURA MCASSAB R9','POSTURA MCASSAB R 10',
+                          'POSTURA MCASSAB R9','POSTURA MCASSAB R10',
                           'POSTURA TECTRON R7','POSTURA TECTRON R8',
-                          'POSTURA TECTRON R9','POSTURA TECTRON R 10'],
+                          'POSTURA TECTRON R9','POSTURA TECTRON R10'],
                  cor: '#2c3e50' },
 };
 
@@ -12330,7 +12342,7 @@ function aplicarFiltrosRel() {
             // Todas as rações de FASES_MAP filtradas pela análise
             const todasRacoesFase = Object.values(FASES_MAP).flatMap(f => f.racoes);
             const unicas = [...new Set(todasRacoesFase)];
-            racoesAlvo = unicas.filter(rac => base.some(r => r.racao === rac && getValor(r, analise) > 0));
+            racoesAlvo = unicas.filter(rac => base.some(r => _racaoEq(r.racao, rac) && getValor(r, analise) > 0));
             tituloSel    = 'TODAS AS FASES';
             corPrincipal = '#2980b9';
             isTodas      = true;
@@ -12343,7 +12355,7 @@ function aplicarFiltrosRel() {
         }
     }
 
-    const dados = base.filter(r => racoesAlvo.includes(r.racao));
+    const dados = base.filter(r => _racaoIn(r.racao, racoesAlvo));
 
     // Período legível
     const diStr = new Date(di+'T00:00:00').toLocaleDateString('pt-BR');
@@ -12391,7 +12403,7 @@ function aplicarFiltrosRel() {
         if (faseSel === 'todos_fase') {
             // Todas as fases de todos os grupos, filtradas pelas rações que têm dados
             subFases = Object.keys(FASES_MAP).filter(fk =>
-                FASES_MAP[fk].racoes.some(rac => base.some(r => r.racao === rac && getValor(r, analise) > 0))
+                FASES_MAP[fk].racoes.some(rac => base.some(r => _racaoEq(r.racao, rac) && getValor(r, analise) > 0))
             );
             renderTabelaFases(base, subFases, analise, analNome);
             renderGraficoBar(base, subFases, analise, analNome);
@@ -12560,7 +12572,7 @@ function renderTabelaFases(base, subFases, analise, analNome) {
     const tbody = document.getElementById('relTbodyFases');
     tbody.innerHTML = subFases.map((fk, i) => {
         const f    = FASES_MAP[fk];
-        const dd   = base.filter(r => f.racoes.includes(r.racao));
+        const dd   = base.filter(r => _racaoIn(r.racao, f.racoes));
         const vals = dd.map(r => getValor(r, analise)).filter(v => v > 0);
         const e    = calcEstat(vals);
         const cvCor= e.cv<=10?'#27ae60':e.cv<=15?'#e67e22':'#e74c3c';
@@ -12581,12 +12593,12 @@ function renderGraficoBar(base, subFases, analise, analNome) {
     const labels   = subFases.map(fk => FASES_MAP[fk].label);
     const cores    = subFases.map(fk => FASES_MAP[fk].cor);
     const medias   = subFases.map(fk => {
-        const dd = base.filter(r => FASES_MAP[fk].racoes.includes(r.racao));
+        const dd = base.filter(r => _racaoIn(r.racao, FASES_MAP[fk].racoes));
         const vs = dd.map(r => getValor(r, analise));
         return vs.length ? parseFloat((vs.reduce((a,b)=>a+b,0)/vs.length).toFixed(2)) : 0;
     });
     const cvs = subFases.map(fk => {
-        const dd = base.filter(r => FASES_MAP[fk].racoes.includes(r.racao));
+        const dd = base.filter(r => _racaoIn(r.racao, FASES_MAP[fk].racoes));
         const vs = dd.map(r => getValor(r, analise));
         return parseFloat(calcEstat(vs).cv.toFixed(2));
     });
@@ -12624,7 +12636,7 @@ function renderTabelaRacoes(base, racoes, analise, analNome) {
     if (thFase) thFase.textContent = 'RAÇÃO';
     tbody.innerHTML = racoes.map((rac, i) => {
         const cor  = PALETA[i % PALETA.length];
-        const dd   = base.filter(r => r.racao === rac);
+        const dd   = base.filter(r => _racaoEq(r.racao, rac));
         const vals = dd.map(r => getValor(r, analise)).filter(v => v > 0);
         const e    = calcEstat(vals);
         const cvCor= e.cv<=10?'#27ae60':e.cv<=15?'#e67e22':'#e74c3c';
@@ -12646,12 +12658,12 @@ function renderGraficoBarRacoes(base, racoes, analise, analNome) {
     const labels = racoes;
     const cores  = racoes.map((_,i) => PALETA[i % PALETA.length]);
     const medias = racoes.map(rac => {
-        const dd = base.filter(r => r.racao === rac);
+        const dd = base.filter(r => _racaoEq(r.racao, rac));
         const vs = dd.map(r => getValor(r, analise)).filter(v => v > 0);
         return vs.length ? parseFloat((vs.reduce((a,b)=>a+b,0)/vs.length).toFixed(2)) : 0;
     });
     const cvs = racoes.map(rac => {
-        const dd = base.filter(r => r.racao === rac);
+        const dd = base.filter(r => _racaoEq(r.racao, rac));
         const vs = dd.map(r => getValor(r, analise)).filter(v => v > 0);
         return parseFloat(calcEstat(vs).cv.toFixed(2));
     });
@@ -12684,7 +12696,7 @@ function renderGraficoBarRacoes(base, racoes, analise, analNome) {
 function renderDetalhe(dados, analise, analNome) {
     const tbody = document.getElementById('relTbodyDetalhe');
     if (!dados.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#999;">Nenhum registro no período</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#999;">Nenhum registro no período</td></tr>';
         return;
     }
     const sorted = [...dados].sort((a,b) => a.data.localeCompare(b.data) || a.hora.localeCompare(b.hora));
@@ -12716,6 +12728,7 @@ function renderDetalhe(dados, analise, analNome) {
             <td style="padding:5px 8px;">${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td>
             <td style="padding:5px 8px;">${r.hora||''}</td>
             <td style="padding:5px 8px;text-align:left;">${r.racao}</td>
+            <td style="padding:5px 8px;">${r.tela_moinho || '-'}</td>
             <td style="padding:5px 8px;">${r.lote||''}</td>
             <td style="padding:5px 8px;font-weight:bold;">${analise === 'dgm' ? Math.round(val) : val.toFixed(2)}</td>
             <td style="padding:5px 8px;font-weight:bold;${dpgCor}">${dpgStatus}</td>
@@ -17281,8 +17294,8 @@ const RACOES_GRUPOS = [
       formulacoes:['POSTURA TECTRON R8'] },
     { grupo:'POSTURA R9', label:'POSTURA R9', racoes:['POSTURA MCASSAB R9','POSTURA TECTRON R9'], cor:'#1a9af0',
       formulacoes:['POSTURA MCASSAB R9','POSTURA TECTRON R9'] },
-    { grupo:'POSTURA R10',label:'POSTURA R10',racoes:['POSTURA MCASSAB R 10','POSTURA TECTRON R 10'], cor:'#2aaaf8',
-      formulacoes:['POSTURA MCASSAB R 10','POSTURA TECTRON R 10'] },
+    { grupo:'POSTURA R10',label:'POSTURA R10',racoes:['POSTURA MCASSAB R10','POSTURA TECTRON R10'], cor:'#2aaaf8',
+      formulacoes:['POSTURA MCASSAB R10','POSTURA TECTRON R10'] },
     { grupo:'BEPEL CALCÁRIO FINO',  label:'BEPEL CALCÁRIO FINO',  racoes:['BEPEL CALCÁRIO FINO'],  cor:'#7f8c8d',
       formulacoes:['BEPEL CALCÁRIO FINO'] },
     { grupo:'BEPEL CALCÁRIO GROSSO',label:'BEPEL CALCÁRIO GROSSO',racoes:['BEPEL CALCÁRIO GROSSO'],cor:'#95a5a6',
@@ -17407,10 +17420,12 @@ async function _carregarRacoesCustomizadas() {
 
         // ── AUTO-CORREÇÃO: MACASSAB → MCASSAB (grafia errada salva no banco) ──
         // ── AUTO-CORREÇÃO: hífen em BEPEL (ex: BEPEL-CALCÁRIO → BEPEL CALCÁRIO) ──
+        // ── AUTO-CORREÇÃO: "R 10" com espaço → "R10" (padrão correto usado nas rações nativas) ──
         for (const row of data) {
             const nomeFix = (row.nome || '')
                 .replace(/MAC(\s*)ASSAB/gi, 'MCASSAB')
-                .replace(/BEPEL\s*-\s*/gi, 'BEPEL ');
+                .replace(/BEPEL\s*-\s*/gi, 'BEPEL ')
+                .replace(/\bR\s+(\d{2,})\b/gi, 'R$1');
             if (row.nome && nomeFix !== row.nome) {
                 try {
                     await _sbClient.from('racoes_customizadas').update({ nome: nomeFix }).eq('id', row.id);
@@ -17418,7 +17433,7 @@ async function _carregarRacoesCustomizadas() {
             }
         }
         // Recarrega após correção
-        nomes = nomes.map(n => n.replace(/MAC(\s*)ASSAB/gi, 'MCASSAB').replace(/BEPEL\s*-\s*/gi, 'BEPEL '));
+        nomes = nomes.map(n => n.replace(/MAC(\s*)ASSAB/gi, 'MCASSAB').replace(/BEPEL\s*-\s*/gi, 'BEPEL ').replace(/\bR\s+(\d{2,})\b/gi, 'R$1'));
 
         // Atualiza cache local
         localStorage.setItem(RACOES_CUSTOM_KEY, JSON.stringify(nomes));
@@ -17426,7 +17441,7 @@ async function _carregarRacoesCustomizadas() {
     } catch(e) {
         // Fallback: usa cache local se Supabase indisponível
         _getRacoesCustomizadasCache()
-            .map(n => n.replace(/MAC(\s*)ASSAB/gi, 'MCASSAB'))
+            .map(n => n.replace(/MAC(\s*)ASSAB/gi, 'MCASSAB').replace(/\bR\s+(\d{2,})\b/gi, 'R$1'))
             .forEach(nome => { _injetarRacaoEmMemoria(nome); _injetarRacaoNosSelects(nome); });
     }
 }
@@ -17737,7 +17752,7 @@ function diagnosticarProd() {
         });
 
         // Verifica os últimos 5 registros desta ração
-        const regs = producoes.filter(r => r.racao === racao).sort((a,b) => b.data.localeCompare(a.data)).slice(0, 5);
+        const regs = producoes.filter(r => _racaoEq(r.racao, racao)).sort((a,b) => b.data.localeCompare(a.data)).slice(0, 5);
         if (regs.length) {
             out += `  Últimos registros:\n`;
             regs.forEach(r => {
@@ -31703,7 +31718,7 @@ Use linguagem executiva clara e técnica. Cite valores exatos dos dados. Inclua 
         const dgmCorteFin    = _dgmFase(['CORTE R3 WISIUM','CORTE R3 MCASSAB','CORTE R4 WISIUM','CORTE R4 MCASSAB','CORTE R5 WISIUM','CORTE R5 MCASSAB'], prodMes);
         const dgmPosPreIni   = _dgmFase(['POSTURA MCASSAB R1'], prodMes);
         const dgmPosIni      = _dgmFase(['POSTURA MCASSAB R2'], prodMes);
-        const dgmPosFin      = _dgmFase(['POSTURA MCASSAB R3','POSTURA MCASSAB R5','POSTURA MCASSAB R6','POSTURA MCASSAB R7','POSTURA MCASSAB R9','POSTURA MCASSAB R 10','POSTURA TECTRON R7','POSTURA TECTRON R8','POSTURA TECTRON R9','POSTURA TECTRON R 10'], prodMes);
+        const dgmPosFin      = _dgmFase(['POSTURA MCASSAB R3','POSTURA MCASSAB R5','POSTURA MCASSAB R6','POSTURA MCASSAB R7','POSTURA MCASSAB R9','POSTURA MCASSAB R10','POSTURA TECTRON R7','POSTURA TECTRON R8','POSTURA TECTRON R9','POSTURA TECTRON R10'], prodMes);
         const dgmCortePreIniAnt = _dgmFase(['CORTE R1 WISIUM','CORTE R1 MCASSAB'], prodAnt);
         const dgmCorteIniAnt    = _dgmFase(['CORTE R2 WISIUM','CORTE R2 MCASSAB'], prodAnt);
         const dgmCorteFimAnt    = _dgmFase(['CORTE R3 WISIUM','CORTE R3 MCASSAB','CORTE R4 WISIUM','CORTE R4 MCASSAB','CORTE R5 WISIUM','CORTE R5 MCASSAB'], prodAnt);
