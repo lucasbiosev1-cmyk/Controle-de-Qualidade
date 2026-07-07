@@ -10569,8 +10569,13 @@ function aplicarPermissoes() {
 
     // Carrega entradas ao logar
     if (podeEntradaMP) {
-        carregarListaMP(); // ✅ Carrega lista de matérias-primas do Supabase
-        carregarEntradasMP().then(() => {
+        Promise.all([
+            carregarListaMP(),   // ✅ Carrega lista de matérias-primas do Supabase
+            carregarEntradasMP()
+        ]).then(() => {
+            // ✅ CORREÇÃO: sincroniza o filtro com produtos que existem nos
+            // registros mas não estão na tabela lista_materias_primas
+            _empSincronizarListaComRegistros();
             // Inicia sempre no modo "pendentes" — mostra apenas cargas em andamento
             empSetModo('pendentes', true);
         });
@@ -15490,7 +15495,7 @@ function aplicarFiltrosEMP() {
     if (label) label.textContent = 'Mostrando todo o histórico';
     // Se entradasMP estiver vazio (não carregado ainda), recarrega do banco antes de filtrar
     if (!entradasMP || entradasMP.length === 0) {
-        carregarEntradasMP().then(() => exibirTabelaEMP());
+        carregarEntradasMP().then(() => { _empSincronizarListaComRegistros(); exibirTabelaEMP(); });
     } else {
         exibirTabelaEMP();
     }
@@ -15533,6 +15538,22 @@ async function carregarListaMP() {
         _empListaMP = [..._EMP_MP_PADRAO];
     }
     _empPopularFiltroMP();
+}
+
+// ✅ CORREÇÃO: garante que todo produto que já possui lançamentos em entradas_mp
+// apareça no filtro, mesmo que não esteja cadastrado na tabela lista_materias_primas
+// (ex: produtos importados via XML de NF-e que nunca foram adicionados à lista).
+function _empSincronizarListaComRegistros() {
+    try {
+        const nomesNosRegistros = [...new Set(
+            (entradasMP || []).map(r => (r.materia_prima || '').trim().toUpperCase()).filter(Boolean)
+        )];
+        let mudou = false;
+        nomesNosRegistros.forEach(nome => {
+            if (!_empListaMP.includes(nome)) { _empListaMP.push(nome); mudou = true; }
+        });
+        if (mudou) _empPopularFiltroMP();
+    } catch(e) {}
 }
 
 // ✅ Popula o select "Matéria Prima" da barra de filtros da aba Entrada de Mat. Prima
