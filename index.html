@@ -19299,26 +19299,80 @@ function imprimirBoletim() {
       </div>
     </div>`;
 
-    // ── PÁGINA 2: Resumo Executivo — layout minimalista corporativo ───────────
-    // Extrai contadores do boletimConteudo gerado
-    const bolHTML = conteudo.innerHTML;
-    const extrairN = (label) => {
-        // Tenta extrair o número do stat card da capa do boletim (div.bol-capa-stat)
-        const re = new RegExp('<div class="n">(\\d+)<\\/div>[\\s\\S]*?<div class="l">[^<]*' + label + '[^<]*<\\/div>', 'i');
-        const m = bolHTML.match(re);
-        return m ? m[1] : '—';
+    // ── PÁGINA 2: Resumo Executivo — Indicadores de Conformidade do Período ───
+    // Filtra os registros pelo período selecionado no boletim (bolDataInicio/bolDataFim)
+    const _isPeriodo = r => {
+        if (!r.data) return false;
+        if (_bolFi && r.data < _bolFi) return false;
+        if (_bolFf && r.data > _bolFf) return false;
+        return true;
     };
-    // Extrai pelo texto do label exato
-    const extrairPorLabel = (labelFragment) => {
-        const re = new RegExp('<div class="n">(\\d+)<\\/div>\\s*<div class="l">[^<]*' + labelFragment + '[^<]*<\\/div>', 'i');
-        const m = bolHTML.match(re);
-        return m ? m[1] : null;
+    const _isConfBol   = s => (s.includes('CONFORME') && !s.includes('NÃO')) || (s.includes('>C<') && !s.includes('NC'));
+    const _temParamBol = s => !s.includes('S/ PARÂM');
+
+    // ── Contagem por parâmetro analisado (mesma lógica do card "Análises Hoje" do dashboard) ──
+    const _temValorMPBol = (r, campo) => {
+        const v = r[campo];
+        if (v === null || v === undefined) return false;
+        if (campo === 'ureatica' || campo === 'peroxido' || campo === 'rancidez' || campo === 'aflatoxinas' || campo === 'fumonisinas') return true;
+        return parseFloat(v) > 0;
     };
-    const nProd  = extrairPorLabel('Prod') || extrairPorLabel('prod') || '—';
-    const nClass = extrairPorLabel('Class') || extrairPorLabel('class') || '—';
-    const nMP    = extrairPorLabel('Matéria') || extrairPorLabel('Prima') || '—';
-    const nTotal = extrairPorLabel('Total Registros') || extrairPorLabel('Registros') || '—';
-    const nAnal  = extrairPorLabel('Total Análises') || extrairPorLabel('Análises') || '—';
+    const _camposMPBol      = ['proteina','solubil','umidade','densidade','mineral','acidez','ureatica','rancidez','peroxido','digestibilidade'];
+    const _camposProdBol    = ['dgm','extrato','umidade','densidade','proteina','fibra','mineral','calcio','fosforo'];
+    const _camposDefeitoBol = ['queimado','ardido','mofado','esverdeado','fermentando','chocho','picado','gessado','quebrado','germinado','carunchado','impureza'];
+    const _contarClassBol = (r) => {
+        let n = 0;
+        if (_camposDefeitoBol.some(c => _temValorMPBol(r, c))) n++;
+        if (_temValorMPBol(r, 'umidade'))   n++;
+        if (_temValorMPBol(r, 'densidade')) n++;
+        if (_temValorMPBol(r, 'aflatoxinas')) n++;
+        if (_temValorMPBol(r, 'fumonisinas')) n++;
+        return n;
+    };
+    const _contarProdBol = (r) => {
+        let n = _camposProdBol.filter(c => _temValorMPBol(r, c)).length;
+        if (!_temValorMPBol(r,'dgm') && _temValorMPBol(r,'dpg')) n++;
+        if (_temValorMPBol(r,'granulo1') || _temValorMPBol(r,'granulo2') || _temValorMPBol(r,'granulo3') || _temValorMPBol(r,'fundo')) n++;
+        return n;
+    };
+
+    const _ESTOQUE_EXCLUIR_BOL = ['MILHO ESTOQUE 01','MILHO ESTOQUE 02','SOJA ESTOQUE 01'];
+    const _naoEhEstoqueBol = r => !_ESTOQUE_EXCLUIR_BOL.includes((r.produto||'').toUpperCase().trim());
+
+    // ── Produção ──
+    const _prodBolPeriodo = (producoes||[]).filter(_isPeriodo);
+    const _spProdBol = r => statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data);
+    const confProdBol  = _prodBolPeriodo.filter(r => _isConfBol(_spProdBol(r))).length;
+    const totalProdBol = _prodBolPeriodo.filter(r => _temParamBol(_spProdBol(r))).length;
+    const pctProdBol   = totalProdBol > 0 ? Math.round(confProdBol / totalProdBol * 100) : 0;
+    let analisesProdBol = 0;
+    _prodBolPeriodo.forEach(r => { analisesProdBol += _contarProdBol(r); });
+
+    // ── Matéria-Prima ──
+    const _mpBolPeriodo = (materiasPrimas||[]).filter(_isPeriodo);
+    const _spMPBol = r => statusPorParametros(r,'mp',r.produto,CAMPOS_MP,r.data);
+    const confMPBol  = _mpBolPeriodo.filter(r => _isConfBol(_spMPBol(r))).length;
+    const totalMPBol = _mpBolPeriodo.filter(r => _temParamBol(_spMPBol(r))).length;
+    const pctMPBol   = totalMPBol > 0 ? Math.round(confMPBol / totalMPBol * 100) : 0;
+    let analisesMPBol = 0;
+    _mpBolPeriodo.forEach(r => { _camposMPBol.forEach(c => { if (_temValorMPBol(r, c)) analisesMPBol++; }); });
+
+    // ── Classificação de Grãos ──
+    const _classBolPeriodo = (classificacoes||[]).filter(_isPeriodo).filter(_naoEhEstoqueBol);
+    const _spClassBol = r => statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data);
+    const confClassBol  = _classBolPeriodo.filter(r => _isConfBol(_spClassBol(r))).length;
+    const totalClassBol = _classBolPeriodo.filter(r => _temParamBol(_spClassBol(r))).length;
+    const pctClassBol   = totalClassBol > 0 ? Math.round(confClassBol / totalClassBol * 100) : 0;
+    let analisesClassBol = 0;
+    _classBolPeriodo.forEach(r => { analisesClassBol += _contarClassBol(r); });
+
+    // ── Geral (Produção + MP + Classificação) ──
+    const confGeralBol  = confProdBol + confMPBol + confClassBol;
+    const totalGeralBol = totalProdBol + totalMPBol + totalClassBol;
+    const pctGeralBol   = totalGeralBol > 0 ? Math.round(confGeralBol / totalGeralBol * 100) : 0;
+    const analisesGeralBol = analisesProdBol + analisesMPBol + analisesClassBol;
+
+    const _corConfBol = pct => pct >= 80 ? '#27ae60' : pct >= 60 ? '#e67e22' : '#C0392B';
 
     // ── Extrai devoluções do período do boletim ───────────────────────────────
     // bolDataInicio e bolDataFim vêm dos filtros já usados para gerar o boletim
@@ -19422,30 +19476,31 @@ function imprimirBoletim() {
         <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;margin-bottom:14mm;">
           <thead>
             <tr style="-webkit-print-color-adjust:exact;print-color-adjust:exact;">
-              <th style="text-align:left;padding:5mm 6mm;font-size:9px;font-weight:900;color:#fff;background:#0B3C5D;letter-spacing:1.5px;text-transform:uppercase;border:none;width:70%;">Indicador</th>
-              <th style="text-align:right;padding:5mm 6mm;font-size:9px;font-weight:900;color:#fff;background:#0B3C5D;letter-spacing:1.5px;text-transform:uppercase;border:none;width:30%;">Registros</th>
+              <th style="text-align:left;padding:5mm 6mm;font-size:9px;font-weight:900;color:#fff;background:#0B3C5D;letter-spacing:1.5px;text-transform:uppercase;border:none;width:50%;">Indicador</th>
+              <th style="text-align:right;padding:5mm 6mm;font-size:9px;font-weight:900;color:#fff;background:#0B3C5D;letter-spacing:1.5px;text-transform:uppercase;border:none;width:25%;">Conformidade (Mês)</th>
+              <th style="text-align:right;padding:5mm 6mm;font-size:9px;font-weight:900;color:#fff;background:#0B3C5D;letter-spacing:1.5px;text-transform:uppercase;border:none;width:25%;">Total Análises</th>
             </tr>
           </thead>
           <tbody>
             <tr style="border-bottom:1px solid #eaecef;">
-              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Produção</td>
-              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:#C0392B;text-align:right;">${nProd !== '—' ? nProd : '39'}</td>
+              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Conformidade — Produção</td>
+              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:${_corConfBol(pctProdBol)};text-align:right;">${pctProdBol}%</td>
+              <td style="padding:4.5mm 6mm;font-size:12px;color:#2c3e50;font-weight:700;text-align:right;">${analisesProdBol}</td>
             </tr>
             <tr style="background:#fafbfe;border-bottom:1px solid #eaecef;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
-              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Classificação</td>
-              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:#C0392B;text-align:right;">${nClass !== '—' ? nClass : '53'}</td>
+              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Conformidade — Mat. Prima</td>
+              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:${_corConfBol(pctMPBol)};text-align:right;">${pctMPBol}%</td>
+              <td style="padding:4.5mm 6mm;font-size:12px;color:#2c3e50;font-weight:700;text-align:right;">${analisesMPBol}</td>
             </tr>
-            <tr style="border-bottom:1px solid #eaecef;">
-              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Matéria-prima</td>
-              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:#C0392B;text-align:right;">${nMP !== '—' ? nMP : '20'}</td>
-            </tr>
-            <tr style="background:#fafbfe;border-bottom:2px solid #dce4f5;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
-              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Total de Registros</td>
-              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:#C0392B;text-align:right;">${nTotal !== '—' ? nTotal : '112'}</td>
+            <tr style="border-bottom:2px solid #dce4f5;">
+              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Classificação de Grãos</td>
+              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:${_corConfBol(pctClassBol)};text-align:right;">${pctClassBol}%</td>
+              <td style="padding:4.5mm 6mm;font-size:12px;color:#2c3e50;font-weight:700;text-align:right;">${analisesClassBol}</td>
             </tr>
             <tr style="border-bottom:2px solid #0B3C5D;">
-              <td style="padding:5mm 6mm;font-size:11px;color:#0B3C5D;font-weight:700;">Total de Análises</td>
-              <td style="padding:5mm 6mm;font-size:16px;font-weight:900;color:#C0392B;text-align:right;">${nAnal !== '—' ? nAnal : '474'}</td>
+              <td style="padding:5mm 6mm;font-size:11px;color:#0B3C5D;font-weight:700;">Conformidade Geral (Mês)</td>
+              <td style="padding:5mm 6mm;font-size:16px;font-weight:900;color:${_corConfBol(pctGeralBol)};text-align:right;">${pctGeralBol}%</td>
+              <td style="padding:5mm 6mm;font-size:13px;color:#0B3C5D;font-weight:900;text-align:right;">${analisesGeralBol}</td>
             </tr>
           </tbody>
         </table>
