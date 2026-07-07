@@ -12487,8 +12487,9 @@ function renderGraficoLinha(di, df, dados, analise, analNome, cor, racoesAlvo) {
     const fim = new Date(df+'T00:00:00');
     while (cur <= fim) { todasDatas.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate()+1); }
 
-    // Filtrar apenas datas com pelo menos 1 registro
-    const datas = todasDatas.filter(d => dados.some(r => r.data === d));
+    // Filtrar apenas datas que possuem ao menos 1 registro COM VALOR para a análise selecionada
+    // (evita datas "vazias" no eixo X quando a análise é medida só esporadicamente, ex: proteína)
+    const datas = todasDatas.filter(d => dados.some(r => r.data === d && getValor(r, analise) > 0));
 
     // Valor por dia (somente datas com registro — sem nulls, filtra zeros da analise)
     const mediaDia = datas.map(d => {
