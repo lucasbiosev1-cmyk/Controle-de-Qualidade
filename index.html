@@ -4649,6 +4649,10 @@
                         <option value="mineral">MATERIAL MINERAL (%)</option>
                         <option value="calcio">CÁLCIO (%)</option>
                         <option value="fosforo">FÓSFORO (%)</option>
+                        <option value="granulo1">GRÂNULO 1 - 4mm (%)</option>
+                        <option value="granulo2">GRÂNULO 2 - 2mm (%)</option>
+                        <option value="granulo3">GRÂNULO 3 - 0,60mm (%)</option>
+                        <option value="fundo">FUNDO (%)</option>
                     </select>
                 </div>
                 <div style="display:flex;gap:5px;align-items:flex-end;">
@@ -4771,10 +4775,14 @@
                                     <th style="padding:6px;">DATA</th>
                                     <th style="padding:6px;">HORA</th>
                                     <th style="padding:6px;text-align:left;">RAÇÃO</th>
-                                    <th style="padding:6px;">TELA/MOINHO</th>
                                     <th style="padding:6px;">LOTE</th>
+                                    <th style="padding:6px;">TELA/MOINHO</th>
                                     <th style="padding:6px;" id="thValor">DGM (µm)</th>
                                     <th style="padding:6px;" id="thDPG">DPG (µm)</th>
+                                    <th style="padding:6px;">GRÂNULO 1 - 4mm (%)</th>
+                                    <th style="padding:6px;">GRÂNULO 2 - 2mm (%)</th>
+                                    <th style="padding:6px;">GRÂNULO 3 - 0,60mm (%)</th>
+                                    <th style="padding:6px;">FUNDO (%)</th>
                                     <th style="padding:6px;">STATUS</th>
                                 </tr>
                             </thead>
@@ -12205,7 +12213,9 @@ const FASES_MAP = {
 const ANALISE_LABELS = {
     dgm:      'DGM (µm)', dpg: 'DPG (µm)', umidade: 'UMIDADE (%)',
     densidade:'DENSIDADE', proteina: 'PROTEÍNA (%)', fibra: 'FIBRA (%)',
-    mineral:  'MATERIAL MINERAL (%)', calcio: 'CÁLCIO (%)', fosforo: 'FÓSFORO (%)'
+    mineral:  'MATERIAL MINERAL (%)', calcio: 'CÁLCIO (%)', fosforo: 'FÓSFORO (%)',
+    granulo1: 'GRÂNULO 1 - 4mm (%)', granulo2: 'GRÂNULO 2 - 2mm (%)',
+    granulo3: 'GRÂNULO 3 - 0,60mm (%)', fundo: 'FUNDO (%)'
 };
 
 // Limites de referência por análise
@@ -12234,7 +12244,8 @@ function limparFiltrosRel() { inicializarRelatorio(); }
 function getValor(r, analise) {
     const m = { dgm:'dgm', dpg:'dpg', umidade:'umidade', densidade:'densidade',
                 proteina:'proteina', fibra:'fibra', mineral:'mineral',
-                calcio:'calcio', fosforo:'fosforo' };
+                calcio:'calcio', fosforo:'fosforo', granulo1:'granulo1',
+                granulo2:'granulo2', granulo3:'granulo3', fundo:'fundo' };
     return parseFloat(r[m[analise]]) || 0;
 }
 
@@ -12281,7 +12292,6 @@ function aplicarFiltrosRel() {
         document.getElementById('relPeriodo').textContent  = `PERÍODO: ${diStr} ATÉ ${dfStr}  |  ${racoesAlvo.length} ração(ões) com ${analNome}`;
         document.getElementById('relTitulo').textContent   = `RELATÓRIO: TODAS AS RAÇÕES`;
         document.getElementById('relGraficoTitulo').textContent = `EVOLUÇÃO GERAL — ${analNome}`;
-        document.getElementById('thValor').textContent    = analNome;
         if (document.getElementById('thDPG')) document.getElementById('thDPG').textContent = 'DPG (µm)';
         document.getElementById('thAnalise').textContent  = `MÉDIA ${analNome}`;
         if (document.getElementById('relCapaPeriodo'))
@@ -12363,7 +12373,6 @@ function aplicarFiltrosRel() {
     document.getElementById('relPeriodo').textContent  = `PERÍODO: ${diStr} ATÉ ${dfStr}  |  ${dados.length} registro(s)`;
     document.getElementById('relTitulo').textContent   = `RELATÓRIO: ${tituloSel}`;
     document.getElementById('relGraficoTitulo').textContent = `EVOLUÇÃO ${tituloSel} — ${analNome}`;
-    document.getElementById('thValor').textContent    = analNome;
     if (document.getElementById('thDPG')) document.getElementById('thDPG').textContent = 'DPG (µm)';
     document.getElementById('thAnalise').textContent  = `MÉDIA ${analNome}`;
     // Atualiza capa
@@ -12696,7 +12705,7 @@ function renderGraficoBarRacoes(base, racoes, analise, analNome) {
 function renderDetalhe(dados, analise, analNome) {
     const tbody = document.getElementById('relTbodyDetalhe');
     if (!dados.length) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#999;">Nenhum registro no período</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:20px;color:#999;">Nenhum registro no período</td></tr>';
         return;
     }
     const sorted = [...dados].sort((a,b) => a.data.localeCompare(b.data) || a.hora.localeCompare(b.hora));
@@ -12709,6 +12718,18 @@ function renderDetalhe(dados, analise, analNome) {
             const foraMin = cfg.min > 0 && val < cfg.min;
             const foraMax = cfg.max < 9999 && val > cfg.max;
             if (foraMin || foraMax) status = '<span class="badge badge-nao-conforme">NC</span>';
+        }
+        const dgmVal = parseFloat(r.dgm);
+        const dgmCfg = getParam('prod', racKey, 'dgm', r.data);
+        let dgmTexto = '<span style="color:#666;">—</span>';
+        let dgmCor = '';
+        if (!isNaN(dgmVal) && dgmVal > 0) {
+            if (dgmCfg && dgmCfg.ativo) {
+                const foraMin = dgmCfg.min > 0 && dgmVal < dgmCfg.min;
+                const foraMax = dgmCfg.max < 9999 && dgmVal > dgmCfg.max;
+                dgmCor = (foraMin || foraMax) ? 'color:#e74c3c;' : '';
+            }
+            dgmTexto = Math.round(dgmVal);
         }
         const dpgVal = parseFloat(r.dpg);
         const dpgCfg = getParam('prod', racKey, 'dpg', r.data);
@@ -12728,10 +12749,14 @@ function renderDetalhe(dados, analise, analNome) {
             <td style="padding:5px 8px;">${new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR')}</td>
             <td style="padding:5px 8px;">${r.hora||''}</td>
             <td style="padding:5px 8px;text-align:left;">${r.racao}</td>
-            <td style="padding:5px 8px;">${r.tela_moinho || '-'}</td>
             <td style="padding:5px 8px;">${r.lote||''}</td>
-            <td style="padding:5px 8px;font-weight:bold;">${analise === 'dgm' ? Math.round(val) : val.toFixed(2)}</td>
+            <td style="padding:5px 8px;">${r.tela_moinho || '-'}</td>
+            <td style="padding:5px 8px;font-weight:bold;${dgmCor}">${dgmTexto}</td>
             <td style="padding:5px 8px;font-weight:bold;${dpgCor}">${dpgStatus}</td>
+            <td style="padding:5px 8px;"${estiloFora(r.granulo1,'prod',r.racao,'granulo1',r.data)}>${fmtN(r.granulo1,2)}</td>
+            <td style="padding:5px 8px;"${estiloFora(r.granulo2,'prod',r.racao,'granulo2',r.data)}>${fmtN(r.granulo2,2)}</td>
+            <td style="padding:5px 8px;"${estiloFora(r.granulo3,'prod',r.racao,'granulo3',r.data)}>${fmtN(r.granulo3,2)}</td>
+            <td style="padding:5px 8px;"${estiloFora(r.fundo,'prod',r.racao,'fundo',r.data)}>${fmtN(r.fundo,2)}</td>
             <td style="padding:5px 8px;">${status}</td>
         </tr>`;
     }).join('');
