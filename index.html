@@ -8856,6 +8856,12 @@
 
             <div class="filtros" id="empFiltrosAvancados">
                 <div class="form-group"><label>Filtrar por NF:</label><input type="text" id="filterNFEMP" placeholder="NÚMERO DA NOTA"></div>
+                <div class="form-group">
+                    <label>Matéria Prima:</label>
+                    <select id="filterMPEMP">
+                        <option value="">TODAS</option>
+                    </select>
+                </div>
                 <div class="form-group"><label>Data Início:</label><input type="date" id="filterDataInicioEMP"></div>
                 <div class="form-group"><label>Data Fim:</label><input type="date" id="filterDataFimEMP"></div>
                 <div class="form-group">
@@ -15094,6 +15100,7 @@ function exibirTabelaEMP(lista) {
     const df       = (document.getElementById('filterDataFimEMP')?.value || '').trim();
     const forn     = (document.getElementById('filterFornecedorEMP')?.value || '').trim().toUpperCase();
     const statusF  = document.getElementById('filterStatusEMP')?.value || '';
+    const mpF      = (document.getElementById('filterMPEMP')?.value || '').trim().toUpperCase();
 
     // Normaliza data do registro para YYYY-MM-DD (garante comparação correta independente do formato vindo do banco)
     function _normData(d) {
@@ -15117,6 +15124,7 @@ function exibirTabelaEMP(lista) {
         if (df && rd > df) return false;
         if (forn && !(r.fornecedor||'').toUpperCase().includes(forn)) return false;
         if (statusF && r.status !== statusF) return false;
+        if (mpF && (r.materia_prima||'').trim().toUpperCase() !== mpF) return false;
         return true;
     });
 
@@ -15491,6 +15499,7 @@ function limparFiltrosEMP() {
     ['filterNFEMP','filterFornecedorEMP'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
     ['filterDataInicioEMP','filterDataFimEMP'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
     const sel = document.getElementById('filterStatusEMP'); if(sel) sel.value='';
+    const selMP = document.getElementById('filterMPEMP'); if(selMP) selMP.value='';
     // Volta ao modo pendentes ao limpar
     empSetModo('pendentes');
 }
@@ -15523,6 +15532,18 @@ async function carregarListaMP() {
         console.warn('Erro ao carregar lista_materias_primas, usando padrão:', e.message);
         _empListaMP = [..._EMP_MP_PADRAO];
     }
+    _empPopularFiltroMP();
+}
+
+// ✅ Popula o select "Matéria Prima" da barra de filtros da aba Entrada de Mat. Prima
+function _empPopularFiltroMP() {
+    const sel = document.getElementById('filterMPEMP');
+    if (!sel) return;
+    const valorAtual = sel.value;
+    const lista = [..._empListaMP].sort((a,b) => a.localeCompare(b));
+    sel.innerHTML = '<option value="">TODAS</option>' +
+        lista.map(nome => `<option value="${nome}">${nome}</option>`).join('');
+    if (valorAtual && lista.includes(valorAtual)) sel.value = valorAtual;
 }
 
 function _empPopularSelectMP(valorAtual) {
@@ -15544,6 +15565,7 @@ async function empAdicionarMP() {
         _empListaMP.sort();
         const inp = document.getElementById('cadMateriaPrimaEMP');
         if (inp) inp.value = nomeUp;
+        _empPopularFiltroMP();
         sgqToast('Matéria prima "' + nomeUp + '" adicionada com sucesso!', 'success');
     } catch(e) {
         alert('Erro ao salvar no banco: ' + e.message);
@@ -15561,6 +15583,7 @@ async function empRemoverMP() {
         if (error) throw new Error(error.message);
         _empListaMP = _empListaMP.filter(m => m !== val);
         if (inp) inp.value = '';
+        _empPopularFiltroMP();
         sgqToast('Matéria prima "' + val + '" removida com sucesso!', 'success');
     } catch(e) {
         alert('Erro ao remover do banco: ' + e.message);
@@ -16266,24 +16289,42 @@ window.imprimirRelatorioEMPPorTipo = function() {
     const df    = document.getElementById('filterDataFimEMP')?.value || '';
     const forn  = (document.getElementById('filterFornecedorEMP')?.value || '').trim();
     const stF   = document.getElementById('filterStatusEMP')?.value || '';
+    const mpF   = (document.getElementById('filterMPEMP')?.value || '').trim();
     const total = document.getElementById('totalRegistrosEMP')?.textContent || '0';
 
     const filtrosArr = [];
     if (nf)   filtrosArr.push('NF: ' + nf);
+    if (mpF)  filtrosArr.push('Mat\u00e9ria Prima: ' + mpF);
     if (di)   filtrosArr.push('De: ' + di.split('-').reverse().join('/'));
     if (df)   filtrosArr.push('At\u00e9: ' + df.split('-').reverse().join('/'));
     if (forn) filtrosArr.push('Fornecedor: ' + forn);
     if (stF)  filtrosArr.push('Status: ' + stF);
+    if (_empModoAtual === 'pendentes') filtrosArr.push('Somente pendentes/an\u00e1lise');
     const filtrosTxt = filtrosArr.length ? filtrosArr.join(' &nbsp;|&nbsp; ') : 'Todos os registros';
 
     const nfF   = nf.toUpperCase();
     const fornF = forn.toUpperCase();
+    const mpFU  = mpF.toUpperCase();
+
+    // Mesma normaliza\u00e7\u00e3o de data usada em exibirTabelaEMP, para manter os dois em sincronia
+    function _normDataPrint(d) {
+        if (!d) return '';
+        d = String(d).trim();
+        if (/^\d{4}-\d{2}-\d{2}/.test(d)) return d.substring(0, 10);
+        const m = d.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+        if (m) return m[3] + '-' + m[2] + '-' + m[1];
+        return d.substring(0, 10);
+    }
+
     let dados = entradasMP.filter(r => {
+        if (_empModoAtual === 'pendentes' && !_empEhPendente(r)) return false;
         if (nfF && !(r.nf||'').toUpperCase().includes(nfF)) return false;
-        if (di && r.data < di) return false;
-        if (df && r.data > df) return false;
+        const rd = _normDataPrint(r.data);
+        if (di && rd < di) return false;
+        if (df && rd > df) return false;
         if (fornF && !(r.fornecedor||'').toUpperCase().includes(fornF)) return false;
         if (stF && r.status !== stF) return false;
+        if (mpFU && (r.materia_prima||'').trim().toUpperCase() !== mpFU) return false;
         return true;
     });
 
