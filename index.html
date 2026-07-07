@@ -19301,6 +19301,8 @@ function imprimirBoletim() {
 
     // ── PÁGINA 2: Resumo Executivo — Indicadores de Conformidade do Período ───
     // Filtra os registros pelo período selecionado no boletim (bolDataInicio/bolDataFim)
+    const _bolFi = document.getElementById('bolDataInicio')?.value || '';
+    const _bolFf = document.getElementById('bolDataFim')?.value || '';
     const _isPeriodo = r => {
         if (!r.data) return false;
         if (_bolFi && r.data < _bolFi) return false;
@@ -19357,7 +19359,7 @@ function imprimirBoletim() {
     let analisesMPBol = 0;
     _mpBolPeriodo.forEach(r => { _camposMPBol.forEach(c => { if (_temValorMPBol(r, c)) analisesMPBol++; }); });
 
-    // ── Classificação de Grãos ──
+    // ── Classificação de Grãos (exclui estoque, mesma lógica da % de conformidade do dashboard) ──
     const _classBolPeriodo = (classificacoes||[]).filter(_isPeriodo).filter(_naoEhEstoqueBol);
     const _spClassBol = r => statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data);
     const confClassBol  = _classBolPeriodo.filter(r => _isConfBol(_spClassBol(r))).length;
@@ -19366,18 +19368,25 @@ function imprimirBoletim() {
     let analisesClassBol = 0;
     _classBolPeriodo.forEach(r => { analisesClassBol += _contarClassBol(r); });
 
-    // ── Geral (Produção + MP + Classificação) ──
+    // ── Classificação — Estoque (somente os produtos de estoque, mostrado à parte) ──
+    const _classEstoqueBolPeriodo = (classificacoes||[]).filter(_isPeriodo).filter(r => !_naoEhEstoqueBol(r));
+    const confEstoqueBol  = _classEstoqueBolPeriodo.filter(r => _isConfBol(_spClassBol(r))).length;
+    const totalEstoqueBol = _classEstoqueBolPeriodo.filter(r => _temParamBol(_spClassBol(r))).length;
+    const pctEstoqueBol   = totalEstoqueBol > 0 ? Math.round(confEstoqueBol / totalEstoqueBol * 100) : 0;
+    let analisesEstoqueBol = 0;
+    _classEstoqueBolPeriodo.forEach(r => { analisesEstoqueBol += _contarClassBol(r); });
+
+    // ── Geral (Produção + MP + Classificação, sem estoque — mesma lógica da % geral do dashboard) ──
     const confGeralBol  = confProdBol + confMPBol + confClassBol;
     const totalGeralBol = totalProdBol + totalMPBol + totalClassBol;
     const pctGeralBol   = totalGeralBol > 0 ? Math.round(confGeralBol / totalGeralBol * 100) : 0;
-    const analisesGeralBol = analisesProdBol + analisesMPBol + analisesClassBol;
+    // Total de análises inclui o estoque, para bater com o total mensal do dashboard (que conta tudo)
+    const analisesGeralBol = analisesProdBol + analisesMPBol + analisesClassBol + analisesEstoqueBol;
 
     const _corConfBol = pct => pct >= 80 ? '#27ae60' : pct >= 60 ? '#e67e22' : '#C0392B';
 
     // ── Extrai devoluções do período do boletim ───────────────────────────────
     // bolDataInicio e bolDataFim vêm dos filtros já usados para gerar o boletim
-    const _bolFi = document.getElementById('bolDataInicio')?.value || '';
-    const _bolFf = document.getElementById('bolDataFim')?.value || '';
     const devBoletim = (listaDev || []).filter(d => {
         if (!d.data) return false;
         if (_bolFi && d.data < _bolFi) return false;
@@ -19492,10 +19501,15 @@ function imprimirBoletim() {
               <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:${_corConfBol(pctMPBol)};text-align:right;">${pctMPBol}%</td>
               <td style="padding:4.5mm 6mm;font-size:12px;color:#2c3e50;font-weight:700;text-align:right;">${analisesMPBol}</td>
             </tr>
-            <tr style="border-bottom:2px solid #dce4f5;">
+            <tr style="border-bottom:1px solid #eaecef;">
               <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Classificação de Grãos</td>
               <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:${_corConfBol(pctClassBol)};text-align:right;">${pctClassBol}%</td>
               <td style="padding:4.5mm 6mm;font-size:12px;color:#2c3e50;font-weight:700;text-align:right;">${analisesClassBol}</td>
+            </tr>
+            <tr style="background:#fafbfe;border-bottom:2px solid #dce4f5;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+              <td style="padding:4.5mm 6mm;font-size:11px;color:#2c3e50;font-weight:500;">Classificação — Estoque</td>
+              <td style="padding:4.5mm 6mm;font-size:14px;font-weight:900;color:${_corConfBol(pctEstoqueBol)};text-align:right;">${pctEstoqueBol}%</td>
+              <td style="padding:4.5mm 6mm;font-size:12px;color:#2c3e50;font-weight:700;text-align:right;">${analisesEstoqueBol}</td>
             </tr>
             <tr style="border-bottom:2px solid #0B3C5D;">
               <td style="padding:5mm 6mm;font-size:11px;color:#0B3C5D;font-weight:700;">Conformidade Geral (Mês)</td>
