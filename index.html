@@ -17044,6 +17044,14 @@ async function carregarTodosAsync(forcar = false) {
     // nos registros do banco mas não estão na lista estática do HTML
     try { await _mpCarregarProdutosCustom(); } catch(e) {}
 
+    // ✅ CORREÇÃO: garante que TODO produto que já possui registros lançados
+    // apareça no filtro/cadastro, mesmo que tenha sido removido da lista de
+    // customizados (mp_produtos_custom) ou nunca tenha sido cadastrado lá.
+    try {
+        const produtosNosRegistrosMP = [...new Set(materiasPrimas.map(r => r.produto).filter(Boolean))];
+        produtosNosRegistrosMP.forEach(nome => _mpInjetarProdutoNosSelects(nome));
+    } catch(e) {}
+
     // Ao carregar dados, auto-registra rações que existem nas produções mas não estão nos selects
     // (ex: rações cadastradas antes deste sistema de persistência)
     try {
