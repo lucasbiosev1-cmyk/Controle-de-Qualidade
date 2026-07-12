@@ -15094,12 +15094,12 @@ async function _empAtualizarStatusConclusoes() {
     if (alterou) exibirTabelaEMP();
 }
 
-// Formata um timestamp ISO como DD/MM HH:MM (usado nas colunas de horário de análise e de conclusão de descarga)
+// Formata um timestamp ISO como DD/MM/AAAA HH:MM (usado nas colunas de horário de análise e de conclusão de descarga)
 function _empFormatarDataHora(iso) {
     if (!iso) return '-';
     const d = new Date(iso);
     if (isNaN(d.getTime())) return '-';
-    return d.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit'}) + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+    return d.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
 }
 
 function exibirTabelaEMP(lista) {
@@ -15157,7 +15157,7 @@ function exibirTabelaEMP(lista) {
     const thDescarga = document.getElementById('thDescargaEMP');
     if (thDescarga) thDescarga.style.display = '';
     (function(){
-        const widths = ['16%','7%','5%','9%','7%','8%','7%','10%','9%','10%','12%'];
+        const widths = ['14%','7%','5%','9%','7%','8%','7%','9%','11%','9%','14%'];
         widths.forEach((w, i) => { const col = document.getElementById('colEMP'+i); if(col) col.style.width = w; });
     })();
 
