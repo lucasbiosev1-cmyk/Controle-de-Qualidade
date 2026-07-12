@@ -1031,6 +1031,9 @@
         /* FILTROS */
         .filtros { background: #f0f3f8; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; align-items: flex-end; border: 1px solid #dce3ef; }
         .filtros label { display: block; font-weight: bold; font-size: 12px; margin-bottom: 5px; color: #34495e; }
+        #epFiltros { display: flex; flex-wrap: wrap; }
+        #epFiltros > .form-group { flex: 1 1 150px; min-width: 130px; }
+        #epFiltros > .ep-botoes { flex: 0 0 auto; margin-left: auto; display: flex; gap: 8px; align-items: flex-end; }
         .filtros input, .filtros select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; background: #fff; color: #222; }
         .btn-filtrar { background: #3498db; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-filtrar:hover { background: #2980b9; }
@@ -1614,6 +1617,16 @@
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+        .ep-inc-input, html[data-theme="dark"] .ep-inc-input {
+            background: transparent !important;
+            border: 1px solid transparent !important;
+            box-shadow: none !important;
+        }
+        .ep-inc-input:focus, html[data-theme="dark"] .ep-inc-input:focus {
+            background: rgba(255,255,255,0.06) !important;
+            border-color: rgba(88,166,255,0.5) !important;
+            box-shadow: none !important;
+        }
 
         /* ===== CAMPO DE OBSERVAÇÃO COLAPSÁVEL ===== */
         .obs-toggle {
@@ -9321,7 +9334,7 @@
     <!-- ===== ABA ENSAIO DE PROFICIÊNCIA ===== -->
     <div id="aba-ensaioProf" class="tab-content">
         <div class="container">
-            <div class="filtros">
+            <div class="filtros" id="epFiltros">
                 <div class="form-group">
                     <label>Data Início</label>
                     <input type="date" id="epDataIni">
@@ -9351,7 +9364,11 @@
                         <option value="">Selecione...</option>
                     </select>
                 </div>
-                <div style="display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap;">
+                <div class="form-group">
+                    <label>Nota Fiscal</label>
+                    <input type="text" id="epNotaFiscal" placeholder="Todos" autocomplete="off" style="text-transform:uppercase;">
+                </div>
+                <div class="ep-botoes">
                     <button class="btn-filtrar" style="white-space:nowrap;" onclick="epAplicarFiltros()">FILTRAR</button>
                     <button class="btn-print" style="white-space:nowrap;padding:8px 14px;font-size:12px;" onclick="epImprimir()">🖨️ IMPRIMIR</button>
                 </div>
@@ -9382,15 +9399,17 @@
                                 <th style="padding:6px;">Data</th>
                                 <th style="padding:6px;">Módulo</th>
                                 <th style="padding:6px;">Produto</th>
+                                <th style="padding:6px;">Nota Fiscal</th>
                                 <th style="padding:6px;">Parâmetro</th>
                                 <th style="padding:6px;">Interno (méd.)</th>
                                 <th style="padding:6px;">Externo (méd.)</th>
                                 <th style="padding:6px;">Fornecedor (méd.)</th>
-                                <th style="padding:6px;">Maior Dif. (%)</th>
-                                <th style="padding:6px;">Status</th>
+                                <th style="padding:6px;">Incerteza (±)</th>
+                                <th style="padding:6px;">Diferença (Ext-Int)</th>
+                                <th style="padding:6px;">Diferença (Forn-Ext)</th>
                             </tr>
                         </thead>
-                        <tbody id="epTabelaCorpo"><tr><td colspan="9" style="text-align:center;color:#999;padding:14px;">Nenhum registro encontrado</td></tr></tbody>
+                        <tbody id="epTabelaCorpo"><tr><td colspan="11" style="text-align:center;color:#999;padding:14px;">Nenhum registro encontrado</td></tr></tbody>
                     </table>
                     </div>
                 </div>
@@ -10873,10 +10892,12 @@ function kpiNavegar(delta) {
     _kpiMesOffset = Math.min(0, _kpiMesOffset + delta); // não passa do mês atual
     _kpiMesOffset = Math.max(minOffset, _kpiMesOffset);
 
-    // FIX: se os dados completos ainda não foram carregados (fast-path só tem 2 meses),
-    // força carregamento total antes de renderizar o mês histórico
-    if (_kpiMesOffset < 0 && !_dadosCarregados) {
-        carregarTodosAsync().then(() => atualizarKpisCapa()).catch(() => atualizarKpisCapa());
+    if (_kpiMesOffset < 0) {
+        // Garante que o mês navegado (+ o mês anterior a ele, usado na comparação) esteja em memória
+        const refData = new Date(agora.getFullYear(), agora.getMonth() + _kpiMesOffset, 1);
+        const inicioJanela = new Date(refData.getFullYear(), refData.getMonth() - 1, 1).toISOString().split('T')[0];
+        const fimJanela = new Date(refData.getFullYear(), refData.getMonth() + 1, 0).toISOString().split('T')[0]; // último dia do mês navegado
+        _garantirPeriodoCarregado(inicioJanela, fimJanela).then(() => atualizarKpisCapa()).catch(() => atualizarKpisCapa());
     } else {
         atualizarKpisCapa();
     }
@@ -11439,7 +11460,12 @@ function _inicializarFiltrosDataMesAtual() {
     });
 }
 
-function aplicarFiltrosProd() { exibirTabelaProd(); }
+async function aplicarFiltrosProd() {
+    const di = document.getElementById('filterDataInicioProd').value;
+    const df = document.getElementById('filterDataFimProd').value;
+    if (di && df) await _garantirPeriodoCarregado(di, df);
+    exibirTabelaProd();
+}
 function limparFiltrosProd() {
     ['filterLoteProd','filterRacaoProd'].forEach(id => document.getElementById(id).value = '');
     _inicializarFiltrosDataMesAtual();
@@ -11768,7 +11794,12 @@ function popularFornecedoresClass() {
         fornecedores.map(f => `<option value="${f}"${f===atual?' selected':''}>${f}</option>`).join('');
 }
 
-function aplicarFiltrosClass() { exibirTabelaClass(); }
+async function aplicarFiltrosClass() {
+    const di = document.getElementById('filterDataInicioClass').value;
+    const df = document.getElementById('filterDataFimClass').value;
+    if (di && df) await _garantirPeriodoCarregado(di, df);
+    exibirTabelaClass();
+}
 function limparFiltrosClass() {
     ['filterNFClass','filterProdutoClass','filterFornecedorClass'].forEach(id => document.getElementById(id).value = '');
     _inicializarFiltrosDataMesAtual();
@@ -12028,7 +12059,12 @@ function filtrarDadosMP() {
     ).sort((a, b) => new Date(b.data) - new Date(a.data));
 }
 
-function aplicarFiltrosMP() { exibirTabelaMP(); }
+async function aplicarFiltrosMP() {
+    const di = document.getElementById('filterDataInicioMP').value;
+    const df = document.getElementById('filterDataFimMP').value;
+    if (di && df) await _garantirPeriodoCarregado(di, df);
+    exibirTabelaMP();
+}
 function limparFiltrosMP() {
     ['filterNFMP','filterProdutoMP'].forEach(id => document.getElementById(id).value = '');
     _inicializarFiltrosDataMesAtual();
@@ -12279,6 +12315,10 @@ function aplicarFiltrosRel() {
     const analNome= ANALISE_LABELS[analise];
 
     if (!di || !df) return;
+    _garantirPeriodoCarregado(di, df).then(() => _aplicarFiltrosRelInterno(di, df, modo, analise, analNome));
+}
+
+function _aplicarFiltrosRelInterno(di, df, modo, analise, analNome) {
 
     // Filtrar por período
     let base = producoes.filter(r => r.data >= di && r.data <= df);
@@ -12877,9 +12917,12 @@ function _rfRenderTabela(tipo, linhas, mesLabel) {
 // Guarda o último resultado calculado, usado pela exportação para Excel
 let _rfUltimoResultado = null;
 
-function aplicarFiltroRelFabrica() {
+async function aplicarFiltroRelFabrica() {
     const mesVal = document.getElementById('rfMes').value; // formato "YYYY-MM"
     if (!mesVal) return;
+    const [anoMes, mesNumMes] = mesVal.split('-');
+    const ultimoDia = new Date(parseInt(anoMes), parseInt(mesNumMes), 0).getDate();
+    await _garantirPeriodoCarregado(mesVal + '-01', mesVal + '-' + String(ultimoDia).padStart(2, '0'));
 
     const dadosMes = producoes.filter(r => (r.data || '').startsWith(mesVal));
 
@@ -13493,13 +13536,14 @@ function getAvariados(r) {
 
 function med(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
 
-function aplicarFiltrosRelClass() {
+async function aplicarFiltrosRelClass() {
     try {
     carregarMicoParams(); // Garante parâmetros de micotoxinas sempre atualizados
     const di      = document.getElementById('rcDataInicio').value;
     const df      = document.getElementById('rcDataFim').value;
     const prodSel = document.getElementById('rcProduto').value;
     if (!di || !df) return;
+    await _garantirPeriodoCarregado(di, df);
 
     // Filtro por período
     let base = classificacoes.filter(r => r.data >= di && r.data <= df);
@@ -14038,13 +14082,14 @@ function getRkNome(criterio) {
     return mapa[criterio] || criterio;
 }
 
-function aplicarFiltrosRanking() {
+async function aplicarFiltrosRanking() {
     try {
     const di       = document.getElementById('rkDataInicio').value;
     const df       = document.getElementById('rkDataFim').value;
     const prodSel  = document.getElementById('rkProduto').value;
     const criterio = document.getElementById('rkCritério').value;
     if (!di || !df) return;
+    await _garantirPeriodoCarregado(di, df);
 
     const PRODUTOS_ESTOQUE = ['MILHO ESTOQUE 01','MILHO ESTOQUE 02','SOJA ESTOQUE 01'];
     // Detecta qualquer variação do nome Fábrica Agronor (com/sem acento, maiúsc.)
@@ -14779,7 +14824,7 @@ function confirmarImportExcel() {
         if (novosM.length) ops.push(dbPutAll('materias_primas',salvarM));
 
         Promise.all(ops).then(() => {
-            carregarTodosAsync(true).then(() => { // ✅ forcar=true após importação em massa
+            carregarTodosAsync(true, true).then(() => { // ✅ forcar=true, completo=true (importação pode incluir datas antigas)
                 exibirTabelaProd();
                 exibirTabelaClass();
                 exibirTabelaMP();
@@ -14998,7 +15043,7 @@ function confirmarImport() {
         if (novosM.length) ops.push(dbPutAll('materias_primas',salvarM));
 
         Promise.all(ops).then(() => {
-            carregarTodosAsync(true).then(() => { // ✅ forcar=true após importação em massa
+            carregarTodosAsync(true, true).then(() => { // ✅ forcar=true, completo=true (importação pode incluir datas antigas)
                 exibirTabelaProd();
                 exibirTabelaClass();
                 exibirTabelaMP();
@@ -15021,7 +15066,7 @@ function limparNovos(chave, label) {
         }
         if (!confirm(`Remover ${atual.length} registro(s) novo(s) de ${label}? Esta ação não pode ser desfeita.`)) return;
         dbClear(chave).then(() => {
-            carregarTodosAsync(true).then(() => { // ✅ forcar=true após limpeza
+            carregarTodosAsync(true, true).then(() => { // ✅ forcar=true, completo=true após limpeza
                 exibirTabelaProd();
                 exibirTabelaClass();
                 exibirTabelaMP();
@@ -16863,6 +16908,33 @@ async function dbGetAll(tabela) {
     }
 }
 
+// ✅ Igual ao dbGetAll, mas filtra por um campo de data (gte/lte) direto na query — reduz Egress
+async function dbGetAllPeriodo(tabela, campoData, dataIni, dataFim) {
+    const POR_PAGINA = 1000;
+    const colunas = _COLUNAS_TABELA[tabela] || '*';
+    let todos = [];
+    let pagina = 0;
+    try {
+        while (true) {
+            const from = pagina * POR_PAGINA;
+            const to   = from + POR_PAGINA - 1;
+            let query = _sbClient.from(tabela).select(colunas).order('id', { ascending: true }).range(from, to);
+            if (dataIni) query = query.gte(campoData, dataIni);
+            if (dataFim) query = query.lte(campoData, dataFim);
+            const { data, error } = await query;
+            if (error) throw new Error(error.message);
+            const registros = data || [];
+            todos = todos.concat(registros);
+            if (registros.length < POR_PAGINA) break;
+            pagina++;
+        }
+        return todos;
+    } catch(e) {
+        sgqToast('Erro ao carregar "' + tabela + '": ' + e.message, 'error');
+        throw e;
+    }
+}
+
 // ✅ Salva UM registro (upsert) via SDK seguro
 async function dbUpsertOne(tabela, item) {
     try {
@@ -16952,12 +17024,58 @@ const _COLUNAS_TABELA = {
     entradas_mp:        'id,data,hora,fornecedor,materia_prima,nf,usuario,status,status_descarga,criado_em,placa,seq,obs,quantidade',
     mp_produtos_custom: 'id,nome',
     homogeneidade:      'id,dataISO,data,dataResultadoISO,dataResultado,produto,equipamento,marcador,tempo,responsavel,local,laboratorio,textoPadrao,amostras,n,media,dp,cv,complemento',
-    ensaios_proficiencia: 'id,modulo_origem,registro_id_interno,produto,fonte,nome_laboratorio,parametro,replica,valor,valor_texto,data_amostra,data_resultado,responsavel,observacoes,criado_em',
+    ensaios_proficiencia: 'id,modulo_origem,registro_id_interno,produto,fonte,nome_laboratorio,parametro,replica,valor,valor_texto,data_amostra,data_resultado,responsavel,observacoes,criado_em,nf',
+    ep_incertezas: 'id,incerteza,atualizado_em',
 };
 
 // ── FAST-PATH: busca só o mês atual para mostrar o dashboard instantaneamente ──────────
 // Roda em paralelo com o carregamento completo. Exibe KPIs em ~300-500ms
 // enquanto os dados históricos/tabelas carregam em background.
+// ✅ Normalizações reutilizadas em qualquer carregamento de classificacoes/materias_primas
+// (fast-path do dashboard, carregarTodosAsync e _garantirPeriodoCarregado)
+const _epPct = (v, dec) => (v === null || v === undefined) ? 0 : +parseFloat(v).toFixed(dec);
+function _normClassGlobal(r) {
+    return {
+        ...r,
+        queimado:    _epPct(r.queimado,    4),
+        ardido:      _epPct(r.ardido,      4),
+        mofado:      _epPct(r.mofado,      4),
+        esverdeado:  _epPct(r.esverdeado,  4),
+        fermentando: _epPct(r.fermentando, 4),
+        chocho:      _epPct(r.chocho,      4),
+        picado:      _epPct(r.picado,      4),
+        gessado:     _epPct(r.gessado,     4),
+        quebrado:    _epPct(r.quebrado,    4),
+        germinado:   _epPct(r.germinado,   4),
+        carunchado:  _epPct(r.carunchado,  4),
+        impureza:    _epPct(r.impureza,    4),
+        umidade:     _epPct(r.umidade,     3),
+    };
+}
+function _normMatGlobal(r) {
+    return {
+        ...r,
+        solubil:         r.solubil         !== undefined ? (r.solubil         !== null ? parseFloat(r.solubil)         : null) : (r.solubilidade !== undefined ? (r.solubilidade !== null ? parseFloat(r.solubilidade) : null) : null),
+        extrato:         r.extrato         !== undefined ? (r.extrato         !== null ? parseFloat(r.extrato)         : null) : null,
+        fibra:           r.fibra           !== undefined ? (r.fibra           !== null ? parseFloat(r.fibra)           : null) : null,
+        mineral:         r.mineral         !== undefined ? (r.mineral         !== null ? parseFloat(r.mineral)         : null) : null,
+        acidez:          r.acidez          !== undefined ? (r.acidez          !== null ? parseFloat(r.acidez)          : null) : null,
+        ureatica:        r.ureatica        !== undefined ? (r.ureatica        !== null ? parseFloat(r.ureatica)        : null) : null,
+        rancidez:        r.rancidez        !== undefined ? (r.rancidez        !== null ? r.rancidez                    : null) : null,
+        peroxido:        r.peroxido        !== undefined ? (r.peroxido        !== null ? parseFloat(r.peroxido)        : null) : null,
+        digestibilidade: r.digestibilidade !== undefined ? (r.digestibilidade !== null ? parseFloat(r.digestibilidade) : null) : null,
+        granulo1:        r.granulo1        !== undefined ? (r.granulo1        !== null ? parseFloat(r.granulo1)        : null) : null,
+        granulo2:        r.granulo2        !== undefined ? (r.granulo2        !== null ? parseFloat(r.granulo2)        : null) : null,
+        granulo3:        r.granulo3        !== undefined ? (r.granulo3        !== null ? parseFloat(r.granulo3)        : null) : null,
+        granulo4:        r.granulo4        !== undefined ? (r.granulo4        !== null ? parseFloat(r.granulo4)        : null) : null,
+        tempResfriador:  r.tempResfriador  !== undefined ? (r.tempResfriador  !== null ? parseFloat(r.tempResfriador)  : null) : null,
+        tempCanhao:      r.tempCanhao      !== undefined ? (r.tempCanhao      !== null ? parseFloat(r.tempCanhao)      : null) : null,
+        alimentacaoHz:   r.alimentacaoHz   !== undefined ? (r.alimentacaoHz   !== null ? parseFloat(r.alimentacaoHz)   : null) : null,
+        calcio:          r.calcio          !== undefined ? (r.calcio          !== null ? parseFloat(r.calcio)          : null) : null,
+        fosforo:         r.fosforo         !== undefined ? (r.fosforo         !== null ? parseFloat(r.fosforo)         : null) : null,
+    };
+}
+
 async function _carregarDashboardFast() {
     try {
         const agora = new Date();
@@ -16985,35 +17103,13 @@ async function _carregarDashboardFast() {
                 .gte('data', prefAnt + '-01').lte('data', prefixo + '-31')
         ]);
 
-        const _pct = (v, dec) => (v === null || v === undefined) ? 0 : +parseFloat(v).toFixed(dec);
-        const normClass = r => ({
-            ...r,
-            queimado: _pct(r.queimado,4), ardido: _pct(r.ardido,4), mofado: _pct(r.mofado,4),
-            esverdeado: _pct(r.esverdeado,4), fermentando: _pct(r.fermentando,4), chocho: _pct(r.chocho,4),
-            picado: _pct(r.picado,4), gessado: _pct(r.gessado,4), quebrado: _pct(r.quebrado,4),
-            germinado: _pct(r.germinado,4), carunchado: _pct(r.carunchado,4), impureza: _pct(r.impureza,4),
-            umidade: _pct(r.umidade,3),
-        });
-        const normMat = r => ({
-            ...r,
-            solubil: r.solubil !== undefined ? (r.solubil !== null ? parseFloat(r.solubil) : null) : (r.solubilidade !== undefined ? (r.solubilidade !== null ? parseFloat(r.solubilidade) : null) : null),
-            extrato: r.extrato !== null ? parseFloat(r.extrato) : null,
-            fibra: r.fibra !== null ? parseFloat(r.fibra) : null,
-            mineral: r.mineral !== null ? parseFloat(r.mineral) : null,
-            acidez: r.acidez !== null ? parseFloat(r.acidez) : null,
-            ureatica: r.ureatica !== null ? parseFloat(r.ureatica) : null,
-            rancidez: r.rancidez !== null ? r.rancidez : null,
-            peroxido: r.peroxido !== null ? parseFloat(r.peroxido) : null,
-            digestibilidade: r.digestibilidade !== null ? parseFloat(r.digestibilidade) : null,
-        });
-
         // Preenche os arrays com dados do mês — suficiente para os KPIs
         // FIX: só sobrescreve se o carregamento completo ainda não terminou.
         // Se _dadosCarregados já é true, os arrays já têm todo o histórico — não truncar.
         if (!_dadosCarregados) {
             if (rP.data && rP.data.length) producoes      = rP.data;
-            if (rC.data && rC.data.length) classificacoes = rC.data.map(normClass);
-            if (rM.data && rM.data.length) materiasPrimas = rM.data.map(normMat);
+            if (rC.data && rC.data.length) classificacoes = rC.data.map(_normClassGlobal);
+            if (rM.data && rM.data.length) materiasPrimas = rM.data.map(_normMatGlobal);
             if (rNC.data && rNC.data.length) listaNC      = rNC.data;
         }
 
@@ -17030,9 +17126,18 @@ async function _carregarDashboardFast() {
 }
 
 // forcar=true → ignora cache e busca tudo do servidor (usado após importações em massa)
-async function carregarTodosAsync(forcar = false) {
+let _periodoCarregado = { ini: null, fim: null }; // controla o intervalo de datas já baixado em memória
+
+async function carregarTodosAsync(forcar = false, completo = false) {
     // ✅ CACHE: se já carregou e não foi forçado, reutiliza dados em memória
     if (_dadosCarregados && !forcar) return;
+
+    // completo=true: usado após importação em massa / correções, onde os dados alterados
+    // podem ser de qualquer data — nesses casos, carrega o histórico inteiro (sem filtro).
+    const hoje = new Date();
+    const dataIni = completo ? null : new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
+    const dataFim = completo ? null : hoje.toISOString().split('T')[0];
+    _periodoCarregado = completo ? { ini: '0001-01-01', fim: '9999-12-31' } : { ini: dataIni, fim: dataFim };
 
     // Busca tudo direto do Supabase — sem mesclagem com planilha
     // Os dados no Supabase já estão em percentual (ex: 6.45 = 6.45%).
@@ -17040,52 +17145,15 @@ async function carregarTodosAsync(forcar = false) {
     // e os registros novos também são salvos diretamente em %.
     // Os dados no Supabase estão em percentual (ex: 6.45 = 6.45%).
     // Registros antigos com valores decimais são corrigidos automaticamente pela _corrigirDecimaisNoBanco.
-    const _pct = (v, dec) => (v === null || v === undefined) ? 0 : +parseFloat(v).toFixed(dec);
-    const normClass = r => ({
-        ...r,
-        queimado:    _pct(r.queimado,    4),
-        ardido:      _pct(r.ardido,      4),
-        mofado:      _pct(r.mofado,      4),
-        esverdeado:  _pct(r.esverdeado,  4),
-        fermentando: _pct(r.fermentando, 4),
-        chocho:      _pct(r.chocho,      4),
-        picado:      _pct(r.picado,      4),
-        gessado:     _pct(r.gessado,     4),
-        quebrado:    _pct(r.quebrado,    4),
-        germinado:   _pct(r.germinado,   4),
-        carunchado:  _pct(r.carunchado,  4),
-        impureza:    _pct(r.impureza,    4),
-        umidade:     _pct(r.umidade,     3),
-    });
-
-    const normMat = r => ({
-        ...r,
-        solubil:         r.solubil         !== undefined ? (r.solubil         !== null ? parseFloat(r.solubil)         : null) : (r.solubilidade !== undefined ? (r.solubilidade !== null ? parseFloat(r.solubilidade) : null) : null),
-        extrato:         r.extrato         !== undefined ? (r.extrato         !== null ? parseFloat(r.extrato)         : null) : null,
-        fibra:           r.fibra           !== undefined ? (r.fibra           !== null ? parseFloat(r.fibra)           : null) : null,
-        mineral:         r.mineral         !== undefined ? (r.mineral         !== null ? parseFloat(r.mineral)         : null) : null,
-        acidez:          r.acidez          !== undefined ? (r.acidez          !== null ? parseFloat(r.acidez)          : null) : null,
-        ureatica:        r.ureatica        !== undefined ? (r.ureatica        !== null ? parseFloat(r.ureatica)        : null) : null,
-        rancidez:        r.rancidez        !== undefined ? (r.rancidez        !== null ? r.rancidez                    : null) : null,
-        peroxido:        r.peroxido        !== undefined ? (r.peroxido        !== null ? parseFloat(r.peroxido)        : null) : null,
-        digestibilidade: r.digestibilidade !== undefined ? (r.digestibilidade !== null ? parseFloat(r.digestibilidade) : null) : null,
-        granulo1:        r.granulo1        !== undefined ? (r.granulo1        !== null ? parseFloat(r.granulo1)        : null) : null,
-        granulo2:        r.granulo2        !== undefined ? (r.granulo2        !== null ? parseFloat(r.granulo2)        : null) : null,
-        granulo3:        r.granulo3        !== undefined ? (r.granulo3        !== null ? parseFloat(r.granulo3)        : null) : null,
-        granulo4:        r.granulo4        !== undefined ? (r.granulo4        !== null ? parseFloat(r.granulo4)        : null) : null,
-        tempResfriador:  r.tempResfriador  !== undefined ? (r.tempResfriador  !== null ? parseFloat(r.tempResfriador)  : null) : null,
-        tempCanhao:      r.tempCanhao      !== undefined ? (r.tempCanhao      !== null ? parseFloat(r.tempCanhao)      : null) : null,
-        alimentacaoHz:   r.alimentacaoHz   !== undefined ? (r.alimentacaoHz   !== null ? parseFloat(r.alimentacaoHz)   : null) : null,
-        calcio:          r.calcio          !== undefined ? (r.calcio          !== null ? parseFloat(r.calcio)          : null) : null,
-        fosforo:         r.fosforo         !== undefined ? (r.fosforo         !== null ? parseFloat(r.fosforo)         : null) : null,
-    });
+    const normClass = _normClassGlobal;
+    const normMat = _normMatGlobal;
 
     let rawP = [], rawC = [], rawM = [];
     try {
         [rawP, rawC, rawM] = await Promise.all([
-            dbGetAll('producoes'),
-            dbGetAll('classificacoes'),
-            dbGetAll('materias_primas')
+            dbGetAllPeriodo('producoes', 'data', dataIni, dataFim),
+            dbGetAllPeriodo('classificacoes', 'data', dataIni, dataFim),
+            dbGetAllPeriodo('materias_primas', 'data', dataIni, dataFim)
         ]);
     } catch(e) {
         // ✅ MELHORIA: erro visível — sem dados desatualizados sendo exibidos silenciosamente
@@ -17131,6 +17199,31 @@ async function carregarTodosAsync(forcar = false) {
     } catch(e) {}
 }
 
+// ✅ Expande sob demanda o período carregado em memória (ex: relatórios que olham meses passados),
+// sem precisar rebaixar tudo de novo — só busca o que ainda não está coberto.
+async function _garantirPeriodoCarregado(dataIniDesejada, dataFimDesejada) {
+    if (!_periodoCarregado.ini || !_periodoCarregado.fim) { await carregarTodosAsync(true); return; }
+    const jaCobre = dataIniDesejada >= _periodoCarregado.ini && dataFimDesejada <= _periodoCarregado.fim;
+    if (jaCobre) return; // já está tudo em memória, não precisa buscar de novo
+
+    const novaIni = dataIniDesejada < _periodoCarregado.ini ? dataIniDesejada : _periodoCarregado.ini;
+    const novaFim = dataFimDesejada > _periodoCarregado.fim ? dataFimDesejada : _periodoCarregado.fim;
+
+    try {
+        const [rawP, rawC, rawM] = await Promise.all([
+            dbGetAllPeriodo('producoes', 'data', novaIni, novaFim),
+            dbGetAllPeriodo('classificacoes', 'data', novaIni, novaFim),
+            dbGetAllPeriodo('materias_primas', 'data', novaIni, novaFim)
+        ]);
+        producoes      = rawP;
+        classificacoes = rawC.map(_normClassGlobal);
+        materiasPrimas = rawM.map(_normMatGlobal);
+        _periodoCarregado = { ini: novaIni, fim: novaFim };
+    } catch (e) {
+        sgqToast('Erro ao expandir período carregado: ' + e.message, 'error');
+    }
+}
+
 
 // ===================================================
 // CORREÇÃO ÚNICA — DECIMAIS → PERCENTUAL NO BANCO
@@ -17172,7 +17265,7 @@ async function _corrigirDecimaisNoBanco() {
         localStorage.setItem('correcaoDecimal_v2', 'ok-' + afetados.length);
 
         // Recarrega para refletir os valores corretos
-        await carregarTodosAsync(true); // ✅ forcar=true após correção em massa
+        await carregarTodosAsync(true, true); // ✅ forcar=true, completo=true (correção pode afetar datas antigas)
         exibirTabelaClass();
         sgqToast(`Correção: ${afetados.length} registro(s) corrigidos com sucesso.`, 'success');
     } catch(e) {
@@ -19693,10 +19786,21 @@ function epLabelQuali(parametro, valor) {
 
 let _epDados = [];
 let _epGraficoInst = null;
+let _epIncertezas = {}; // { parametro: incerteza }
+
+async function epCarregarIncertezas() {
+    try {
+        const linhas = await dbGetAll('ep_incertezas');
+        _epIncertezas = {};
+        (linhas || []).forEach(l => { _epIncertezas[l.id] = parseFloat(l.incerteza); });
+    } catch (e) {
+        _epIncertezas = {};
+    }
+}
 
 async function epInicializar() {
     const hoje = new Date();
-    const ini = new Date(hoje.getFullYear(), hoje.getMonth() - 2, 1); // últimos 3 meses por padrão
+    const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1); // mês atual por padrão (economiza egress)
     document.getElementById('epDataIni').value = ini.toISOString().split('T')[0];
     document.getElementById('epDataFim').value = hoje.toISOString().split('T')[0];
 
@@ -19705,18 +19809,34 @@ async function epInicializar() {
     selParam.innerHTML = '<option value="">Todos</option>' +
         Object.entries(EP_LABELS_PARAM).map(([k,v]) => `<option value="${k}">${v}</option>`).join('');
 
-    await epCarregarDados();
-    epAtualizarOpcoesProduto();
-    await epAplicarFiltros();
+    await epCarregarIncertezas();
+    await epAplicarFiltros(); // já carrega os dados filtrados por data direto na query
 }
 
 let _epTodosCache = [];
 
-async function epCarregarDados() {
+// Carrega da API já filtrando por data_amostra (reduz egress) — só busca o período que aparece na tela
+async function epCarregarDados(dataIni, dataFim) {
+    const POR_PAGINA = 1000;
+    const colunas = _COLUNAS_TABELA['ensaios_proficiencia'] || '*';
+    let todos = [];
+    let pagina = 0;
     try {
-        const dados = await dbGetAll('ensaios_proficiencia');
-        _epTodosCache = Array.isArray(dados) ? dados : [];
-        return _epTodosCache;
+        while (true) {
+            const from = pagina * POR_PAGINA;
+            const to = from + POR_PAGINA - 1;
+            let query = _sbClient.from('ensaios_proficiencia').select(colunas).order('id', { ascending: true }).range(from, to);
+            if (dataIni) query = query.gte('data_amostra', dataIni);
+            if (dataFim) query = query.lte('data_amostra', dataFim);
+            const { data, error } = await query;
+            if (error) throw new Error(error.message);
+            const registros = data || [];
+            todos = todos.concat(registros);
+            if (registros.length < POR_PAGINA) break;
+            pagina++;
+        }
+        _epTodosCache = todos;
+        return todos;
     } catch (e) {
         sgqToast('Erro ao carregar Ensaio de Proficiência: ' + e.message, 'error');
         return [];
@@ -19737,10 +19857,26 @@ function epAtualizarOpcoesProduto() {
     if (produtos.includes(valorAtual)) selProduto.value = valorAtual;
 }
 
+async function epAtualizarIncerteza(parametro, valorStr, inputEl) {
+    const valStr = (valorStr || '').trim();
+    const val = valStr === '' ? null : parseFloat(valStr);
+    if (valStr !== '' && isNaN(val)) { sgqToast('Valor de incerteza inválido.', 'error'); return; }
+    try {
+        await dbUpsertOne('ep_incertezas', { id: parametro, incerteza: val, atualizado_em: new Date().toISOString() });
+        if (val === null) delete _epIncertezas[parametro]; else _epIncertezas[parametro] = val;
+        sgqToast('✓ Incerteza atualizada!', 'success');
+        epRenderTabela(_epDados); // atualiza todas as linhas do mesmo parâmetro
+    } catch (e) {
+        sgqToast('Erro ao salvar incerteza: ' + e.message, 'error');
+        if (inputEl) inputEl.value = _epIncertezas[parametro] !== undefined ? _epIncertezas[parametro] : '';
+    }
+}
+
 function epLimparFiltros() {
     document.getElementById('epModulo').value = '';
     document.getElementById('epProduto').value = '';
     document.getElementById('epParametro').value = '';
+    document.getElementById('epNotaFiscal').value = '';
     epInicializar();
 }
 
@@ -19750,15 +19886,15 @@ async function epAplicarFiltros() {
     const modulo  = document.getElementById('epModulo').value;
     const produto = document.getElementById('epProduto').value;
     const param   = document.getElementById('epParametro').value;
+    const nf      = (document.getElementById('epNotaFiscal').value || '').trim().toUpperCase();
 
-    const todos = await epCarregarDados();
+    const todos = await epCarregarDados(dataIni, dataFim); // já vem filtrado por data direto na query
     epAtualizarOpcoesProduto();
     let filtrados = todos.filter(r => {
-        if (dataIni && r.data_amostra && r.data_amostra < dataIni) return false;
-        if (dataFim && r.data_amostra && r.data_amostra > dataFim) return false;
         if (modulo && r.modulo_origem !== modulo) return false;
         if (produto && (r.produto || '').trim() !== produto) return false;
         if (param && r.parametro !== param) return false;
+        if (nf && !(r.nf || '').toUpperCase().includes(nf)) return false;
         return true;
     });
     _epDados = filtrados;
@@ -19785,7 +19921,7 @@ function epAgrupar(dados) {
         if (!grupos[chave]) {
             grupos[chave] = {
                 modulo_origem: r.modulo_origem, produto: r.produto, parametro: r.parametro,
-                data_amostra: r.data_amostra, qualitativo: epEhQualitativo(r.parametro),
+                data_amostra: r.data_amostra, qualitativo: epEhQualitativo(r.parametro), nf: r.nf || null,
                 valores: { interno: [], externo: [], fornecedor: [] }
             };
         }
@@ -19811,7 +19947,10 @@ function epAgrupar(dados) {
         if (mInt !== null && mForn !== null) diffs.push(Math.abs(mInt - mForn) / (mInt || 1) * 100);
         if (mExt !== null && mForn !== null) diffs.push(Math.abs(mExt - mForn) / (mExt || 1) * 100);
         const maiorDif = diffs.length ? Math.max(...diffs) : null;
-        return { ...g, mInt, mExt, mForn, maiorDif, concorda: null };
+        const incerteza = _epIncertezas[g.parametro] !== undefined && !isNaN(_epIncertezas[g.parametro]) ? _epIncertezas[g.parametro] : null;
+        const diffExtInt  = (mExt !== null && mInt !== null)  ? (mExt - mInt)  : null;
+        const diffFornExt = (mForn !== null && mExt !== null) ? (mForn - mExt) : null;
+        return { ...g, mInt, mExt, mForn, maiorDif, concorda: null, incerteza, diffExtInt, diffFornExt };
     });
 }
 
@@ -19884,26 +20023,29 @@ function epRenderTabela(dados) {
     const grupos = epAgrupar(dados).sort((a,b) => (a.data_amostra||'').localeCompare(b.data_amostra||''));
     const tbody = document.getElementById('epTabelaCorpo');
     if (!grupos.length) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#999;padding:14px;">Nenhum registro encontrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:#999;padding:14px;">Nenhum registro encontrado</td></tr>';
         return;
     }
-    const TOLERANCIA = 10;
     const fmtVal = (g, v) => v === null ? '—' : (g.qualitativo ? epLabelQuali(g.parametro, v) : v.toFixed(2));
+    const fmtDif = v => v === null ? '—' : (v > 0 ? '+' : '') + v.toFixed(2);
     tbody.innerHTML = grupos.map(g => {
-        const status = g.qualitativo
-            ? (g.concorda === null ? '—' : (g.concorda ? '<span style="color:#27ae60;font-weight:bold;">✅ OK</span>' : '<span style="color:#c0392b;font-weight:bold;">⚠️ Divergente</span>'))
-            : (g.maiorDif === null ? '—'
-                : (g.maiorDif <= TOLERANCIA ? '<span style="color:#27ae60;font-weight:bold;">✅ OK</span>' : '<span style="color:#c0392b;font-weight:bold;">⚠️ Divergente</span>'));
         return `<tr style="border-bottom:1px solid #eee;">
             <td style="padding:5px;text-align:center;">${epFmtData(g.data_amostra)}</td>
             <td style="padding:5px;">${EP_LABELS_MODULO[g.modulo_origem] || g.modulo_origem || '—'}</td>
             <td style="padding:5px;">${g.produto || '—'}</td>
+            <td style="padding:5px;text-align:center;">${g.nf || '—'}</td>
             <td style="padding:5px;">${EP_LABELS_PARAM[g.parametro] || g.parametro}</td>
             <td style="padding:5px;text-align:center;">${fmtVal(g, g.mInt)}</td>
             <td style="padding:5px;text-align:center;">${fmtVal(g, g.mExt)}</td>
             <td style="padding:5px;text-align:center;">${fmtVal(g, g.mForn)}</td>
-            <td style="padding:5px;text-align:center;">${g.qualitativo ? '—' : (g.maiorDif !== null ? g.maiorDif.toFixed(1) + '%' : '—')}</td>
-            <td style="padding:5px;text-align:center;">${status}</td>
+            <td style="padding:5px;text-align:center;">
+                <input type="number" step="0.01" value="${g.incerteza !== null ? g.incerteza : ''}" placeholder="—"
+                    class="ep-inc-input"
+                    style="width:70px;text-align:center;padding:3px;font-size:11px;border-radius:3px;color:inherit;"
+                    onchange="epAtualizarIncerteza('${g.parametro}', this.value, this)">
+            </td>
+            <td style="padding:5px;text-align:center;">${g.qualitativo ? '—' : fmtDif(g.diffExtInt)}</td>
+            <td style="padding:5px;text-align:center;">${g.qualitativo ? '—' : fmtDif(g.diffFornExt)}</td>
         </tr>`;
     }).join('');
 }
@@ -20112,7 +20254,7 @@ async function epSalvarResultadoSuffix(suffix) {
             fonte: 'interno', nome_laboratorio: 'Laboratório Interno', parametro: c.key, replica: 1,
             valor: quali ? null : vInt, valor_texto: quali ? String(vInt) : null,
             data_amostra: registro.data, data_resultado: registro.data,
-            responsavel: responsavel || null, observacoes: null
+            responsavel: responsavel || null, observacoes: null, nf: registro.nf || null
         });
     });
 
@@ -20129,7 +20271,7 @@ async function epSalvarResultadoSuffix(suffix) {
             fonte, nome_laboratorio: nomeLaboratorio || null, parametro: c.key, replica,
             valor: quali ? null : parseFloat(el.value), valor_texto: quali ? el.value : null,
             data_amostra: registro.data, data_resultado: dataResultado || null,
-            responsavel: responsavel || null, observacoes: observacoes || null
+            responsavel: responsavel || null, observacoes: observacoes || null, nf: registro.nf || null
         });
     });
 
@@ -20207,7 +20349,7 @@ function fecharModalWhatsApp() {
     // ✅ FIX: modal legado removido — função mantida para compatibilidade
 }
 
-function gerarMensagemWhatsApp() {
+async function gerarMensagemWhatsApp() {
     const diProd = document.getElementById('wappDataInicioProd').value;
     const dfProd = document.getElementById('wappDataFimProd').value;
     const diMP   = document.getElementById('wappDataInicioMP').value;
@@ -20226,6 +20368,10 @@ function gerarMensagemWhatsApp() {
     });
 
     if (camposProdSel.length > 0 && (!diProd || !dfProd)) { alert('Informe o periodo de Producao.'); return; }
+
+    // Garante que o período pedido (Produção e/ou Matéria-Prima) já está carregado em memória
+    if (diProd && dfProd) await _garantirPeriodoCarregado(diProd, dfProd);
+    if (diMP && dfMP) await _garantirPeriodoCarregado(diMP, dfMP);
 
     const fmtD = d => { if (!d) return '-'; const [y,m,dd] = d.split('-'); return dd+'/'+m+'/'+y; };
     const periodoStr = (di, df) => di === df ? fmtD(di) : fmtD(di) + ' a ' + fmtD(df);
@@ -21159,7 +21305,7 @@ function limparFiltrosRelMP() {
     if (_rmpChart2) { _rmpChart2.destroy(); _rmpChart2 = null; }
 }
 
-function aplicarFiltrosRelMP() {
+async function aplicarFiltrosRelMP() {
     const di   = document.getElementById('rmpDataInicio').value;
     const df   = document.getElementById('rmpDataFim').value;
     const prod = document.getElementById('rmpProduto').value;
@@ -21183,6 +21329,7 @@ function aplicarFiltrosRelMP() {
     const analiseLabel = ANALISE_LABELS_RMP[analise] || analise;
 
     if (!di || !df) { alert('Informe o período (Data Início e Data Fim).'); return; }
+    await _garantirPeriodoCarregado(di, df);
 
     let dados = materiasPrimas.filter(r => r.data >= di && r.data <= df);
     if (prod !== 'all') dados = dados.filter(r => (r.produto||'') === prod);
@@ -21634,7 +21781,7 @@ async function executarCorrecaoDefeitos() {
 
     try {
         await Promise.all(promises);
-        await carregarTodosAsync(true); // ✅ forcar=true após correção em massa
+        await carregarTodosAsync(true, true); // ✅ forcar=true, completo=true (correção pode afetar datas antigas)
         exibirTabelaClass();
         msgEl.innerHTML = `✅ Correção aplicada com sucesso em <strong>${corrigidos}</strong> registro(s). Os valores agora estão em percentual correto.`;
         msgEl.style.color = '#27ae60';
