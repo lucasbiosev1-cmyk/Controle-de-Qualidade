@@ -8894,15 +8894,15 @@
                 <table id="tabelaEMPMain" style="table-layout:fixed;width:100%;">
                     <colgroup>
                         <col id="colEMP0"><col id="colEMP1"><col id="colEMP2"><col id="colEMP3">
-                        <col id="colEMP4"><col id="colEMP5"><col id="colEMP6"><col id="colEMP7"><col id="colEMP8">
+                        <col id="colEMP4"><col id="colEMP5"><col id="colEMP6"><col id="colEMP7"><col id="colEMP8"><col id="colEMP9"><col id="colEMP10">
                     </colgroup>
                     <thead id="theadEMP">
                         <tr>
                             <th style="text-align:left;padding-left:8px;">MATÉRIA PRIMA</th><th>DATA</th><th>HORA</th><th>NOTA FISCAL</th>
-                            <th>PLACA</th><th>USUÁRIO</th><th id="thQtdEMP">QUANTIDADE</th><th>ANÁLISE</th><th id="thDescargaEMP">DESCARGA</th>
+                            <th>PLACA</th><th>USUÁRIO</th><th id="thQtdEMP">QUANTIDADE</th><th>ANÁLISE</th><th>HORÁRIO ANÁLISE</th><th id="thDescargaEMP">DESCARGA</th><th>HORÁRIO CONCLUSÃO</th>
                         </tr>
                     </thead>
-                    <tbody id="tabelaEntradaMP"><tr><td colspan="8" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
+                    <tbody id="tabelaEntradaMP"><tr><td colspan="11" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -15094,6 +15094,14 @@ async function _empAtualizarStatusConclusoes() {
     if (alterou) exibirTabelaEMP();
 }
 
+// Formata um timestamp ISO como DD/MM HH:MM (usado nas colunas de horário de análise e de conclusão de descarga)
+function _empFormatarDataHora(iso) {
+    if (!iso) return '-';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit'}) + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+}
+
 function exibirTabelaEMP(lista) {
     if (!lista) lista = entradasMP;
 
@@ -15149,13 +15157,13 @@ function exibirTabelaEMP(lista) {
     const thDescarga = document.getElementById('thDescargaEMP');
     if (thDescarga) thDescarga.style.display = '';
     (function(){
-        const widths = ['22%','8%','6%','10%','8%','9%','8%','14%','15%'];
+        const widths = ['16%','7%','5%','9%','7%','8%','7%','10%','9%','10%','12%'];
         widths.forEach((w, i) => { const col = document.getElementById('colEMP'+i); if(col) col.style.width = w; });
     })();
 
     const tbody = document.getElementById('tabelaEntradaMP');
     if (!dados.length) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr>`;
         return;
     }
 
@@ -15211,7 +15219,7 @@ function exibirTabelaEMP(lista) {
         if (mpKey !== ultimoGrupo) {
             ultimoGrupo = mpKey;
             separador = `<tr class="emp-grupo-header">
-                <td colspan="9" style="
+                <td colspan="11" style="
                     background: ${_empCoresGrupo[corIdx]};
                     border-top: 2px solid rgba(255,255,255,0.15);
                     border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -15250,6 +15258,8 @@ function exibirTabelaEMP(lista) {
                 <select onchange="alterarStatusAnaliseEMP(${r.id}, this.value)" onclick="event.stopPropagation()" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:none;">${analiseOpts}</select>
                </span>`
             : `<span style="${anStyle}padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;white-space:nowrap;">${anLabel}</span>`;
+        // Horário em que a análise foi aprovada/reprovada
+        const horaAnaliseCell = `<span style="font-size:11px;color:var(--gh-fg-muted);white-space:nowrap;">${_empFormatarDataHora(r.hora_analise)}</span>`;
         // ── Lógica de DESCARGA — dropdown inline para alterar direto na tabela ──
         const statusDesc = r.status_descarga || '';
         let descargaCell = '';
@@ -15283,6 +15293,8 @@ function exibirTabelaEMP(lista) {
                 `<select id="sel-desc-${r.id}" onchange="alterarStatusDescargaEMP(${r.id}, this.value)" onclick="event.stopPropagation()" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:none;">${opts}</select>` +
                 `</span>`;
         }
+        // Horário em que o descarregamento foi concluído
+        const horaDescargaCell = `<span style="font-size:11px;color:var(--gh-fg-muted);white-space:nowrap;">${_empFormatarDataHora(r.hora_conclusao_descarga)}</span>`;
         const podeEditarLinha = podeEditar && r.status !== 'CONCLUÍDA';
         const dblclickAttr = podeEditarLinha ? `ondblclick="editarEntradaMP(${r.id})" title="Clique duplo para editar"` : '';
         const cursorStyle = podeEditarLinha ? 'cursor:pointer;' : '';
@@ -15303,7 +15315,9 @@ function exibirTabelaEMP(lista) {
             <td data-label="USUÁRIO">${r.usuario||'-'}</td>
             <td data-label="QUANTIDADE" style="text-align:center;font-weight:bold;">${r.quantidade != null && r.quantidade !== '' ? Number(r.quantidade).toLocaleString('pt-BR') : '-'}</td>
             <td data-label="ANÁLISE" style="text-align:center;">${analiseCell}</td>
+            <td data-label="HORÁRIO ANÁLISE" style="text-align:center;">${horaAnaliseCell}</td>
             <td data-label="DESCARGA">${descargaCell}</td>
+            <td data-label="HORÁRIO CONCLUSÃO" style="text-align:center;">${horaDescargaCell}</td>
         </tr>`;
     }).join('');
 }
@@ -15327,8 +15341,10 @@ async function alterarStatusDescargaEMP(id, novoStatus) {
     entradasMP[idx].status_descarga = novoStatus;
     if (novoStatus === 'CONCLUÍDA') {
         entradasMP[idx].status = 'CONCLUÍDA';
+        entradasMP[idx].hora_conclusao_descarga = new Date().toISOString();
     } else if (novoStatus === 'FILA' || novoStatus === 'DESCARREGANDO') {
         if (entradasMP[idx].status === 'CONCLUÍDA') entradasMP[idx].status = 'APROVADA';
+        entradasMP[idx].hora_conclusao_descarga = '';
     }
     // Atualiza a tabela inteira — o badge é recriado com o novo status
     const sdStyles = { 'FILA':'background:#e8eaf6;color:#3949ab;', 'DESCARREGANDO':'background:#fff3e0;color:#e65100;', 'CONCLUÍDA':'background:#d5f4e6;color:#1a7a4a;' };
@@ -15372,6 +15388,7 @@ async function concluirDescargaEMP(id) {
     if (idx < 0) return;
     entradasMP[idx].status_descarga = 'CONCLUÍDA';
     entradasMP[idx].status = 'CONCLUÍDA';
+    entradasMP[idx].hora_conclusao_descarga = new Date().toISOString();
     try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e) { console.error(e); }
     sgqToast('✅ Descarga concluída!', 'sucesso');
     document.getElementById('modalAprovarEMP').style.display = 'none';
@@ -15383,6 +15400,7 @@ async function desfazerDescargaEMP(id) {
     if (idx < 0) return;
     entradasMP[idx].status_descarga = 'FILA';
     entradasMP[idx].status = 'APROVADA';
+    entradasMP[idx].hora_conclusao_descarga = '';
     try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e) { console.error(e); }
     sgqToast('↩️ Descarga revertida para Fila!', 'aviso');
     document.getElementById('modalAprovarEMP').style.display = 'none';
@@ -15999,6 +16017,7 @@ async function acaoEntradaMP(novoStatus) {
     const idx = entradasMP.findIndex(e => String(e.id) === String(_empAprovarId));
     if (idx < 0) return;
     entradasMP[idx].status = novoStatus;
+    entradasMP[idx].hora_analise = new Date().toISOString();
     if (novoStatus === 'APROVADA' && !entradasMP[idx].status_descarga) {
         entradasMP[idx].status_descarga = 'FILA';
     }
@@ -16013,9 +16032,11 @@ async function desfazerAprovacaoEMP(id) {
     const idx = entradasMP.findIndex(e => String(e.id) === String(id));
     if (idx < 0) return;
     entradasMP[idx].status = 'EM ANÁLISE';
+    entradasMP[idx].hora_analise = '';
     // Reseta também a descarga caso esteja CONCLUÍDA ou DESCARREGANDO
     if (entradasMP[idx].status_descarga === 'CONCLUÍDA' || entradasMP[idx].status_descarga === 'DESCARREGANDO') {
         entradasMP[idx].status_descarga = 'FILA';
+        entradasMP[idx].hora_conclusao_descarga = '';
     }
     try {
         await dbUpsertOne('entradas_mp', entradasMP[idx]);
@@ -16031,11 +16052,17 @@ async function alterarStatusAnaliseEMP(id, novoStatus) {
     const idx = entradasMP.findIndex(e => String(e.id) === String(id));
     if (idx < 0) return;
     entradasMP[idx].status = novoStatus;
+    if (novoStatus === 'APROVADA' || novoStatus === 'REPROVADA') {
+        entradasMP[idx].hora_analise = new Date().toISOString();
+    } else {
+        entradasMP[idx].hora_analise = '';
+    }
     if (novoStatus === 'APROVADA' && !entradasMP[idx].status_descarga) {
         entradasMP[idx].status_descarga = 'FILA';
     }
     if (novoStatus === 'REPROVADA') {
         entradasMP[idx].status_descarga = '';
+        entradasMP[idx].hora_conclusao_descarga = '';
     }
     try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e){}
     const labels = {'APROVADA':'✅ Aprovado!','REPROVADA':'❌ Reprovado!','EM ANÁLISE':'↩️ Voltou para Em Análise'};
@@ -16148,7 +16175,7 @@ window.imprimirRelatorioEMP = function() {
         const fornsSorted = Object.keys(fornecedores).sort();
 
         // Cabeçalho da matéria prima
-        rowsHtml += `<tr><td colspan="7" style="background:#1B2A4A;color:white;padding:6px 10px;font-weight:700;font-size:8pt;letter-spacing:1.5px;text-transform:uppercase;">📦 ${mpKey}</td></tr>`;
+        rowsHtml += `<tr><td colspan="9" style="background:#1B2A4A;color:white;padding:6px 10px;font-weight:700;font-size:8pt;letter-spacing:1.5px;text-transform:uppercase;">📦 ${mpKey}</td></tr>`;
 
         for (const fornKey of fornsSorted) {
             const entradas = fornecedores[fornKey];
@@ -16186,6 +16213,8 @@ window.imprimirRelatorioEMP = function() {
                 <td>${r0.hora||'-'}</td>
                 <td>${r0.nf||'-'}</td>
                 <td style="${st0}">${r0.status||'-'}</td>
+                <td>${_empFormatarDataHora(r0.hora_analise)}</td>
+                <td>${_empFormatarDataHora(r0.hora_conclusao_descarga)}</td>
             </tr>`;
 
             // Entradas adicionais do mesmo fornecedor
@@ -16200,6 +16229,8 @@ window.imprimirRelatorioEMP = function() {
                     <td>${r.hora||'-'}</td>
                     <td>${r.nf||'-'}</td>
                     <td style="${stStyle}">${r.status||'-'}</td>
+                    <td>${_empFormatarDataHora(r.hora_analise)}</td>
+                    <td>${_empFormatarDataHora(r.hora_conclusao_descarga)}</td>
                 </tr>`;
             }
         }
@@ -16207,7 +16238,7 @@ window.imprimirRelatorioEMP = function() {
 
     // Rodapé com total geral de quantidade
     if (totalGeral > 0) {
-        rowsHtml += `<tr><td colspan="7" style="background:#1B2A4A;color:white;padding:5px 10px;font-weight:700;font-size:8pt;text-align:right;">TOTAL GERAL: ${totalGeral.toLocaleString('pt-BR')}</td></tr>`;
+        rowsHtml += `<tr><td colspan="9" style="background:#1B2A4A;color:white;padding:5px 10px;font-weight:700;font-size:8pt;text-align:right;">TOTAL GERAL: ${totalGeral.toLocaleString('pt-BR')}</td></tr>`;
     }
 
     const now = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
@@ -16257,13 +16288,15 @@ window.imprimirRelatorioEMP = function() {
 <table>
   <thead>
     <tr>
-      <th style="width:28%;">FORNECEDOR</th>
-      <th style="width:10%;">QTD TOTAL</th>
-      <th style="width:5%;">SEQ</th>
-      <th style="width:9%;">DATA</th>
-      <th style="width:7%;">HORA</th>
-      <th style="width:12%;">NOTA FISCAL</th>
-      <th style="width:11%;">STATUS</th>
+      <th style="width:22%;">FORNECEDOR</th>
+      <th style="width:8%;">QTD TOTAL</th>
+      <th style="width:4%;">SEQ</th>
+      <th style="width:8%;">DATA</th>
+      <th style="width:6%;">HORA</th>
+      <th style="width:10%;">NOTA FISCAL</th>
+      <th style="width:9%;">STATUS</th>
+      <th style="width:16%;">HORÁRIO ANÁLISE</th>
+      <th style="width:17%;">HORÁRIO CONCLUSÃO</th>
     </tr>
   </thead>
   <tbody>${rowsHtml}</tbody>
@@ -16394,7 +16427,7 @@ window.imprimirRelatorioEMPPorTipo = function() {
 
         // Cabeçalho do grupo
         rowsHtml += `<tr>
-            <td colspan="6" style="background:#1B2A4A;color:white;padding:6px 10px;font-weight:700;font-size:8pt;letter-spacing:1.2px;text-transform:uppercase;">
+            <td colspan="8" style="background:#1B2A4A;color:white;padding:6px 10px;font-weight:700;font-size:8pt;letter-spacing:1.2px;text-transform:uppercase;">
                 &#128230; ${mpKey}
                 &nbsp;<span style="font-weight:normal;opacity:0.75;font-size:7pt;">(${regs.length} entrada${regs.length>1?'s':''} &bull; ${nForn} fornecedor${nForn>1?'es':''} &bull; Total: ${qtdGrupoFmt})</span>
             </td>
@@ -16413,6 +16446,8 @@ window.imprimirRelatorioEMPPorTipo = function() {
                 <td class="center" style="padding:5px 8px;border:1px solid #d0d6e0;">${r.nf||'-'}</td>
                 <td class="center" style="padding:5px 8px;border:1px solid #d0d6e0;">${qtdFmt}</td>
                 <td class="center" style="padding:5px 8px;border:1px solid #d0d6e0;${stStyle}">${r.status||'-'}</td>
+                <td class="center" style="padding:5px 8px;border:1px solid #d0d6e0;">${_empFormatarDataHora(r.hora_analise)}</td>
+                <td class="center" style="padding:5px 8px;border:1px solid #d0d6e0;">${_empFormatarDataHora(r.hora_conclusao_descarga)}</td>
             </tr>`;
         });
 
@@ -16420,7 +16455,7 @@ window.imprimirRelatorioEMPPorTipo = function() {
         rowsHtml += `<tr>
             <td colspan="4" style="padding:5px 8px;border:1px solid #b0b8cc;background:#e8eaf2;font-weight:700;font-size:7.5pt;text-align:right;color:#1B2A4A;">SUBTOTAL ${mpKey}</td>
             <td style="padding:5px 8px;border:1px solid #b0b8cc;background:#e8eaf2;font-weight:700;font-size:8pt;text-align:center;color:#1B2A4A;">${qtdGrupoFmt}</td>
-            <td style="padding:5px 8px;border:1px solid #b0b8cc;background:#e8eaf2;"></td>
+            <td colspan="3" style="padding:5px 8px;border:1px solid #b0b8cc;background:#e8eaf2;"></td>
         </tr>`;
     }
 
@@ -16472,12 +16507,14 @@ window.imprimirRelatorioEMPPorTipo = function() {
 <table>
   <thead>
     <tr>
-      <th style="width:9%;">DATA</th>
-      <th style="width:7%;">HORA</th>
-      <th style="width:32%;">FORNECEDOR</th>
-      <th class="center" style="width:14%;">NOTA FISCAL</th>
-      <th class="center" style="width:10%;">QUANTIDADE</th>
-      <th class="center" style="width:13%;">STATUS</th>
+      <th style="width:8%;">DATA</th>
+      <th style="width:6%;">HORA</th>
+      <th style="width:24%;">FORNECEDOR</th>
+      <th class="center" style="width:11%;">NOTA FISCAL</th>
+      <th class="center" style="width:8%;">QUANTIDADE</th>
+      <th class="center" style="width:10%;">STATUS</th>
+      <th class="center" style="width:16%;">HORÁRIO ANÁLISE</th>
+      <th class="center" style="width:17%;">HORÁRIO CONCLUSÃO</th>
     </tr>
   </thead>
   <tbody>${rowsHtml}</tbody>
