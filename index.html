@@ -15389,7 +15389,7 @@ async function alterarStatusDescargaEMP(id, novoStatus) {
         entradasMP[idx].hora_conclusao_descarga = new Date().toISOString();
     } else if (novoStatus === 'FILA' || novoStatus === 'DESCARREGANDO') {
         if (entradasMP[idx].status === 'CONCLUÍDA') entradasMP[idx].status = 'APROVADA';
-        entradasMP[idx].hora_conclusao_descarga = '';
+        entradasMP[idx].hora_conclusao_descarga = null;
     }
     // Atualiza a tabela inteira — o badge é recriado com o novo status
     const sdStyles = { 'FILA':'background:#e8eaf6;color:#3949ab;', 'DESCARREGANDO':'background:#fff3e0;color:#e65100;', 'CONCLUÍDA':'background:#d5f4e6;color:#1a7a4a;' };
@@ -15445,7 +15445,7 @@ async function desfazerDescargaEMP(id) {
     if (idx < 0) return;
     entradasMP[idx].status_descarga = 'FILA';
     entradasMP[idx].status = 'APROVADA';
-    entradasMP[idx].hora_conclusao_descarga = '';
+    entradasMP[idx].hora_conclusao_descarga = null;
     try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e) { console.error(e); }
     sgqToast('↩️ Descarga revertida para Fila!', 'aviso');
     document.getElementById('modalAprovarEMP').style.display = 'none';
@@ -16077,11 +16077,11 @@ async function desfazerAprovacaoEMP(id) {
     const idx = entradasMP.findIndex(e => String(e.id) === String(id));
     if (idx < 0) return;
     entradasMP[idx].status = 'EM ANÁLISE';
-    entradasMP[idx].hora_analise = '';
+    entradasMP[idx].hora_analise = null;
     // Reseta também a descarga caso esteja CONCLUÍDA ou DESCARREGANDO
     if (entradasMP[idx].status_descarga === 'CONCLUÍDA' || entradasMP[idx].status_descarga === 'DESCARREGANDO') {
         entradasMP[idx].status_descarga = 'FILA';
-        entradasMP[idx].hora_conclusao_descarga = '';
+        entradasMP[idx].hora_conclusao_descarga = null;
     }
     try {
         await dbUpsertOne('entradas_mp', entradasMP[idx]);
@@ -16100,14 +16100,14 @@ async function alterarStatusAnaliseEMP(id, novoStatus) {
     if (novoStatus === 'APROVADA' || novoStatus === 'REPROVADA') {
         entradasMP[idx].hora_analise = new Date().toISOString();
     } else {
-        entradasMP[idx].hora_analise = '';
+        entradasMP[idx].hora_analise = null;
     }
     if (novoStatus === 'APROVADA' && !entradasMP[idx].status_descarga) {
         entradasMP[idx].status_descarga = 'FILA';
     }
     if (novoStatus === 'REPROVADA') {
         entradasMP[idx].status_descarga = '';
-        entradasMP[idx].hora_conclusao_descarga = '';
+        entradasMP[idx].hora_conclusao_descarga = null;
     }
     try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e){}
     const labels = {'APROVADA':'✅ Aprovado!','REPROVADA':'❌ Reprovado!','EM ANÁLISE':'↩️ Voltou para Em Análise'};
