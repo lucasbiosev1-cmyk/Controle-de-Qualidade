@@ -19789,7 +19789,7 @@ function epLabelQuali(parametro, valor) {
 
 let _epDados = [];
 let _epGraficoInst = null;
-let _epIncertezas = {}; // { parametro: incerteza }
+let _epIncertezas = {}; // { chave (modulo|registro_id_interno|parametro|data_amostra): incerteza } — vinculada à análise específica, não ao produto/parâmetro em geral
 
 async function epCarregarIncertezas() {
     try {
@@ -19860,18 +19860,18 @@ function epAtualizarOpcoesProduto() {
     if (produtos.includes(valorAtual)) selProduto.value = valorAtual;
 }
 
-async function epAtualizarIncerteza(parametro, valorStr, inputEl) {
+async function epAtualizarIncerteza(chave, valorStr, inputEl) {
     const valStr = (valorStr || '').trim();
     const val = valStr === '' ? null : parseFloat(valStr);
     if (valStr !== '' && isNaN(val)) { sgqToast('Valor de incerteza inválido.', 'error'); return; }
     try {
-        await dbUpsertOne('ep_incertezas', { id: parametro, incerteza: val, atualizado_em: new Date().toISOString() });
-        if (val === null) delete _epIncertezas[parametro]; else _epIncertezas[parametro] = val;
+        await dbUpsertOne('ep_incertezas', { id: chave, incerteza: val, atualizado_em: new Date().toISOString() });
+        if (val === null) delete _epIncertezas[chave]; else _epIncertezas[chave] = val;
         sgqToast('✓ Incerteza atualizada!', 'success');
-        epRenderTabela(_epDados); // atualiza todas as linhas do mesmo parâmetro
+        epRenderTabela(_epDados); // atualiza apenas a linha desta análise específica
     } catch (e) {
         sgqToast('Erro ao salvar incerteza: ' + e.message, 'error');
-        if (inputEl) inputEl.value = _epIncertezas[parametro] !== undefined ? _epIncertezas[parametro] : '';
+        if (inputEl) inputEl.value = _epIncertezas[chave] !== undefined ? _epIncertezas[chave] : '';
     }
 }
 
@@ -19938,7 +19938,7 @@ function epAgrupar(dados) {
         const chave = [r.modulo_origem, r.registro_id_interno, r.parametro, r.data_amostra].join('|');
         if (!grupos[chave]) {
             grupos[chave] = {
-                modulo_origem: r.modulo_origem, produto: r.produto, parametro: r.parametro,
+                chave, modulo_origem: r.modulo_origem, produto: r.produto, parametro: r.parametro,
                 data_amostra: r.data_amostra, qualitativo: epEhQualitativo(r.parametro), nf: r.nf || null,
                 valores: { interno: [], externo: [], fornecedor: [] }
             };
@@ -19965,7 +19965,7 @@ function epAgrupar(dados) {
         if (mInt !== null && mForn !== null) diffs.push(Math.abs(mInt - mForn) / (mInt || 1) * 100);
         if (mExt !== null && mForn !== null) diffs.push(Math.abs(mExt - mForn) / (mExt || 1) * 100);
         const maiorDif = diffs.length ? Math.max(...diffs) : null;
-        const incerteza = _epIncertezas[g.parametro] !== undefined && !isNaN(_epIncertezas[g.parametro]) ? _epIncertezas[g.parametro] : null;
+        const incerteza = _epIncertezas[g.chave] !== undefined && !isNaN(_epIncertezas[g.chave]) ? _epIncertezas[g.chave] : null;
         const diffExtIntBruto  = (mExt !== null && mInt !== null)  ? (mExt - mInt)  : null;
         const diffFornExtBruto = (mForn !== null && mExt !== null) ? (mForn - mExt) : null;
         const diffExtInt  = epAjustarDiferenca(diffExtIntBruto, incerteza);
@@ -20062,7 +20062,7 @@ function epRenderTabela(dados) {
                 <input type="number" step="0.01" value="${g.incerteza !== null ? g.incerteza : ''}" placeholder="—"
                     class="ep-inc-input"
                     style="width:70px;text-align:center;padding:3px;font-size:11px;border-radius:3px;color:inherit;"
-                    onchange="epAtualizarIncerteza('${g.parametro}', this.value, this)">
+                    onchange="epAtualizarIncerteza('${g.chave}', this.value, this)">
             </td>
             <td style="padding:5px;text-align:center;">${g.qualitativo ? '—' : fmtDif(g.diffExtInt)}</td>
             <td style="padding:5px;text-align:center;">${g.qualitativo ? '—' : fmtDif(g.diffFornExt)}</td>
