@@ -15177,7 +15177,10 @@ function exibirTabelaEMP(lista) {
         // ── Modo PENDENTES: mostra apenas cargas em andamento ──
         if (_empModoAtual === 'pendentes' && !_empEhPendente(r)) return false;
         if (nf && !(r.nf||'').toUpperCase().includes(nf)) return false;
-        const rd = _normData(r.data);
+        // Em modo "todas", o filtro de data compara pela data de conclusão da análise
+        // (hora_analise), com fallback para a data de entrada caso a análise ainda
+        // não tenha sido concluída. No modo "pendentes" mantém a data de entrada.
+        const rd = (_empModoAtual === 'todas' && r.hora_analise) ? _normData(r.hora_analise) : _normData(r.data);
         if (di && rd < di) return false;
         if (df && rd > df) return false;
         if (forn && !(r.fornecedor||'').toUpperCase().includes(forn)) return false;
@@ -15490,10 +15493,10 @@ function empSetModo(modo, silencioso) {
         if (wrapStatus) wrapStatus.style.display = 'none';
         if (label) label.textContent = 'Mostrando apenas cargas em andamento';
     } else {
-        const di = document.getElementById('filterDataInicioEMP');
-        const df = document.getElementById('filterDataFimEMP');
-        if (df && !df.value) df.value = hoje;
-        if (di && !di.value) di.value = hoje;
+        const diTodas = document.getElementById('filterDataInicioEMP');
+        const dfTodas = document.getElementById('filterDataFimEMP');
+        if (diTodas) diTodas.value = hoje;
+        if (dfTodas) dfTodas.value = hoje;
         if (wrapStatus) wrapStatus.style.display = '';
         if (label) label.textContent = 'Mostrando todo o histórico';
     }
@@ -17021,7 +17024,7 @@ const _COLUNAS_TABELA = {
     producoes:          'id,data,hora,racao,lote,dgm,dpg,extrato,proteina,fibra,solubil,umidade,densidade,mineral,calcio,fosforo,granulo1,granulo2,granulo3,fundo,tela_moinho,obs',
     classificacoes:     'id,data,hora,produto,fornecedor,nf,local,queimado,ardido,mofado,esverdeado,fermentando,chocho,picado,gessado,quebrado,germinado,carunchado,impureza,umidade,densidade,aflatoxinas,fumonisinas,zearalenona,don,obs',
     materias_primas:    'id,data,hora,produto,fornecedor,nf,umidade,densidade,extrato,proteina,fibra,solubil,mineral,acidez,ureatica,rancidez,peroxido,digestibilidade,granulo1,granulo2,granulo3,granulo4,tempResfriador,tempCanhao,alimentacaoHz,calcio,fosforo,obs',
-    entradas_mp:        'id,data,hora,fornecedor,materia_prima,nf,usuario,status,status_descarga,criado_em,placa,seq,obs,quantidade',
+    entradas_mp:        'id,data,hora,fornecedor,materia_prima,nf,usuario,status,status_descarga,criado_em,placa,seq,obs,quantidade,hora_analise,hora_conclusao_descarga',
     mp_produtos_custom: 'id,nome',
     homogeneidade:      'id,dataISO,data,dataResultadoISO,dataResultado,produto,equipamento,marcador,tempo,responsavel,local,laboratorio,textoPadrao,amostras,n,media,dp,cv,complemento',
     ensaios_proficiencia: 'id,modulo_origem,registro_id_interno,produto,fonte,nome_laboratorio,parametro,replica,valor,valor_texto,data_amostra,data_resultado,responsavel,observacoes,criado_em,nf',
