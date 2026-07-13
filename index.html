@@ -19917,6 +19917,21 @@ function epFmtData(iso) {
 }
 
 // Agrupa registros por chave de amostra+parâmetro, calculando média por fonte
+// Ajusta a diferença bruta (Ext-Int ou Forn-Ext) pela incerteza do parâmetro:
+// - Se |diferença bruta| > incerteza: reduz a diferença pela incerteza (mantendo o sinal)
+// - Se |diferença bruta| <= incerteza: mantém a diferença bruta (já é o menor valor)
+// - Se não houver incerteza cadastrada: mantém a diferença bruta
+function epAjustarDiferenca(diffBruto, incerteza) {
+    if (diffBruto === null) return null;
+    if (incerteza === null || incerteza === undefined || isNaN(incerteza)) return diffBruto;
+    const abs = Math.abs(diffBruto);
+    if (abs > incerteza) {
+        const sinal = diffBruto >= 0 ? 1 : -1;
+        return sinal * (abs - incerteza);
+    }
+    return diffBruto;
+}
+
 function epAgrupar(dados) {
     const grupos = {};
     dados.forEach(r => {
@@ -19951,8 +19966,10 @@ function epAgrupar(dados) {
         if (mExt !== null && mForn !== null) diffs.push(Math.abs(mExt - mForn) / (mExt || 1) * 100);
         const maiorDif = diffs.length ? Math.max(...diffs) : null;
         const incerteza = _epIncertezas[g.parametro] !== undefined && !isNaN(_epIncertezas[g.parametro]) ? _epIncertezas[g.parametro] : null;
-        const diffExtInt  = (mExt !== null && mInt !== null)  ? (mExt - mInt)  : null;
-        const diffFornExt = (mForn !== null && mExt !== null) ? (mForn - mExt) : null;
+        const diffExtIntBruto  = (mExt !== null && mInt !== null)  ? (mExt - mInt)  : null;
+        const diffFornExtBruto = (mForn !== null && mExt !== null) ? (mForn - mExt) : null;
+        const diffExtInt  = epAjustarDiferenca(diffExtIntBruto, incerteza);
+        const diffFornExt = epAjustarDiferenca(diffFornExtBruto, incerteza);
         return { ...g, mInt, mExt, mForn, maiorDif, concorda: null, incerteza, diffExtInt, diffFornExt };
     });
 }
