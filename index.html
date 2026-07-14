@@ -19520,29 +19520,15 @@ async function imprimirBoletim() {
 
     // ── Extrai devoluções do período do boletim ───────────────────────────────
     // bolDataInicio e bolDataFim vêm dos filtros já usados para gerar o boletim
-    // ⚠️ O array `listaDev` em memória é carregado com .limit(200) (mais recentes por id),
-    // pois a tela de Devoluções mantém intencionalmente o filtro do mês atual.
-    // Por isso, para o boletim refletir corretamente QUALQUER período selecionado
-    // (inclusive meses anteriores), busca-se direto no Supabase pela data escolhida,
-    // em vez de filtrar o `listaDev` já truncado.
-    let devBoletim = [];
-    try {
-        let _devQuery = _sbClient.from('devolucoes').select('*');
-        if (_bolFi) _devQuery = _devQuery.gte('data', _bolFi);
-        if (_bolFf) _devQuery = _devQuery.lte('data', _bolFf);
-        const _devResult = await _devQuery;
-        if (_devResult.error) throw _devResult.error;
-        devBoletim = (_devResult.data || []).filter(d => d.data);
-    } catch(_eDev) {
-        // Fallback (ex.: sem conexão): usa os dados já carregados em memória.
-        // Pode ficar incompleto para períodos fora dos 200 registros mais recentes.
-        devBoletim = (listaDev || []).filter(d => {
-            if (!d.data) return false;
-            if (_bolFi && d.data < _bolFi) return false;
-            if (_bolFf && d.data > _bolFf) return false;
-            return true;
-        });
-    }
+    // Garante que o período pedido está coberto em memória (expande sob demanda se necessário,
+    // mesmo padrão usado para produção/classificação/matéria-prima via _garantirPeriodoCarregado)
+    if (_bolFi || _bolFf) await _garantirPeriodoCarregadoDev(_bolFi, _bolFf);
+    const devBoletim = (listaDev || []).filter(d => {
+        if (!d.data) return false;
+        if (_bolFi && d.data < _bolFi) return false;
+        if (_bolFf && d.data > _bolFf) return false;
+        return true;
+    });
     // Agrupa por fornecedor + produto e conta ocorrências
     const _devGrupo = {};
     devBoletim.forEach(d => {
@@ -22674,6 +22660,50 @@ const ncStorage = {
 
 let listaNC  = JSON.parse(ncStorage.getItem('sgq_nc')  || '[]');
 let listaDev = JSON.parse(ncStorage.getItem('sgq_dev') || '[]');
+
+// ✅ Controla o intervalo de datas de devoluções já garantidamente coberto em memória.
+// O carregamento inicial (carregarNCeDevSupabase) traz só os 200 registros mais recentes
+// por id, então aqui começamos sem período conhecido — será calculado a partir das
+// datas efetivamente carregadas assim que o carregamento inicial terminar.
+let _periodoCarregadoDev = { ini: null, fim: null };
+
+// ✅ Expande sob demanda o período de devoluções carregado em memória (mesmo padrão usado
+// para produção/classificação/matéria-prima em _garantirPeriodoCarregado), sem precisar
+// rebaixar tudo de novo — só busca o que ainda não está coberto pelo período pedido.
+async function _garantirPeriodoCarregadoDev(dataIniDesejada, dataFimDesejada) {
+    if (!dataIniDesejada && !dataFimDesejada) return; // sem filtro de data, usa o que já está em memória
+    const jaCobre = _periodoCarregadoDev.ini && _periodoCarregadoDev.fim &&
+        (!dataIniDesejada || dataIniDesejada >= _periodoCarregadoDev.ini) &&
+        (!dataFimDesejada || dataFimDesejada <= _periodoCarregadoDev.fim);
+    if (jaCobre) return; // já está tudo em memória, não precisa buscar de novo
+
+    try {
+        let _q = _sbClient.from('devolucoes').select('*');
+        if (dataIniDesejada) _q = _q.gte('data', dataIniDesejada);
+        if (dataFimDesejada) _q = _q.lte('data', dataFimDesejada);
+        const _r = await _q;
+        if (_r.error) throw _r.error;
+        const _novos = _r.data || [];
+
+        // Mescla com o que já está em memória (evita duplicar por id, atualiza se já existir)
+        const _idx = new Map(listaDev.map((d, i) => [String(d.id), i]));
+        _novos.forEach(d => {
+            const i = _idx.get(String(d.id));
+            if (i === undefined) { listaDev.push(d); _idx.set(String(d.id), listaDev.length - 1); }
+            else { listaDev[i] = d; }
+        });
+
+        // Expande a janela conhecida como coberta
+        const novaIni = !_periodoCarregadoDev.ini ? (dataIniDesejada || null)
+            : (dataIniDesejada && dataIniDesejada < _periodoCarregadoDev.ini ? dataIniDesejada : _periodoCarregadoDev.ini);
+        const novaFim = !_periodoCarregadoDev.fim ? (dataFimDesejada || null)
+            : (dataFimDesejada && dataFimDesejada > _periodoCarregadoDev.fim ? dataFimDesejada : _periodoCarregadoDev.fim);
+        _periodoCarregadoDev = { ini: novaIni, fim: novaFim };
+    } catch(_e) {
+        sgqToast('Erro ao expandir período de devoluções: ' + _e.message, 'error');
+    }
+}
+
 // Migração: corrige registros antigos de MILHO onde Densidade foi salva com unidade '%'
 let _migracaoFeita = false;
 listaDev = listaDev.map(dev => {
@@ -23633,12 +23663,16 @@ function renderizarDev(lista) {
     </tr>`).join('');
 }
 
-function filtrarDev() {
+async function filtrarDev() {
     const fi   = document.getElementById('dev-fi').value;
     const ff   = document.getElementById('dev-ff').value;
     const forn = (document.getElementById('dev-forn-f').value||'').toLowerCase();
     const mot  = document.getElementById('dev-motivo-f').value;
     const st   = document.getElementById('dev-status-f').value;
+
+    // Garante que o período pedido está coberto em memória (expande sob demanda se necessário)
+    if (fi || ff) await _garantirPeriodoCarregadoDev(fi, ff);
+
     renderizarDev(listaDev.filter(d => {
         if (fi && d.data < fi) return false;
         if (ff && d.data > ff) return false;
@@ -24312,6 +24346,16 @@ async function carregarNCeDevSupabase() {
                     return { ...dev, classificacao: JSON.stringify(normalizada) };
                 } catch(e) { return dev; }
             });
+
+            // ✅ Registra o período efetivamente coberto pelos 200 registros mais recentes carregados,
+            // para que _garantirPeriodoCarregadoDev saiba quando pode confiar no que já está em
+            // memória e quando precisa buscar mais dados no Supabase (ex.: filtro por mês anterior).
+            {
+                const _datasDev = listaDev.map(d => d.data).filter(Boolean).sort();
+                _periodoCarregadoDev = _datasDev.length
+                    ? { ini: _datasDev[0], fim: _datasDev[_datasDev.length - 1] }
+                    : { ini: null, fim: null };
+            }
 
             // ✅ Correção automática de sequência por fornecedor (silenciosa, roda uma vez se necessário)
             // ✅ OTIMIZAÇÃO EGRESS: reutiliza listaDev já carregado em vez de nova query ao Supabase
