@@ -19374,7 +19374,7 @@ function gerarTabelaMP(rows, compacto, destNC) {
     return `<table class="bol-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
 }
 
-function imprimirBoletim() {
+async function imprimirBoletim() {
     const conteudo = document.getElementById('boletimConteudo');
     if (!conteudo || conteudo.innerHTML.includes('Selecione o período')) {
         alert('Gere o boletim primeiro antes de imprimir.'); return;
@@ -19520,12 +19520,29 @@ function imprimirBoletim() {
 
     // ── Extrai devoluções do período do boletim ───────────────────────────────
     // bolDataInicio e bolDataFim vêm dos filtros já usados para gerar o boletim
-    const devBoletim = (listaDev || []).filter(d => {
-        if (!d.data) return false;
-        if (_bolFi && d.data < _bolFi) return false;
-        if (_bolFf && d.data > _bolFf) return false;
-        return true;
-    });
+    // ⚠️ O array `listaDev` em memória é carregado com .limit(200) (mais recentes por id),
+    // pois a tela de Devoluções mantém intencionalmente o filtro do mês atual.
+    // Por isso, para o boletim refletir corretamente QUALQUER período selecionado
+    // (inclusive meses anteriores), busca-se direto no Supabase pela data escolhida,
+    // em vez de filtrar o `listaDev` já truncado.
+    let devBoletim = [];
+    try {
+        let _devQuery = _sbClient.from('devolucoes').select('*');
+        if (_bolFi) _devQuery = _devQuery.gte('data', _bolFi);
+        if (_bolFf) _devQuery = _devQuery.lte('data', _bolFf);
+        const _devResult = await _devQuery;
+        if (_devResult.error) throw _devResult.error;
+        devBoletim = (_devResult.data || []).filter(d => d.data);
+    } catch(_eDev) {
+        // Fallback (ex.: sem conexão): usa os dados já carregados em memória.
+        // Pode ficar incompleto para períodos fora dos 200 registros mais recentes.
+        devBoletim = (listaDev || []).filter(d => {
+            if (!d.data) return false;
+            if (_bolFi && d.data < _bolFi) return false;
+            if (_bolFf && d.data > _bolFf) return false;
+            return true;
+        });
+    }
     // Agrupa por fornecedor + produto e conta ocorrências
     const _devGrupo = {};
     devBoletim.forEach(d => {
