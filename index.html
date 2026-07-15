@@ -8936,7 +8936,7 @@
                         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:4px;">
                             <div class="form-group required">
                                 <label>DATA</label>
-                                <input type="text" id="cadDataEMP" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)" style="text-align:center;">
+                                <div style="display:flex;align-items:center;gap:4px;"><input type="text" id="cadDataEMP" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)" style="flex:1;text-align:center;"><div style="display:flex;flex-direction:column;gap:2px;"><button type="button" onclick="alterarDataCampo('cadDataEMP',1)" style="background:#3498db;color:white;border:none;border-radius:2px;width:16px;height:13px;cursor:pointer;font-size:8px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;" title="Avançar 1 dia">▲</button><button type="button" onclick="alterarDataCampo('cadDataEMP',-1)" style="background:#3498db;color:white;border:none;border-radius:2px;width:16px;height:13px;cursor:pointer;font-size:8px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;" title="Recuar 1 dia">▼</button></div></div>
                             </div>
                             <div class="form-group required">
                                 <label>HORA</label>
@@ -9026,7 +9026,6 @@
                     </div>
                     <div class="form-buttons">
                         <button type="button" class="btn-salvar" onclick="salvarEntradaMP(event)">SALVAR</button>
-                        <button type="button" class="btn-limpar-form" onclick="limparFormularioEMP()">LIMPAR</button>
                         <button type="button" class="btn-cancelar" onclick="fecharModalEMP()">CANCELAR</button>
                         <button type="button" id="btnDesfazerEMP" class="btn-action" style="margin-left:4px;padding:8px 14px;font-size:11px;font-weight:bold;display:none;background:#e67e22;color:white;border:none;border-radius:4px;cursor:pointer;" onclick="desfazerAprovacaoEMPDoModal()" title="Desfazer aprovação/reprovação">↩️ DESFAZER</button>
                         <button type="button" id="btnExcluirEMP" class="btn-delete btn-action" style="margin-left:auto;padding:8px 18px;font-size:11px;font-weight:bold;display:none;" onclick="excluirEMPDoModal()">🗑️ EXCLUIR</button>
@@ -9438,7 +9437,7 @@
                 <div class="form-section">
                     <h3>Dados de Registro</h3>
                     <div class="form-grid form-grid-4">
-                        <div class="form-group required" style="min-width:0;overflow:hidden;"><label>Data</label><div style="display:flex;align-items:stretch;gap:3px;width:100%;box-sizing:border-box;"><button type="button" onclick="alterarDataCampo('cadDataProd',-1)" title="Dia anterior" style="flex:0 0 24px;height:27px;background:#3a4a5a;color:#ecf0f1;border:1px solid #4a6278;border-radius:4px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;" onmouseover="this.style.background='#4a5e70'" onmouseout="this.style.background='#3a4a5a'">&#8249;</button><input type="text" id="cadDataProd" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)" onchange="gerarLoteAutomatico()" style="flex:1;min-width:0;width:100%;box-sizing:border-box;"><button type="button" onclick="alterarDataCampo('cadDataProd',1)" title="Próximo dia" style="flex:0 0 24px;height:27px;background:#3a4a5a;color:#ecf0f1;border:1px solid #4a6278;border-radius:4px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;" onmouseover="this.style.background='#4a5e70'" onmouseout="this.style.background='#3a4a5a'">&#8250;</button></div></div>
+                        <div class="form-group required" style="min-width:0;overflow:hidden;"><label>Data</label><div style="display:flex;align-items:center;gap:4px;"><input type="text" id="cadDataProd" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)" onchange="gerarLoteAutomatico()" style="flex:1;min-width:0;"><div style="display:flex;flex-direction:column;gap:2px;"><button type="button" onclick="alterarDataCampo('cadDataProd',1)" style="background:#3498db;color:white;border:none;border-radius:2px;width:16px;height:13px;cursor:pointer;font-size:8px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;" title="Avançar 1 dia">▲</button><button type="button" onclick="alterarDataCampo('cadDataProd',-1)" style="background:#3498db;color:white;border:none;border-radius:2px;width:16px;height:13px;cursor:pointer;font-size:8px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;" title="Recuar 1 dia">▼</button></div></div></div>
                         <div class="form-group"><label>Hora</label><input type="text" id="cadHoraProd" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" oninput="mascaraHora(this)" onchange="gerarLoteAutomatico()"></div>
                         <div class="form-group required">
                             <label>Ração</label>
@@ -9513,7 +9512,6 @@
                 </div>
                 <div class="form-buttons">
                     <button type="button" class="btn-salvar" onclick="salvarProducao(event)">Salvar</button>
-                    <button type="button" class="btn-limpar-form" onclick="limparFormularioProd()">Limpar</button>
                     <button type="button" class="btn-cancelar" onclick="fecharModalCadastroProd()">Cancelar</button>
                     <button type="button" id="btnExcluirProd" class="btn-delete btn-action" style="margin-left:auto;padding:8px 18px;font-size:11px;font-weight:bold;display:none;" onclick="excluirProdDoModal()">🗑️ Excluir</button>
                 </div>
@@ -9657,9 +9655,8 @@
                 </div>
                 <div class="form-buttons">
                     <button type="button" class="btn-salvar" onclick="salvarClassificacao(event)">Salvar</button>
-                    <button type="button" class="btn-limpar-form" onclick="limparFormularioClass()">Limpar</button>
                     <button type="button" class="btn-cancelar" onclick="fecharModalCadastroClass()">Cancelar</button>
-                    <button type="button" id="btnDeletarClassModal" class="btn-cancelar" style="display:none;background:#e74c3c;color:white;border-color:#e74c3c;margin-left:auto;" onclick="deletarClassModal()">🗑️ Deletar</button>
+                    <button type="button" id="btnDeletarClassModal" class="btn-delete btn-action" style="margin-left:auto;padding:8px 18px;font-size:11px;font-weight:bold;display:none;" onclick="deletarClassModal()">🗑️ Excluir</button>
                 </div>
             </form>
         </div>
@@ -9707,7 +9704,7 @@
             <div class="form-buttons">
                 <button type="button" class="btn-salvar" onclick="epSalvarResultadoSuffix('Class')">💾 Salvar</button>
                 <button type="button" class="btn-cancelar" onclick="fecharModalCadastroClass()">Cancelar</button>
-                <button type="button" id="btnDeletarClassModal2" class="btn-cancelar" style="display:none;background:#e74c3c;color:white;border-color:#e74c3c;margin-left:auto;" onclick="deletarClassModal()">🗑️ Deletar</button>
+                <button type="button" id="btnDeletarClassModal2" class="btn-delete btn-action" style="margin-left:auto;padding:8px 18px;font-size:11px;font-weight:bold;display:none;" onclick="deletarClassModal()">🗑️ Excluir</button>
             </div>
         </div>
     </div>
@@ -9732,7 +9729,7 @@
                 <div class="form-section">
                     <h3>Dados de Registro</h3>
                     <div class="form-grid form-grid-4">
-                        <div class="form-group required"><label>Data</label><input type="text" id="cadDataMP" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)"></div>
+                        <div class="form-group required"><label>Data</label><div style="display:flex;align-items:center;gap:4px;"><input type="text" id="cadDataMP" placeholder="DD/MM/AAAA" maxlength="10" inputmode="numeric" autocomplete="off" required oninput="mascaraData(this)" style="flex:1;"><div style="display:flex;flex-direction:column;gap:2px;"><button type="button" onclick="alterarDataCampo('cadDataMP',1)" style="background:#3498db;color:white;border:none;border-radius:2px;width:16px;height:13px;cursor:pointer;font-size:8px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;" title="Avançar 1 dia">▲</button><button type="button" onclick="alterarDataCampo('cadDataMP',-1)" style="background:#3498db;color:white;border:none;border-radius:2px;width:16px;height:13px;cursor:pointer;font-size:8px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;" title="Recuar 1 dia">▼</button></div></div></div>
                         <div class="form-group"><label>Hora</label><input type="text" id="cadHoraMP" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" oninput="mascaraHora(this)"></div>
                         <div class="form-group required">
                             <label>Produto</label>
@@ -9796,7 +9793,6 @@
                 </div>
                 <div class="form-buttons">
                     <button type="button" id="btnSalvarMP" class="btn-salvar" onclick="salvarMateriaPrima(event)">Salvar</button>
-                    <button type="button" class="btn-limpar-form" onclick="limparFormularioMP()">Limpar</button>
                     <button type="button" class="btn-cancelar" onclick="fecharModalCadastroMP()">Cancelar</button>
                     <button type="button" id="btnExcluirMP" class="btn-delete btn-action" style="margin-left:auto;padding:6px 16px;font-size:11px;font-weight:bold;display:none;" onclick="excluirMPDoModal()">🗑️ Excluir</button>
                 </div>
@@ -11287,8 +11283,6 @@ function abrirModalEdicaoProd(id) {
     document.getElementById('modalCadastroProd').classList.add('show');
     const btnExcluir = document.getElementById('btnExcluirProd');
     if (btnExcluir) btnExcluir.style.display = perfilAtual === 'admin' ? 'inline-block' : 'none';
-    const btnExcluir2 = document.getElementById('btnExcluirProd2');
-    if (btnExcluir2) btnExcluir2.style.display = perfilAtual === 'admin' ? 'inline-block' : 'none';
     trocarSubabaModal('Prod', 'dados');
     epPrepararAba('Prod', id);
 }
@@ -11587,8 +11581,6 @@ function abrirModalEdicaoClass(id) {
     else { obsToggleClass.classList.remove('open'); obsClass.closest('.obs-body').classList.remove('open'); }
     const btnDel = document.getElementById('btnDeletarClassModal');
     if (btnDel) btnDel.style.display = (perfilAtual === 'admin') ? 'inline-block' : 'none';
-    const btnDel2 = document.getElementById('btnDeletarClassModal2');
-    if (btnDel2) btnDel2.style.display = (perfilAtual === 'admin') ? 'inline-block' : 'none';
     document.getElementById('modalCadastroClass').classList.add('show');
     trocarSubabaModal('Class', 'dados');
     epPrepararAba('Class', id);
@@ -20346,21 +20338,29 @@ function epResetAba(suffix) {
 }
 
 // Carrega os dados do registro (já salvo) na aba de proficiência — chamado ao abrir um registro para edição
+const EP_BTN_EXCLUIR2 = { Prod: 'btnExcluirProd2', Class: 'btnDeletarClassModal2', MP: 'btnExcluirMP2' };
+
 async function epPrepararAba(suffix, id) {
     const modulo = EP_SUFFIX_MODULO[suffix];
     const cfg = EP_MODULO_CONFIG[modulo];
+    const btnExcluir2 = document.getElementById(EP_BTN_EXCLUIR2[suffix] || '');
     if (!cfg || !id) {
         _epRegistroPorAba[suffix] = null;
+        if (btnExcluir2) btnExcluir2.style.display = 'none';
         epMontarCamposParametros(suffix, modulo, null, []);
         return;
     }
     const registro = (cfg.arr() || []).find(r => String(r.id) === String(id));
     if (!registro) {
         _epRegistroPorAba[suffix] = null;
+        if (btnExcluir2) btnExcluir2.style.display = 'none';
         epMontarCamposParametros(suffix, modulo, null, []);
         return;
     }
     _epRegistroPorAba[suffix] = registro;
+    // Na aba de Proficiência, o botão Excluir sempre aparece quando há um registro carregado
+    // (diferente da aba "Dados do Registro", onde fica restrito ao perfil admin)
+    if (btnExcluir2) btnExcluir2.style.display = 'inline-block';
 
     const dataResultEl = document.getElementById('epDataResultado' + suffix);
     if (dataResultEl) dataResultEl.value = new Date().toISOString().split('T')[0];
