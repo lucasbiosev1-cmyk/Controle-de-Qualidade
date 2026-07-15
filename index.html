@@ -1094,7 +1094,6 @@
         .modal-subtab.active { color: #8e44ad; border-bottom-color: #8e44ad; background: #ffffff; }
         .modal-subtab-content { display: none; }
         .modal-subtab-content.active { display: block; }
-        .ep-aviso-salvar { display: block; background: #fff3cd; border: 1px solid #ffe69c; color: #664d03; padding: 10px 14px; border-radius: 6px; font-size: 11px; margin-bottom: 12px; }
         html[data-theme="dark"] .modal-subtabs { background: #0d1117 !important; border-bottom: 1px solid #21262d !important; }
         html[data-theme="dark"] .modal-subtab { color: rgba(255,255,255,0.45) !important; }
         html[data-theme="dark"] .modal-subtab:hover { color: rgba(255,255,255,0.85) !important; background: rgba(255,255,255,0.04) !important; }
@@ -3288,19 +3287,11 @@
         .form-usuario-hint { color: #888; font-size: 10px; margin-top: 3px; display: block; }
         .input-disabled-senha { background: #f5f5f5; color: #aaa; }
 
-        /* Campos bloqueados por tipo de produto (ex: esverdeado/picado no milho) */
+        /* Campos bloqueados por tipo de produto (ex: esverdeado/picado no milho) — mantém o campo
+           com a MESMA aparência dos demais, só o cursor indica que está bloqueado */
         .form-group input[disabled],
         .form-group input[data-skip-class] {
-            background: #1a1a1a !important;
-            color: #444 !important;
             cursor: not-allowed !important;
-            border-color: #333 !important;
-        }
-        html[data-theme="dark"] .form-group input[disabled],
-        html[data-theme="dark"] .form-group input[data-skip-class] {
-            background: #0d1117 !important;
-            color: #333 !important;
-            border-color: #21262d !important;
         }
         .perm-section-title { font-size: 11px; font-weight: bold; color: #555; text-transform: uppercase; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 1px solid #eee; }
         .perm-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -8970,7 +8961,7 @@
                             <label>MATÉRIA PRIMA</label>
                             <div style="display:flex;gap:6px;align-items:center;">
                                 <div class="sgq-autocomplete-wrap" style="position:relative;flex:1;">
-                                    <input type="text" id="cadMateriaPrimaEMP" required autocomplete="new-password"
+                                    <input type="text" id="cadMateriaPrimaEMP" required autocomplete="off"
                                         placeholder="Digite para pesquisar..."
                                         style="width:100%;padding:5px 8px;border:1px solid #bdc3c7;border-radius:4px;font-size:11px;text-transform:uppercase;font-weight:bold;box-sizing:border-box;"
                                         oninput="sgqAutocompleteFiltrar(this,'cadMateriaPrimaEMP','emp_mp')"
@@ -8988,7 +8979,7 @@
                             <div class="form-group required">
                                 <label>FORNECEDOR</label>
                                 <div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
-                                    <input type="text" id="cadFornecedorEMP" required autocomplete="new-password"
+                                    <input type="text" id="cadFornecedorEMP" required autocomplete="off"
                                         style="width:100%;text-transform:uppercase;"
                                         oninput="this.value=this.value.toUpperCase();sgqAutocompleteFiltrar(this,'cadFornecedorEMP','emp')"
                                         onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorEMP','emp')"
@@ -9453,7 +9444,7 @@
                             <label>Ração</label>
                             <div style="display:flex;align-items:center;gap:4px;width:100%;">
                                 <div class="sgq-autocomplete-wrap" style="position:relative;flex:1;min-width:0;">
-                                    <input type="text" id="cadRacaoProdSelect" placeholder="Digite para filtrar..." required autocomplete="new-password" style="width:100%;text-transform:uppercase;"
+                                    <input type="text" id="cadRacaoProdSelect" placeholder="Digite para filtrar..." required autocomplete="off" style="width:100%;text-transform:uppercase;"
                                         oninput="sgqAutocompleteFiltrar(this,'cadRacaoProdSelect','racao'); gerarLoteAutomatico();"
                                         onfocus="sgqAutocompleteFiltrar(this,'cadRacaoProdSelect','racao')"
                                         onblur="setTimeout(()=>{const l=document.getElementById('cadRacaoProdSelect_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadRacaoProdSelect');},180)"
@@ -9529,7 +9520,6 @@
             </form>
         </div>
         <div class="form-wrapper modal-subtab-content" id="subabaProfProd">
-            <div id="epAvisoSalvarProd" class="ep-aviso-salvar">⚠️ Salve o registro na aba "Dados do Registro" antes de lançar o resultado de proficiência.</div>
             <div class="form-section">
                 <h3>Dados do Resultado Externo</h3>
                 <div class="form-grid form-grid-3">
@@ -9563,21 +9553,17 @@
                 </div>
             </div>
             <div class="form-section">
-                <h3>Valores por Parâmetro <span style="font-weight:normal;font-size:11px;color:#888;">— o valor interno já lançado aparece como referência</span></h3>
-                <label style="display:flex;align-items:flex-start;gap:6px;font-size:11px;font-weight:normal;color:#555;margin-bottom:10px;background:#fff8e1;border:1px solid #ffe082;border-radius:4px;padding:8px 10px;">
-                    <input type="checkbox" id="epConfirmarInternoProd" autocomplete="off" style="margin-top:2px;">
-                    <span>Confirmo que os valores acima em <strong>"Dados do Registro"</strong> correspondem à análise interna desta amostra e devem ser gravados como referência "Interno" na consulta de proficiência.</span>
-                </label>
+                <h3>Valores por Parâmetro <span style="font-weight:normal;font-size:11px;color:#888;">— o valor interno já lançado aparece como referência; lançamentos externos já salvos aparecem preenchidos, com opção de excluir</span></h3>
                 <div id="epCamposParametrosProd" class="form-grid form-grid-4"></div>
             </div>
             <div class="form-section">
                 <h3>Observações</h3>
                 <textarea id="epObservacoesProd" rows="2" style="width:100%;" placeholder="Opcional"></textarea>
             </div>
-            <div id="epRegistrosAnterioresProd" style="margin-top:6px;"></div>
             <div class="form-buttons">
                 <button type="button" class="btn-salvar" onclick="epSalvarResultadoSuffix('Prod')">💾 Salvar</button>
                 <button type="button" class="btn-cancelar" onclick="fecharModalCadastroProd()">Cancelar</button>
+                <button type="button" id="btnExcluirProd2" class="btn-delete btn-action" style="margin-left:auto;padding:8px 18px;font-size:11px;font-weight:bold;display:none;" onclick="excluirProdDoModal()">🗑️ Excluir</button>
             </div>
         </div>
     </div>
@@ -9613,11 +9599,11 @@
                                 <option value="Produção Silo 2">Produção Silo 2</option>
                             </select>
                         </div>
-                        <div class="form-group required"><label>Nota Fiscal</label><input type="text" id="cadNFClass" autocomplete="new-password"></div>
+                        <div class="form-group required"><label>Nota Fiscal</label><input type="text" id="cadNFClass" autocomplete="off"></div>
                     </div>
                     <div class="form-grid form-grid-2">
                         <div class="form-group required"><label>Fornecedor</label><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
-<input type="text" id="cadFornecedorClass" required autocomplete="new-password" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class');classFornecedorAutoFill(this.value)" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorClass_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorClass');classFornecedorAutoFill(document.getElementById('cadFornecedorClass').value)},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorClass')">
+<input type="text" id="cadFornecedorClass" required autocomplete="off" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class');classFornecedorAutoFill(this.value)" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorClass_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorClass');classFornecedorAutoFill(document.getElementById('cadFornecedorClass').value)},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorClass')">
 <ul id="cadFornecedorClass_list" class="sgq-autocomplete-list"></ul>
 </div></div>
                         <div class="form-group required">
@@ -9678,7 +9664,6 @@
             </form>
         </div>
         <div class="form-wrapper modal-subtab-content" id="subabaProfClass">
-            <div id="epAvisoSalvarClass" class="ep-aviso-salvar">⚠️ Salve o registro na aba "Dados do Registro" antes de lançar o resultado de proficiência.</div>
             <div class="form-section">
                 <h3>Dados do Resultado Externo</h3>
                 <div class="form-grid form-grid-3">
@@ -9712,21 +9697,17 @@
                 </div>
             </div>
             <div class="form-section">
-                <h3>Valores por Parâmetro <span style="font-weight:normal;font-size:11px;color:#888;">— o valor interno já lançado aparece como referência</span></h3>
-                <label style="display:flex;align-items:flex-start;gap:6px;font-size:11px;font-weight:normal;color:#555;margin-bottom:10px;background:#fff8e1;border:1px solid #ffe082;border-radius:4px;padding:8px 10px;">
-                    <input type="checkbox" id="epConfirmarInternoClass" autocomplete="off" style="margin-top:2px;">
-                    <span>Confirmo que os valores acima em <strong>"Dados do Registro"</strong> correspondem à análise interna desta amostra e devem ser gravados como referência "Interno" na consulta de proficiência.</span>
-                </label>
+                <h3>Valores por Parâmetro <span style="font-weight:normal;font-size:11px;color:#888;">— o valor interno já lançado aparece como referência; lançamentos externos já salvos aparecem preenchidos, com opção de excluir</span></h3>
                 <div id="epCamposParametrosClass" class="form-grid form-grid-4"></div>
             </div>
             <div class="form-section">
                 <h3>Observações</h3>
                 <textarea id="epObservacoesClass" rows="2" style="width:100%;" placeholder="Opcional"></textarea>
             </div>
-            <div id="epRegistrosAnterioresClass" style="margin-top:6px;"></div>
             <div class="form-buttons">
                 <button type="button" class="btn-salvar" onclick="epSalvarResultadoSuffix('Class')">💾 Salvar</button>
                 <button type="button" class="btn-cancelar" onclick="fecharModalCadastroClass()">Cancelar</button>
+                <button type="button" id="btnDeletarClassModal2" class="btn-cancelar" style="display:none;background:#e74c3c;color:white;border-color:#e74c3c;margin-left:auto;" onclick="deletarClassModal()">🗑️ Deletar</button>
             </div>
         </div>
     </div>
@@ -9767,11 +9748,11 @@
                                 <button type="button" style="padding:4px 7px;background:#3498db;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:10px;" onclick="abrirModalNovaMateria()" title="Adicionar nova matéria prima">+</button>
                             </div>
                         </div>
-                        <div class="form-group"><label>Nota Fiscal</label><input type="text" id="cadNFMP" autocomplete="new-password"></div>
+                        <div class="form-group"><label>Nota Fiscal</label><input type="text" id="cadNFMP" autocomplete="off"></div>
                     </div>
                     <div class="form-grid" style="grid-template-columns:1fr 1fr;">
                         <div class="form-group required"><label>Fornecedor</label><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
-<input type="text" id="cadFornecedorMP" required autocomplete="new-password" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp');mpFornecedorAutoFill(this.value)" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorMP_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorMP');mpFornecedorAutoFill(document.getElementById('cadFornecedorMP').value)},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorMP')">
+<input type="text" id="cadFornecedorMP" required autocomplete="off" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp');mpFornecedorAutoFill(this.value)" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorMP_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorMP');mpFornecedorAutoFill(document.getElementById('cadFornecedorMP').value)},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorMP')">
 <ul id="cadFornecedorMP_list" class="sgq-autocomplete-list"></ul>
 </div></div>
                     </div>
@@ -9822,7 +9803,6 @@
             </form>
         </div>
         <div class="form-wrapper modal-subtab-content" id="subabaProfMP">
-            <div id="epAvisoSalvarMP" class="ep-aviso-salvar">⚠️ Salve o registro na aba "Dados do Registro" antes de lançar o resultado de proficiência.</div>
             <div class="form-section">
                 <h3>Dados do Resultado Externo</h3>
                 <div class="form-grid form-grid-3">
@@ -9856,21 +9836,17 @@
                 </div>
             </div>
             <div class="form-section">
-                <h3>Valores por Parâmetro <span style="font-weight:normal;font-size:11px;color:#888;">— o valor interno já lançado aparece como referência</span></h3>
-                <label style="display:flex;align-items:flex-start;gap:6px;font-size:11px;font-weight:normal;color:#555;margin-bottom:10px;background:#fff8e1;border:1px solid #ffe082;border-radius:4px;padding:8px 10px;">
-                    <input type="checkbox" id="epConfirmarInternoMP" autocomplete="off" style="margin-top:2px;">
-                    <span>Confirmo que os valores acima em <strong>"Dados do Registro"</strong> correspondem à análise interna desta amostra e devem ser gravados como referência "Interno" na consulta de proficiência.</span>
-                </label>
+                <h3>Valores por Parâmetro <span style="font-weight:normal;font-size:11px;color:#888;">— o valor interno já lançado aparece como referência; lançamentos externos já salvos aparecem preenchidos, com opção de excluir</span></h3>
                 <div id="epCamposParametrosMP" class="form-grid form-grid-4"></div>
             </div>
             <div class="form-section">
                 <h3>Observações</h3>
                 <textarea id="epObservacoesMP" rows="2" style="width:100%;" placeholder="Opcional"></textarea>
             </div>
-            <div id="epRegistrosAnterioresMP" style="margin-top:6px;"></div>
             <div class="form-buttons">
                 <button type="button" class="btn-salvar" onclick="epSalvarResultadoSuffix('MP')">💾 Salvar</button>
                 <button type="button" class="btn-cancelar" onclick="fecharModalCadastroMP()">Cancelar</button>
+                <button type="button" id="btnExcluirMP2" class="btn-delete btn-action" style="margin-left:auto;padding:6px 16px;font-size:11px;font-weight:bold;display:none;" onclick="excluirMPDoModal()">🗑️ Excluir</button>
             </div>
         </div>
     </div>
@@ -11261,6 +11237,8 @@ function abrirModalCadastroProd() {
     document.getElementById('cadDataProd').value = dataHoje();
     const btnExcluir = document.getElementById('btnExcluirProd');
     if (btnExcluir) btnExcluir.style.display = 'none';
+    const btnExcluir2 = document.getElementById('btnExcluirProd2');
+    if (btnExcluir2) btnExcluir2.style.display = 'none';
     epResetAba('Prod');
     document.getElementById('modalCadastroProd').classList.add('show');
 }
@@ -11309,6 +11287,8 @@ function abrirModalEdicaoProd(id) {
     document.getElementById('modalCadastroProd').classList.add('show');
     const btnExcluir = document.getElementById('btnExcluirProd');
     if (btnExcluir) btnExcluir.style.display = perfilAtual === 'admin' ? 'inline-block' : 'none';
+    const btnExcluir2 = document.getElementById('btnExcluirProd2');
+    if (btnExcluir2) btnExcluir2.style.display = perfilAtual === 'admin' ? 'inline-block' : 'none';
     trocarSubabaModal('Prod', 'dados');
     epPrepararAba('Prod', id);
 }
@@ -11554,6 +11534,8 @@ function abrirModalCadastroClass() {
     classAtualizarCamposProduto(_selProdClass ? _selProdClass.value : '');
     const btnDel = document.getElementById('btnDeletarClassModal');
     if (btnDel) btnDel.style.display = 'none';
+    const btnDel2 = document.getElementById('btnDeletarClassModal2');
+    if (btnDel2) btnDel2.style.display = 'none';
     epResetAba('Class');
     document.getElementById('modalCadastroClass').classList.add('show');
 }
@@ -11605,6 +11587,8 @@ function abrirModalEdicaoClass(id) {
     else { obsToggleClass.classList.remove('open'); obsClass.closest('.obs-body').classList.remove('open'); }
     const btnDel = document.getElementById('btnDeletarClassModal');
     if (btnDel) btnDel.style.display = (perfilAtual === 'admin') ? 'inline-block' : 'none';
+    const btnDel2 = document.getElementById('btnDeletarClassModal2');
+    if (btnDel2) btnDel2.style.display = (perfilAtual === 'admin') ? 'inline-block' : 'none';
     document.getElementById('modalCadastroClass').classList.add('show');
     trocarSubabaModal('Class', 'dados');
     epPrepararAba('Class', id);
@@ -11639,12 +11623,8 @@ function classAtualizarCamposProduto(produto) {
                 input.disabled = true;
                 input.setAttribute('tabindex', '-1');
                 input.setAttribute('data-skip-class', '1');
-                input.style.background = '#0a0a0a';
-                input.style.color = '#333';
                 input.style.cursor = 'not-allowed';
-                input.style.borderColor = '#222';
                 if (grupo) {
-                    grupo.style.opacity = '0.4';
                     grupo.style.pointerEvents = 'none';
                     grupo.title = 'Não aplicável para este produto';
                 }
@@ -11652,12 +11632,8 @@ function classAtualizarCamposProduto(produto) {
                 input.disabled = false;
                 input.removeAttribute('tabindex');
                 input.removeAttribute('data-skip-class');
-                input.style.background = '';
-                input.style.color = '';
                 input.style.cursor = '';
-                input.style.borderColor = '';
                 if (grupo) {
-                    grupo.style.opacity = '';
                     grupo.style.pointerEvents = '';
                     grupo.title = '';
                 }
@@ -11971,6 +11947,8 @@ function abrirModalEdicaoMP(id) {
     if (btnSalvar) { btnSalvar.textContent = '🔄 Atualizar'; btnSalvar.style.background = '#2980b9'; }
     const btnExcMP = document.getElementById('btnExcluirMP');
     if (btnExcMP) btnExcMP.style.display = 'inline-block';
+    const btnExcMP2 = document.getElementById('btnExcluirMP2');
+    if (btnExcMP2) btnExcMP2.style.display = 'inline-block';
     document.getElementById('modalCadastroMP').classList.add('show');
     trocarSubabaModal('MP', 'dados');
     epPrepararAba('MP', id);
@@ -11983,6 +11961,8 @@ function fecharModalCadastroMP() {
     if (btnSalvar) { btnSalvar.textContent = 'Salvar'; btnSalvar.style.background = ''; }
     const btnExcMP = document.getElementById('btnExcluirMP');
     if (btnExcMP) btnExcMP.style.display = 'none';
+    const btnExcMP2 = document.getElementById('btnExcluirMP2');
+    if (btnExcMP2) btnExcMP2.style.display = 'none';
     epResetAba('MP');
 }
 
@@ -20270,11 +20250,25 @@ const EP_MODULO_CONFIG = {
 // Campos que existem no cadastro mas não fazem sentido como parâmetro analítico de proficiência (ex: texto livre)
 const EP_CAMPOS_EXCLUIR = { classificacao: ['fornecedor'], materia_prima: [], producao: [] };
 
+// Campos que existem no cadastro ("Dados do Registro") mas não estão no array CAMPOS_PROD/CLASS/MP
+// (usado em outros relatórios) — garantidos aqui para que a aba de Proficiência seja uma réplica
+// fiel de TODOS os parâmetros lançados internamente, não só os que entram no relatório fábrica.
+const EP_CAMPOS_EXTRA = {
+    producao: [
+        { key:'extrato', label:'Extrato Etério (%)' },
+        { key:'solubil', label:'Solubilidade Protéica (%)' },
+    ],
+    classificacao: [],
+    materia_prima: [],
+};
+
 function epCamposDoModulo(modulo) {
     const cfg = EP_MODULO_CONFIG[modulo];
     if (!cfg) return [];
     const excluir = EP_CAMPOS_EXCLUIR[modulo] || [];
-    return cfg.campos.filter(c => !c.calculado && !excluir.includes(c.key));
+    const base = cfg.campos.filter(c => !c.calculado && !excluir.includes(c.key));
+    const extra = EP_CAMPOS_EXTRA[modulo] || [];
+    return [...base, ...extra];
 }
 
 // Mapeia o sufixo usado nos IDs do modal (Prod/Class/MP) para a chave do módulo
@@ -20300,11 +20294,15 @@ function trocarSubabaModal(suffix, aba) {
 }
 
 // Monta o grid de campos de parâmetro na aba de proficiência.
-// Se "registro" for informado, mostra o valor interno já lançado como referência; senão mostra os campos vazios (cadastro novo).
-function epMontarCamposParametros(suffix, modulo, registro) {
+// Se "registro" for informado, mostra o valor interno já lançado como referência (placeholder).
+// Se "lancamentos" for informado (resultados externos/fornecedor já salvos para esta amostra),
+// cada campo já vem preenchido com o valor lançado e ganha um botão de excluir ao lado.
+function epMontarCamposParametros(suffix, modulo, registro, lancamentos) {
     const cont = document.getElementById('epCamposParametros' + suffix);
     if (!cont) return;
     const campos = epCamposDoModulo(modulo);
+    const porParametro = {};
+    (lancamentos || []).forEach(r => { porParametro[r.parametro] = r; }); // 1 lançamento externo ativo por parâmetro
     cont.innerHTML = campos.map(c => {
         const quali = EP_PARAMS_QUALITATIVOS[c.key];
         let valorRef = '—', temRef = false;
@@ -20315,14 +20313,22 @@ function epMontarCamposParametros(suffix, modulo, registro) {
                 temRef = true;
             }
         }
+        const lancado = porParametro[c.key];
+        const registroId = registro ? registro.id : '';
+        const delBtn = lancado
+            ? `<button type="button" onclick="epExcluirValorParametro('${suffix}','${modulo}','${registroId}',${lancado.id})" title="Excluir este lançamento" style="background:#e74c3c;color:#fff;border:none;border-radius:4px;width:28px;height:28px;flex-shrink:0;cursor:pointer;font-size:12px;">🗑️</button>`
+            : '';
         // Select (campo qualitativo, ex: rancidez): a referência interna vira a 1ª opção pré-selecionável de leitura, sem poluir o label
         const inputHtml = quali
-            ? `<select id="epParam_${suffix}_${c.key}"><option value="">${temRef ? 'Interno: ' + valorRef : 'Selecione...'}</option>${Object.entries(quali).map(([v,l]) => `<option value="${v}">${l}</option>`).join('')}</select>`
-            : `<input type="number" step="0.01" id="epParam_${suffix}_${c.key}" placeholder="${temRef ? 'Interno: ' + valorRef : ''}" autocomplete="off">`;
+            ? `<select id="epParam_${suffix}_${c.key}"><option value="">${temRef ? 'Interno: ' + valorRef : 'Selecione...'}</option>${Object.entries(quali).map(([v,l]) => `<option value="${v}" ${lancado && lancado.valor_texto === v ? 'selected' : ''}>${l}</option>`).join('')}</select>`
+            : `<input type="number" step="0.01" id="epParam_${suffix}_${c.key}" value="${lancado && lancado.valor !== null && lancado.valor !== undefined ? lancado.valor : ''}" placeholder="${temRef ? 'Interno: ' + valorRef : ''}" autocomplete="off">`;
         return `
         <div class="form-group">
             <label>${c.label}</label>
-            ${inputHtml}
+            <div style="display:flex;gap:6px;align-items:center;">
+                ${inputHtml}
+                ${delBtn}
+            </div>
         </div>`;
     }).join('');
 }
@@ -20331,87 +20337,63 @@ function epMontarCamposParametros(suffix, modulo, registro) {
 function epResetAba(suffix) {
     trocarSubabaModal(suffix, 'dados');
     _epRegistroPorAba[suffix] = null;
-    const ant = document.getElementById('epRegistrosAnteriores' + suffix);
-    if (ant) ant.innerHTML = '';
     const obs = document.getElementById('epObservacoes' + suffix);
     if (obs) obs.value = '';
     const lab = document.getElementById('epNomeLaboratorio' + suffix);
     if (lab) lab.value = '';
-    const aviso = document.getElementById('epAvisoSalvar' + suffix);
-    if (aviso) aviso.style.display = 'block';
-    const confirmarInterno = document.getElementById('epConfirmarInterno' + suffix);
-    if (confirmarInterno) confirmarInterno.checked = false;
     // Mostra os campos de parâmetro mesmo sem registro salvo ainda (sem referência de valor interno)
-    epMontarCamposParametros(suffix, EP_SUFFIX_MODULO[suffix], null);
+    epMontarCamposParametros(suffix, EP_SUFFIX_MODULO[suffix], null, []);
 }
 
 // Carrega os dados do registro (já salvo) na aba de proficiência — chamado ao abrir um registro para edição
 async function epPrepararAba(suffix, id) {
     const modulo = EP_SUFFIX_MODULO[suffix];
     const cfg = EP_MODULO_CONFIG[modulo];
-    const aviso = document.getElementById('epAvisoSalvar' + suffix);
     if (!cfg || !id) {
         _epRegistroPorAba[suffix] = null;
-        if (aviso) aviso.style.display = 'block';
-        epMontarCamposParametros(suffix, modulo, null);
+        epMontarCamposParametros(suffix, modulo, null, []);
         return;
     }
     const registro = (cfg.arr() || []).find(r => String(r.id) === String(id));
     if (!registro) {
         _epRegistroPorAba[suffix] = null;
-        if (aviso) aviso.style.display = 'block';
-        epMontarCamposParametros(suffix, modulo, null);
+        epMontarCamposParametros(suffix, modulo, null, []);
         return;
     }
     _epRegistroPorAba[suffix] = registro;
-    if (aviso) aviso.style.display = 'none';
 
     const dataResultEl = document.getElementById('epDataResultado' + suffix);
     if (dataResultEl) dataResultEl.value = new Date().toISOString().split('T')[0];
     const respEl = document.getElementById('epResponsavel' + suffix);
     if (respEl) respEl.value = (typeof usuarioAtual !== 'undefined' && USUARIOS[usuarioAtual]) ? (USUARIOS[usuarioAtual].nome || usuarioAtual) : '';
-    const confirmarInternoEl = document.getElementById('epConfirmarInterno' + suffix);
-    if (confirmarInternoEl) confirmarInternoEl.checked = false;
 
-    // Monta campos de parâmetros do módulo, mostrando o valor interno já lançado como referência
-    epMontarCamposParametros(suffix, modulo, registro);
-
-    await epRenderRegistrosAnterioresAba(suffix, modulo, id);
-}
-
-async function epRenderRegistrosAnterioresAba(suffix, modulo, registroId) {
-    const cont = document.getElementById('epRegistrosAnteriores' + suffix);
-    if (!cont) return;
-    cont.innerHTML = '<div style="font-size:11px;color:#888;">Carregando lançamentos anteriores desta amostra...</div>';
+    // Busca lançamentos externos/fornecedor já salvos para esta amostra, para preencher os campos direto
+    let lancamentosExternos = [];
     try {
         const todos = await dbGetAll('ensaios_proficiencia');
-        const doRegistro = (todos || []).filter(r => r.modulo_origem === modulo && String(r.registro_id_interno) === String(registroId));
-        if (!doRegistro.length) { cont.innerHTML = ''; return; }
-        const linhas = doRegistro.map(r => `<tr${r.fonte === 'interno' ? ' style="background:#fff3cd;"' : ''}>
-            <td style="padding:3px 6px;">${EP_LABELS_FONTE[r.fonte] || r.fonte}</td>
-            <td style="padding:3px 6px;">${r.nome_laboratorio || '—'}</td>
-            <td style="padding:3px 6px;">${EP_LABELS_PARAM[r.parametro] || r.parametro}</td>
-            <td style="padding:3px 6px;text-align:center;">${r.replica}</td>
-            <td style="padding:3px 6px;text-align:center;">${epEhQualitativo(r.parametro) ? epLabelQuali(r.parametro, r.valor_texto) : r.valor}</td>
-            <td style="padding:3px 6px;text-align:center;"><button type="button" onclick="epExcluirLancamento('${suffix}','${modulo}','${registroId}',${r.id})" title="Excluir este lançamento" style="background:#e74c3c;color:#fff;border:none;border-radius:3px;width:20px;height:20px;line-height:1;cursor:pointer;font-size:12px;">🗑️</button></td>
-        </tr>`).join('');
-        cont.innerHTML = `<div style="font-size:11px;color:#555;margin-bottom:4px;">Resultados já lançados para esta amostra <span style="color:#b8860b;">(linhas destacadas em amarelo = referência "Interno")</span>:</div>
-            <table style="width:100%;font-size:11px;border-collapse:collapse;background:#f8f9fa;">
-                <thead><tr style="color:#888;"><th style="text-align:left;padding:3px 6px;">Fonte</th><th style="text-align:left;padding:3px 6px;">Laboratório</th><th style="text-align:left;padding:3px 6px;">Parâmetro</th><th style="padding:3px 6px;">Réplica</th><th style="padding:3px 6px;">Valor</th><th style="padding:3px 6px;"></th></tr></thead>
-                <tbody>${linhas}</tbody>
-            </table>`;
-    } catch (e) {
-        cont.innerHTML = '';
+        lancamentosExternos = (todos || []).filter(r =>
+            r.modulo_origem === modulo && String(r.registro_id_interno) === String(id) && r.fonte !== 'interno');
+    } catch (e) { /* segue com os campos vazios se a busca falhar */ }
+
+    // Mantém a observação já lançada anteriormente para esta amostra (a mais recente com texto)
+    const obsEl = document.getElementById('epObservacoes' + suffix);
+    if (obsEl) {
+        const comObs = lancamentosExternos.filter(r => r.observacoes).sort((a, b) => b.id - a.id);
+        obsEl.value = comObs.length ? comObs[0].observacoes : '';
     }
+
+    // Monta campos de parâmetros do módulo, mostrando o valor interno já lançado como referência
+    // e já preenchendo com os valores externos/fornecedor previamente lançados (com botão de excluir)
+    epMontarCamposParametros(suffix, modulo, registro, lancamentosExternos);
 }
 
-// Exclui um único lançamento de proficiência (a partir da lista de "resultados já lançados" na aba)
-async function epExcluirLancamento(suffix, modulo, registroId, id) {
+// Exclui um lançamento de proficiência específico direto pelo campo (botão 🗑️ ao lado do valor)
+async function epExcluirValorParametro(suffix, modulo, registroId, id) {
     if (!confirm('Excluir este lançamento de proficiência? Esta ação não pode ser desfeita.')) return;
     try {
         await dbDeleteOne('ensaios_proficiencia', id);
         sgqToast('🗑️ Lançamento de proficiência excluído.', 'success');
-        await epRenderRegistrosAnterioresAba(suffix, modulo, registroId);
+        await epPrepararAba(suffix, registroId);
     } catch (e) {
         sgqToast('Erro ao excluir lançamento: ' + e.message, 'error');
     }
@@ -20436,27 +20418,21 @@ async function epSalvarResultadoSuffix(suffix) {
     let _epIdSeq = 0;
     const _epNovoId = () => Date.now() * 1000 + (_epIdSeq++); // garante id único mesmo em loop rápido
 
-    // 1) Garante a referência "interno" (1 lançamento por parâmetro, réplica 1) — SÓ se o usuário
-    //    confirmar explicitamente que os valores de "Dados do Registro" são a análise interna desta amostra.
-    //    (antes o sistema inferia isso sozinho sempre que o campo do cadastro tinha algum valor,
-    //    o que podia criar uma referência "Interno" que o usuário nunca lançou conscientemente)
-    const confirmarInternoEl = document.getElementById('epConfirmarInterno' + suffix);
-    const confirmarInterno = confirmarInternoEl ? confirmarInternoEl.checked : false;
-    if (confirmarInterno) {
-        camposNumericos.forEach(c => {
-            const vInt = registro[c.key];
-            if (vInt === null || vInt === undefined || vInt === '') return;
-            const quali = EP_PARAMS_QUALITATIVOS[c.key];
-            novosRegistros.push({
-                id: _epNovoId(),
-                modulo_origem: modulo, registro_id_interno: registro.id, produto: produtoNome,
-                fonte: 'interno', nome_laboratorio: 'Laboratório Interno', parametro: c.key, replica: 1,
-                valor: quali ? null : vInt, valor_texto: quali ? String(vInt) : null,
-                data_amostra: registro.data, data_resultado: registro.data,
-                responsavel: responsavel || null, observacoes: null, nf: registro.nf || null
-            });
+    // 1) Garante a referência "interno" (1 lançamento por parâmetro, réplica 1) — usa o valor que já
+    //    está salvo no cadastro ("Dados do Registro"). Se o campo lá estiver vazio, nada é criado aqui.
+    camposNumericos.forEach(c => {
+        const vInt = registro[c.key];
+        if (vInt === null || vInt === undefined || vInt === '') return;
+        const quali = EP_PARAMS_QUALITATIVOS[c.key];
+        novosRegistros.push({
+            id: _epNovoId(),
+            modulo_origem: modulo, registro_id_interno: registro.id, produto: produtoNome,
+            fonte: 'interno', nome_laboratorio: 'Laboratório Interno', parametro: c.key, replica: 1,
+            valor: quali ? null : vInt, valor_texto: quali ? String(vInt) : null,
+            data_amostra: registro.data, data_resultado: registro.data,
+            responsavel: responsavel || null, observacoes: null, nf: registro.nf || null
         });
-    }
+    });
 
     // 2) Resultado da fonte externa/fornecedor — só os campos que o usuário preencheu
     let algumPreenchido = false;
@@ -20489,11 +20465,9 @@ async function epSalvarResultadoSuffix(suffix) {
             await dbUpsertOne('ensaios_proficiencia', reg);
         }
         sgqToast('✓ Resultado do Ensaio de Proficiência salvo com sucesso!', 'success');
-        // Limpa apenas os campos de valor preenchidos e observações, mantendo a aba aberta para novos lançamentos
-        camposNumericos.forEach(c => { const el = document.getElementById('epParam_' + suffix + '_' + c.key); if (el) el.value = ''; });
-        const obsEl = document.getElementById('epObservacoes' + suffix);
-        if (obsEl) obsEl.value = '';
-        await epRenderRegistrosAnterioresAba(suffix, modulo, registro.id);
+        // Recarrega os campos já com os valores recém-salvos preenchidos (cada um com botão de excluir)
+        // — a observação também é recarregada do que foi salvo, permanecendo fixada no campo
+        await epPrepararAba(suffix, registro.id);
     } catch (e) {
         sgqToast('Erro ao salvar Ensaio de Proficiência: ' + e.message, 'error');
     }
@@ -32912,6 +32886,7 @@ function autoFornecedorClass(local) {
     const mapa = {
         'Silo 1 Milho': { fornecedor: 'AGRONOR', produto: 'MILHO ESTOQUE 01' },
         'Silo 2 Milho': { fornecedor: 'AGRONOR', produto: 'MILHO ESTOQUE 02' },
+        'Silo 1 Soja':  { fornecedor: 'AGRONOR', produto: 'SOJA ESTOQUE 01'  },
     };
     const campForn = document.getElementById('cadFornecedorClass');
     const campProd = document.getElementById('cadProdutoClass');
