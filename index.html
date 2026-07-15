@@ -4478,7 +4478,7 @@
                             <th>Queimado %</th><th>Ardido %</th><th>Mofado %</th><th>Esverdeado %</th>
                             <th>Fermentando %</th><th>Chocho %</th><th>Picado %</th><th>Gessado %</th>
                             <th>Quebrado %</th><th>Germinado %</th><th>Carunchado %</th><th>Impureza %</th>
-                            <th style="background:#e67e22;color:white;white-space:nowrap;">AVARIADO TOTAL %</th>
+                            <th style="background:#e67e22;color:white;white-space:nowrap;">Avariado Total %</th>
                             <th>Umidade %</th><th>Densidade</th>
                             <th>Aflatoxinas PPB</th><th>Fumonisinas PPB</th><th>Zearalenona PPB</th><th>Don PPB</th>
                             <th>Local</th><th style="text-align:center;">Status</th>
@@ -11662,6 +11662,19 @@ function classAtualizarCamposProduto(produto) {
     }
 }
 
+// Campos de defeito que não existem/não se aplicam a determinados grãos.
+// MILHO não possui Esverdeado/Picado. SOJA não possui Gessado/Carunchado.
+const CAMPOS_NAO_APLICAVEIS_POR_PRODUTO = {
+    MILHO: ['esverdeado', 'picado'],
+    SOJA:  ['gessado', 'carunchado']
+};
+function campoAplicavelClass(produto, campo) {
+    const p = (produto || '').toUpperCase();
+    if (p.includes('MILHO') && CAMPOS_NAO_APLICAVEIS_POR_PRODUTO.MILHO.includes(campo)) return false;
+    if (p.includes('SOJA')  && CAMPOS_NAO_APLICAVEIS_POR_PRODUTO.SOJA.includes(campo))  return false;
+    return true;
+}
+
 function fecharModalCadastroClass() {
     document.getElementById('modalCadastroClass').classList.remove('show');
     idEdicaoClass = null;
@@ -11741,10 +11754,25 @@ function salvarClassificacao(event) {
 }
 
 function _classLinhaMedia(filtrados) {
+    // Campos de defeito/umidade/densidade: 0 é um resultado real (lote limpo), não "sem medição".
+    // Só exclui da média os registros onde o campo nem existe para aquele grão (ex: Picado no Milho).
+    const CAMPOS_ZERO_VALIDO = ['queimado','ardido','mofado','esverdeado','fermentando','chocho','picado','gessado','quebrado','germinado','carunchado','impureza','umidade','densidade'];
+    const _mediaZeroValida = (campo) => {
+        const vals = filtrados
+            .filter(r => campoAplicavelClass(r.produto, campo))
+            .map(r => parseFloat(r[campo]))
+            .filter(x => !isNaN(x));
+        return vals.length ? vals.reduce((a,b) => a+b, 0) / vals.length : null;
+    };
+    // Aflatoxinas/Fumonisinas/Zearalenona/DON: mantém a regra antiga (0 = análise não realizada),
+    // pois a micotoxina costuma ser medida só em parte dos lotes, não em todos.
     const CAMPOS_MEDIA = ['queimado','ardido','mofado','esverdeado','fermentando','chocho','picado','gessado','quebrado','germinado','carunchado','impureza','umidade','densidade','aflatoxinas','fumonisinas','zearalenona','don'];
     const medias = {};
-    CAMPOS_MEDIA.forEach(c => { medias[c] = _prodCalcularMedia(filtrados.map(r => r[c])); });
-    const avariados = _prodCalcularMedia(filtrados.map(r => getAvariados(r)));
+    CAMPOS_MEDIA.forEach(c => {
+        medias[c] = CAMPOS_ZERO_VALIDO.includes(c) ? _mediaZeroValida(c) : _prodCalcularMedia(filtrados.map(r => r[c]));
+    });
+    const _avarVals = filtrados.map(r => getAvariados(r)).filter(x => !isNaN(x));
+    const avariados = _avarVals.length ? _avarVals.reduce((a,b)=>a+b,0) / _avarVals.length : null;
     const fmtMedia = c => medias[c] != null ? medias[c].toFixed(2) : '-';
     return `<tr style="background:#1f6feb22;font-weight:bold;border-bottom:2px solid #1f6feb;">
         <td></td>
@@ -11799,14 +11827,14 @@ function exibirTabelaClass() {
             <td${estiloFora(r.queimado,'class',r.produto,'queimado',r.data)}>${fmtN(r.queimado,2)}</td>
             <td${estiloFora(r.ardido,'class',r.produto,'ardido',r.data)}>${fmtN(r.ardido,2)}</td>
             <td${estiloFora(r.mofado,'class',r.produto,'mofado',r.data)}>${fmtN(r.mofado,2)}</td>
-            <td${estiloFora(r.esverdeado,'class',r.produto,'esverdeado',r.data)}>${fmtN(r.esverdeado,2)}</td>
+            <td${campoAplicavelClass(r.produto,'esverdeado') ? estiloFora(r.esverdeado,'class',r.produto,'esverdeado',r.data)+'>'+fmtN(r.esverdeado,2) : ' style="color:#999;">-'}</td>
             <td${estiloFora(r.fermentando,'class',r.produto,'fermentando',r.data)}>${fmtN(r.fermentando,2)}</td>
             <td${estiloFora(r.chocho,'class',r.produto,'chocho',r.data)}>${fmtN(r.chocho,2)}</td>
-            <td${estiloFora(r.picado,'class',r.produto,'picado',r.data)}>${fmtN(r.picado,2)}</td>
-            <td${estiloFora(r.gessado,'class',r.produto,'gessado',r.data)}>${fmtN(r.gessado,2)}</td>
+            <td${campoAplicavelClass(r.produto,'picado') ? estiloFora(r.picado,'class',r.produto,'picado',r.data)+'>'+fmtN(r.picado,2) : ' style="color:#999;">-'}</td>
+            <td${campoAplicavelClass(r.produto,'gessado') ? estiloFora(r.gessado,'class',r.produto,'gessado',r.data)+'>'+fmtN(r.gessado,2) : ' style="color:#999;">-'}</td>
             <td${estiloFora(r.quebrado,'class',r.produto,'quebrado',r.data)}>${fmtN(r.quebrado,2)}</td>
             <td${estiloFora(r.germinado,'class',r.produto,'germinado',r.data)}>${fmtN(r.germinado,2)}</td>
-            <td${estiloFora(r.carunchado,'class',r.produto,'carunchado',r.data)}>${fmtN(r.carunchado,2)}</td>
+            <td${campoAplicavelClass(r.produto,'carunchado') ? estiloFora(r.carunchado,'class',r.produto,'carunchado',r.data)+'>'+fmtN(r.carunchado,2) : ' style="color:#999;">-'}</td>
             <td${estiloFora(r.impureza,'class',r.produto,'impureza',r.data)}>${fmtN(r.impureza,2)}</td>
             <td${estiloFora(avariado,'class',r.produto,'avariados',r.data)} style="font-weight:bold;white-space:nowrap;">${fmtN(avariado,2)}</td>
             <td${estiloFora(r.umidade,'class',r.produto,'umidade',r.data)}>${fmtN(r.umidade,2)}</td>
@@ -13997,7 +14025,7 @@ function renderRCTabelaProd(dados) {
             don:         med(dd.map(r=>r.don||0)),
         };
         const status = statusPorParametros(registroMedio,'class',p,CAMPOS_CLASS,registroMedio.data);
-        const f = (v,d=2) => med(dd.map(r=>r[v]||0)).toFixed(d);
+        const f = (v,d=2) => campoAplicavelClass(p,v) ? med(dd.map(r=>r[v]||0)).toFixed(d) : '-';
         return `<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}">
             <td style="padding:7px 10px;font-weight:bold;color:${cor};border-left:4px solid ${cor};white-space:nowrap;">${p}</td>
             <td style="padding:7px;text-align:center;">${dd.length}</td>
@@ -14036,6 +14064,9 @@ function renderRCTabelaDetalhe(dados) {
 
         // Estilo para campos individuais de defeito baseado nos parâmetros
         const tdDefeito = (campo) => {
+            if (!campoAplicavelClass(r.produto, campo)) {
+                return `<td style="padding:4px;text-align:center;color:#999;">-</td>`;
+            }
             const v = parseFloat(r[campo]) || 0;
             const st = estiloFora(v, 'class', r.produto, campo, r.data);
             const cls = st ? ' class="td-fora" style="padding:4px;text-align:center;"'
@@ -18776,6 +18807,7 @@ function statusPorParametros(registro, modulo, racaoOuProduto, campos, dataRegis
     let algumAtivoComValor = false;
     let algumFora = false;
     campos.forEach(c => {
+        if (modulo === 'class' && !campoAplicavelClass(racaoOuProduto, c.key)) return; // campo não existe para este grão
         let cfg = getParam(modulo, chaveFinal, c.key, dataRegistro || null);
         if ((!cfg || !cfg.ativo) && chaveAltFinal !== chaveFinal) {
             const cfgAlt = getParam(modulo, chaveAltFinal, c.key, dataRegistro || null);
@@ -19368,6 +19400,9 @@ function gerarTabelaClass(rows, compacto, destNC) {
         const aflatoxCl = (destNC && (r.aflatoxinas||0)>0) ? ' class="bol-td-alert"' : '';
         const status = statusPorParametros(r,'class',r.produto,CAMPOS_CLASS,r.data);
         const cl = (v,campo) => destNC ? estiloFora(v,'class',r.produto,campo,r.data).replace(' class="td-fora"',' class="bol-td-fora"') : '';
+        const tdDef = (v,campo) => campoAplicavelClass(r.produto,campo)
+            ? `<td${cl(v,campo)}>${(v||0).toFixed(2)}</td>`
+            : `<td style="color:#999;">-</td>`;
         return `<tr>
             <td class="left">${fmtDate(r.data)}</td>
             <td>${r.hora||'-'}</td>
@@ -19377,14 +19412,14 @@ function gerarTabelaClass(rows, compacto, destNC) {
             <td${cl(r.queimado,'queimado')}>${(r.queimado||0).toFixed(2)}</td>
             <td${cl(r.ardido,'ardido')}>${(r.ardido||0).toFixed(2)}</td>
             <td${cl(r.mofado,'mofado')}>${(r.mofado||0).toFixed(2)}</td>
-            <td${cl(r.esverdeado,'esverdeado')}>${(r.esverdeado||0).toFixed(2)}</td>
+            ${tdDef(r.esverdeado,'esverdeado')}
             <td${cl(r.fermentando,'fermentando')}>${(r.fermentando||0).toFixed(2)}</td>
             <td${cl(r.chocho,'chocho')}>${(r.chocho||0).toFixed(2)}</td>
-            <td${cl(r.picado,'picado')}>${(r.picado||0).toFixed(2)}</td>
-            <td${cl(r.gessado,'gessado')}>${(r.gessado||0).toFixed(2)}</td>
+            ${tdDef(r.picado,'picado')}
+            ${tdDef(r.gessado,'gessado')}
             <td${cl(r.quebrado,'quebrado')}>${(r.quebrado||0).toFixed(2)}</td>
             <td${cl(r.germinado,'germinado')}>${(r.germinado||0).toFixed(2)}</td>
-            <td${cl(r.carunchado,'carunchado')}>${(r.carunchado||0).toFixed(2)}</td>
+            ${tdDef(r.carunchado,'carunchado')}
             <td${cl(r.impureza,'impureza')}>${(r.impureza||0).toFixed(2)}</td>
             <td${cl(r.umidade,'umidade')}>${(r.umidade||0).toFixed(2)}</td>
             <td${cl(r.densidade,'densidade')}>${(r.densidade||0).toFixed(0)}</td>
@@ -30570,6 +30605,8 @@ function _coletarDesviosComParametros(modulo) {
 
     // ── helper interno ───────────────────────────────────────────────────────
     function _avaliarCampo(modId, prodKey, campo, valor, produto, data) {
+        // Campo de defeito que não existe para este grão (ex: Esverdeado no Milho) → nem avalia
+        if (modId === 'class' && !campoAplicavelClass(produto, campo.key)) return;
         // Lê parâmetro pelo getParam real do sistema
         const cfg = getParam(modId, prodKey, campo.key, data);
         // Ignora se parâmetro não está ativo
