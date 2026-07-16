@@ -7994,9 +7994,6 @@
                     <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;">
                         <button onclick="salvarParametros()" style="background:#27ae60;color:white;padding:9px 22px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;">💾 Salvar</button>
                         <button onclick="atualizarParametros()" style="background:#2980b9;color:white;padding:9px 20px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;" title="Aplica os valores editados nas tabelas sem salvar permanentemente">🔃 Atualizar</button>
-                        <button onclick="resetarParametros()" style="background:#e74c3c;color:white;padding:9px 18px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;">🔄 Padrões</button>
-                        <button onclick="diagnosticoChavesParametros()" style="background:#8e44ad;color:white;padding:9px 18px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;" title="Ver chaves salvas no banco">🔍 Diagnóstico</button>
-                        <button onclick="corrigirDPGForcar(this)" id="btnCorrigirDPG" style="background:#c0392b;color:white;padding:9px 18px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;" title="Desativa DPG incorretamente ativo no banco">🔧 Corrigir DPG</button>
                     </div>
                 </div>
 
@@ -8603,21 +8600,6 @@
 
                 <div id="sgq-auditoria-mp-resultado" style="overflow-x:auto;">
                     <div style="color:#bbb;font-size:12px;font-style:italic;text-align:center;padding:12px;">Selecione uma data e clique em Auditar.</div>
-                </div>
-            </div>
-
-            <!-- ===== CARD: MIGRAR FOTOS ANTIGAS PARA STORAGE (rodar uma vez) ===== -->
-            <div id="sgq-card-migracao-fotos" style="display:none;background:white;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:18px 22px;margin-bottom:16px;border-left:4px solid #16a085;">
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-                    <span style="font-size:22px;">🖼️</span>
-                    <div style="flex:1;">
-                        <div style="font-size:14px;font-weight:800;color:#16a085;text-transform:uppercase;letter-spacing:.5px;">Migrar Fotos Antigas para Storage</div>
-                        <div style="font-size:11px;color:#888;margin-top:1px;">Rodar uma única vez: move fotos de Devoluções/NC que ainda estão salvas em base64 para o Storage (deixa o sistema mais rápido)</div>
-                    </div>
-                    <button onclick="sgqMigrarFotosParaStorage()" style="background:#16a085;color:white;border:none;border-radius:6px;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">▶️ Migrar Agora</button>
-                </div>
-                <div id="sgq-migracao-fotos-resultado" style="max-height:260px;overflow-y:auto;background:#fafafa;border-radius:6px;padding:10px;">
-                    <div style="color:#bbb;font-size:12px;font-style:italic;">Clique em "Migrar Agora" para iniciar.</div>
                 </div>
             </div>
 
@@ -32878,8 +32860,6 @@ function _sgqInicializarAuditoriaMP() {
             card.style.display = 'none';
         }
     }
-    const cardMigracao = document.getElementById('sgq-card-migracao-fotos');
-    if (cardMigracao) cardMigracao.style.display = (perfilAtual === 'admin') ? 'block' : 'none';
 }
 
 async function sgqAuditarEntradasMP() {
