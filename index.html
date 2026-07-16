@@ -9988,6 +9988,15 @@ document.addEventListener('mouseover', function(e) {
 // TEMAS DE COR
 // ===================================================
 const TEMAS = ['azul','verde','cinza','vinho','dark'];
+// ── Cores de texto/grade para gráficos de relatório (fundo do
+//    .grafico-container é sempre branco no tema claro), evita
+//    números quase invisíveis (ex: '#e6edf3' sobre fundo branco) ──
+function _grafTextColor() {
+    return (document.documentElement.getAttribute('data-theme') === 'dark') ? '#e6edf3' : '#444444';
+}
+function _grafGridColor() {
+    return (document.documentElement.getAttribute('data-theme') === 'dark') ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+}
 // ── Chart.js: atualiza cores globais conforme tema ──────────────
 function _aplicarChartTema(tema) {
     if (typeof Chart === 'undefined') return;
@@ -10099,6 +10108,7 @@ const PERMS_DISPONIVEIS = [
     { key: 'os_aprovar',       label: 'Aprovar Ordem de Serviço',  icon: '✅',  desc: 'Aprovar ou rejeitar Ordens de Serviço (papel de gerente)' },
     { key: 'os_executar',      label: 'Executar Ordem de Serviço', icon: '🔧',  desc: 'Definir prioridade, área (Mecânica/Elétrica/Operação), data de finalização e anexo textual das OS' },
     { key: 'homogeneidade',    label: 'Homogeneidade',             icon: '⚗️',  desc: 'Acessar e registrar testes de homogeneidade de mistura' },
+    { key: 'proficiencia',     label: 'Ensaio de Proficiência',    icon: '🔬',  desc: 'Acessar o relatório de Ensaio de Proficiência' },
     // ── Restrições específicas ──────────────────────────────────────────
     { key: 'somente_ver_nc',   label: 'Somente visualizar NC/Dev', icon: '👁️', desc: 'Impede criar/editar/excluir NC e Devoluções', restricao: true },
 ];
@@ -10507,6 +10517,11 @@ function aplicarPermissoes() {
     const mobBtnOS = document.getElementById('mobBtnOrdemServico');
     if (mobBtnOS) mobBtnOS.style.display = podeOS ? 'block' : 'none';
 
+    // ── Ensaio de Proficiência ── só admin ou usuário com permissão marcada
+    const podeProficiencia = isAdmin || perms.proficiencia;
+    const tabEnsaioProfEl = document.getElementById('tabEnsaioProf');
+    if (tabEnsaioProfEl) tabEnsaioProfEl.style.display = podeProficiencia ? '' : 'none';
+
     // ── Homogeneidade ──
     const podeHomogeneidade = isAdmin || perms.homogeneidade;
     const tabHom = document.getElementById('tabHomogeneidade');
@@ -10766,7 +10781,18 @@ function trocarAba(aba, btn) {
     if (aba === 'ranking')   inicializarRanking();
     if (aba === 'relFabrica') inicializarRelFabrica();
     if (aba === 'boletim')   inicializarBoletim();
-    if (aba === 'ensaioProf') { try { epInicializar(); } catch(e){} }
+    if (aba === 'ensaioProf') {
+        // Bloqueia acesso se não for admin nem tiver a permissão marcada
+        const _uProf = USUARIOS[usuarioAtual] || {};
+        let _pProf = _uProf.perms || {};
+        if (typeof _pProf === 'string') { try { _pProf = JSON.parse(_pProf); } catch(e) { _pProf = {}; } }
+        if (perfilAtual !== 'admin' && !_pProf.proficiencia) {
+            sgqToast('⛔ Você não tem permissão para acessar o Ensaio de Proficiência.', 'warning');
+            document.getElementById('aba-' + aba).classList.remove('active');
+            return;
+        }
+        try { epInicializar(); } catch(e){}
+    }
     if (aba === 'configuracoes') {
         if (perfilAtual === 'admin') {
             trocarSubCfg('parametros', document.getElementById('cfgBtn-parametros'));
@@ -12749,8 +12775,8 @@ function renderGraficoLinha(di, df, dados, analise, analNome, cor, racoesAlvo) {
                 }
             },
             scales: {
-                y: { beginAtZero:false, ticks:{font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} },
-                x: { ticks:{font:{size:9}, maxRotation:45, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} }
+                y: { beginAtZero:false, ticks:{font:{size:10}, color:_grafTextColor()}, grid:{color:_grafGridColor()} },
+                x: { ticks:{font:{size:9}, maxRotation:45, color:_grafTextColor()}, grid:{color:_grafGridColor()} }
             }
         }
     });
@@ -12806,10 +12832,10 @@ function renderGraficoBar(base, subFases, analise, analNome) {
         },
         options: {
             responsive:true, maintainAspectRatio:true,
-            plugins: { legend:{ display:true, labels:{font:{size:11}, padding:12, color:'#e6edf3'} } },
+            plugins: { legend:{ display:true, labels:{font:{size:11}, padding:12, color:_grafTextColor()} } },
             scales: {
-                y:  { beginAtZero:false, ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true, text:analNome,    font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} },
-                y2: { position:'right',  ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true, text:'C.V (%)',   font:{size:10}, color:'#e6edf3'}, grid:{drawOnChartArea:false} }
+                y:  { beginAtZero:false, ticks:{font:{size:10}, color:_grafTextColor()}, title:{display:true, text:analNome,    font:{size:10}, color:_grafTextColor()}, grid:{color:_grafGridColor()} },
+                y2: { position:'right',  ticks:{font:{size:10}, color:_grafTextColor()}, title:{display:true, text:'C.V (%)',   font:{size:10}, color:_grafTextColor()}, grid:{drawOnChartArea:false} }
             }
         }
     });
@@ -12871,10 +12897,10 @@ function renderGraficoBarRacoes(base, racoes, analise, analNome) {
         },
         options: {
             responsive:true, maintainAspectRatio:true,
-            plugins: { legend:{ display:true, labels:{font:{size:11}, padding:12, color:'#e6edf3'} } },
+            plugins: { legend:{ display:true, labels:{font:{size:11}, padding:12, color:_grafTextColor()} } },
             scales: {
-                y:  { beginAtZero:false, ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true, text:analNome, font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} },
-                y2: { position:'right',  ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true, text:'C.V (%)', font:{size:10}, color:'#e6edf3'}, grid:{drawOnChartArea:false} }
+                y:  { beginAtZero:false, ticks:{font:{size:10}, color:_grafTextColor()}, title:{display:true, text:analNome, font:{size:10}, color:_grafTextColor()}, grid:{color:_grafGridColor()} },
+                y2: { position:'right',  ticks:{font:{size:10}, color:_grafTextColor()}, title:{display:true, text:'C.V (%)', font:{size:10}, color:_grafTextColor()}, grid:{drawOnChartArea:false} }
             }
         }
     });
@@ -13986,10 +14012,10 @@ function renderRCGraficoBar(base, prods) {
     window._rcGraficoBarInst = new Chart(ctx, {
         type:'bar', data:{ labels, datasets },
         options:{ responsive:true, maintainAspectRatio:true,
-            plugins:{ legend:{ display:true, labels:{ font:{size:10}, padding:8, color:'#e6edf3' } } },
+            plugins:{ legend:{ display:true, labels:{ font:{size:10}, padding:8, color:_grafTextColor() } } },
             scales:{
-                x:{ ticks:{font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} },
-                y:{ beginAtZero:true, ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true, text:'Média (%)', font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} }
+                x:{ ticks:{font:{size:10}, color:_grafTextColor()}, grid:{color:_grafGridColor()} },
+                y:{ beginAtZero:true, ticks:{font:{size:10}, color:_grafTextColor()}, title:{display:true, text:'Média (%)', font:{size:10}, color:_grafTextColor()}, grid:{color:_grafGridColor()} }
             }
         }
     });
@@ -21083,11 +21109,11 @@ function renderRCMicotoxinas(dados, di, df) {
             },
             options: {
                 responsive:true, maintainAspectRatio:true,
-                plugins:{ legend:{ labels:{font:{size:10},padding:8, color:'#e6edf3'} } },
+                plugins:{ legend:{ labels:{font:{size:10},padding:8, color:_grafTextColor()} } },
                 scales:{
-                    yA:{ type:'linear', position:'left',  beginAtZero:true, ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true,text:'Aflatoxina (ppb)',font:{size:10}, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} },
-                    yF:{ type:'linear', position:'right', beginAtZero:true, ticks:{font:{size:10}, color:'#e6edf3'}, title:{display:true,text:'Fumonisina (ppb÷1000)',font:{size:10}, color:'#e6edf3'}, grid:{drawOnChartArea:false} },
-                    x: { ticks:{font:{size:9}, maxRotation:45, color:'#e6edf3'}, grid:{color:'rgba(255,255,255,0.08)'} }
+                    yA:{ type:'linear', position:'left',  beginAtZero:true, ticks:{font:{size:10}, color:_grafTextColor()}, title:{display:true,text:'Aflatoxina (ppb)',font:{size:10}, color:_grafTextColor()}, grid:{color:_grafGridColor()} },
+                    yF:{ type:'linear', position:'right', beginAtZero:true, ticks:{font:{size:10}, color:_grafTextColor()}, title:{display:true,text:'Fumonisina (ppb÷1000)',font:{size:10}, color:_grafTextColor()}, grid:{drawOnChartArea:false} },
+                    x: { ticks:{font:{size:9}, maxRotation:45, color:_grafTextColor()}, grid:{color:_grafGridColor()} }
                 }
             }
         });
