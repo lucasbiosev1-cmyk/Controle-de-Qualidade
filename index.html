@@ -8606,6 +8606,21 @@
                 </div>
             </div>
 
+            <!-- ===== CARD: MIGRAR FOTOS ANTIGAS PARA STORAGE (rodar uma vez) ===== -->
+            <div id="sgq-card-migracao-fotos" style="display:none;background:white;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:18px 22px;margin-bottom:16px;border-left:4px solid #16a085;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                    <span style="font-size:22px;">🖼️</span>
+                    <div style="flex:1;">
+                        <div style="font-size:14px;font-weight:800;color:#16a085;text-transform:uppercase;letter-spacing:.5px;">Migrar Fotos Antigas para Storage</div>
+                        <div style="font-size:11px;color:#888;margin-top:1px;">Rodar uma única vez: move fotos de Devoluções/NC que ainda estão salvas em base64 para o Storage (deixa o sistema mais rápido)</div>
+                    </div>
+                    <button onclick="sgqMigrarFotosParaStorage()" style="background:#16a085;color:white;border:none;border-radius:6px;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">▶️ Migrar Agora</button>
+                </div>
+                <div id="sgq-migracao-fotos-resultado" style="max-height:260px;overflow-y:auto;background:#fafafa;border-radius:6px;padding:10px;">
+                    <div style="color:#bbb;font-size:12px;font-style:italic;">Clique em "Migrar Agora" para iniciar.</div>
+                </div>
+            </div>
+
             <!-- ===== GERENCIAMENTO DE USUÁRIOS (original) ===== -->
             <div class="user-panel-header" style="margin-bottom:0;border-radius:8px 8px 0 0;">
                 <span style="font-size:30px;">👥</span>
@@ -23096,7 +23111,7 @@ function imprimirRelatorioNC(tipo) {
             ? `<div class="nc-report-section-title">📷 Evidências Fotográficas (${ncImagens.length})</div>
                <div class="nc-report-imgs">${ncImagens.map(img => `
                 <div class="nc-report-img-item">
-                    <img src="${img.dataUrl}" alt="${img.name}">
+                    <img src="${img.url || img.dataUrl}" alt="${img.name}">
                     <div class="cap">${img.name}</div>
                 </div>`).join('')}</div>`
             : '<p style="color:#95a5a6;font-size:11px;">Nenhuma evidência fotográfica registrada.</p>';
@@ -23250,7 +23265,7 @@ function imprimirRelatorioNC(tipo) {
             ? `<div class="nc-report-section-title">📷 Evidências Fotográficas (${devImagens.length})</div>
                <div class="nc-report-imgs">${devImagens.map(img => `
                 <div class="nc-report-img-item">
-                    <img src="${img.dataUrl}" alt="${img.name}">
+                    <img src="${img.url || img.dataUrl}" alt="${img.name}">
                     <div class="cap">${img.name}</div>
                 </div>`).join('')}</div>`
             : '<p style="color:#95a5a6;font-size:11px;">Nenhuma evidência fotográfica registrada.</p>';
@@ -23696,7 +23711,7 @@ function exportarNC() {
 }
 
 // ===== MODAL DEVOLUÇÃO =====
-function abrirModalDev(id = null) {
+async function abrirModalDev(id = null) {
     // ✅ SEGURANÇA: bloqueia criação/edição se usuário tem restrição somente_ver_nc
     if (id === null && !_podeEditarNC()) {
         sgqToast('Você não tem permissão para criar Devoluções.', 'error');
@@ -23716,6 +23731,7 @@ function abrirModalDev(id = null) {
     } else {
         const dev = listaDev.find(d => String(d.id) === String(id));
         if (!dev) return;
+        await _garantirImagensDev(dev); // ✅ busca as fotos sob demanda (não vêm na carga em massa)
         preencherFormDev(dev);
         document.getElementById('modalDevTitulo').textContent = 'Editar Devolução';
         document.getElementById('modalDevNumero').textContent = dev.numero;
@@ -23970,18 +23986,26 @@ function exportarDev() {
 // ===== EVIDÊNCIAS / IMAGENS NC =====
 let ncImagens = [];
 let devImagens = [];
+const SGQ_BUCKET_EVIDENCIAS = 'sgq-evidencias';
 
-function handleFilesNC(files, tipo) {
-    Array.from(files).forEach(f => {
-        if (!f.type.startsWith('image/')) return;
-        const reader = new FileReader();
-        reader.onload = e => {
-            const obj = { name: f.name, dataUrl: e.target.result };
+// ✅ Envia direto pro Supabase Storage — não guarda mais base64 na coluna 'imagens'.
+// Isso é o que causava linhas de até 4,4 milhões de caracteres e deixava o dashboard lento.
+async function handleFilesNC(files, tipo) {
+    for (const f of Array.from(files)) {
+        if (!f.type.startsWith('image/')) continue;
+        const nomeSeguro = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const caminho = `${tipo}/${Date.now()}_${Math.random().toString(36).slice(2,8)}_${nomeSeguro}`;
+        try {
+            const { error } = await _sbClient.storage.from(SGQ_BUCKET_EVIDENCIAS).upload(caminho, f, { upsert: false });
+            if (error) throw error;
+            const { data: pub } = _sbClient.storage.from(SGQ_BUCKET_EVIDENCIAS).getPublicUrl(caminho);
+            const obj = { name: f.name, url: pub.publicUrl };
             if (tipo === 'nc') { ncImagens.push(obj); renderImgsNC('nc'); }
             else { devImagens.push(obj); renderImgsNC('dev'); }
-        };
-        reader.readAsDataURL(f);
-    });
+        } catch(e) {
+            sgqToast('Erro ao enviar imagem "' + f.name + '": ' + e.message, 'error');
+        }
+    }
 }
 
 function renderImgsNC(tipo) {
@@ -23992,7 +24016,7 @@ function renderImgsNC(tipo) {
     count.textContent = imgs.length ? `${imgs.length} imagem(ns) selecionada(s)` : '';
     grid.innerHTML = imgs.map((img, i) => `
         <div class="nc-img-thumb">
-            <img src="${img.dataUrl}" alt="${img.name}" onclick="verImgNC(${i},'${tipo}')">
+            <img src="${img.url || img.dataUrl}" alt="${img.name}" onclick="verImgNC(${i},'${tipo}')">
             <button class="nc-img-remove" onclick="removerImgNC(${i},'${tipo}')">×</button>
             <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:white;font-size:9px;padding:3px 5px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${img.name}</div>
         </div>`).join('');
@@ -24004,9 +24028,82 @@ function removerImgNC(idx, tipo) {
     renderImgsNC(tipo);
 }
 
+// ✅ MIGRAÇÃO ÚNICA: converte fotos antigas salvas em base64 (coluna 'imagens') para o
+// Supabase Storage, atualizando cada linha para guardar só a URL. Rodar uma vez só,
+// pelo botão em Configurações (admin). Depois de rodada, pode ignorar/remover o botão.
+async function sgqMigrarFotosParaStorage() {
+    const el = document.getElementById('sgq-migracao-fotos-resultado');
+    if (!el) return;
+    if (!confirm('Isso vai migrar todas as fotos antigas (base64) para o Storage. Pode levar alguns minutos. Continuar?')) return;
+
+    el.innerHTML = '<div style="color:#bbb;font-size:12px;font-style:italic;">Iniciando migração...</div>';
+    const log = [];
+    const _print = () => { el.innerHTML = log.map(l => `<div style="font-size:11px;">${l}</div>`).join(''); };
+
+    async function _dataUrlParaBlob(dataUrl) {
+        const resp = await fetch(dataUrl);
+        return await resp.blob();
+    }
+
+    async function _migrarTabela(tabela) {
+        log.push(`🔎 Buscando registros de <b>${tabela}</b>...`); _print();
+        const { data: linhas, error } = await _sbClient.from(tabela).select('id, imagens');
+        if (error) { log.push(`❌ Erro ao buscar ${tabela}: ${error.message}`); _print(); return; }
+
+        let migrados = 0, semFoto = 0, jaMigrados = 0, erros = 0;
+
+        for (const linha of (linhas || [])) {
+            if (!linha.imagens) { semFoto++; continue; }
+            let imgs;
+            try {
+                imgs = typeof linha.imagens === 'string' ? JSON.parse(linha.imagens || '[]') : (linha.imagens || []);
+            } catch(e) { imgs = []; }
+            if (!imgs.length) { semFoto++; continue; }
+
+            const precisaMigrar = imgs.some(i => i.dataUrl && !i.url);
+            if (!precisaMigrar) { jaMigrados++; continue; }
+
+            const novasImgs = [];
+            for (const img of imgs) {
+                if (img.url) { novasImgs.push({ name: img.name, url: img.url }); continue; }
+                if (!img.dataUrl) continue;
+                try {
+                    const blob = await _dataUrlParaBlob(img.dataUrl);
+                    const nomeSeguro = (img.name || 'foto.jpg').replace(/[^a-zA-Z0-9._-]/g, '_');
+                    const caminho = `${tabela}/${linha.id}/${Date.now()}_${Math.random().toString(36).slice(2,8)}_${nomeSeguro}`;
+                    const { error: upErr } = await _sbClient.storage.from(SGQ_BUCKET_EVIDENCIAS).upload(caminho, blob, { upsert: false });
+                    if (upErr) throw upErr;
+                    const { data: pub } = _sbClient.storage.from(SGQ_BUCKET_EVIDENCIAS).getPublicUrl(caminho);
+                    novasImgs.push({ name: img.name, url: pub.publicUrl });
+                } catch(e) {
+                    erros++;
+                    log.push(`⚠️ Erro na imagem "${img.name}" do registro ${linha.id}: ${e.message}`); _print();
+                }
+            }
+
+            const { error: updErr } = await _sbClient.from(tabela)
+                .update({ imagens: JSON.stringify(novasImgs) })
+                .eq('id', linha.id);
+            if (updErr) { erros++; log.push(`❌ Erro ao salvar registro ${linha.id}: ${updErr.message}`); _print(); continue; }
+            migrados++;
+            log.push(`✅ ${tabela} #${linha.id}: ${novasImgs.length} foto(s) migrada(s)`); _print();
+        }
+
+        log.push(`<b>Resumo ${tabela}:</b> ${migrados} migrados, ${jaMigrados} já estavam ok, ${semFoto} sem foto, ${erros} erro(s).`); _print();
+    }
+
+    try {
+        await _migrarTabela('devolucoes');
+        await _migrarTabela('nao_conformidades');
+        log.push('🏁 Migração concluída.'); _print();
+    } catch(e) {
+        log.push(`❌ Erro geral: ${e.message}`); _print();
+    }
+}
+
 function verImgNC(idx, tipo) {
     const imgs = tipo === 'nc' ? ncImagens : devImagens;
-    if (imgs[idx]) window.open(imgs[idx].dataUrl, '_blank');
+    if (imgs[idx]) window.open(imgs[idx].url || imgs[idx].dataUrl, '_blank');
 }
 
 // ===== CLASSIFICAÇÃO GRÃOS =====
@@ -24569,12 +24666,34 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 // ── Carregar NC e DEV do Supabase (migração do localStorage) ─────────
+// ✅ Busca sob demanda a coluna 'imagens' de uma devolução específica, já que ela não
+// vem mais na carga em massa (carregarNCeDevSupabase) por questão de performance.
+// Mutating in-place: como listaDev guarda os mesmos objetos usados no restante do app,
+// atualizar dev.imagens aqui já reflete em qualquer lugar que segure essa referência.
+async function _garantirImagensDev(dev) {
+    if (!dev || dev.imagens !== undefined) return dev;
+    try {
+        const { data, error } = await _sbClient.from('devolucoes').select('imagens').eq('id', dev.id).single();
+        if (!error && data) dev.imagens = data.imagens;
+    } catch(e) { /* silencioso — pior caso, exibe sem fotos */ }
+    return dev;
+}
+
+// ── Carregar NC e DEV do Supabase (migração do localStorage) ─────────
 // ✅ MELHORIA: NC e Devoluções passam a usar o Supabase em vez do localStorage
 async function carregarNCeDevSupabase() {
     try {
+        // ✅ PERFORMANCE: exclui a coluna 'imagens' da carga em massa de 'devolucoes' — ela
+        // guarda fotos em base64 e pode ter megabytes por linha (confirmado: uma linha só
+        // tinha 4,4 milhões de caracteres nessa coluna). O dashboard só precisa dos dados/
+        // KPIs; as imagens são buscadas sob demanda (_garantirImagensCarregadas) quando o
+        // usuário abre um registro específico para editar/visualizar/imprimir.
+        // (nao_conformidades mantém select('*') até confirmarmos o schema exato dela e
+        // aplicarmos a mesma otimização com segurança.)
+        const _colsDev = 'id,numero,data,produto,fornecedor,motivo,tipo,lote,status,classificacao,criado_em,placa,desc_motivo,parametro';
         const [ncData, devData] = await Promise.all([
             _sbClient.from('nao_conformidades').select('*').order('id', { ascending: false }).limit(500),
-            _sbClient.from('devolucoes').select('*').order('id', { ascending: false }).limit(200)
+            _sbClient.from('devolucoes').select(_colsDev).order('id', { ascending: false }).limit(200)
         ]);
         if (ncData.data) {
             listaNC = ncData.data;
@@ -24696,7 +24815,7 @@ function visualizarNC(id) {
     const imgs = typeof nc.imagens === 'string' ? JSON.parse(nc.imagens || '[]') : (nc.imagens || []);
     const imgsHtml = imgs.length
         ? `<div class="ncv-section-title">📷 Evidências Fotográficas</div>
-           <div class="img-print-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">${imgs.map(img => `<img src="${img.dataUrl}" style="max-width:140px;max-height:100px;border-radius:4px;border:1px solid #ddd;">`).join('')}</div>`
+           <div class="img-print-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">${imgs.map(img => `<img src="${img.url || img.dataUrl}" style="max-width:140px;max-height:100px;border-radius:4px;border:1px solid #ddd;">`).join('')}</div>`
         : '';
     const fld = (label, val) => `<div class="ncv-field"><div class="ncv-label">${label}</div><div class="ncv-value">${val||'-'}</div></div>`;
     document.getElementById('ncvModalBody').innerHTML = `
@@ -24755,9 +24874,10 @@ function visualizarNC(id) {
     document.getElementById('modalVisualizarNC').classList.add('show');
 }
 
-function visualizarDev(id) {
+async function visualizarDev(id) {
     const dev = listaDev.find(d => String(d.id) === String(id));
     if (!dev) return;
+    await _garantirImagensDev(dev); // ✅ busca as fotos sob demanda (não vêm na carga em massa)
     let classif = typeof dev.classificacao === 'string' ? JSON.parse(dev.classificacao || '[]') : (dev.classificacao || []);
     // Correção em tempo real: Densidade do Milho sempre em g/L
     const _isMilhoDev = (dev.produto || '').toUpperCase().includes('MILHO');
@@ -24765,7 +24885,7 @@ function visualizarDev(id) {
     const imgs = typeof dev.imagens === 'string' ? JSON.parse(dev.imagens || '[]') : (dev.imagens || []);
     const imgsHtml = imgs.length
         ? `<div class="ncv-section-title">📷 Evidências Fotográficas</div>
-           <div class="img-print-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">${imgs.map(img => `<img src="${img.dataUrl}" style="max-width:140px;max-height:100px;border-radius:4px;border:1px solid #ddd;">`).join('')}</div>`
+           <div class="img-print-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">${imgs.map(img => `<img src="${img.url || img.dataUrl}" style="max-width:140px;max-height:100px;border-radius:4px;border:1px solid #ddd;">`).join('')}</div>`
         : '';
     const fld = (label, val) => `<div class="ncv-field"><div class="ncv-label">${label}</div><div class="ncv-value">${val||'-'}</div></div>`;
     let classifHtml = '';
@@ -24835,9 +24955,10 @@ function _ncvImprimir() {
     imprimirVisualizacao();
 }
 
-function _imprimirDevPorObj(id) {
+async function _imprimirDevPorObj(id) {
     const dev = listaDev.find(d => String(d.id) === String(id));
     if (!dev) return;
+    await _garantirImagensDev(dev); // ✅ busca as fotos sob demanda (não vêm na carga em massa)
     const printArea = document.getElementById('ncPrintArea');
     if (!printArea) return;
 
@@ -24850,7 +24971,7 @@ function _imprimirDevPorObj(id) {
         ? `<div class="nc-report-section-title">📷 Evidências Fotográficas (${imgs.length})</div>
            <div class="nc-report-imgs">${imgs.map(img => `
             <div class="nc-report-img-item">
-                <img src="${img.dataUrl}" alt="${img.name}">
+                <img src="${img.url || img.dataUrl}" alt="${img.name}">
                 <div class="cap">${img.name}</div>
             </div>`).join('')}</div>`
         : '<p style="color:#95a5a6;font-size:11px;">Nenhuma evidência fotográfica registrada.</p>';
@@ -25051,7 +25172,7 @@ function imprimirVisualizacao() {
             <div class="sec-title">📷 Evidências Fotográficas (${imgs.length})</div>
             <div class="img-block" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;break-inside:avoid;page-break-inside:avoid;">
                 ${imgs.map(img => `<div style="text-align:center;break-inside:avoid;page-break-inside:avoid;">
-                    <img src="${img.dataUrl}" style="max-width:150px;max-height:110px;border-radius:3px;border:1px solid #ddd;display:block;">
+                    <img src="${img.url || img.dataUrl}" style="max-width:150px;max-height:110px;border-radius:3px;border:1px solid #ddd;display:block;">
                     <div style="font-size:8px;color:#999;margin-top:3px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${img.name || ''}</div>
                 </div>`).join('')}
             </div>` : '';
@@ -32748,14 +32869,17 @@ async function sgqCarregarHistoricoAcessos() {
 // ── Auditoria: Entradas de Matéria Prima (entradas_mp_historico) ────────────
 function _sgqInicializarAuditoriaMP() {
     const card = document.getElementById('sgq-card-auditoria-mp');
-    if (!card) return;
-    if (perfilAtual === 'admin') {
-        card.style.display = 'block';
-        const inp = document.getElementById('audMpData');
-        if (inp && !inp.value) inp.value = new Date().toISOString().slice(0, 10);
-    } else {
-        card.style.display = 'none';
+    if (card) {
+        if (perfilAtual === 'admin') {
+            card.style.display = 'block';
+            const inp = document.getElementById('audMpData');
+            if (inp && !inp.value) inp.value = new Date().toISOString().slice(0, 10);
+        } else {
+            card.style.display = 'none';
+        }
     }
+    const cardMigracao = document.getElementById('sgq-card-migracao-fotos');
+    if (cardMigracao) cardMigracao.style.display = (perfilAtual === 'admin') ? 'block' : 'none';
 }
 
 async function sgqAuditarEntradasMP() {
