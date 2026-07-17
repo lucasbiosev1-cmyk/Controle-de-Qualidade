@@ -25500,6 +25500,29 @@ async function salvarParametros() {
     if (!PARAMETROS[modulo][racaKey]) PARAMETROS[modulo][racaKey] = [];
 
     const hist = PARAMETROS[modulo][racaKey].filter(s => !s._temporario);
+
+    // ✅ SEMÂNTICA "VALE A PARTIR DESTA DATA PRA SEMPRE": ao salvar uma vigência,
+    // os campos alterados aqui são propagados automaticamente para qualquer
+    // vigência futura já cadastrada, pra que o valor escolhido realmente valha
+    // dali em diante até uma edição manual posterior — sem depender do usuário
+    // lembrar de sincronizar. Isso evita a "janela de inconsistência" que causou
+    // o falso NC de proteína no CORTE_R1_WISIUM (vigência futura reativando
+    // silenciosamente um valor antigo).
+    const futuras = hist.filter(s => s.vigencia > vigencia);
+    let sincronizadas = [];
+    if (futuras.length) {
+        const camposMudados = Object.keys(campos).filter(k => {
+            return futuras.some(s => s.campos && s.campos[k] &&
+                JSON.stringify(s.campos[k]) !== JSON.stringify(campos[k]));
+        });
+        if (camposMudados.length) {
+            futuras.forEach(s => {
+                camposMudados.forEach(k => { s.campos[k] = JSON.parse(JSON.stringify(campos[k])); });
+            });
+            sincronizadas = futuras.map(s => new Date(s.vigencia+'T00:00:00').toLocaleDateString('pt-BR'));
+        }
+    }
+
     const idx  = hist.findIndex(s => s.vigencia === vigencia);
     if (idx >= 0) hist[idx] = { vigencia, campos, motivo, registradoEm };
     else          hist.push({ vigencia, campos, motivo, registradoEm });
@@ -25524,7 +25547,10 @@ async function salvarParametros() {
     exibirTabelaProd(); exibirTabelaClass(); exibirTabelaMP();
     const dFmt = new Date(vigencia+'T00:00:00').toLocaleDateString('pt-BR');
     const motivoMsg = motivo ? ` | Motivo: "${motivo}"` : '';
-    sgqToast(`✓ Parâmetros de "${racaKey.replace(/_/g,' ')}" salvos para ${dFmt}.${motivoMsg} Tabelas atualizadas.`, 'success');
+    const syncMsg = sincronizadas.length
+        ? ` ⚙️ Vigência(s) futura(s) também atualizada(s) automaticamente para manter o valor a partir de ${dFmt}: ${sincronizadas.join(', ')}.`
+        : '';
+    sgqToast(`✓ Parâmetros de "${racaKey.replace(/_/g,' ')}" salvos para ${dFmt}.${motivoMsg} Tabelas atualizadas.${syncMsg}`, 'success');
     renderizarPainelRacao(catAtiva, modulo, racaKey);
 }
 
