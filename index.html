@@ -8936,7 +8936,9 @@
                 <div class="form-group"><label>Data Fim:</label><input type="date" id="filterDataFimEMP" autocomplete="off"></div>
                 <div class="form-group">
                     <label>Fornecedor:</label>
-                    <input type="text" id="filterFornecedorEMP" placeholder="FORNECEDOR" autocomplete="off">
+                    <select id="filterFornecedorEMP">
+                        <option value="">TODOS</option>
+                    </select>
                 </div>
                 <div class="form-group" id="empFiltroStatusWrap">
                     <label>Status:</label>
@@ -8951,6 +8953,7 @@
                 <div style="display:flex;gap:5px;">
                     <button class="btn-filtrar" onclick="aplicarFiltrosEMP()">FILTRAR</button>
                     <button class="btn-limpar" onclick="imprimirRelatorioEMPPorTipo()">🖨️ IMPRIMIR</button>
+
                 </div>
             </div>
             <div class="emp-toolbar">
@@ -9038,14 +9041,17 @@
                         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:4px;">
                             <div class="form-group required">
                                 <label>FORNECEDOR</label>
-                                <div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
-                                    <input type="text" id="cadFornecedorEMP" required autocomplete="off"
-                                        style="width:100%;text-transform:uppercase;"
-                                        oninput="this.value=this.value.toUpperCase();sgqAutocompleteFiltrar(this,'cadFornecedorEMP','emp')"
-                                        onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorEMP','emp')"
-                                        onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorEMP_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorEMP');},180)"
-                                        onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorEMP')">
-                                    <ul id="cadFornecedorEMP_list" class="sgq-autocomplete-list"></ul>
+                                <div style="display:flex;gap:4px;align-items:center;width:100%;">
+                                    <div class="sgq-autocomplete-wrap" style="position:relative;flex:1;min-width:0;">
+                                        <input type="text" id="cadFornecedorEMP" required autocomplete="off"
+                                            style="width:100%;text-transform:uppercase;"
+                                            oninput="this.value=this.value.toUpperCase();sgqAutocompleteFiltrar(this,'cadFornecedorEMP','emp')"
+                                            onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorEMP','emp')"
+                                            onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorEMP_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorEMP');},180)"
+                                            onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorEMP')">
+                                        <ul id="cadFornecedorEMP_list" class="sgq-autocomplete-list"></ul>
+                                    </div>
+                                    <button type="button" onclick="empAdicionarFornecedor()" title="Cadastrar novo fornecedor" style="background:#27ae60;color:white;border:none;border-radius:4px;width:24px;height:24px;font-size:15px;cursor:pointer;line-height:1;flex-shrink:0;">+</button>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -9061,8 +9067,11 @@
                         </div>
                         <!-- Quantidade -->
                         <div class="form-group" style="margin-bottom:4px;">
-                            <label>QUANTIDADE (KG/TON)</label>
-                            <input type="number" id="cadQtdEMP" min="0" step="0.01" placeholder="Ex: 28500" style="text-align:left;" title="Quantidade recebida em kg ou toneladas" autocomplete="off">
+                            <label>QUANTIDADE</label>
+                            <div style="display:flex;align-items:stretch;width:100%;">
+                                <span id="cadQtdEMPUnidade" style="display:flex;align-items:center;justify-content:center;padding:0 8px;background:#eef2f5;border:1px solid #bdc3c7;border-right:none;border-radius:4px 0 0 4px;font-size:11px;font-weight:800;color:#555;min-width:34px;letter-spacing:.5px;">KG</span>
+                                <input type="number" id="cadQtdEMP" min="0" step="0.01" placeholder="Ex: 28500" style="text-align:left;border-radius:0 4px 4px 0;flex:1;min-width:0;" title="Quantidade recebida em kg ou toneladas — a unidade exibida se ajusta automaticamente" autocomplete="off" oninput="_empAtualizarUnidadeQtd()">
+                            </div>
                         </div>
                     </div>
 
@@ -10514,6 +10523,7 @@ function aplicarPermissoes() {
     const tabEMP = document.getElementById('tabEntradaMP');
     if (tabEMP) tabEMP.style.display = podeEntradaMP ? 'inline-block' : 'none';
 
+
     // Dropdown pai "Lançamentos" — aparece se tiver ao menos uma aba filha visível
     const ndLancamentos = document.getElementById('ndLancamentos');
     if (ndLancamentos) ndLancamentos.style.display = (podeCadastro || podeEntradaMP) ? 'inline-flex' : 'none';
@@ -10660,6 +10670,7 @@ function aplicarPermissoes() {
             // ✅ CORREÇÃO: sincroniza o filtro com produtos que existem nos
             // registros mas não estão na tabela lista_materias_primas
             _empSincronizarListaComRegistros();
+            _empPopularFiltroFornecedor();
             // Inicia sempre no modo "pendentes" — mostra apenas cargas em andamento
             empSetModo('pendentes', true);
         });
@@ -15603,7 +15614,7 @@ function exibirTabelaEMP(lista) {
             <td data-label="NOTA FISCAL">${r.nf||'-'}</td>
             <td data-label="PLACA" style="text-align:center;letter-spacing:1px;font-weight:bold;">${r.placa||'-'}</td>
             <td data-label="USUÁRIO">${r.usuario||'-'}</td>
-            <td data-label="QUANTIDADE" style="text-align:center;font-weight:bold;">${r.quantidade != null && r.quantidade !== '' ? Number(r.quantidade).toLocaleString('pt-BR') : '-'}</td>
+            <td data-label="QUANTIDADE" style="text-align:center;font-weight:bold;">${_empFormatarQtd(r.quantidade)}</td>
             <td data-label="ANÁLISE" style="text-align:center;">${analiseCell}</td>
             <td data-label="HORÁRIO ANÁLISE" style="text-align:center;">${horaAnaliseCell}</td>
             <td data-label="DESCARGA">${descargaCell}</td>
@@ -15803,7 +15814,7 @@ function aplicarFiltrosEMP() {
     if (label) label.textContent = 'Mostrando todo o histórico';
     // Se entradasMP estiver vazio (não carregado ainda), recarrega do banco antes de filtrar
     if (!entradasMP || entradasMP.length === 0) {
-        carregarEntradasMP().then(() => { _empSincronizarListaComRegistros(); exibirTabelaEMP(); });
+        carregarEntradasMP().then(() => { _empSincronizarListaComRegistros(); _empPopularFiltroFornecedor(); exibirTabelaEMP(); });
     } else {
         exibirTabelaEMP();
     }
@@ -15875,6 +15886,65 @@ function _empPopularFiltroMP() {
     if (valorAtual && lista.includes(valorAtual)) sel.value = valorAtual;
 }
 
+// ✅ Popula o select "Fornecedor" da barra de filtros da aba Entrada de Mat. Prima
+// Reaproveita a mesma fonte de dados do autocomplete de cadastro (_sgqGetFornecedores)
+function _empPopularFiltroFornecedor() {
+    const sel = document.getElementById('filterFornecedorEMP');
+    if (!sel) return;
+    const valorAtual = sel.value;
+    const lista = _sgqGetFornecedores('emp');
+    sel.innerHTML = '<option value="">TODOS</option>' +
+        lista.map(nome => `<option value="${nome}">${nome}</option>`).join('');
+    if (valorAtual && lista.includes(valorAtual)) sel.value = valorAtual;
+}
+
+// ✅ Mostra KG ou TON na frente do campo Quantidade, de acordo com a grandeza do número digitado
+// (valores abaixo de 1000 são tratados como quilogramas; a partir de 1000, como toneladas)
+function _empAtualizarUnidadeQtd() {
+    const inp = document.getElementById('cadQtdEMP');
+    const badge = document.getElementById('cadQtdEMPUnidade');
+    if (!inp || !badge) return;
+    const val = parseFloat(inp.value);
+    if (isNaN(val)) { badge.textContent = 'KG'; return; }
+    badge.textContent = (Math.abs(val) < 1000) ? 'KG' : 'TON';
+}
+
+// ✅ Formata a quantidade para exibição em tabelas/relatórios, mostrando KG ou TON
+// conforme a grandeza — apenas exibição, NÃO altera o valor gravado no registro.
+// Abaixo de 1000: mostra o valor como está, em KG. A partir de 1000: converte para toneladas (÷1000).
+function _empFormatarQtd(valor) {
+    if (valor == null || valor === '') return '-';
+    const num = Number(valor);
+    if (isNaN(num)) return '-';
+    if (Math.abs(num) < 1000) {
+        return num.toLocaleString('pt-BR') + ' KG';
+    }
+    const ton = num / 1000;
+    return ton.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + ' TON';
+}
+
+// ✅ Fornecedores liberados nesta sessão do formulário via botão "+" (ainda não existem em nenhum registro salvo)
+let _empFornecedorNovoPermitido = new Set();
+
+// Define o valor atual do campo Fornecedor (usado ao abrir/editar/limpar o modal)
+function _empPopularSelectFornecedor(valorAtual) {
+    const inp = document.getElementById('cadFornecedorEMP');
+    if (!inp) return;
+    _empFornecedorNovoPermitido = new Set();
+    inp.value = (valorAtual || '').trim().toUpperCase();
+}
+
+// ✅ Cadastra um novo fornecedor (usado apenas quando ele realmente ainda não existe na lista)
+function empAdicionarFornecedor() {
+    const nome = prompt('Digite o nome do novo fornecedor:');
+    if (!nome || !nome.trim()) return;
+    const nomeUp = nome.trim().toUpperCase();
+    const inp = document.getElementById('cadFornecedorEMP');
+    if (!inp) return;
+    _empFornecedorNovoPermitido.add(nomeUp);
+    inp.value = nomeUp;
+}
+
 function _empPopularSelectMP(valorAtual) {
     const inp = document.getElementById('cadMateriaPrimaEMP');
     if (!inp) return;
@@ -15932,12 +16002,13 @@ function abrirModalEMP() {
     const agora = new Date();
     document.getElementById('cadHoraEMP').value = String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0');
     _empPopularSelectMP('');
-    document.getElementById('cadFornecedorEMP').value = '';
+    _empPopularSelectFornecedor('');
     document.getElementById('cadNFEMP').value = '';
     const _placaEMPNew = document.getElementById('cadPlacaEMP');
     if (_placaEMPNew) _placaEMPNew.value = '';
     const _qtdEMPNew = document.getElementById('cadQtdEMP');
     if (_qtdEMPNew) _qtdEMPNew.value = '';
+    _empAtualizarUnidadeQtd();
     const uNome = USUARIOS[usuarioAtual]?.nome || usuarioAtual || '';
     document.getElementById('cadUsuarioEMP').value = uNome;
     const _stEMP = document.getElementById('cadStatusEMP');
@@ -15956,13 +16027,14 @@ function editarEntradaMP(id) {
     const seqEMPEdit = document.getElementById('cadSeqEMP');
     if (seqEMPEdit) seqEMPEdit.value = entrada.seq != null ? entrada.seq : '';
     _empPopularSelectMP(entrada.materia_prima || '');
-    document.getElementById('cadFornecedorEMP').value = entrada.fornecedor || '';
+    _empPopularSelectFornecedor(entrada.fornecedor || '');
     document.getElementById('cadNFEMP').value = entrada.nf || '';
     document.getElementById('cadUsuarioEMP').value = entrada.usuario || '';
     const placaEMP = document.getElementById('cadPlacaEMP');
     if (placaEMP) placaEMP.value = (entrada.placa || '').toUpperCase();
     const qtdEMP = document.getElementById('cadQtdEMP');
     if (qtdEMP) qtdEMP.value = entrada.quantidade != null ? entrada.quantidade : '';
+    _empAtualizarUnidadeQtd();
     // Botão Desfazer — visível apenas se status não for EM ANÁLISE
     const btnDesfazerEMP = document.getElementById('btnDesfazerEMP');
     if (btnDesfazerEMP) {
@@ -16008,12 +16080,13 @@ function limparFormularioEMP() {
     const seqElEMP = document.getElementById('cadSeqEMP');
     if (seqElEMP) seqElEMP.value = '';
     _empPopularSelectMP('');
-    document.getElementById('cadFornecedorEMP').value = '';
+    _empPopularSelectFornecedor('');
     document.getElementById('cadNFEMP').value = '';
     const placaElEMP = document.getElementById('cadPlacaEMP');
     if (placaElEMP) placaElEMP.value = '';
     const qtdElEMP = document.getElementById('cadQtdEMP');
     if (qtdElEMP) qtdElEMP.value = '';
+    _empAtualizarUnidadeQtd();
     const obsEl = document.getElementById('cadObsEMP');
     if (obsEl) { obsEl.value = ''; const tog = obsEl.closest('.obs-body').previousElementSibling; tog.classList.remove('open'); obsEl.closest('.obs-body').classList.remove('open'); }
 }
@@ -16084,6 +16157,7 @@ async function _executarSalvarEntradaMP(payload) {
     } catch(e) { mostrarMsgEMP('erro','Erro ao salvar: ' + e.message); return; }
     mostrarMsgEMP('sucesso','✅ Entrada registrada com sucesso! Status: ' + statusInicial);
     fecharModalEMP();
+    _empPopularFiltroFornecedor();
     setTimeout(() => exibirTabelaEMP(), 100);
 }
 
@@ -16105,6 +16179,10 @@ async function salvarEntradaMP(event) {
     if (!data)         { mostrarMsgEMP('erro','Informe a data.'); return; }
     if (!materia_prima){ mostrarMsgEMP('erro','Selecione a matéria prima.'); return; }
     if (!fornecedor)   { mostrarMsgEMP('erro','Informe o fornecedor.'); return; }
+    if (!_sgqGetFornecedores('emp').includes(fornecedor) && !_empFornecedorNovoPermitido.has(fornecedor)) {
+        mostrarMsgEMP('erro','Selecione um fornecedor da lista de sugestões, ou use o botão "+" para cadastrar um novo.');
+        return;
+    }
 
     if (_empEditandoId) {
         // Ao editar: bloqueia NF duplicada excluindo o próprio registro
@@ -16494,7 +16572,7 @@ window.imprimirRelatorioEMP = function() {
             // Primeira entrada junto com o nome do fornecedor
             const r0 = entradas[0];
             const data0 = r0.data ? new Date(r0.data+'T00:00:00').toLocaleDateString('pt-BR') : '-';
-            const qtd0 = r0.quantidade != null && r0.quantidade !== '' ? Number(r0.quantidade).toLocaleString('pt-BR') : '-';
+            const qtd0 = _empFormatarQtd(r0.quantidade);
             const st0 = stStyles[r0.status] || '';
             const seq0 = (r0.seq != null && r0.seq !== '') ? r0.seq : '-';
 
@@ -16733,7 +16811,7 @@ window.imprimirRelatorioEMPPorTipo = function() {
         regs.forEach((r, i) => {
             const bg = i % 2 === 0 ? corGrupo : '#fff';
             const dataFmt = r.data ? new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR') : '-';
-            const qtdFmt = r.quantidade != null && r.quantidade !== '' ? Number(r.quantidade).toLocaleString('pt-BR') : '-';
+            const qtdFmt = _empFormatarQtd(r.quantidade);
             const stStyle = stStyles[r.status] || '';
             rowsHtml += `<tr style="background:${bg};">
                 <td style="padding:5px 8px;border:1px solid #d0d6e0;">${dataFmt}</td>
