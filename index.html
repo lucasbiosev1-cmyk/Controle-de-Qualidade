@@ -2164,6 +2164,7 @@
         [data-theme="verde"]{--cor-primaria:#145a32;--cor-primaria-hover:#1e8449;--cor-secundaria:#1d4a2a;--cor-acento:#f39c12;--cor-acento-hover:#d68910;--cor-filtrar:#27ae60;--cor-filtrar-hover:#1e8449;--cor-login-bg1:#145a32;--cor-login-bg2:#1e8449;--cor-login-bg3:#0e4024;}
         [data-theme="cinza"]{--cor-primaria:#2c3e50;--cor-primaria-hover:#34495e;--cor-secundaria:#1a252f;--cor-acento:#e67e22;--cor-acento-hover:#ca6f1e;--cor-filtrar:#7f8c8d;--cor-filtrar-hover:#616a6b;--cor-login-bg1:#2c3e50;--cor-login-bg2:#34495e;--cor-login-bg3:#1a252f;}
         [data-theme="vinho"]{--cor-primaria:#6d1a36;--cor-primaria-hover:#922b47;--cor-secundaria:#4a1228;--cor-acento:#c0392b;--cor-acento-hover:#a93226;--cor-filtrar:#8e44ad;--cor-filtrar-hover:#7d3c98;--cor-login-bg1:#6d1a36;--cor-login-bg2:#922b47;--cor-login-bg3:#4a1228;}
+        [data-theme="marinho"]{--cor-primaria:#0a1628;--cor-primaria-hover:#153a63;--cor-secundaria:#0f2847;--cor-acento:#00d4ff;--cor-acento-hover:#00b8dd;--cor-filtrar:#2e86de;--cor-filtrar-hover:#2673c4;--cor-login-bg1:#0a1628;--cor-login-bg2:#153a63;--cor-login-bg3:#050d1a;}
         html[data-theme="dark"]{--cor-primaria:#0d1117;--cor-primaria-hover:#161b22;--cor-secundaria:#161b22;--cor-acento:#58a6ff;--cor-acento-hover:#388bfd;--cor-filtrar:#60a5fa;--cor-filtrar-hover:#3b82f6;--cor-login-bg1:#0d1117;--cor-login-bg2:#161b22;--cor-login-bg3:#0a1018;}
 
         /* Overrides globais para tema dark */
@@ -2648,6 +2649,16 @@
         :not([data-theme="dark"]) .cfg-sub-tab{background:#dce3ef!important;color:#34495e!important;}
         :not([data-theme="dark"]) .cfg-sub-tab.cfg-sub-tab-active{background:#fff!important;color:#0a1e7f!important;border-bottom-color:#27ae60!important;}
         :not([data-theme="dark"]) .cfg-sub-panels{background:#fff!important;}
+
+        /* =====================================================
+           TEMA AZUL MARINHO — gradiente moderno (header/nav/login)
+           ===================================================== */
+        [data-theme="marinho"] .header{background:linear-gradient(120deg,#0a1628 0%,#123a63 55%,#0d2c4f 100%)!important;}
+        [data-theme="marinho"] .nav-tabs{background:linear-gradient(120deg,#0f2847,#153a63)!important;border-bottom-color:#0a1628!important;}
+        [data-theme="marinho"] .nav-dropdown-menu{background:linear-gradient(160deg,#0f2847,#153a63)!important;border-top:2px solid #00d4ff!important;}
+        [data-theme="marinho"] .modal-header{background:linear-gradient(120deg,#0a1628 0%,#153a63 100%)!important;}
+        [data-theme="marinho"] .login-panel-left{background:linear-gradient(160deg,#0a1628 0%,#153a63 60%,#0a2140 100%)!important;border-color:#153a63!important;}
+        [data-theme="marinho"] .nav-tab.active{border-bottom-color:#00d4ff!important;}
 
         /* =====================================================
            DARK MODE: OVERRIDE DE TODOS ELEMENTOS WHITE/LIGHT
@@ -8784,12 +8795,24 @@
                             <div id="temaCard-dark" onclick="aplicarTema('dark')" style="cursor:pointer;border:2px solid #ddd;border-radius:10px;overflow:hidden;transition:all 0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.07);">
                                 <div style="height:70px;background:linear-gradient(135deg,#0d1117 40%,#161b22 70%,#58a6ff 150%);display:flex;align-items:center;justify-content:center;position:relative;">
                                     <span style="font-size:28px;">🌑</span>
-                                    <span style="position:absolute;top:7px;right:9px;font-size:9px;font-weight:800;letter-spacing:1px;background:#58a6ff;color:#0d1117;padding:2px 7px;border-radius:20px;text-transform:uppercase;">NOVO</span>
                                 </div>
                                 <div style="padding:12px 14px;background:#111827;">
                                     <div style="font-size:13px;font-weight:bold;color:#fff;">Dark Mode</div>
                                     <div style="font-size:11px;color:#6b7280;margin-top:3px;">Interface escura moderna</div>
                                     <div id="temaCheck-dark" style="margin-top:8px;font-size:11px;font-weight:bold;color:#58a6ff;display:none;">✔ Ativo</div>
+                                </div>
+                            </div>
+
+                            <!-- Azul Marinho -->
+                            <div id="temaCard-marinho" onclick="aplicarTema('marinho')" style="cursor:pointer;border:2px solid #ddd;border-radius:10px;overflow:hidden;transition:all 0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.07);">
+                                <div style="height:70px;background:linear-gradient(120deg,#0a1628 0%,#153a63 55%,#00d4ff 150%);display:flex;align-items:center;justify-content:center;position:relative;">
+                                    <span style="font-size:28px;">🌊</span>
+                                    <span style="position:absolute;top:7px;right:9px;font-size:9px;font-weight:800;letter-spacing:1px;background:#00d4ff;color:#0a1628;padding:2px 7px;border-radius:20px;text-transform:uppercase;">NOVO</span>
+                                </div>
+                                <div style="padding:12px 14px;background:#fff;">
+                                    <div style="font-size:13px;font-weight:bold;color:#0a1628;">Azul Marinho</div>
+                                    <div style="font-size:11px;color:#888;margin-top:3px;">Gradiente moderno e sofisticado</div>
+                                    <div id="temaCheck-marinho" style="margin-top:8px;font-size:11px;font-weight:bold;color:#27ae60;display:none;">✔ Ativo</div>
                                 </div>
                             </div>
 
@@ -10024,7 +10047,7 @@ document.addEventListener('mouseover', function(e) {
 // ===================================================
 // TEMAS DE COR
 // ===================================================
-const TEMAS = ['azul','verde','cinza','vinho','dark'];
+const TEMAS = ['azul','verde','cinza','vinho','dark','marinho'];
 // ── Cores de texto/grade para gráficos de relatório (fundo do
 //    .grafico-container é sempre branco no tema claro), evita
 //    números quase invisíveis (ex: '#e6edf3' sobre fundo branco) ──
