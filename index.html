@@ -8972,7 +8972,7 @@
                     <thead id="theadEMP">
                         <tr>
                             <th style="text-align:left;padding-left:8px;">MATÉRIA PRIMA</th><th>DATA</th><th>HORA</th><th>NOTA FISCAL</th>
-                            <th>PLACA</th><th>USUÁRIO</th><th id="thQtdEMP">QUANTIDADE</th><th>ANÁLISE</th><th>HORÁRIO ANÁLISE</th><th id="thDescargaEMP">DESCARGA</th><th id="thConclusaoEMP">HORÁRIO CONCLUSÃO</th>
+                            <th>PLACA</th><th>USUÁRIO</th><th id="thQtdEMP">QUANTIDADE (KG)</th><th>ANÁLISE</th><th>HORÁRIO ANÁLISE</th><th id="thDescargaEMP">DESCARGA</th><th id="thConclusaoEMP">HORÁRIO CONCLUSÃO</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaEntradaMP"><tr><td colspan="11" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
@@ -9067,10 +9067,10 @@
                         </div>
                         <!-- Quantidade -->
                         <div class="form-group" style="margin-bottom:4px;">
-                            <label>QUANTIDADE</label>
+                            <label>QUANTIDADE (KG)</label>
                             <div style="display:flex;align-items:stretch;width:100%;">
                                 <span id="cadQtdEMPUnidade" style="display:flex;align-items:center;justify-content:center;padding:0 8px;background:#eef2f5;border:1px solid #bdc3c7;border-right:none;border-radius:4px 0 0 4px;font-size:11px;font-weight:800;color:#555;min-width:34px;letter-spacing:.5px;">KG</span>
-                                <input type="number" id="cadQtdEMP" min="0" step="0.01" placeholder="Ex: 28500" style="text-align:left;border-radius:0 4px 4px 0;flex:1;min-width:0;" title="Quantidade recebida em kg ou toneladas — a unidade exibida se ajusta automaticamente" autocomplete="off" oninput="_empAtualizarUnidadeQtd()">
+                                <input type="number" id="cadQtdEMP" min="0" step="0.01" placeholder="Ex: 28500" style="text-align:left;border-radius:0 4px 4px 0;flex:1;min-width:0;" title="Quantidade recebida em quilogramas (kg)" autocomplete="off" oninput="_empAtualizarUnidadeQtd()">
                             </div>
                         </div>
                     </div>
@@ -15614,7 +15614,7 @@ function exibirTabelaEMP(lista) {
             <td data-label="NOTA FISCAL">${r.nf||'-'}</td>
             <td data-label="PLACA" style="text-align:center;letter-spacing:1px;font-weight:bold;">${r.placa||'-'}</td>
             <td data-label="USUÁRIO">${r.usuario||'-'}</td>
-            <td data-label="QUANTIDADE" style="text-align:center;font-weight:bold;">${_empFormatarQtd(r.quantidade)}</td>
+            <td data-label="QUANTIDADE (KG)" style="text-align:center;font-weight:bold;">${_empFormatarQtd(r.quantidade)}</td>
             <td data-label="ANÁLISE" style="text-align:center;">${analiseCell}</td>
             <td data-label="HORÁRIO ANÁLISE" style="text-align:center;">${horaAnaliseCell}</td>
             <td data-label="DESCARGA">${descargaCell}</td>
@@ -15898,29 +15898,19 @@ function _empPopularFiltroFornecedor() {
     if (valorAtual && lista.includes(valorAtual)) sel.value = valorAtual;
 }
 
-// ✅ Mostra KG ou TON na frente do campo Quantidade, de acordo com a grandeza do número digitado
-// (valores abaixo de 1000 são tratados como quilogramas; a partir de 1000, como toneladas)
+// ✅ Campo Quantidade do EMP é sempre em KG (mantida por compatibilidade, sem alternância de unidade)
 function _empAtualizarUnidadeQtd() {
-    const inp = document.getElementById('cadQtdEMP');
     const badge = document.getElementById('cadQtdEMPUnidade');
-    if (!inp || !badge) return;
-    const val = parseFloat(inp.value);
-    if (isNaN(val)) { badge.textContent = 'KG'; return; }
-    badge.textContent = (Math.abs(val) < 1000) ? 'KG' : 'TON';
+    if (badge) badge.textContent = 'KG';
 }
 
-// ✅ Formata a quantidade para exibição em tabelas/relatórios, mostrando KG ou TON
-// conforme a grandeza — apenas exibição, NÃO altera o valor gravado no registro.
-// Abaixo de 1000: mostra o valor como está, em KG. A partir de 1000: converte para toneladas (÷1000).
+// ✅ Formata a quantidade para exibição em tabelas/relatórios, sempre em KG.
+// Apenas exibição — NÃO altera o valor gravado no registro.
 function _empFormatarQtd(valor) {
     if (valor == null || valor === '') return '-';
     const num = Number(valor);
     if (isNaN(num)) return '-';
-    if (Math.abs(num) < 1000) {
-        return num.toLocaleString('pt-BR') + ' KG';
-    }
-    const ton = num / 1000;
-    return ton.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + ' TON';
+    return num.toLocaleString('pt-BR') + ' KG';
 }
 
 // ✅ Fornecedores liberados nesta sessão do formulário via botão "+" (ainda não existem em nenhum registro salvo)
@@ -16885,7 +16875,7 @@ window.imprimirRelatorioEMPPorTipo = function() {
       <th style="width:6%;">HORA</th>
       <th style="width:24%;">FORNECEDOR</th>
       <th class="center" style="width:11%;">NOTA FISCAL</th>
-      <th class="center" style="width:8%;">QUANTIDADE</th>
+      <th class="center" style="width:8%;">QUANTIDADE (KG)</th>
       <th class="center" style="width:10%;">STATUS</th>
       <th class="center" style="width:16%;">HORÁRIO ANÁLISE</th>
       <th class="center" style="width:17%;">HORÁRIO CONCLUSÃO</th>
