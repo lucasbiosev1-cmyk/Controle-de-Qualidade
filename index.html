@@ -885,7 +885,7 @@
             .login-mob-logo {
                 display: block !important;
             }
-            /* Badge SGQ no canto direito do header */
+            /* Badge SIGQ no canto direito do header */
             .login-mob-badge {
                 display: flex !important;
             }
@@ -3968,15 +3968,14 @@
                 <div class="login-panel-divider"></div>
                 <div class="login-panel-info">
                     <div class="login-panel-info-item">Laboratório</div>
-                    <div class="login-panel-info-item">de Qualidade</div>
-                    <div class="login-panel-info-item">Sistema SGQ</div>
+                    <div class="login-panel-info-item">Sistema SIGQ</div>
                 </div>
-                <div class="login-panel-badge">SGQ</div>
+                <div class="login-panel-badge">SIGQ</div>
             </div>
-            <!-- Badge SGQ — visível apenas mobile -->
+            <!-- Badge SIGQ — visível apenas mobile -->
             <div class="login-mob-badge" style="display:none;align-items:center;gap:6px;background:rgba(88,166,255,0.12);border:1px solid rgba(88,166,255,0.2);border-radius:20px;padding:4px 12px;">
                 <span style="width:6px;height:6px;border-radius:50%;background:#58a6ff;display:inline-block;"></span>
-                <span style="font-size:10px;font-weight:700;color:#58a6ff;letter-spacing:1px;">SGQ</span>
+                <span style="font-size:10px;font-weight:700;color:#58a6ff;letter-spacing:1px;">SIGQ</span>
             </div>
         </div>
         <!-- Painel direito: logo + formulário -->
@@ -4038,7 +4037,7 @@
         <button id="mobileMenuBtn" onclick="abrirMenuMobile()" aria-label="Menu">
             <span></span>
         </button>
-        <span id="mobileNavTitle">SGQ — Início</span>
+        <span id="mobileNavTitle">SIGQ — Início</span>
         <div style="display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0;">
             <div id="mobileAvatar" style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#58a6ff,#388bfd);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#0d1117;flex-shrink:0;">U</div>
             <button onclick="fazerLogout()" style="background:rgba(248,81,73,0.15);color:#f85149;border:1px solid rgba(248,81,73,0.4);border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;letter-spacing:0.5px;text-transform:uppercase;font-family:'Montserrat',Arial,sans-serif;">
@@ -10786,7 +10785,7 @@ function mobNav(aba, titulo) {
     const btn = document.getElementById('tab' + aba.charAt(0).toUpperCase() + aba.slice(1)) || { classList: { add:()=>{}, remove:()=>{} } };
     trocarAba(aba, btn);
     const t = document.getElementById('mobileNavTitle');
-    if (t) t.textContent = 'SGQ — ' + titulo;
+    if (t) t.textContent = 'SIGQ — ' + titulo;
     // marca item ativo no painel mobile
     document.querySelectorAll('.mob-item').forEach(i => i.classList.remove('active'));
 }
@@ -10796,7 +10795,7 @@ function mobNavNC(secao, titulo) {
     trocarAba('naoConformidade', btn);
     setTimeout(() => mostrarSecaoNC(secao), 60);
     const t = document.getElementById('mobileNavTitle');
-    if (t) t.textContent = 'SGQ — ' + titulo;
+    if (t) t.textContent = 'SIGQ — ' + titulo;
 }
 // Detecta mobile e mostra/esconde barra correta
 (function() {
@@ -11342,10 +11341,10 @@ function abrirModalEdicaoProd(id) {
     let _prProd = _uProd.perms || {};
     if (typeof _prProd === 'string') { try { _prProd = JSON.parse(_prProd); } catch(e) { _prProd = {}; } }
     const _podeProd = perfilAtual === 'admin' || _prProd.cadastro === true || _prProd.cadastro === 'true' || _prProd.cadastro === 1;
-    if (!_podeProd) { console.warn('[SGQ] sem permissão para editar produção', { perfilAtual, perms: _prProd }); return; }
+    if (!_podeProd) { console.warn('[SIGQ] sem permissão para editar produção', { perfilAtual, perms: _prProd }); return; }
     idEdicaoProd = id;
     const r = producoes.find(x => String(x.id) === String(id));
-    if (!r) { alert('[SGQ DEBUG] id recebido: ' + id + ' | tipo: ' + typeof id + ' | total producoes: ' + producoes.length + ' | ids: ' + producoes.slice(0,3).map(x=>x.id).join(',')); return; }
+    if (!r) { alert('[SIGQ DEBUG] id recebido: ' + id + ' | tipo: ' + typeof id + ' | total producoes: ' + producoes.length + ' | ids: ' + producoes.slice(0,3).map(x=>x.id).join(',')); return; }
     document.getElementById('modalTituloProd').textContent    = 'Editar Produção';
     document.getElementById('cadIdProd').value                = id;
     document.getElementById('cadDataProd').value              = dataParaDisplay(r.data);
@@ -23216,11 +23215,11 @@ function imprimirRelatorioNC(tipo) {
             <div class="nc-report-header-top">
                 <div>
                     <div class="nc-report-header-empresa">AGRONOR ALIMENTOS</div>
-                    <div class="nc-report-header-sgq">Sistema de Gestão da Qualidade — SGQ</div>
+                    <div class="nc-report-header-sgq">Sistema de Gestão da Qualidade — SIGQ</div>
                 </div>
                 <div style="text-align:right;">
                     <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.5px;">Doc. Controlado</div>
-                    <div style="font-size:9px;color:rgba(255,255,255,0.8);font-weight:700;">SGQ-NC-001</div>
+                    <div style="font-size:9px;color:rgba(255,255,255,0.8);font-weight:700;">SIGQ-NC-001</div>
                 </div>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:flex-end;">
@@ -23337,7 +23336,7 @@ function imprimirRelatorioNC(tipo) {
 
         <!-- RODAPÉ -->
         <div class="nc-report-footer">
-            <span>AGRONOR ALIMENTOS — SGQ · Documento interno confidencial</span>
+            <span>AGRONOR ALIMENTOS — SIGQ · Documento interno confidencial</span>
             <span>Revisão: 01 · ${new Date().toLocaleDateString('pt-BR')}</span>
         </div>`;
 
@@ -23456,11 +23455,11 @@ function imprimirRelatorioNC(tipo) {
             <div class="nc-report-header-top">
                 <div>
                     <div class="nc-report-header-empresa">AGRONOR ALIMENTOS</div>
-                    <div class="nc-report-header-sgq">Sistema de Gestão da Qualidade — SGQ</div>
+                    <div class="nc-report-header-sgq">Sistema de Gestão da Qualidade — SIGQ</div>
                 </div>
                 <div style="text-align:right;">
                     <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.5px;">Doc. Controlado</div>
-                    <div style="font-size:9px;color:rgba(255,255,255,0.8);font-weight:700;">SGQ-DEV-001</div>
+                    <div style="font-size:9px;color:rgba(255,255,255,0.8);font-weight:700;">SIGQ-DEV-001</div>
                 </div>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:flex-end;">
@@ -23538,7 +23537,7 @@ function imprimirRelatorioNC(tipo) {
 
         <!-- RODAPÉ -->
         <div class="nc-report-footer">
-            <span>AGRONOR ALIMENTOS — SGQ · Documento interno confidencial</span>
+            <span>AGRONOR ALIMENTOS — SIGQ · Documento interno confidencial</span>
             <span>Revisão: 01 · ${new Date().toLocaleDateString('pt-BR')}</span>
         </div>`;
     }
@@ -24080,7 +24079,7 @@ function exportarDev() {
 // ===== EVIDÊNCIAS / IMAGENS NC =====
 let ncImagens = [];
 let devImagens = [];
-const SGQ_BUCKET_EVIDENCIAS = 'sgq-evidencias';
+const SIGQ_BUCKET_EVIDENCIAS = 'sgq-evidencias';
 
 // ✅ Envia direto pro Supabase Storage — não guarda mais base64 na coluna 'imagens'.
 // Isso é o que causava linhas de até 4,4 milhões de caracteres e deixava o dashboard lento.
@@ -24090,9 +24089,9 @@ async function handleFilesNC(files, tipo) {
         const nomeSeguro = f.name.replace(/[^a-zA-Z0-9._-]/g, '_');
         const caminho = `${tipo}/${Date.now()}_${Math.random().toString(36).slice(2,8)}_${nomeSeguro}`;
         try {
-            const { error } = await _sbClient.storage.from(SGQ_BUCKET_EVIDENCIAS).upload(caminho, f, { upsert: false });
+            const { error } = await _sbClient.storage.from(SIGQ_BUCKET_EVIDENCIAS).upload(caminho, f, { upsert: false });
             if (error) throw error;
-            const { data: pub } = _sbClient.storage.from(SGQ_BUCKET_EVIDENCIAS).getPublicUrl(caminho);
+            const { data: pub } = _sbClient.storage.from(SIGQ_BUCKET_EVIDENCIAS).getPublicUrl(caminho);
             const obj = { name: f.name, url: pub.publicUrl };
             if (tipo === 'nc') { ncImagens.push(obj); renderImgsNC('nc'); }
             else { devImagens.push(obj); renderImgsNC('dev'); }
@@ -24165,9 +24164,9 @@ async function sgqMigrarFotosParaStorage() {
                     const blob = await _dataUrlParaBlob(img.dataUrl);
                     const nomeSeguro = (img.name || 'foto.jpg').replace(/[^a-zA-Z0-9._-]/g, '_');
                     const caminho = `${tabela}/${linha.id}/${Date.now()}_${Math.random().toString(36).slice(2,8)}_${nomeSeguro}`;
-                    const { error: upErr } = await _sbClient.storage.from(SGQ_BUCKET_EVIDENCIAS).upload(caminho, blob, { upsert: false });
+                    const { error: upErr } = await _sbClient.storage.from(SIGQ_BUCKET_EVIDENCIAS).upload(caminho, blob, { upsert: false });
                     if (upErr) throw upErr;
-                    const { data: pub } = _sbClient.storage.from(SGQ_BUCKET_EVIDENCIAS).getPublicUrl(caminho);
+                    const { data: pub } = _sbClient.storage.from(SIGQ_BUCKET_EVIDENCIAS).getPublicUrl(caminho);
                     novasImgs.push({ name: img.name, url: pub.publicUrl });
                 } catch(e) {
                     erros++;
@@ -25104,11 +25103,11 @@ async function _imprimirDevPorObj(id) {
         <div class="nc-report-header-top">
             <div>
                 <div class="nc-report-header-empresa">AGRONOR ALIMENTOS</div>
-                <div class="nc-report-header-sgq">Sistema de Gestão da Qualidade — SGQ | RELATÓRIO DE DEVOLUÇÃO</div>
+                <div class="nc-report-header-sgq">Sistema de Gestão da Qualidade — SIGQ | RELATÓRIO DE DEVOLUÇÃO</div>
             </div>
             <div style="text-align:right;">
                 <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.5px;">Doc. Controlado</div>
-                <div style="font-size:9px;color:rgba(255,255,255,0.8);font-weight:700;">SGQ-DEV-001</div>
+                <div style="font-size:9px;color:rgba(255,255,255,0.8);font-weight:700;">SIGQ-DEV-001</div>
             </div>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:flex-end;">
@@ -25171,7 +25170,7 @@ async function _imprimirDevPorObj(id) {
         </div>
     </div>
     <div class="nc-report-footer">
-        <span>AGRONOR ALIMENTOS — SGQ · Documento interno confidencial</span>
+        <span>AGRONOR ALIMENTOS — SIGQ · Documento interno confidencial</span>
         <span>Revisão: 01 · ${new Date().toLocaleDateString('pt-BR')}</span>
     </div>`;
 
@@ -25325,7 +25324,7 @@ function imprimirVisualizacao() {
         <div class="page-header">
             <div>
                 <div class="header-brand">AGRONOR ALIMENTOS</div>
-                <div class="header-sub">Sistema de Gestão da Qualidade — SGQ &nbsp;|&nbsp; RELATÓRIO DE DEVOLUÇÃO</div>
+                <div class="header-sub">Sistema de Gestão da Qualidade — SIGQ &nbsp;|&nbsp; RELATÓRIO DE DEVOLUÇÃO</div>
             </div>
             <div style="text-align:right;font-size:8px;opacity:.9;">Emitido em: ${emitido}</div>
         </div>
@@ -25458,7 +25457,7 @@ function imprimirVisualizacao() {
         <div class="page-header">
             <div>
                 <div class="header-brand">AGRONOR ALIMENTOS</div>
-                <div class="header-sub">Sistema de Gestão da Qualidade — SGQ &nbsp;|&nbsp; Registro de Não Conformidade</div>
+                <div class="header-sub">Sistema de Gestão da Qualidade — SIGQ &nbsp;|&nbsp; Registro de Não Conformidade</div>
             </div>
             <div style="text-align:right;font-size:7.5px;opacity:.9;line-height:1.5;">${titulo}<br>Emitido em: ${new Date().toLocaleString('pt-BR')}</div>
         </div>
@@ -33220,7 +33219,7 @@ function imprimirConferenciaQuimicos() {
             <div class="assinatura-linha">Data / Horário</div>
         </div>
         <div class="rodape">
-            <span>SGQ — Sistema de Gestão da Qualidade &nbsp;|&nbsp; AGRONOR</span>
+            <span>SIGQ — Sistema de Gestão da Qualidade &nbsp;|&nbsp; AGRONOR</span>
             <span>Impresso em ${hoje} às ${horaAtual}</span>
         </div>
     </div>
@@ -33336,7 +33335,7 @@ function imprimirConferenciaMateriais() {
             <div class="assinatura-linha">Data / Horário</div>
         </div>
         <div class="rodape">
-            <span>SGQ — Sistema de Gestão da Qualidade &nbsp;|&nbsp; AGRONOR</span>
+            <span>SIGQ — Sistema de Gestão da Qualidade &nbsp;|&nbsp; AGRONOR</span>
             <span>Impresso em ${hoje} às ${horaAtual}</span>
         </div>
     </div>
@@ -35765,7 +35764,7 @@ document.addEventListener('DOMContentLoaded',function(){
             ${kpiHtml}
             ${gruposHtml}
             <div style="text-align:center;font-size:9px;color:#bbb;margin-top:20px;padding-top:10px;border-top:1px solid #eee;">
-                Documento gerado automaticamente pelo Sistema SGQ
+                Documento gerado automaticamente pelo Sistema SIGQ
             </div>
         </div>`;
 
