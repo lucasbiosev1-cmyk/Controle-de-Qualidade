@@ -6,7 +6,7 @@
         // Aplica tema salvo ANTES do CSS renderizar — evita flash de tema errado
         (function() {
             try {
-                var t = localStorage.getItem('tema') || 'dark';
+                var t = localStorage.getItem('tema') || 'marinho';
                 document.documentElement.setAttribute('data-theme', t);
             } catch(e) {}
         })();
@@ -10158,7 +10158,7 @@ function _tBgOdd()  { return document.documentElement.getAttribute('data-theme')
 function _tFg()     { return document.documentElement.getAttribute('data-theme')==='dark'?'#e6edf3':'#333333'; }
 function _tBg(i)    { return i%2===0 ? _tBgEven() : _tBgOdd(); }
 function aplicarTema(tema, salvarNoBanco) {
-    if (!TEMAS.includes(tema)) tema = 'dark';
+    if (!TEMAS.includes(tema)) tema = 'marinho';
     document.documentElement.setAttribute('data-theme', tema);
     localStorage.setItem('tema', tema);
     _aplicarChartTema(tema);
@@ -10222,7 +10222,7 @@ function _atualizarCardsModoAberturaLogin(modo) {
 }
 // Aplica tema salvo ao carregar
 (function() {
-    const saved = localStorage.getItem('tema') || 'dark';
+    const saved = localStorage.getItem('tema') || 'marinho';
     document.documentElement.setAttribute('data-theme', saved);
     // Atualiza botões após DOM estar pronto
     document.addEventListener('DOMContentLoaded', () => { aplicarTema(saved); _aplicarChartTema(saved); });
@@ -10566,7 +10566,7 @@ async function fazerLogin() {
         if (perfilData.tema && typeof aplicarTema === 'function') {
             aplicarTema(perfilData.tema, false); // false = não re-salvar no banco
         } else if (typeof aplicarTema === 'function') {
-            aplicarTema('dark', false); // padrão dark para novos usuários sem tema salvo
+            aplicarTema('marinho', false); // padrão azul marinho para novos usuários sem tema salvo
         }
 
         _registrarAuditoria('LOGIN', 'auth', null, { agente: navigator.userAgent.substring(0, 80) }).catch(() => {});
@@ -11124,7 +11124,7 @@ function trocarSubCfg(subAba, btn) {
     if (subAba === 'memoria')        { atualizarMemoria(); memAtualizarOpenAI(); }
     if (subAba === 'alertaWhatsApp') inicializarAbaWhatsApp();
     if (subAba === 'usuarios')       { renderizarListaUsuarios(); sgqCarregarHistoricoAcessos(); _sgqRenderizarPresenca(); _sgqInicializarAuditoriaMP(); }
-    if (subAba === 'aparencia')      aplicarTema(localStorage.getItem('tema') || 'dark');
+    if (subAba === 'aparencia')      aplicarTema(localStorage.getItem('tema') || 'marinho');
 }
 
 // ===================================================
@@ -24878,7 +24878,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 if (perfilData.tema && typeof aplicarTema === 'function') {
                     aplicarTema(perfilData.tema, false);
                 } else if (typeof aplicarTema === 'function') {
-                    aplicarTema('dark', false); // padrão dark para usuários sem tema salvo
+                    aplicarTema('marinho', false); // padrão azul marinho para usuários sem tema salvo
                 }
 
                 document.getElementById('loginScreen').style.display = 'none';
