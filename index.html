@@ -853,6 +853,29 @@
         }
         .login-error.show { display: block; }
 
+        /* ===== TRANSIÇÃO "CORTINA" NO LOGIN ===== */
+        .login-cortina {
+            position: fixed; top: 0; bottom: 0; width: 50vw;
+            overflow: hidden; background: #0d1117; z-index: 99999;
+            transition: transform 0.9s cubic-bezier(.7,0,.3,1);
+        }
+        .login-cortina-esq { left: 0; }
+        .login-cortina-dir { right: 0; }
+        .login-cortina-esq.abrir { transform: translateX(-100%); }
+        .login-cortina-dir.abrir  { transform: translateX(100%); }
+        /* Precisa vencer a especificidade de #loginScreen{position:relative;min-height:100vh}
+           por isso o seletor repete o próprio #loginScreen junto das classes da cortina */
+        .login-cortina #loginScreen.login-cortina-clone {
+            position: absolute; top: 0; min-height: 0; height: 100%; width: 100vw; margin: 0;
+        }
+        .login-cortina-esq #loginScreen.login-cortina-clone { left: 0; right: auto; }
+        .login-cortina-dir  #loginScreen.login-cortina-clone { right: 0; left: auto; }
+        /* Modal de login desaparece ANTES da cortina começar a abrir */
+        .login-wrapper-fade-out {
+            transition: opacity .3s ease;
+            opacity: 0;
+        }
+
         /* ===== MOBILE LOGIN ===== */
         @media (max-width: 600px) {
             #loginScreen {
@@ -8817,6 +8840,41 @@
                             </div>
 
                         </div>
+
+                        <!-- MODO DE ABERTURA DO LOGIN — configuração global (admin) -->
+                        <div id="modoAberturaLoginBox" style="display:none;margin-top:32px;">
+                            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #34495e;">
+                                <span style="font-size:28px;">🎬</span>
+                                <div>
+                                    <div style="font-size:16px;font-weight:bold;color:#34495e;text-transform:uppercase;">Modo de Abertura do Login</div>
+                                    <div style="font-size:12px;color:#777;margin-top:2px;">Configuração global — vale para todos os usuários do sistema.</div>
+                                </div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+                                <div id="modoAberturaCard-padrao" onclick="salvarModoAberturaLogin('padrao')" style="cursor:pointer;border:2px solid #ddd;border-radius:10px;overflow:hidden;transition:all 0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.07);">
+                                    <div style="height:70px;background:linear-gradient(135deg,#161b22 60%,#30363d 100%);display:flex;align-items:center;justify-content:center;">
+                                        <span style="font-size:28px;">⚡</span>
+                                    </div>
+                                    <div style="padding:12px 14px;background:#fff;">
+                                        <div style="font-size:13px;font-weight:bold;color:#161b22;">Padrão</div>
+                                        <div style="font-size:11px;color:#888;margin-top:3px;">Troca instantânea para o dashboard</div>
+                                        <div id="modoAberturaCheck-padrao" style="margin-top:8px;font-size:11px;font-weight:bold;color:#27ae60;display:none;">✔ Ativo</div>
+                                    </div>
+                                </div>
+                                <div id="modoAberturaCard-cortina" onclick="salvarModoAberturaLogin('cortina')" style="cursor:pointer;border:2px solid #ddd;border-radius:10px;overflow:hidden;transition:all 0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.07);">
+                                    <div style="height:70px;background:linear-gradient(135deg,#0d1b2e 60%,#58a6ff 100%);display:flex;align-items:center;justify-content:center;">
+                                        <span style="font-size:28px;">🎭</span>
+                                    </div>
+                                    <div style="padding:12px 14px;background:#fff;">
+                                        <div style="font-size:13px;font-weight:bold;color:#0d1b2e;">Cortina</div>
+                                        <div style="font-size:11px;color:#888;margin-top:3px;">Tela se divide ao meio e desliza, revelando o dashboard</div>
+                                        <div id="modoAberturaCheck-cortina" style="margin-top:8px;font-size:11px;font-weight:bold;color:#58a6ff;display:none;">✔ Ativo</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- FIM MODO DE ABERTURA DO LOGIN -->
+
                     </div>
                 </div>
             </div>
@@ -10136,6 +10194,32 @@ function aplicarTema(tema, salvarNoBanco) {
         if (check) check.style.display = (t === tema) ? 'block' : 'none';
     });
 }
+// Salva o modo de abertura do login — configuração GLOBAL (vale para todos os usuários)
+async function salvarModoAberturaLogin(modo) {
+    if (modo !== 'padrao' && modo !== 'cortina') modo = 'padrao';
+    MODO_ABERTURA_LOGIN = modo;
+    _atualizarCardsModoAberturaLogin(modo);
+    try {
+        await _sbClient.from('parametros')
+            .upsert({ chave: 'modo_abertura_login', valor: modo }, { onConflict: 'chave' });
+    } catch (e) { /* mantém aplicado localmente mesmo se a gravação falhar */ }
+}
+function _atualizarCardsModoAberturaLogin(modo) {
+    ['padrao', 'cortina'].forEach(m => {
+        const card  = document.getElementById('modoAberturaCard-' + m);
+        const check = document.getElementById('modoAberturaCheck-' + m);
+        if (card) {
+            if (m === modo) {
+                card.style.border = '2px solid #58a6ff';
+                card.style.boxShadow = '0 0 0 3px rgba(88,166,255,0.18)';
+            } else {
+                card.style.border = '2px solid #ddd';
+                card.style.boxShadow = '0 2px 6px rgba(0,0,0,0.07)';
+            }
+        }
+        if (check) check.style.display = (m === modo) ? 'block' : 'none';
+    });
+}
 // Aplica tema salvo ao carregar
 (function() {
     const saved = localStorage.getItem('tema') || 'dark';
@@ -10343,6 +10427,73 @@ function ativarNavegacaoEnter(formId) {
 
 let usuarioAtual = null;
 
+// ── Transição "cortina" do login para o dashboard ──
+// Divide a tela de login em duas metades (clones visuais, sem interatividade) que
+// deslizam para fora, revelando o dashboard (mainSystem) já renderizado por trás.
+function _abrirCortinaLogin() {
+    return new Promise((resolve) => {
+        const btn         = document.querySelector('.login-btn');
+        const loginScreen = document.getElementById('loginScreen');
+        const mainSystem  = document.getElementById('mainSystem');
+        const wrapperReal = loginScreen.querySelector('.login-wrapper');
+
+        if (btn) { btn.textContent = 'Entrando...'; btn.disabled = true; }
+
+        setTimeout(() => {
+            // 1) O modal de login desaparece primeiro — antes de qualquer cortina abrir
+            if (wrapperReal) wrapperReal.classList.add('login-wrapper-fade-out');
+
+            setTimeout(() => {
+                // 2) Com o modal já invisível, a cortina (fundo) pode abrir
+                const loadingOverlay = document.getElementById('sgq-loading-overlay');
+                if (loadingOverlay) loadingOverlay.classList.remove('show', 'fade-out');
+
+                // Dashboard entra em fluxo, imóvel, por trás das cortinas
+                mainSystem.style.display = 'block';
+
+                const cloneEsq = loginScreen.cloneNode(true);
+                const cloneDir = loginScreen.cloneNode(true);
+                [cloneEsq, cloneDir].forEach(clone => {
+                    clone.classList.add('show', 'login-cortina-clone');
+                    // Remove ids de campos/botões interativos para evitar duplicidade no DOM
+                    clone.querySelectorAll('input, button, [id]').forEach(el => {
+                        if (el.id) el.removeAttribute('id');
+                    });
+                    clone.querySelectorAll('input, button').forEach(el => el.disabled = true);
+                });
+
+                const painelEsq = document.createElement('div');
+                painelEsq.className = 'login-cortina login-cortina-esq';
+                painelEsq.appendChild(cloneEsq);
+
+                const painelDir = document.createElement('div');
+                painelDir.className = 'login-cortina login-cortina-dir';
+                painelDir.appendChild(cloneDir);
+
+                document.body.appendChild(painelEsq);
+                document.body.appendChild(painelDir);
+
+                // A tela de login real já está coberta pelos clones — pode sumir sem flash
+                loginScreen.style.display = 'none';
+
+                // Força reflow antes de iniciar a animação
+                void painelEsq.offsetWidth;
+
+                requestAnimationFrame(() => {
+                    painelEsq.classList.add('abrir');
+                    painelDir.classList.add('abrir');
+                });
+
+                setTimeout(() => {
+                    painelEsq.remove();
+                    painelDir.remove();
+                    resolve();
+                }, 900);
+            }, 300); // tempo do fade-out do modal antes da cortina abrir
+        }, 350);
+    });
+}
+
 async function fazerLogin() {
     const usernameRaw = document.getElementById('loginUser').value.trim().toLowerCase();
     const pass        = document.getElementById('loginPass').value;
@@ -10422,10 +10573,9 @@ async function fazerLogin() {
         setTimeout(sgqIniciarPresenca, 800);
 
         err.classList.remove('show');
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('mainSystem').style.display  = 'block';
-        carregarParametros();
 
+        // Atualiza header/avatar/capa ANTES de revelar o dashboard, para que a
+        // cortina (quando ativa) já revele o sistema com os dados corretos
         const nomeCompleto = perfilData.nome || authData.user.email;
         document.getElementById('nomeUsuario').textContent = nomeCompleto;
         document.getElementById('perfilBadge').innerHTML =
@@ -10452,6 +10602,16 @@ async function fazerLogin() {
         }
 
         aplicarPermissoes();
+
+        // Revela o dashboard — instantâneo (padrão) ou com efeito de cortina, conforme configurado
+        if (MODO_ABERTURA_LOGIN === 'cortina') {
+            await _abrirCortinaLogin();
+        } else {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainSystem').style.display  = 'block';
+        }
+        carregarParametros();
+
         localStorage.removeItem('producoes');
         localStorage.removeItem('classificacoes');
         localStorage.removeItem('materias_primas');
@@ -10721,6 +10881,13 @@ function aplicarPermissoes() {
     // Garante que não-admin veja a aba Configurações mesmo sem outras permissões de config
     const tabCfgEl = document.getElementById('tabConfiguracoes');
     if (tabCfgEl && !isAdmin) tabCfgEl.style.display = 'inline-block';
+
+    // Modo de Abertura do Login — configuração global, visível só para admin
+    const modoAberturaBox = document.getElementById('modoAberturaLoginBox');
+    if (modoAberturaBox) {
+        modoAberturaBox.style.display = isAdmin ? '' : 'none';
+        if (isAdmin) _atualizarCardsModoAberturaLogin(MODO_ABERTURA_LOGIN);
+    }
 }
 
 async function fazerLogout() {
@@ -10744,6 +10911,8 @@ async function fazerLogout() {
         document.getElementById('loginPass').value  = '';
         document.getElementById('loginError').classList.remove('show');
         document.getElementById('sgq-session-banner').classList.remove('show');
+        const _loginWrapperReset = document.querySelector('#loginScreen .login-wrapper');
+        if (_loginWrapperReset) _loginWrapperReset.classList.remove('login-wrapper-fade-out');
         const tabCapaEl = document.getElementById('tabCapa');
         if (tabCapaEl) tabCapaEl.style.display = '';
     }
@@ -17174,6 +17343,21 @@ const _sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, 
         detectSessionInUrl: true       // ✅ suporta magic links
     }
 });
+
+// ── Modo de abertura do login (global, vale para todos os usuários) ──
+// Valores possíveis: 'padrao' (instantâneo) ou 'cortina' (efeito de abertura em cortina)
+// Carregado cedo (antes do login) para que fazerLogin() já saiba qual transição usar
+let MODO_ABERTURA_LOGIN = 'padrao';
+(async function _carregarModoAberturaLogin() {
+    try {
+        const { data } = await _sbClient
+            .from('parametros')
+            .select('valor')
+            .eq('chave', 'modo_abertura_login')
+            .single();
+        if (data && data.valor) MODO_ABERTURA_LOGIN = data.valor;
+    } catch (e) { /* mantém 'padrao' se a chave ainda não existir ou der erro */ }
+})();
 
 // ✅ Monitor de estado de autenticação — detecta expiração de sessão
 // FIX: usa debounce para evitar falso positivo durante refresh de token (race condition)
