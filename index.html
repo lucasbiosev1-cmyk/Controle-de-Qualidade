@@ -1003,6 +1003,18 @@
         .cfg-sub-panel { display:none; }
         .cfg-sub-panel.cfg-sub-panel-active { display:block; }
 
+        /* ===== SUB-ABAS INTERNAS DA SEÇÃO USUÁRIOS ===== */
+        .usr-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; border-bottom:2px solid #e1e8f0; }
+        .usr-tab { padding:10px 18px; border:none; background:transparent; color:#7f8c8d; font-size:12px; font-weight:700; cursor:pointer; text-transform:uppercase; letter-spacing:.3px; border-bottom:3px solid transparent; margin-bottom:-2px; transition:all .2s; border-radius:6px 6px 0 0; }
+        .usr-tab:hover { background:rgba(10,30,127,0.06); color:#0a1e7f; }
+        .usr-tab.usr-tab-active { color:#0a1e7f; border-bottom-color:#27ae60; background:rgba(10,30,127,0.05); }
+        .usr-tab-panel { display:none; }
+        .usr-tab-panel.usr-tab-panel-active { display:block; }
+        html[data-theme="dark"] .usr-tabs { border-bottom-color:#30363d; }
+        html[data-theme="dark"] .usr-tab { color:rgba(255,255,255,0.45); }
+        html[data-theme="dark"] .usr-tab:hover { background:rgba(88,166,255,0.08); color:rgba(255,255,255,0.85); }
+        html[data-theme="dark"] .usr-tab.usr-tab-active { color:#58a6ff; border-bottom-color:#58a6ff; background:rgba(88,166,255,0.08); }
+
         /* CONTEÚDO DAS ABAS */
         .tab-content { display: none; padding: 20px; background: #f5f5f5; min-height: calc(100vh - 96px); }
         .tab-content.active { display: block; }
@@ -2462,19 +2474,25 @@
             background:#0d1117!important; color:#e6edf3!important; border-color:#30363d!important;
         }
 
-        /* Usuários */
+        /* Usuários / Auditoria MP */
         html[data-theme="dark"] #cfg-panel-usuarios [style*="background:white"],
         html[data-theme="dark"] #cfg-panel-usuarios [style*="background:#fff"],
-        html[data-theme="dark"] #cfg-panel-usuarios [style*="background:#f8f9fa"] {
+        html[data-theme="dark"] #cfg-panel-usuarios [style*="background:#f8f9fa"],
+        html[data-theme="dark"] #cfg-panel-auditoria [style*="background:white"],
+        html[data-theme="dark"] #cfg-panel-auditoria [style*="background:#fff"],
+        html[data-theme="dark"] #cfg-panel-auditoria [style*="background:#f8f9fa"] {
             background:#161b22!important; border-color:#30363d!important; color:#e6edf3!important;
         }
         html[data-theme="dark"] #cfg-panel-usuarios [style*="color:#1a5276"] { color:#58a6ff!important; }
-        html[data-theme="dark"] #cfg-panel-usuarios [style*="color:#888"] { color:rgba(255,255,255,0.4)!important; }
+        html[data-theme="dark"] #cfg-panel-usuarios [style*="color:#888"],
+        html[data-theme="dark"] #cfg-panel-auditoria [style*="color:#888"] { color:rgba(255,255,255,0.4)!important; }
         html[data-theme="dark"] #cfg-panel-usuarios [style*="background:#eaf4fb"] {
             background:rgba(88,166,255,0.08)!important; border-color:rgba(88,166,255,0.2)!important;
         }
         html[data-theme="dark"] #cfg-panel-usuarios input,
-        html[data-theme="dark"] #cfg-panel-usuarios select {
+        html[data-theme="dark"] #cfg-panel-usuarios select,
+        html[data-theme="dark"] #cfg-panel-auditoria input,
+        html[data-theme="dark"] #cfg-panel-auditoria select {
             background:#0d1117!important; color:#e6edf3!important; border-color:#30363d!important;
         }
 
@@ -8009,6 +8027,7 @@
             <button class="cfg-sub-tab" id="cfgBtn-backup" onclick="trocarSubCfg('backup', this)">💾 Backup</button>
             <button class="cfg-sub-tab" id="cfgBtn-memoria" onclick="trocarSubCfg('memoria', this)">🗄️ Memória</button>
             <button class="cfg-sub-tab" id="cfgBtn-usuarios" onclick="trocarSubCfg('usuarios', this)">👥 Usuários</button>
+            <button class="cfg-sub-tab" id="cfgBtn-auditoria" onclick="trocarSubCfg('auditoria', this)" style="display:none;">🕵️ Auditoria MP</button>
             <button class="cfg-sub-tab" id="cfgBtn-alertaWhatsApp" onclick="trocarSubCfg('alertaWhatsApp', this)">📲 Alerta WhatsApp</button>
             <button class="cfg-sub-tab" id="cfgBtn-aparencia" onclick="trocarSubCfg('aparencia', this)">🎨 Aparência</button>
             </div>
@@ -8565,96 +8584,117 @@
 
             </div>
             <div id="cfg-panel-usuarios" class="cfg-sub-panel" data-aba="aba-usuarios">
-        <div style="max-width:900px;margin:0 auto;">
+        <div style="width:100%;">
 
-            <!-- ===== CARD: PRESENÇA / ONLINE ===== -->
-            <div id="sgq-presenca-card" style="background:white;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:18px 22px;margin-bottom:16px;border-left:4px solid #27ae60;">
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-                    <span style="font-size:22px;">🟢</span>
-                    <div style="flex:1;">
-                        <div style="font-size:14px;font-weight:800;color:#1e8449;text-transform:uppercase;letter-spacing:.5px;">Usuários Online Agora</div>
-                        <div style="font-size:11px;color:#888;margin-top:1px;">Sessões ativas no sistema (atualiza em tempo real)</div>
-                    </div>
-                    <button onclick="sgqAtualizarPresenca()" title="Atualizar" style="background:#eafaf1;border:1px solid #a9dfbf;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;color:#1e8449;cursor:pointer;">🔄 Atualizar</button>
-                </div>
-                <div id="sgq-presenca-lista" style="display:flex;flex-wrap:wrap;gap:8px;min-height:32px;align-items:center;">
-                    <span style="color:#bbb;font-size:12px;font-style:italic;">Verificando sessões ativas...</span>
-                </div>
+            <!-- ===== SUB-ABAS INTERNAS ===== -->
+            <div class="usr-tabs">
+                <button class="usr-tab usr-tab-active" id="usrTabBtn-gerenciar" onclick="trocarUsrTab('gerenciar', this)">👥 Gerenciar Usuários</button>
+                <button class="usr-tab" id="usrTabBtn-acessos" onclick="trocarUsrTab('acessos', this)">🟢 Online &amp; Histórico de Acessos</button>
             </div>
 
-            <!-- ===== CARD: ÚLTIMOS ACESSOS ===== -->
-            <div style="background:white;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:18px 22px;margin-bottom:16px;border-left:4px solid #3498db;">
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-                    <span style="font-size:22px;">🕐</span>
-                    <div style="flex:1;">
-                        <div style="font-size:14px;font-weight:800;color:#1a5276;text-transform:uppercase;letter-spacing:.5px;">Histórico de Acessos</div>
-                        <div style="font-size:11px;color:#888;margin-top:1px;">Últimos logins e logouts registrados no sistema</div>
-                    </div>
-                    <button onclick="sgqCarregarHistoricoAcessos()" title="Recarregar" style="background:#eaf4fb;border:1px solid #aed6f1;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;color:#1a5276;cursor:pointer;">🔄 Recarregar</button>
-                </div>
-                <div id="sgq-historico-acessos" style="overflow-x:auto;">
-                    <div style="color:#bbb;font-size:12px;font-style:italic;text-align:center;padding:12px;">Carregando histórico...</div>
-                </div>
-            </div>
+            <div class="usr-tab-panels">
 
-            <!-- ===== CARD: AUDITORIA — ENTRADA DE MATÉRIA PRIMA ===== -->
-            <div id="sgq-card-auditoria-mp" style="display:none;background:white;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:18px 22px;margin-bottom:16px;border-left:4px solid #a04000;">
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-                    <span style="font-size:22px;">🕵️</span>
-                    <div style="flex:1;">
-                        <div style="font-size:14px;font-weight:800;color:#a04000;text-transform:uppercase;letter-spacing:.5px;">Auditar Entrada de Matéria Prima</div>
-                        <div style="font-size:11px;color:#888;margin-top:1px;">Veja o que mudou em cada lançamento (NF, status, quantidade, etc.)</div>
+                <!-- ===== ABA: GERENCIAMENTO DE USUÁRIOS ===== -->
+                <div id="usrTabPanel-gerenciar" class="usr-tab-panel usr-tab-panel-active">
+                    <div class="user-panel-header" style="margin-bottom:0;border-radius:8px 8px 0 0;">
+                        <span style="font-size:30px;">👥</span>
+                        <div>
+                            <h2>Gerenciamento de Usuários</h2>
+                            <p>Adicione, edite ou remova usuários e configure as permissões de acesso por caixas de seleção</p>
+                        </div>
+                    </div>
+                    <div style="background:white;border-radius:0 0 8px 8px;box-shadow:0 4px 16px rgba(0,0,0,0.1);padding:20px;">
+                        <div style="display:flex;justify-content:flex-end;margin-bottom:18px;">
+                            <button onclick="abrirModalNovoUsuario()" style="background:linear-gradient(135deg,#27ae60,#1e8449);color:white;border:none;border-radius:6px;padding:10px 20px;font-size:13px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 3px 8px rgba(39,174,96,0.35);">
+                                ➕ Adicionar Usuário
+                            </button>
+                        </div>
+                        <div id="listaUsuarios"></div>
                     </div>
                 </div>
 
-                <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:14px;">
-                    <div>
-                        <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:3px;">DATA</label>
-                        <input type="date" id="audMpData" style="padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
+                <!-- ===== ABA: ONLINE AGORA + HISTÓRICO DE ACESSOS (lado a lado) ===== -->
+                <div id="usrTabPanel-acessos" class="usr-tab-panel">
+                    <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;">
+
+                        <!-- Online Agora -->
+                        <div id="sgq-presenca-card" style="flex:1 1 320px;min-width:280px;background:white;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:18px 22px;border-left:4px solid #27ae60;">
+                            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                                <span style="font-size:22px;">🟢</span>
+                                <div style="flex:1;">
+                                    <div style="font-size:14px;font-weight:800;color:#1e8449;text-transform:uppercase;letter-spacing:.5px;">Usuários Online Agora</div>
+                                    <div style="font-size:11px;color:#888;margin-top:1px;">Sessões ativas (tempo real)</div>
+                                </div>
+                                <button onclick="sgqAtualizarPresenca()" title="Atualizar" style="background:#eafaf1;border:1px solid #a9dfbf;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;color:#1e8449;cursor:pointer;">🔄</button>
+                            </div>
+                            <div id="sgq-presenca-lista" style="display:flex;flex-wrap:wrap;gap:8px;min-height:32px;align-items:center;">
+                                <span style="color:#bbb;font-size:12px;font-style:italic;">Verificando sessões ativas...</span>
+                            </div>
+                        </div>
+
+                        <!-- Histórico de Acessos -->
+                        <div style="flex:2 1 480px;min-width:320px;background:white;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:18px 22px;border-left:4px solid #3498db;">
+                            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                                <span style="font-size:22px;">🕐</span>
+                                <div style="flex:1;">
+                                    <div style="font-size:14px;font-weight:800;color:#1a5276;text-transform:uppercase;letter-spacing:.5px;">Histórico de Acessos</div>
+                                    <div style="font-size:11px;color:#888;margin-top:1px;">Últimos logins e logouts registrados no sistema</div>
+                                </div>
+                                <button onclick="sgqCarregarHistoricoAcessos()" title="Recarregar" style="background:#eaf4fb;border:1px solid #aed6f1;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;color:#1a5276;cursor:pointer;">🔄</button>
+                            </div>
+                            <div id="sgq-historico-acessos" style="overflow-x:auto;">
+                                <div style="color:#bbb;font-size:12px;font-style:italic;text-align:center;padding:12px;">Carregando histórico...</div>
+                            </div>
+                        </div>
+
                     </div>
-                    <div>
-                        <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:3px;">ATÉ (opcional)</label>
-                        <input type="date" id="audMpDataAte" style="padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
-                    </div>
-                    <div>
-                        <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:3px;">PLACA</label>
-                        <input type="text" id="audMpPlaca" placeholder="ex: QBW-8E64" style="padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;text-transform:uppercase;width:130px;">
-                    </div>
-                    <div>
-                        <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:3px;">AÇÃO</label>
-                        <select id="audMpAcao" style="padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
-                            <option value="">Todas</option>
-                            <option value="INSERT">Criação</option>
-                            <option value="UPDATE">Edição</option>
-                            <option value="DELETE">Exclusão</option>
-                        </select>
-                    </div>
-                    <button onclick="sgqAuditarEntradasMP()" style="background:#a04000;color:white;border:none;border-radius:6px;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer;">🔎 Auditar</button>
                 </div>
 
-                <div id="sgq-auditoria-mp-resultado" style="overflow-x:auto;">
-                    <div style="color:#bbb;font-size:12px;font-style:italic;text-align:center;padding:12px;">Selecione uma data e clique em Auditar.</div>
-                </div>
-            </div>
-
-            <!-- ===== GERENCIAMENTO DE USUÁRIOS (original) ===== -->
-            <div class="user-panel-header" style="margin-bottom:0;border-radius:8px 8px 0 0;">
-                <span style="font-size:30px;">👥</span>
-                <div>
-                    <h2>Gerenciamento de Usuários</h2>
-                    <p>Adicione, edite ou remova usuários e configure as permissões de acesso por caixas de seleção</p>
-                </div>
-            </div>
-            <div style="background:white;border-radius:0 0 8px 8px;box-shadow:0 4px 16px rgba(0,0,0,0.1);padding:20px;">
-                <div style="display:flex;justify-content:flex-end;margin-bottom:18px;">
-                    <button onclick="abrirModalNovoUsuario()" style="background:linear-gradient(135deg,#27ae60,#1e8449);color:white;border:none;border-radius:6px;padding:10px 20px;font-size:13px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 3px 8px rgba(39,174,96,0.35);">
-                        ➕ Adicionar Usuário
-                    </button>
-                </div>
-                <div id="listaUsuarios"></div>
             </div>
         </div>
 
+            </div>
+            <div id="cfg-panel-auditoria" class="cfg-sub-panel" data-aba="aba-auditoria">
+        <div style="width:100%;">
+                    <div id="sgq-card-auditoria-mp" style="background:white;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.08);padding:18px 22px;border-left:4px solid #a04000;">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                            <span style="font-size:22px;">🕵️</span>
+                            <div style="flex:1;">
+                                <div style="font-size:14px;font-weight:800;color:#a04000;text-transform:uppercase;letter-spacing:.5px;">Auditar Entrada de Matéria Prima</div>
+                                <div style="font-size:11px;color:#888;margin-top:1px;">Veja o que mudou em cada lançamento (NF, status, quantidade, etc.)</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:14px;">
+                            <div>
+                                <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:3px;">DATA</label>
+                                <input type="date" id="audMpData" style="padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
+                            </div>
+                            <div>
+                                <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:3px;">ATÉ (opcional)</label>
+                                <input type="date" id="audMpDataAte" style="padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
+                            </div>
+                            <div>
+                                <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:3px;">PLACA</label>
+                                <input type="text" id="audMpPlaca" placeholder="ex: QBW-8E64" style="padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;text-transform:uppercase;width:130px;">
+                            </div>
+                            <div>
+                                <label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:3px;">AÇÃO</label>
+                                <select id="audMpAcao" style="padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;">
+                                    <option value="">Todas</option>
+                                    <option value="INSERT">Criação</option>
+                                    <option value="UPDATE">Edição</option>
+                                    <option value="DELETE">Exclusão</option>
+                                </select>
+                            </div>
+                            <button onclick="sgqAuditarEntradasMP()" style="background:#a04000;color:white;border:none;border-radius:6px;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer;">🔎 Auditar</button>
+                        </div>
+
+                        <div id="sgq-auditoria-mp-resultado" style="overflow-x:auto;">
+                            <div style="color:#bbb;font-size:12px;font-style:italic;text-align:center;padding:12px;">Selecione uma data e clique em Auditar.</div>
+                        </div>
+                    </div>
+        </div>
             </div>
             <div id="cfg-panel-alertaWhatsApp" class="cfg-sub-panel" data-aba="aba-alertaWhatsApp">
         <div style="max-width:720px;margin:0 auto;padding:10px 0;">
@@ -10866,6 +10906,11 @@ function aplicarPermissoes() {
     const cfgPanelUsuarios = document.getElementById('cfg-panel-usuarios');
     if (cfgPanelUsuarios && !isAdmin) cfgPanelUsuarios.style.display = 'none';
 
+    // Aba Auditoria MP — só admin vê o botão e o painel
+    _sgqInicializarAuditoriaMP();
+    const cfgPanelAuditoria = document.getElementById('cfg-panel-auditoria');
+    if (cfgPanelAuditoria && !isAdmin) cfgPanelAuditoria.style.display = 'none';
+
     // Aba Aparência — visível para TODOS (admin e não-admin)
     // Para não-admin: oculta todas as outras sub-abas de config, mostra só Aparência
     if (!isAdmin) {
@@ -11123,8 +11168,26 @@ function trocarSubCfg(subAba, btn) {
     if (subAba === 'backup')         inicializarBackup();
     if (subAba === 'memoria')        { atualizarMemoria(); memAtualizarOpenAI(); }
     if (subAba === 'alertaWhatsApp') inicializarAbaWhatsApp();
-    if (subAba === 'usuarios')       { renderizarListaUsuarios(); sgqCarregarHistoricoAcessos(); _sgqRenderizarPresenca(); _sgqInicializarAuditoriaMP(); }
+    if (subAba === 'usuarios') {
+        trocarUsrTab('gerenciar', document.getElementById('usrTabBtn-gerenciar'));
+    }
+    if (subAba === 'auditoria') {
+        const inp = document.getElementById('audMpData');
+        if (inp && !inp.value) inp.value = new Date().toISOString().slice(0, 10);
+    }
     if (subAba === 'aparencia')      aplicarTema(localStorage.getItem('tema') || 'marinho');
+}
+
+// ── Sub-abas internas da seção Usuários (Gerenciar / Online + Histórico) ──
+function trocarUsrTab(aba, btn) {
+    document.querySelectorAll('.usr-tab').forEach(t => t.classList.remove('usr-tab-active'));
+    document.querySelectorAll('.usr-tab-panel').forEach(p => p.classList.remove('usr-tab-panel-active'));
+    const painel = document.getElementById('usrTabPanel-' + aba);
+    if (painel) painel.classList.add('usr-tab-panel-active');
+    if (btn) btn.classList.add('usr-tab-active');
+    // Carrega os dados da sub-aba somente quando ela é aberta
+    if (aba === 'gerenciar')  renderizarListaUsuarios();
+    if (aba === 'acessos')    { _sgqRenderizarPresenca(); sgqCarregarHistoricoAcessos(); }
 }
 
 // ===================================================
@@ -33171,14 +33234,14 @@ async function sgqCarregarHistoricoAcessos() {
 
 // ── Auditoria: Entradas de Matéria Prima (entradas_mp_historico) ────────────
 function _sgqInicializarAuditoriaMP() {
+    const abaBtn = document.getElementById('cfgBtn-auditoria');
     const card = document.getElementById('sgq-card-auditoria-mp');
+    if (abaBtn) abaBtn.style.display = (perfilAtual === 'admin') ? '' : 'none';
     if (card) {
         if (perfilAtual === 'admin') {
-            card.style.display = 'block';
             const inp = document.getElementById('audMpData');
             if (inp && !inp.value) inp.value = new Date().toISOString().slice(0, 10);
         } else {
-            card.style.display = 'none';
         }
     }
 }
@@ -33229,10 +33292,13 @@ async function sgqAuditarEntradasMP() {
         }
 
         const cabecalho = `<tr style="background:#f7f7f7;">
-            <th style="padding:6px 8px;text-align:left;font-size:10px;">Entrada / Ação</th>
-            ${COLS.map(c => `<th style="padding:6px 8px;text-align:left;font-size:10px;">${c[1]}</th>`).join('')}
-            <th style="padding:6px 8px;text-align:left;font-size:10px;">Alterado por / Quando</th>
+            <th style="padding:6px 8px;text-align:center;font-size:10px;">Entrada / Ação</th>
+            ${COLS.map(c => `<th style="padding:6px 8px;text-align:center;font-size:10px;">${c[1]}</th>`).join('')}
+            <th style="padding:6px 8px;text-align:center;font-size:10px;">Alterado por / Quando</th>
         </tr>`;
+
+        let prevEntradaId = null;
+        let prevState = null;
 
         const blocos = linhas.map(r => {
             const antigos = r.dados_antigos || {};
@@ -33243,25 +33309,38 @@ async function sgqAuditarEntradasMP() {
 
             function linhaSnapshot(obj, refComparar, label, cor) {
                 return `<tr style="border-bottom:1px solid #eee;">
-                    <td style="padding:6px 8px;font-size:10px;font-weight:700;color:${cor};">${label}</td>
+                    <td style="padding:6px 8px;font-size:10px;font-weight:700;color:${cor};text-align:center;">${label}</td>
                     ${COLS.map(([campo]) => {
                         const val = (obj[campo] ?? '') === '' ? '—' : obj[campo];
                         const mudou = !!refComparar && (obj[campo] ?? '') !== (refComparar[campo] ?? '');
-                        return `<td style="padding:6px 8px;font-size:11px;${mudou ? 'background:#fff3cd;font-weight:700;' : ''}">${val}</td>`;
+                        return `<td style="padding:6px 8px;font-size:11px;text-align:center;${mudou ? 'background:#fff3cd;font-weight:700;' : ''}">${val}</td>`;
                     }).join('')}
-                    <td style="padding:6px 8px;font-size:10px;color:#888;">${label === 'Depois' || label === 'Criado' || label === 'Excluído' ? quem + ' · ' + quando : ''}</td>
+                    <td style="padding:6px 8px;font-size:10px;color:#888;text-align:center;">${label === 'Depois' || label === 'Criado' || label === 'Excluído' ? quem + ' · ' + quando : ''}</td>
                 </tr>`;
             }
+
+            // "Antes" é redundante quando é idêntico ao último estado já mostrado
+            // (o "Criado" ou o "Depois" do evento anterior dessa mesma entrada)
+            const mesmoRegistro = prevEntradaId === r.entrada_id;
+            const antesRedundante = mesmoRegistro && prevState &&
+                COLS.every(([campo]) => (antigos[campo] ?? '') === (prevState[campo] ?? ''));
 
             let bloco;
             if (r.acao === 'INSERT') {
                 bloco = linhaSnapshot(novos, null, 'Criado', '#27ae60');
+                prevState = novos;
             } else if (r.acao === 'DELETE') {
                 bloco = linhaSnapshot(antigos, null, 'Excluído', '#e74c3c');
+                prevState = null;
+            } else if (antesRedundante) {
+                bloco = linhaSnapshot(novos, antigos, 'Depois', '#f39c12');
+                prevState = novos;
             } else {
                 bloco = linhaSnapshot(antigos, novos, 'Antes', '#999')
                       + linhaSnapshot(novos, antigos, 'Depois', '#f39c12');
+                prevState = novos;
             }
+            prevEntradaId = r.entrada_id;
             return `<tbody style="border-top:2px solid #ddd;">${bloco}</tbody>`;
         }).join('');
 
