@@ -2081,6 +2081,7 @@
         }
 
         /* ========== BOLETIM INDUSTRIAL ========== */
+        .bol-opt-label { color:#333; }
                 .bol-capa {
             background: linear-gradient(160deg, #061566 0%, #0a1e7f 40%, #0d2b9e 75%, #0a2280 100%);
             color: white; 
@@ -9386,19 +9387,19 @@
                         <div style="display:flex;flex-direction:column;gap:6px;">
                             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;">
                                 <input type="checkbox" id="bolAgrupar" checked style="cursor:pointer;width:13px;height:13px;" autocomplete="off">
-                                <span>Agrupar por produto/ração</span>
+                                <span class="bol-opt-label">Agrupar por produto/ração</span>
                             </label>
                             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;">
                                 <input type="checkbox" id="bolResumo" checked style="cursor:pointer;width:13px;height:13px;" autocomplete="off">
-                                <span>Resumo estatístico</span>
+                                <span class="bol-opt-label">Resumo estatístico</span>
                             </label>
                             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;">
                                 <input type="checkbox" id="bolDestacarNC" checked style="cursor:pointer;width:13px;height:13px;" autocomplete="off">
-                                <span>Destacar fora dos limites</span>
+                                <span class="bol-opt-label">Destacar fora dos limites</span>
                             </label>
                             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;">
                                 <input type="checkbox" id="bolMostrarAnalises" checked style="cursor:pointer;width:13px;height:13px;" autocomplete="off">
-                                <span>Mostrar qtd. de análises</span>
+                                <span class="bol-opt-label">Mostrar qtd. de análises</span>
                             </label>
                         </div>
                     </div>
@@ -19726,6 +19727,36 @@ function gerarGrupoProd(racao, rows, resumo, destNC) {
     return html;
 }
 
+function _bolLinhaMediaProd(rows, compacto) {
+    const CAMPOS = ['dgm','dpg','extrato','proteina','fibra','solubil','umidade','densidade','mineral','calcio','fosforo','granulo1','granulo2','granulo3','fundo'];
+    const CASAS  = { dgm:0, dpg:2, extrato:2, proteina:2, fibra:2, solubil:2, umidade:1, densidade:0, mineral:2, calcio:2, fosforo:2, granulo1:2, granulo2:2, granulo3:2, fundo:2 };
+    const medias = {};
+    CAMPOS.forEach(c => { medias[c] = _prodCalcularMedia(rows.map(r => r[c])); });
+    const fmt = c => medias[c] != null ? medias[c].toFixed(CASAS[c]) : '-';
+    return `<tr style="background:#1f6feb22;font-weight:bold;border-bottom:2px solid #1f6feb;">
+        <td class="left">Média</td>
+        <td></td>
+        ${!compacto?'<td></td>':''}
+        <td></td>
+        <td>${fmt('dgm')}</td>
+        <td>${fmt('dpg')}</td>
+        <td>${fmt('extrato')}</td>
+        <td>${fmt('proteina')}</td>
+        <td>${fmt('fibra')}</td>
+        <td>${fmt('solubil')}</td>
+        <td>${fmt('umidade')}</td>
+        <td>${fmt('densidade')}</td>
+        <td>${fmt('mineral')}</td>
+        <td>${fmt('calcio')}</td>
+        <td>${fmt('fosforo')}</td>
+        <td>${fmt('granulo1')}</td>
+        <td>${fmt('granulo2')}</td>
+        <td>${fmt('granulo3')}</td>
+        <td>${fmt('fundo')}</td>
+        <td>-</td>
+    </tr>`;
+}
+
 function gerarTabelaProd(rows, compacto, destNC) {
     const th = (t,w='') => `<th${w?` style="width:${w}"`:''}>${t}</th>`;
     let thead = `<tr>${th('Data')}${th('Hora')}`;
@@ -19759,7 +19790,7 @@ function gerarTabelaProd(rows, compacto, destNC) {
         </tr>`;
     }).join('');
 
-    return `<table class="bol-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
+    return `<table class="bol-table"><thead>${thead}</thead><tbody>${_bolLinhaMediaProd(rows, compacto)}${tbody}</tbody></table>`;
 }
 
 function gerarSecaoClass(dados, agrupar, resumo, destNC, periodo) {
@@ -19815,6 +19846,44 @@ function gerarGrupoClass(prod, rows, resumo, destNC) {
     return html;
 }
 
+function _bolLinhaMediaClass(rows, compacto) {
+    // Campos onde 0 é resultado real (lote limpo); só exclui quando o campo não se aplica ao produto.
+    const CAMPOS_ZERO_VALIDO = ['queimado','ardido','mofado','esverdeado','fermentando','chocho','picado','gessado','quebrado','germinado','carunchado','impureza','umidade','densidade'];
+    const _mediaZeroValida = (campo) => {
+        const vals = rows.filter(r => campoAplicavelClass(r.produto, campo)).map(r => parseFloat(r[campo])).filter(x => !isNaN(x));
+        return vals.length ? vals.reduce((a,b) => a+b, 0) / vals.length : null;
+    };
+    const CAMPOS = ['queimado','ardido','mofado','esverdeado','fermentando','chocho','picado','gessado','quebrado','germinado','carunchado','impureza','umidade','densidade','aflatoxinas','fumonisinas'];
+    const medias = {};
+    CAMPOS.forEach(c => { medias[c] = CAMPOS_ZERO_VALIDO.includes(c) ? _mediaZeroValida(c) : _prodCalcularMedia(rows.map(r => r[c])); });
+    const fmt = c => medias[c] != null ? medias[c].toFixed(2) : '-';
+    return `<tr style="background:#1f6feb22;font-weight:bold;border-bottom:2px solid #1f6feb;">
+        <td class="left">Média</td>
+        <td></td>
+        ${!compacto?'<td></td>':''}
+        <td></td>
+        <td></td>
+        <td>${fmt('queimado')}</td>
+        <td>${fmt('ardido')}</td>
+        <td>${fmt('mofado')}</td>
+        <td>${fmt('esverdeado')}</td>
+        <td>${fmt('fermentando')}</td>
+        <td>${fmt('chocho')}</td>
+        <td>${fmt('picado')}</td>
+        <td>${fmt('gessado')}</td>
+        <td>${fmt('quebrado')}</td>
+        <td>${fmt('germinado')}</td>
+        <td>${fmt('carunchado')}</td>
+        <td>${fmt('impureza')}</td>
+        <td>${fmt('umidade')}</td>
+        <td>${fmt('densidade')}</td>
+        <td>${fmt('aflatoxinas')}</td>
+        <td>${fmt('fumonisinas')}</td>
+        <td></td>
+        <td>-</td>
+    </tr>`;
+}
+
 function gerarTabelaClass(rows, compacto, destNC) {
     const th = (t,s='') => `<th${s}>${t}</th>`;
     let thead = `<tr>${th('Data')}${th('Hora')}`;
@@ -19855,7 +19924,7 @@ function gerarTabelaClass(rows, compacto, destNC) {
         </tr>`;
     }).join('');
 
-    return `<table class="bol-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
+    return `<table class="bol-table"><thead>${thead}</thead><tbody>${_bolLinhaMediaClass(rows, compacto)}${tbody}</tbody></table>`;
 }
 
 function gerarSecaoMP(dados, agrupar, resumo, destNC, periodo, mostrarAnalises, temValBol, camposMPBol, calcarioProd) {
@@ -19934,6 +20003,34 @@ function gerarGrupoMP(prod, rows, resumo, destNC, mostrarAnalises, temValBol, ca
     return html;
 }
 
+function _bolLinhaMediaMP(rows, compacto) {
+    const CAMPOS = ['umidade','densidade','extrato','proteina','fibra','solubil','mineral','acidez','ureatica','peroxido','digestibilidade'];
+    const CASAS  = { umidade:1, densidade:0, extrato:2, proteina:2, fibra:2, solubil:2, mineral:2, acidez:2, ureatica:3, peroxido:1, digestibilidade:2 };
+    const medias = {};
+    CAMPOS.forEach(c => { medias[c] = _prodCalcularMedia(rows.map(r => r[c])); });
+    const fmt = c => medias[c] != null ? medias[c].toFixed(CASAS[c]) : '-';
+    return `<tr style="background:#1f6feb22;font-weight:bold;border-bottom:2px solid #1f6feb;">
+        <td class="left">Média</td>
+        <td></td>
+        ${!compacto?'<td></td>':''}
+        <td></td>
+        <td></td>
+        <td>${fmt('umidade')}</td>
+        <td>${fmt('densidade')}</td>
+        <td>${fmt('extrato')}</td>
+        <td>${fmt('proteina')}</td>
+        <td>${fmt('fibra')}</td>
+        <td>${fmt('solubil')}</td>
+        <td>${fmt('mineral')}</td>
+        <td>${fmt('acidez')}</td>
+        <td>${fmt('ureatica')}</td>
+        <td></td>
+        <td>${fmt('peroxido')}</td>
+        <td>${fmt('digestibilidade')}</td>
+        <td>-</td>
+    </tr>`;
+}
+
 function gerarTabelaMP(rows, compacto, destNC) {
     const th = (t,w='') => `<th${w?` style="width:${w}"`:''}>${t}</th>`;
     let thead = `<tr>${th('Data')}${th('Hora')}`;
@@ -19966,7 +20063,7 @@ function gerarTabelaMP(rows, compacto, destNC) {
         </tr>`;
     }).join('');
 
-    return `<table class="bol-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
+    return `<table class="bol-table"><thead>${thead}</thead><tbody>${_bolLinhaMediaMP(rows, compacto)}${tbody}</tbody></table>`;
 }
 
 async function imprimirBoletim() {
