@@ -19761,7 +19761,7 @@ function gerarTabelaProd(rows, compacto, destNC) {
     const th = (t,w='') => `<th${w?` style="width:${w}"`:''}>${t}</th>`;
     let thead = `<tr>${th('Data')}${th('Hora')}`;
     if (!compacto) thead += th('Ração');
-    thead += `${th('Lote')}${th('DGM µm')}${th('DPG')}${th('Extr.%')}${th('Prot.%')}${th('Fibra%')}${th('Solub.%')}${th('Umid.%')}${th('Dens.')}${th('Min.%')}${th('Cálcio%')}${th('Fósf.%')}${th('G1%')}${th('G2%')}${th('G3%')}${th('Fundo%')}${th('Status','72px')}</tr>`;
+    thead += `${th('Lote')}${th('DGM µm')}${th('DPG')}${th('Extr.%')}${th('Prot.%')}${th('Fibra%')}${th('Solub.%')}${th('Umid.%')}${th('Dens.')}${th('Min.%')}${th('Cálcio%')}${th('Fósf.%')}${th('G1%<br>4mm')}${th('G2%<br>2mm')}${th('G3%<br>0,6mm')}${th('Fundo%')}${th('Status','72px')}</tr>`;
 
     const tbody = rows.map(r => {
         const status = statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data);
