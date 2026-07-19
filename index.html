@@ -25041,9 +25041,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                     aplicarTema('marinho', false); // padrão azul marinho para usuários sem tema salvo
                 }
 
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainSystem').style.display  = 'block';
-
                 const nomeCompleto = perfilData.nome || session.user.email;
                 document.getElementById('nomeUsuario').textContent = nomeCompleto;
                 document.getElementById('perfilBadge').innerHTML =
@@ -25060,6 +25057,16 @@ document.addEventListener('DOMContentLoaded', async function() {
                 if (capaNome) capaNome.textContent = partes[0] || nomeCompleto;
 
                 aplicarPermissoes();
+
+                // Revela o dashboard — instantâneo (padrão) ou com efeito de cortina, conforme
+                // configurado em "Modo de Abertura do Login" (mesma lógica do login manual)
+                if (MODO_ABERTURA_LOGIN === 'cortina' && typeof _abrirCortinaLogin === 'function') {
+                    await _abrirCortinaLogin();
+                } else {
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('mainSystem').style.display  = 'block';
+                }
+
                 carregarParametros();
                 setTimeout(sgqIniciarPresenca, 800);
 
