@@ -25983,8 +25983,8 @@ function _reagFecharAcoesFora(e) {
 async function reagCarregarDados() {
     // Tenta buscar COM catalogo_id; se a coluna não existir ainda no banco,
     // faz fallback sem ela — assim os dados existentes nunca somem.
-    const _selectComCatalogo  = 'id, nome, unidade, minimo, qtd_atual, lote, validade, fornecedor, controle_pf, portaria, entrada, nf_chave, custo_unit, tipo, fabricante, local_armazena, uso_permitido, numero_fispq, data_fispq, obs, catalogo_id';
-    const _selectSemCatalogo  = 'id, nome, unidade, minimo, qtd_atual, lote, validade, fornecedor, controle_pf, portaria, entrada, nf_chave, custo_unit, tipo, fabricante, local_armazena, uso_permitido, numero_fispq, data_fispq, obs';
+    const _selectComCatalogo  = 'id, nome, unidade, minimo, qtd_atual, lote, validade, fornecedor, controle_pf, portaria, entrada, nf_chave, custo_unit, tipo, fabricante, obs, catalogo_id';
+    const _selectSemCatalogo  = 'id, nome, unidade, minimo, qtd_atual, lote, validade, fornecedor, controle_pf, portaria, entrada, nf_chave, custo_unit, tipo, fabricante, obs';
 
     try {
         let { data, error } = await _sbClient
@@ -26103,10 +26103,6 @@ function _reagNormalizar(r) {
         custoUnit:   r.custo_unit != null ? parseFloat(r.custo_unit) : null,
         tipo:        r.tipo || '',
         fabricante:  r.fabricante || '',
-        local_armazena: r.local_armazena || '',
-        uso_permitido:  r.uso_permitido || '',
-        numero_fispq:   r.numero_fispq || '',
-        data_fispq:     r.data_fispq || '',
         obs:         r.obs || '',
         catalogo_id: r.catalogo_id != null ? String(r.catalogo_id) : null
     };
@@ -26129,10 +26125,6 @@ function _reagParaSupabase(r) {
         custo_unit:  r.custoUnit != null ? r.custoUnit : null,
         tipo:        r.tipo || null,
         fabricante:  r.fabricante || null,
-        local_armazena: r.local_armazena || null,
-        uso_permitido:  r.uso_permitido || null,
-        numero_fispq:   r.numero_fispq || null,
-        data_fispq:     r.data_fispq || null,
         obs:         r.obs || null,
         catalogo_id: r.catalogo_id || null
     };
