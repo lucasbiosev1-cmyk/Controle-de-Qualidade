@@ -19685,8 +19685,9 @@ function gerarSecaoCalcarioProd(dados, resumo, destNC, periodo) {
         html += `<div style="margin:0 16px 14px;">
             <div style="background:#eceff1;border-left:4px solid #546e7a;padding:7px 14px;
                         font-size:11px;font-weight:bold;color:#37474f;text-transform:uppercase;
-                        letter-spacing:0.5px;margin-top:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
-                🪨 ${nome}
+                        letter-spacing:0.5px;margin-top:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact;
+                        display:flex;align-items:center;gap:8px;">
+                🪨 ${nome}<span class="bol-grupo-stats">${rows.length} registro${rows.length!==1?'s':''}</span>
             </div>
             <div class="bol-tabela-wrap">` + gerarTabelaProd(rows, true, destNC) + `</div>`;
 
@@ -19715,7 +19716,7 @@ function gerarGrupoProd(racao, rows, resumo, destNC) {
 
     const aMedia = (arr) => arr.length ? (arr.reduce((s,v)=>s+v,0)/arr.length) : 0;
     let html = `<div style="margin:0 16px 14px;">
-        <div class="bol-grupo-header">🌾 ${racao}</div>
+        <div class="bol-grupo-header">🌾 ${racao}<span class="bol-grupo-stats">${rows.length} registro${rows.length!==1?'s':''}</span></div>
         <div class="bol-tabela-wrap">` + gerarTabelaProd(rows, true, destNC) + `</div>`;
 
     if (resumo && rows.length > 1) {
@@ -19836,7 +19837,7 @@ function gerarGrupoClass(prod, rows, resumo, destNC) {
     const statsHtml = ``;
 
     let html = `<div style="margin:0 16px 14px;">
-        <div class="bol-grupo-header">🌽 ${prod}</div>
+        <div class="bol-grupo-header">🌽 ${prod}<span class="bol-grupo-stats">${rows.length} registro${rows.length!==1?'s':''}</span></div>
         <div class="bol-tabela-wrap">` + gerarTabelaClass(rows, true, destNC) + `</div>`;
 
     if (resumo && rows.length > 1) {
@@ -19992,7 +19993,7 @@ function gerarGrupoMP(prod, rows, resumo, destNC, mostrarAnalises, temValBol, ca
     const statsHtml = ``;
 
     let html = `<div style="margin:0 16px 14px;">
-        <div class="bol-grupo-header">🧪 ${prod}</div>
+        <div class="bol-grupo-header">🧪 ${prod}<span class="bol-grupo-stats">${rows.length} registro${rows.length!==1?'s':''}</span></div>
         <div class="bol-tabela-wrap">` + gerarTabelaMP(rows, true, destNC) + `</div>`;
 
     if (resumo && rows.length > 1) {
