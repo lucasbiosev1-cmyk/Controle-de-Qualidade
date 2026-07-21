@@ -29844,6 +29844,9 @@ function eqRenderTabela() {
 
 function eqAbrirModal() {
     document.getElementById('eqEditId').value = '';
+    document.getElementById('eqCatalogoId').value = '';
+    const eqCatSel = document.getElementById('eqCatalogoSelect'); if (eqCatSel) eqCatSel.value = '';
+    const eqCadInfo = document.getElementById('eqCadProdutoInfo'); if (eqCadInfo) eqCadInfo.style.display = 'none';
     document.getElementById('eqModalTitulo').textContent = '🔬 Cadastrar Equipamento';
     ['eqNome','eqTag','eqMarca','eqModelo','eqSerie','eqLocal','eqRespCalib','eqCertificado','eqObs','eqDataCalib','eqProxCalib','eqFornecedor','eqFabricante','eqNumNota'].forEach(id => {
         const el = document.getElementById(id); if(el) el.value = '';
@@ -29868,6 +29871,24 @@ function eqEditar(id) {
     const eq = _equipamentos.find(x => String(x.id) === String(id));
     if (!eq) return;
     document.getElementById('eqEditId').value     = eq.id;
+    document.getElementById('eqCatalogoId').value = eq.catalogo_id || '';
+    const eqCatSel = document.getElementById('eqCatalogoSelect');
+    const eqCadInfo = document.getElementById('eqCadProdutoInfo');
+    if (eqCatSel) {
+        eqCatSel.value = eq.catalogo_id || '';
+        if (eq.catalogo_id && eqCatSel.value == eq.catalogo_id) {
+            const opt = eqCatSel.options[eqCatSel.selectedIndex];
+            if (opt && opt.value) {
+                if (eqCadInfo) {
+                    eqCadInfo.style.display = 'flex';
+                    const codEl = document.getElementById('eqCadProdutoCodigo'); if (codEl) codEl.textContent = opt.getAttribute('data-codigo') || '';
+                    const nomEl = document.getElementById('eqCadProdutoNomeInfo'); if (nomEl) nomEl.textContent = opt.textContent.replace(/^\[.*?\]\s*/,'').trim();
+                }
+            }
+        } else if (eqCadInfo) {
+            eqCadInfo.style.display = 'none';
+        }
+    }
     document.getElementById('eqModalTitulo').textContent = '✏️ Editar Equipamento';
     document.getElementById('eqNome').value       = eq.nome || '';
     document.getElementById('eqTag').value        = eq.tag || '';
@@ -29906,6 +29927,35 @@ function eqEditar(id) {
     document.getElementById('modalCadastroEquipamento').style.display = 'flex';
 }
 
+// ── Auto-vínculo com o catálogo: se o equipamento foi cadastrado sem passar
+// pelo dropdown/"+ Novo", tenta achar um item do catálogo com o MESMO nome
+// (exato, sem diferenciar maiúsc/minúsc e espaços nas pontas); se não achar,
+// cria um novo item no catálogo automaticamente — assim nenhum equipamento
+// fica sem código/vínculo.
+async function _eqAutoVincularCatalogo(nome, requerCalibFlag) {
+    if (!_catEquipamentos.length) { try { await catEqCarregarDados(); } catch(e){} }
+    const chave = (nome || '').trim().toUpperCase();
+    const existente = _catEquipamentos.find(p =>
+        (p.nome || '').trim().toUpperCase() === chave &&
+        !String(p.id).startsWith('local_') && !String(p.id).startsWith('compat_')
+    );
+    if (existente) return existente.id;
+
+    const row = { nome: nome, area: null, periodo_calib: null, requer_calib: !!requerCalibFlag, obs: null };
+    try {
+        row.codigo = _catEqGerarCodigo();
+        const { data, error } = await _sbClient.from('catalogo_equipamentos').insert(row).select().single();
+        if (error) throw error;
+        const novo = _catEqNorm(data);
+        _catEquipamentos.push(novo);
+        if (typeof _catEqPopularSelect === 'function') _catEqPopularSelect();
+        return novo.id;
+    } catch (e) {
+        console.warn('Não foi possível vincular/criar item no catálogo automaticamente:', e.message);
+        return null;
+    }
+}
+
 async function eqSalvar() {
     const nome = (document.getElementById('eqNome').value || '').trim();
     if (!nome) { alert('Informe o nome do equipamento.'); return; }
@@ -29921,8 +29971,14 @@ async function eqSalvar() {
         if (!confirm(`Já existe um equipamento com TAG "${tag}" (${tagExistente.nome}). Deseja continuar mesmo assim?`)) return;
     }
 
+    let catalogoIdVal = (document.getElementById('eqCatalogoId').value || '').trim();
+    if (!catalogoIdVal) {
+        const idAuto = await _eqAutoVincularCatalogo(nome, possuiCalib === 'sim');
+        if (idAuto) catalogoIdVal = String(idAuto);
+    }
     const eq = {
         id:           editId ? parseInt(editId) : undefined,
+        catalogo_id:  catalogoIdVal ? parseInt(catalogoIdVal) : null,
         nome,
         tag,
         marca:        document.getElementById('eqMarca').value.trim(),
