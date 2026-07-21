@@ -19498,17 +19498,22 @@ function classificarFaseRacao(racao) {
     // Calcário é matéria-prima — não deve ser classificado como fase de ração
     if (r.includes('CALCÁRIO') || r.includes('CALCARIO'))
         return { categoria: 'calcario', fase: 'CALCÁRIO', ordem: 98, cor: '#546e7a', icone: '🪨' };
-    if (/CORTE R1\b/.test(r))
+    // ✅ Usa a MESMA lista explícita (FASES_MAP) do Relatório de Produção por Fase,
+    // em vez de uma regex genérica — evita que rações fora da lista oficial
+    // (ex.: "POSTURA MCASSAB R8", que não existe) sejam incluídas aqui mas
+    // excluídas no relatório, gerando contagens e C.V. diferentes entre as telas.
+    const _in = (lista) => lista.some(rac => _racaoEq(racao, rac));
+    if (_in(FASES_MAP.corte_pre.racoes))
         return { categoria: 'corte_pre_inicial', fase: 'CORTE — PRÉ-INICIAL (R1)',    ordem: 1, cor: '#0B3C5D', icone: '🐣' };
-    if (/CORTE R2\b/.test(r))
+    if (_in(FASES_MAP.corte_ini.racoes))
         return { categoria: 'corte_inicial',     fase: 'CORTE — INICIAL (R2)',         ordem: 2, cor: '#0B3C5D', icone: '🐥' };
-    if (/CORTE R[3-6]\b/.test(r))
+    if (_in(FASES_MAP.corte_fin.racoes))
         return { categoria: 'corte_final',       fase: 'CORTE — FINAL (R3 a R6)',     ordem: 3, cor: '#0B3C5D', icone: '🐔' };
-    if (/POSTURA.*R1\b/.test(r))
+    if (_in(FASES_MAP.pos_pre.racoes))
         return { categoria: 'postura_pre_inicial', fase: 'POSTURA — PRÉ-INICIAL (R1)', ordem: 4, cor: '#0B3C5D', icone: '🌱' };
-    if (/POSTURA.*R2\b/.test(r))
+    if (_in(FASES_MAP.pos_ini.racoes))
         return { categoria: 'postura_inicial',   fase: 'POSTURA — INICIAL (R2)',       ordem: 5, cor: '#0B3C5D', icone: '🌿' };
-    if (/POSTURA.*(R[3-9]\b|R\s*10\b)/.test(r))
+    if (_in(FASES_MAP.pos_fin.racoes))
         return { categoria: 'postura_final',     fase: 'POSTURA — FINAL (R3 a R10)',  ordem: 6, cor: '#0B3C5D', icone: '🥚' };
     return { categoria: 'outros', fase: 'Outros Produtos', ordem: 10, cor: '#0B3C5D', icone: '📦' };
 }
@@ -19733,6 +19738,9 @@ function _bolLinhaMediaProd(rows, compacto) {
     const medias = {};
     CAMPOS.forEach(c => { medias[c] = _prodCalcularMedia(rows.map(r => r[c])); });
     const fmt = c => medias[c] != null ? medias[c].toFixed(CASAS[c]) : '-';
+    // CV (coeficiente de variação) do DGM da ração, calculado sobre os registros do grupo
+    const dgmValsCV = rows.map(r => parseFloat(r.dgm)).filter(v => !isNaN(v) && v > 0);
+    const cvRacao = dgmValsCV.length ? calcEstat(dgmValsCV).cv.toFixed(2) + '%' : '-';
     return `<tr style="background:#1f6feb22;font-weight:bold;border-bottom:2px solid #1f6feb;">
         <td class="left">Média</td>
         <td></td>
@@ -19753,7 +19761,7 @@ function _bolLinhaMediaProd(rows, compacto) {
         <td>${fmt('granulo2')}</td>
         <td>${fmt('granulo3')}</td>
         <td>${fmt('fundo')}</td>
-        <td>-</td>
+        <td>${cvRacao}</td>
     </tr>`;
 }
 
@@ -19761,7 +19769,7 @@ function gerarTabelaProd(rows, compacto, destNC) {
     const th = (t,w='') => `<th${w?` style="width:${w}"`:''}>${t}</th>`;
     let thead = `<tr>${th('Data')}${th('Hora')}`;
     if (!compacto) thead += th('Ração');
-    thead += `${th('Lote')}${th('DGM µm')}${th('DPG')}${th('Extr.%')}${th('Prot.%')}${th('Fibra%')}${th('Solub.%')}${th('Umid.%')}${th('Dens.')}${th('Min.%')}${th('Cálcio%')}${th('Fósf.%')}${th('G1%<br>4mm')}${th('G2%<br>2mm')}${th('G3%<br>0,6mm')}${th('Fundo%')}${th('Status','72px')}</tr>`;
+    thead += `${th('Lote')}${th('DGM µm')}${th('DPG')}${th('Extr.%')}${th('Prot.%')}${th('Fibra%')}${th('Solub.%')}${th('Umid.%')}${th('Dens.')}${th('Min.%')}${th('Cálcio%')}${th('Fósf.%')}${th('G1%<br>4mm')}${th('G2%<br>2mm')}${th('G3%<br>0,6mm')}${th('Fundo%')}${th('CV','72px')}</tr>`;
 
     const tbody = rows.map(r => {
         const status = statusPorParametros(r,'prod',r.racao,CAMPOS_PROD,r.data);
