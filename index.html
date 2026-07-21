@@ -28805,16 +28805,14 @@ async function reagSalvarCadastro() {
     const minimo  = parseFloat(document.getElementById('reagCadMinimo').value) || 0;
     const qtd     = parseFloat(document.getElementById('reagCadQtdInicial').value) || 0;
 
-    const semNF = document.getElementById('reagCadSemNF').checked;
+    const semNF = document.getElementById('reagCadSemNF').value === 'sem_nf';
 
     // Lê fornecedor e fabricante do painel correto
     let fornecedor, fabricante, nfChave;
     if (semNF) {
         fornecedor = document.getElementById('reagCadFornecedor').value.trim();
         fabricante = document.getElementById('reagCadFabricante').value.trim();
-        nfChave    = '';
-        if (!fornecedor) { sgqToast('⚠️ Informe o fornecedor para entrada sem Nota Fiscal.', 'warning'); return; }
-        if (!fabricante) { sgqToast('⚠️ Informe o fabricante para entrada sem Nota Fiscal.', 'warning'); return; }
+        nfChave    = (document.getElementById('reagCadNFChave') || {}).value?.trim() || '';
     } else {
         fornecedor = document.getElementById('reagCadFornecedorNF').value.trim();
         fabricante = document.getElementById('reagCadFabricanteNF').value.trim();
@@ -28838,7 +28836,7 @@ async function reagSalvarCadastro() {
         fabricante,
         controlePF: document.getElementById('reagCadControlePF').checked,
         portaria:   document.getElementById('reagCadPortaria').value.trim(),
-        dataEntrada:_reagHoje(),
+        dataEntrada:_reagEditId ? (existente.dataEntrada || _reagHoje()) : _reagHoje(),
         nfChave,
         custoUnit:  (() => { const v = parseFloat(document.getElementById('reagCadValorUnit')?.value); return isNaN(v) ? null : v; })(),
         catalogo_id: catalogoId || null
