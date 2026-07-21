@@ -5840,7 +5840,7 @@
                         <option value="com_nf">📄 Somente com Nota Fiscal</option>
                         <option value="sem_nf">🚫 Somente sem Nota Fiscal</option>
                     </select>
-                    <select id="reagNotasFiltroCategoria" onchange="reagRenderNotas()" style="border:1px solid #ddd;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;color:#34495e;">
+                    <select id="reagNotasFiltroCategoria" onchange="const _selCard=document.getElementById('reagCardComprasTipo'); if(this.value&&_selCard&&_selCard.value!==this.value){_selCard.value=this.value;reagAtualizarCardComprasAtivo();}else{reagRenderNotas();}" style="border:1px solid #ddd;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;color:#34495e;">
                         <option value="">🗂️ Todas as categorias</option>
                         <option value="quimico">🧪 Produtos Químicos</option>
                         <option value="material">📦 Materiais</option>
@@ -26849,6 +26849,14 @@ function reagAtualizarCardComprasAtivo() {
         custoDestino.style.color = cores[tipo] || '#27ae60';
     }
     if (legendaDestino) legendaDestino.textContent = legendas[tipo] || legendas.quimico;
+
+    // Sincroniza o filtro de categoria do "Histórico de Entradas" com a MESMA
+    // categoria selecionada aqui, e re-renderiza a tabela pra refletir na hora.
+    const filtroNotas = document.getElementById('reagNotasFiltroCategoria');
+    if (filtroNotas && filtroNotas.value !== tipo) {
+        filtroNotas.value = tipo;
+        if (typeof reagRenderNotas === 'function') reagRenderNotas();
+    }
 }
 
 // ── Aba "Análise de Estoque" — carrega dados de todas as categorias e exibe ──
