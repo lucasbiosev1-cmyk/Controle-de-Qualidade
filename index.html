@@ -25018,7 +25018,7 @@ async function _sgqVerificarNovaVersao() {
 // subir o novo arquivo no GitHub Pages, para avisar todo mundo que está com
 // o sistema aberto.
 async function sgqPublicarNovaVersao() {
-    if (!confirm('Publicar atualização para todos os usuários agora?\n\nQuem estiver com o sistema aberto verá um aviso para atualizar a página.')) return;
+    if (!confirm('Publicar atualização para todos os usuários agora?\n\nQuem estiver com o sistema aberto será atualizado automaticamente em segundo plano, sem aviso.')) return;
     try {
         await _sbClient.from('parametros').delete().eq('chave', 'sgq_versao_atual');
         const { error } = await _sbClient.from('parametros').insert({
@@ -25026,8 +25026,8 @@ async function sgqPublicarNovaVersao() {
             valor: SGQ_BUILD_VERSAO,
             atualizado_em: new Date().toISOString()
         });
-        if (error) { console.error(error); sgqToast('Erro ao publicar versão: ' + error.message, 'error'); return; }
-        sgqToast('✅ Atualização publicada! Quem estiver com o sistema aberto verá o aviso em instantes.', 'success', 6000);
+        if (error) { console.error(error); return; }
+        console.log('SGQ: versão ' + SGQ_BUILD_VERSAO + ' publicada.');
     } catch (e) {
         console.error(e);
         sgqToast('Erro ao publicar versão: ' + e.message, 'error');
