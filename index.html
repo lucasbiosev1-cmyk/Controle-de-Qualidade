@@ -15819,8 +15819,6 @@ function exibirTabelaEMP(lista) {
         let descargaCell = '';
         if (r.status === 'REPROVADA') {
             descargaCell = `<span style="background:#fadbd8;color:#e74c3c;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:bold;">❌ REPROVADA</span>`;
-        } else if (r.status === 'EM ANÁLISE') {
-            descargaCell = `<span style="color:#666;font-size:11px;">—</span>`;
         } else {
             // Normaliza valor atual
             let sdVal = statusDesc;
@@ -16573,7 +16571,7 @@ function abrirModalAprovarEMP(id) {
     if (typeof perms === 'string') { try { perms = JSON.parse(perms); } catch(e) { perms = {}; } }
     const podeDescarga = isAdmin || perms.entrada_aprovar;
 
-    if (entrada.status === 'APROVADA') {
+    if (entrada.status !== 'REPROVADA') {
         secDesc.style.display = 'block';
         const sd = entrada.status_descarga || 'FILA';
         const mpEntrada = (entrada.materia_prima || '').trim().toUpperCase();
@@ -37283,9 +37281,9 @@ window.atualizarKpisCapa = function() {
         const hdrs = (r.amostras||[]).map((_,i) => `<th>Amostra ${i+1}</th>`).join('');
         const vals = (r.amostras||[]).map(v => `<td>${v}</td>`).join('');
 
-        // conclusão automática se não houver texto padrão
-        // conclusão idêntica ao sistema original — gerada automaticamente
-        const conclusao = `O resultado de <b>${cvFmt}</b> ${aprov ? 'est\u00e1 dentro do' : 'excede o'} limite m\u00e1ximo de <b>${limiteUsado}%</b>, ${aprov ? 'indicando adequada distribui\u00e7\u00e3o do micromineral na massa total do produto e conformidade com a legisla\u00e7\u00e3o vigente.' : 'indicando necessidade de revis\u00e3o do processo de mistura.'}`;
+        // usa o texto padrão digitado pelo usuário; se estiver vazio, gera a conclusão automática
+        const conclusaoAuto = `O resultado de <b>${cvFmt}</b> ${aprov ? 'est\u00e1 dentro do' : 'excede o'} limite m\u00e1ximo de <b>${limiteUsado}%</b>, ${aprov ? 'indicando adequada distribui\u00e7\u00e3o do micromineral na massa total do produto e conformidade com a legisla\u00e7\u00e3o vigente.' : 'indicando necessidade de revis\u00e3o do processo de mistura.'}`;
+        const conclusao = (textoPadrao && textoPadrao.trim()) ? textoPadrao.replace(/\n/g, '<br>') : conclusaoAuto;
 
         const statusBg    = aprov ? '#E8EEF8' : '#FADBD8';
         const statusIcon  = aprov ? '\u2714' : '\u2716';
