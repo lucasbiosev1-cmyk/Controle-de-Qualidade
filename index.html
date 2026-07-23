@@ -177,6 +177,21 @@
         }
         #sgq-session-banner.show { display: block; }
 
+        /* =========================================================
+           ✅ MELHORIA: BANNER DE NOVA VERSÃO DISPONÍVEL
+           ========================================================= */
+        #sgq-update-banner {
+            display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 99991;
+            background: linear-gradient(to right, #1B2A4A, #2c5aa0);
+            color: white; padding: 10px 20px; text-align: center;
+            font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+        }
+        #sgq-update-banner.show { display: block; }
+        #sgq-update-banner button {
+            background: #fff; color: #1B2A4A; border: none; border-radius: 6px;
+            padding: 5px 14px; font-size: 12px; font-weight: 800; cursor: pointer; margin-left: 12px;
+        }
+
         /* ========== AGENDA DE COMPROMISSOS ========== */
         #aba-agenda { padding: 20px; }
         .agenda-header {
@@ -3995,6 +4010,12 @@
 <!-- ✅ MELHORIA: Banner de sessão expirada -->
 <div id="sgq-session-banner">
     ⚠️ Sua sessão expirou. <a href="javascript:location.reload()" style="color:white;text-decoration:underline;cursor:pointer;">Clique aqui para fazer login novamente</a>
+</div>
+
+<!-- ✅ MELHORIA: Banner de nova versão do sistema -->
+<div id="sgq-update-banner">
+    🔄 Uma nova versão do sistema foi publicada.
+    <button onclick="location.reload(true)">Atualizar agora</button>
 </div>
 
 <!-- ========== TELA DE LOGIN ========== -->
@@ -8096,6 +8117,20 @@
             <div id="cfg-panel-backup" class="cfg-sub-panel" data-aba="aba-backup">
         <div style="max-width:820px;margin:0 auto;padding:10px 0;">
 
+            <!-- ATUALIZAR SISTEMA PARA TODOS -->
+            <div class="container" style="margin-bottom:20px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid #1B2A4A;">
+                    <span style="font-size:28px;">🔄</span>
+                    <div style="flex:1;">
+                        <div style="font-size:16px;font-weight:bold;color:#1B2A4A;text-transform:uppercase;">Atualizar Sistema para Todos</div>
+                        <div style="font-size:12px;color:#777;margin-top:2px;">Use depois de publicar uma nova versão no GitHub Pages. Todo mundo com o sistema aberto vai receber um aviso para atualizar a página.</div>
+                    </div>
+                    <button id="btnPublicarNovaVersaoSGQ" onclick="sgqPublicarNovaVersao()" style="display:none;align-items:center;gap:6px;background:#1B2A4A;color:white;padding:10px 22px;border:none;border-radius:4px;font-weight:bold;font-size:12px;cursor:pointer;text-transform:uppercase;white-space:nowrap;">
+                        🔄 Atualizar para Todos
+                    </button>
+                </div>
+            </div>
+
             <!-- BACKUP AUTOMÁTICO CONFIG -->
             <div class="container" style="margin-bottom:20px;">
                 <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #0a1e7f;">
@@ -10701,6 +10736,9 @@ function aplicarPermissoes() {
     let perms = user.perms || {};
     // Garante que perms é objeto (pode vir como string do Supabase)
     if (typeof perms === 'string') { try { perms = JSON.parse(perms); } catch(e) { perms = {}; } }
+
+    const btnPublicarVersao = document.getElementById('btnPublicarNovaVersaoSGQ');
+    if (btnPublicarVersao) btnPublicarVersao.style.display = isAdmin ? 'inline-flex' : 'none';
 
     // Cadastro: botões de adicionar + colunas de ação
     const podeCadastro = isAdmin || perms.cadastro;
@@ -24943,6 +24981,67 @@ function sgqOcultarLoading() {
         ov.classList.remove('show', 'fade-out');
     }, 420);
 }
+
+// =====================================================================
+// ✅ MELHORIA: AVISO DE NOVA VERSÃO PARA TODOS OS USUÁRIOS
+// Reaproveita a tabela 'parametros' (chave/valor) já usada pelo sistema.
+// Sempre que você publicar um novo arquivo no GitHub Pages, basta chamar
+// sgqPublicarNovaVersao() uma vez (ex.: pelo console do navegador, logada
+// como admin) que todo mundo com o sistema aberto recebe o aviso para
+// atualizar — sem precisar avisar um por um.
+// =====================================================================
+
+// Bump este valor manualmente sempre que uma nova versão for gerada/publicada.
+const SGQ_BUILD_VERSAO = '2026.07.23-01';
+
+// Ativo: quando o admin publica uma nova versão, quem estiver com o sistema
+// aberto atualiza sozinho (reload silencioso), sem mostrar nenhum aviso.
+const SGQ_AVISO_ATUALIZACAO_ATIVO = true;
+
+async function _sgqVerificarNovaVersao() {
+    if (!SGQ_AVISO_ATUALIZACAO_ATIVO) return;
+    try {
+        if (typeof _sbClient === 'undefined' || !_sbClient) return;
+        const { data, error } = await _sbClient
+            .from('parametros')
+            .select('valor')
+            .eq('chave', 'sgq_versao_atual')
+            .maybeSingle();
+        if (error || !data || !data.valor) return;
+        if (data.valor !== SGQ_BUILD_VERSAO) {
+            location.reload(true);
+        }
+    } catch (e) { /* silencioso — não atrapalha o uso normal do sistema */ }
+}
+
+// Botão em Configurações → Backup (visível só para admin). Chame depois de
+// subir o novo arquivo no GitHub Pages, para avisar todo mundo que está com
+// o sistema aberto.
+async function sgqPublicarNovaVersao() {
+    if (!confirm('Publicar atualização para todos os usuários agora?\n\nQuem estiver com o sistema aberto verá um aviso para atualizar a página.')) return;
+    try {
+        await _sbClient.from('parametros').delete().eq('chave', 'sgq_versao_atual');
+        const { error } = await _sbClient.from('parametros').insert({
+            chave: 'sgq_versao_atual',
+            valor: SGQ_BUILD_VERSAO,
+            atualizado_em: new Date().toISOString()
+        });
+        if (error) { console.error(error); sgqToast('Erro ao publicar versão: ' + error.message, 'error'); return; }
+        sgqToast('✅ Atualização publicada! Quem estiver com o sistema aberto verá o aviso em instantes.', 'success', 6000);
+    } catch (e) {
+        console.error(e);
+        sgqToast('Erro ao publicar versão: ' + e.message, 'error');
+    }
+}
+
+// Verifica ao carregar, a cada 3 minutos, e sempre que a aba volta a ficar visível
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(_sgqVerificarNovaVersao, 4000); // dá tempo do _sbClient estar pronto
+    setInterval(_sgqVerificarNovaVersao, 3 * 60 * 1000);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') _sgqVerificarNovaVersao();
+    });
+});
 
 // ── Toast Notifications ───────────────────────────────────────────────
 // tipo: 'success' | 'error' | 'warning' | 'info'
