@@ -13276,15 +13276,11 @@ function renderDetalhe(dados, analise, analNome) {
     }
     const sorted = [...dados].sort((a,b) => a.data.localeCompare(b.data) || a.hora.localeCompare(b.hora));
     tbody.innerHTML = _relLinhaMedia(sorted) + sorted.map((r,i) => {
-        const val  = getValor(r, analise);
         const racKey = (r.racao || '').replace(/ /g, '_');
-        const cfg = getParam('prod', racKey, analise, r.data);
-        let status = '<span class="badge badge-conforme">C</span>';
-        if (cfg && cfg.ativo) {
-            const foraMin = cfg.min > 0 && val < cfg.min;
-            const foraMax = cfg.max < 9999 && val > cfg.max;
-            if (foraMin || foraMax) status = '<span class="badge badge-nao-conforme">NC</span>';
-        }
+        // STATUS agora considera TODOS os parametros ativos do registro (DGM, DPG, proteina,
+        // granulos, etc.), igual ao restante do sistema (statusPorParametros com CAMPOS_PROD),
+        // e nao apenas o campo selecionado no filtro "Analise" do relatorio.
+        const status = statusPorParametros(r, 'prod', r.racao, CAMPOS_PROD, r.data);
         const dgmVal = parseFloat(r.dgm);
         const dgmCfg = getParam('prod', racKey, 'dgm', r.data);
         let dgmTexto = '<span style="color:#666;">—</span>';
@@ -13293,7 +13289,7 @@ function renderDetalhe(dados, analise, analNome) {
             if (dgmCfg && dgmCfg.ativo) {
                 const foraMin = dgmCfg.min > 0 && dgmVal < dgmCfg.min;
                 const foraMax = dgmCfg.max < 9999 && dgmVal > dgmCfg.max;
-                dgmCor = (foraMin || foraMax) ? 'color:#e74c3c;' : '';
+                dgmCor = (foraMin || foraMax) ? 'color:#e74c3c;font-weight:bold;' : '';
             }
             dgmTexto = Math.round(dgmVal);
         }
@@ -13305,7 +13301,7 @@ function renderDetalhe(dados, analise, analNome) {
             if (dpgCfg && dpgCfg.ativo) {
                 const foraMin = dpgCfg.min > 0 && dpgVal < dpgCfg.min;
                 const foraMax = dpgCfg.max < 9999 && dpgVal > dpgCfg.max;
-                dpgCor = (foraMin || foraMax) ? 'color:#e74c3c;' : '';
+                dpgCor = (foraMin || foraMax) ? 'color:#e74c3c;font-weight:bold;' : '';
             }
             dpgStatus = dpgVal.toFixed(2);
         } else {
@@ -13317,8 +13313,8 @@ function renderDetalhe(dados, analise, analNome) {
             <td style="padding:5px 8px;text-align:left;">${r.racao}</td>
             <td style="padding:5px 8px;">${r.lote||''}</td>
             <td style="padding:5px 8px;">${r.tela_moinho || '-'}</td>
-            <td style="padding:5px 8px;font-weight:bold;${dgmCor}">${dgmTexto}</td>
-            <td style="padding:5px 8px;font-weight:bold;${dpgCor}">${dpgStatus}</td>
+            <td style="padding:5px 8px;${dgmCor}">${dgmTexto}</td>
+            <td style="padding:5px 8px;${dpgCor}">${dpgStatus}</td>
             <td style="padding:5px 8px;"${estiloFora(r.proteina,'prod',r.racao,'proteina',r.data)}>${fmtN(r.proteina,2)}</td>
             <td style="padding:5px 8px;"${estiloFora(r.granulo1,'prod',r.racao,'granulo1',r.data)}>${fmtN(r.granulo1,2)}</td>
             <td style="padding:5px 8px;"${estiloFora(r.granulo2,'prod',r.racao,'granulo2',r.data)}>${fmtN(r.granulo2,2)}</td>
