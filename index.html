@@ -29525,6 +29525,10 @@ function matAbrirModalCadastro() {
     const semNota = document.getElementById('matEntradaSemNota'); if(semNota) semNota.checked = true;
     matToggleEntrada();
     document.getElementById('modalCadastroMaterial').style.display = 'flex';
+    (async () => {
+        if (!_catMateriais.length) await catMatCarregarDados();
+        _catMatPopularSelect();
+    })();
 }
 
 function matFecharModal() {
@@ -29557,6 +29561,10 @@ function matEditar(id) {
     matToggleEntrada();
     document.getElementById('matNumNota').value = m.num_nota || '';
     document.getElementById('modalCadastroMaterial').style.display = 'flex';
+    (async () => {
+        if (!_catMateriais.length) await catMatCarregarDados();
+        _catMatPopularSelect();
+    })();
 }
 
 async function matSalvar() {
