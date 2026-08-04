@@ -28137,45 +28137,13 @@ function nfItemSelecionarCatalogo(sel) {
 }
 
 // ── Abre catálogo certo para criar produto direto da NF ───────────────
-let _nfItemSelectAtivo = null; // guarda o <select> da linha da NF que disparou o "+"
-
 function nfItemAbrirNovoCatalogo(btn) {
     const row = btn.closest('.nf-item-row'); if (!row) return;
     const sel = row.querySelector('.nfItemCatSelect');
-    _nfItemSelectAtivo = sel || null;
     const cat = sel ? sel.getAttribute('data-cat') : 'quimico';
     if (cat==='quimico')      { if(typeof catalogoAbrirModal==='function')  catalogoAbrirModal().then(()=>catalogoAbrirFormNovo()); }
     else if (cat==='material'){ if(typeof catMatAbrirModal==='function')    catMatAbrirModal().then(()=>catMatAbrirFormNovo()); }
     else                      { if(typeof catEqAbrirModal==='function')     catEqAbrirModal().then(()=>catEqAbrirFormNovo()); }
-}
-
-// ── Reconstrói os selects de "PRODUTO DO CATÁLOGO" já abertos nos itens da NF ──
-// Corrige o bug em que um material/produto/equipamento recém-cadastrado no
-// catálogo master não aparecia no <select> do item da NF, pois esse select
-// só era montado uma vez, na criação da linha.
-function _nfItemAtualizarSelectsAbertos(tipo, novoId) {
-    const listaMap = { quimico: _catalogoProdutos, material: _catMateriais, equipamento: _catEquipamentos };
-    const prefMap  = { quimico: 'q_', material: 'm_', equipamento: 'e_' };
-    const lista = listaMap[tipo]; if (!lista) return;
-    const pref  = prefMap[tipo];
-
-    document.querySelectorAll('.nfItemCatSelect').forEach(sel => {
-        if (sel.getAttribute('data-cat') !== tipo) return;
-        const valAtual = sel.value;
-        const opts = lista.slice()
-            .sort((a,b) => a.nome.localeCompare(b.nome, 'pt-BR'))
-            .map(p => `<option value="${pref}${p.id}" data-tipo="${tipo}" data-catid="${p.id}" data-unidade="${p.unidade||'un'}">[${p.codigo||'—'}] ${p.nome}</option>`)
-            .join('');
-        sel.innerHTML = '<option value="">— Selecione do catálogo —</option>' + opts;
-
-        if (novoId && sel === _nfItemSelectAtivo) {
-            sel.value = pref + novoId;
-            if (typeof nfItemSelecionarCatalogo === 'function') nfItemSelecionarCatalogo(sel);
-            _nfItemSelectAtivo = null;
-        } else if (valAtual) {
-            sel.value = valAtual;
-        }
-    });
 }
 
 // ── Re-detecta categoria da NF com base em todos os itens atuais ──
@@ -29557,10 +29525,6 @@ function matAbrirModalCadastro() {
     const semNota = document.getElementById('matEntradaSemNota'); if(semNota) semNota.checked = true;
     matToggleEntrada();
     document.getElementById('modalCadastroMaterial').style.display = 'flex';
-    (async () => {
-        if (!_catMateriais.length) await catMatCarregarDados();
-        _catMatPopularSelect();
-    })();
 }
 
 function matFecharModal() {
@@ -29593,10 +29557,6 @@ function matEditar(id) {
     matToggleEntrada();
     document.getElementById('matNumNota').value = m.num_nota || '';
     document.getElementById('modalCadastroMaterial').style.display = 'flex';
-    (async () => {
-        if (!_catMateriais.length) await catMatCarregarDados();
-        _catMatPopularSelect();
-    })();
 }
 
 async function matSalvar() {
@@ -34755,7 +34715,7 @@ async function catalogoSalvar() {
         }
         catalogoFecharForm();
         catalogoRender();
-        _catalogoPopularSelectCadastro(_catalogoEditId?null:data.id);
+        _catalogoPopularSelectCadastro();
     } catch(e) {
         // Se tabela não existe ainda, cria localmente (modo compatível)
         if (e.message && (e.message.includes('does not exist') || e.message.includes('relation') || e.code === '42P01')) {
@@ -34773,7 +34733,7 @@ async function catalogoSalvar() {
             sgqToast(`✅ Produto salvo localmente (catálogo em memória). Código: ${novoProd.codigo}`, 'success');
             catalogoFecharForm();
             catalogoRender();
-            _catalogoPopularSelectCadastro(novoProd.id);
+            _catalogoPopularSelectCadastro();
         } else {
             sgqToast('❌ Erro ao salvar: ' + e.message, 'error');
         }
@@ -34810,17 +34770,15 @@ async function catalogoExcluir(id) {
 }
 
 // ── Popular o select de cadastro de reagente ──────────────────────────
-function _catalogoPopularSelectCadastro(novoId) {
+function _catalogoPopularSelectCadastro() {
     const sel = document.getElementById('reagCadCatalogoSelect');
-    if (sel) {
-        const val = sel.value;
-        const opts = _catalogoProdutos.sort((a,b) => a.nome.localeCompare(b.nome,'pt-BR'))
-            .map(p => `<option value="${p.id}" data-unidade="${p.unidade}" data-codigo="${p.codigo}" data-minimo="${p.minimo}" data-pf="${p.controlePF}">[${p.codigo}] ${p.nome}</option>`)
-            .join('');
-        sel.innerHTML = '<option value="">— Selecione um produto do catálogo —</option>' + opts;
-        if (val) sel.value = val;
-    }
-    if (typeof _nfItemAtualizarSelectsAbertos === 'function') _nfItemAtualizarSelectsAbertos('quimico', novoId);
+    if (!sel) return;
+    const val = sel.value;
+    const opts = _catalogoProdutos.sort((a,b) => a.nome.localeCompare(b.nome,'pt-BR'))
+        .map(p => `<option value="${p.id}" data-unidade="${p.unidade}" data-codigo="${p.codigo}" data-minimo="${p.minimo}" data-pf="${p.controlePF}">[${p.codigo}] ${p.nome}</option>`)
+        .join('');
+    sel.innerHTML = '<option value="">— Selecione um produto do catálogo —</option>' + opts;
+    if (val) sel.value = val;
 }
 
 // ── Ao selecionar produto no modal de cadastro de reagente ────────────
@@ -34986,12 +34944,12 @@ async function catMatSalvar(){
             _catMateriais.push(_catMatNorm(data));
             sgqToast(`✅ Material adicionado! Código: ${row.codigo}`,'success');
         }
-        catMatFecharForm();catMatRender();_catMatPopularSelect(_catMatEditId?null:data.id);
+        catMatFecharForm();catMatRender();_catMatPopularSelect();
     }catch(e){
         if(e.message&&(e.message.includes('does not exist')||e.code==='42P01')){
             const np={id:'local_'+Date.now(),codigo:_catMatGerarCodigo(),nome:row.nome,categoria:row.categoria,unidade:row.unidade,minimo:row.minimo,obs:row.obs||''};
             _catMateriais.push(np);sgqToast(`✅ Salvo localmente. Código: ${np.codigo}`,'success');
-            catMatFecharForm();catMatRender();_catMatPopularSelect(np.id);
+            catMatFecharForm();catMatRender();_catMatPopularSelect();
         }else{sgqToast('❌ Erro: '+e.message,'error');}
     }
 }
@@ -35006,15 +34964,12 @@ async function catMatExcluir(id){
     }catch(e){sgqToast('❌ Erro: '+e.message,'error');}
 }
 
-function _catMatPopularSelect(novoId){
-    const sel=document.getElementById('matCatalogoSelect');
-    if(sel){
-        const val=sel.value;
-        sel.innerHTML='<option value="">— Selecione um produto do catálogo —</option>'
-            +_catMateriais.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(p=>`<option value="${p.id}" data-unidade="${p.unidade}" data-categoria="${p.categoria}" data-codigo="${p.codigo}" data-minimo="${p.minimo}">[${p.codigo}] ${p.nome}</option>`).join('');
-        if(val)sel.value=val;
-    }
-    if(typeof _nfItemAtualizarSelectsAbertos==='function')_nfItemAtualizarSelectsAbertos('material',novoId);
+function _catMatPopularSelect(){
+    const sel=document.getElementById('matCatalogoSelect');if(!sel)return;
+    const val=sel.value;
+    sel.innerHTML='<option value="">— Selecione um produto do catálogo —</option>'
+        +_catMateriais.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(p=>`<option value="${p.id}" data-unidade="${p.unidade}" data-categoria="${p.categoria}" data-codigo="${p.codigo}" data-minimo="${p.minimo}">[${p.codigo}] ${p.nome}</option>`).join('');
+    if(val)sel.value=val;
 }
 
 function matCadSelecionarProduto(select){
@@ -35138,12 +35093,12 @@ async function catEqSalvar(){
             _catEquipamentos.push(_catEqNorm(data));
             sgqToast(`✅ Equipamento adicionado! Código: ${row.codigo}`,'success');
         }
-        catEqFecharForm();catEqRender();_catEqPopularSelect(_catEqEditId?null:data.id);
+        catEqFecharForm();catEqRender();_catEqPopularSelect();
     }catch(e){
         if(e.message&&(e.message.includes('does not exist')||e.code==='42P01')){
             const np={id:'local_'+Date.now(),codigo:_catEqGerarCodigo(),nome:row.nome,area:row.area||'',periodoCalib:row.periodo_calib||'',requerCalib:row.requer_calib,obs:row.obs||''};
             _catEquipamentos.push(np);sgqToast(`✅ Salvo localmente. Código: ${np.codigo}`,'success');
-            catEqFecharForm();catEqRender();_catEqPopularSelect(np.id);
+            catEqFecharForm();catEqRender();_catEqPopularSelect();
         }else{sgqToast('❌ Erro: '+e.message,'error');}
     }
 }
@@ -35158,15 +35113,12 @@ async function catEqExcluir(id){
     }catch(e){sgqToast('❌ Erro: '+e.message,'error');}
 }
 
-function _catEqPopularSelect(novoId){
-    const sel=document.getElementById('eqCatalogoSelect');
-    if(sel){
-        const val=sel.value;
-        sel.innerHTML='<option value="">— Selecione um equipamento do catálogo —</option>'
-            +_catEquipamentos.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(p=>`<option value="${p.id}" data-codigo="${p.codigo}" data-requerCalib="${p.requerCalib}" data-periodo="${p.periodoCalib}">[${p.codigo}] ${p.nome}</option>`).join('');
-        if(val)sel.value=val;
-    }
-    if(typeof _nfItemAtualizarSelectsAbertos==='function')_nfItemAtualizarSelectsAbertos('equipamento',novoId);
+function _catEqPopularSelect(){
+    const sel=document.getElementById('eqCatalogoSelect');if(!sel)return;
+    const val=sel.value;
+    sel.innerHTML='<option value="">— Selecione um equipamento do catálogo —</option>'
+        +_catEquipamentos.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(p=>`<option value="${p.id}" data-codigo="${p.codigo}" data-requerCalib="${p.requerCalib}" data-periodo="${p.periodoCalib}">[${p.codigo}] ${p.nome}</option>`).join('');
+    if(val)sel.value=val;
 }
 
 function eqCadSelecionarProduto(select){
