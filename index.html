@@ -26680,18 +26680,9 @@ function reagRenderNotas() {
     const _valorExibido = n => {
         const cat   = n.categoriaNF || 'quimico';
         const total = n.valorTotalNF;
-        // Registros antigos "misto" ou notas com parciais por categoria: detalha por linha
-        const temParciais = [n.valQuimico, n.valMaterial, n.valEquipamento].filter(v => v > 0).length > 1;
-        if (cat === 'misto' || temParciais) {
-            const parts = [];
-            if (n.valQuimico     > 0) parts.push(`<span style="color:#1a2a6e;">🧪 R$ ${n.valQuimico.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>`);
-            if (n.valMaterial    > 0) parts.push(`<span style="color:#e67e22;">📦 R$ ${n.valMaterial.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>`);
-            if (n.valEquipamento > 0) parts.push(`<span style="color:#8e44ad;">🔬 R$ ${n.valEquipamento.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>`);
-            return `<div style="font-weight:800;color:#27ae60;font-size:12px;">${total!=null?'R$ '+total.toLocaleString('pt-BR',{minimumFractionDigits:2}):'—'}</div>`
-                 + (parts.length ? `<div style="font-size:10px;margin-top:3px;display:flex;flex-direction:column;gap:1px;">${parts.join('')}</div>` : '');
-        }
+        // Sempre mostra um valor único (total da nota), sem quebrar por categoria
         if (total != null) {
-            const cor = cat==='material' ? '#e67e22' : cat==='equipamento' ? '#8e44ad' : '#27ae60';
+            const cor = cat==='material' ? '#e67e22' : cat==='equipamento' ? '#8e44ad' : cat==='misto' ? '#27ae60' : '#27ae60';
             return `<span style="font-weight:800;color:${cor};">R$ ${total.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>`;
         }
         return '<span style="color:#ccc;font-size:11px;">—</span>';
@@ -26952,13 +26943,10 @@ function reagAtualizarCardComprasAtivo() {
     }
     if (legendaDestino) legendaDestino.textContent = legendas[tipo] || legendas.quimico;
 
-    // Sincroniza o filtro de categoria do "Histórico de Entradas" com a MESMA
-    // categoria selecionada aqui, e re-renderiza a tabela pra refletir na hora.
-    const filtroNotas = document.getElementById('reagNotasFiltroCategoria');
-    if (filtroNotas && filtroNotas.value !== tipo) {
-        filtroNotas.value = tipo;
-        if (typeof reagRenderNotas === 'function') reagRenderNotas();
-    }
+    // O Histórico de Entradas é independente do select de categoria dos cards:
+    // sempre mostra TODAS as notas centralizadas (química + material + equipamento),
+    // com o valor total de cada uma. O filtro de categoria da tabela (reagNotasFiltroCategoria)
+    // é controlado só pelo próprio usuário na tabela, não pelo select do card.
 }
 
 // ── Aba "Análise de Estoque" — carrega dados de todas as categorias e exibe ──
