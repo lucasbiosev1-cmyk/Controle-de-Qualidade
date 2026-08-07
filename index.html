@@ -6050,7 +6050,13 @@
                 </div>
                 <div>
                     <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;text-transform:uppercase;">Nome do Material *</label>
-                    <input id="catMatFormNome" placeholder="Ex: Béquer 250mL, Luva nitrílica M..." style="width:100%;border:1.5px solid #ddd;border-radius:6px;padding:9px 11px;font-size:13px;box-sizing:border-box;" autocomplete="off">
+                    <div style="position:relative;">
+                        <input id="catMatFormNome" placeholder="Ex: Béquer 250mL, Luva nitrílica M..." style="width:100%;border:1.5px solid #ddd;border-radius:6px;padding:9px 11px;font-size:13px;box-sizing:border-box;" autocomplete="off"
+                            oninput="catFormNomeFiltrar(this,'material')" onfocus="catFormNomeFiltrar(this,'material')"
+                            onblur="setTimeout(()=>catFormNomeFecharDropdown('material'),150)">
+                        <div id="catMatFormNomeDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--card-bg,#fff);border:1px solid #ccc;border-radius:5px;max-height:200px;overflow-y:auto;z-index:80;box-shadow:0 4px 14px rgba(0,0,0,.18);margin-top:2px;"></div>
+                    </div>
+                    <div id="catMatFormNomeAviso" style="display:none;margin-top:6px;background:#fff8e1;border:1px solid #ffca80;border-radius:6px;padding:7px 10px;font-size:11px;color:#8a5a00;align-items:center;gap:8px;flex-wrap:wrap;"></div>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                     <div>
@@ -6152,7 +6158,13 @@
                 </div>
                 <div>
                     <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;text-transform:uppercase;">Nome / Tipo do Equipamento *</label>
-                    <input id="catEqFormNome" placeholder="Ex: Balança Analítica, pH-metro, Estufa..." style="width:100%;border:1.5px solid #ddd;border-radius:6px;padding:9px 11px;font-size:13px;box-sizing:border-box;" autocomplete="off">
+                    <div style="position:relative;">
+                        <input id="catEqFormNome" placeholder="Ex: Balança Analítica, pH-metro, Estufa..." style="width:100%;border:1.5px solid #ddd;border-radius:6px;padding:9px 11px;font-size:13px;box-sizing:border-box;" autocomplete="off"
+                            oninput="catFormNomeFiltrar(this,'equipamento')" onfocus="catFormNomeFiltrar(this,'equipamento')"
+                            onblur="setTimeout(()=>catFormNomeFecharDropdown('equipamento'),150)">
+                        <div id="catEqFormNomeDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--card-bg,#fff);border:1px solid #ccc;border-radius:5px;max-height:200px;overflow-y:auto;z-index:80;box-shadow:0 4px 14px rgba(0,0,0,.18);margin-top:2px;"></div>
+                    </div>
+                    <div id="catEqFormNomeAviso" style="display:none;margin-top:6px;background:#fff8e1;border:1px solid #ffca80;border-radius:6px;padding:7px 10px;font-size:11px;color:#8a5a00;align-items:center;gap:8px;flex-wrap:wrap;"></div>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                     <div>
@@ -6991,23 +7003,6 @@
                         <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">VALOR TOTAL DA NOTA (R$)</label>
                         <input type="number" step="0.01" min="0" id="reagNFValorTotal" placeholder="Preenchido automaticamente pelo XML" class="nf-modal-input nf-modal-input-custo" autocomplete="off">
                     </div>
-                    <div style="grid-column:1/-1;">
-                        <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:6px;">📂 CATEGORIA DA NOTA FISCAL *</label>
-                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                            <label id="reagNFCatQuimicoLabel" style="display:flex;align-items:center;gap:6px;padding:8px 16px;cursor:pointer;font-size:12px;font-weight:700;background:#1a2a6e;color:#fff;border-radius:6px;transition:background .15s;">
-                                <input type="radio" name="reagNFCategoria" id="reagNFCatQuimico" value="quimico" checked style="display:none;" onchange="reagNFAtualizarCategoria()" autocomplete="off">
-                                🧪 Produto Químico
-                            </label>
-                            <label id="reagNFCatMaterialLabel" style="display:flex;align-items:center;gap:6px;padding:8px 16px;cursor:pointer;font-size:12px;font-weight:700;background:#f0f0f0;color:#888;border-radius:6px;transition:background .15s;">
-                                <input type="radio" name="reagNFCategoria" id="reagNFCatMaterial" value="material" style="display:none;" onchange="reagNFAtualizarCategoria()" autocomplete="off">
-                                📦 Material de Laboratório
-                            </label>
-                            <label id="reagNFCatEquipLabel" style="display:flex;align-items:center;gap:6px;padding:8px 16px;cursor:pointer;font-size:12px;font-weight:700;background:#f0f0f0;color:#888;border-radius:6px;transition:background .15s;">
-                                <input type="radio" name="reagNFCategoria" id="reagNFCatEquip" value="equipamento" style="display:none;" onchange="reagNFAtualizarCategoria()" autocomplete="off">
-                                🔬 Equipamento
-                            </label>
-                        </div>
-                    </div>
                 </div>
 
                 <div style="font-size:12px;font-weight:800;color:#1a2a6e;margin-bottom:10px;border-bottom:2px solid #f0f0f0;padding-bottom:6px;">PRODUTOS DA NOTA</div>
@@ -7096,7 +7091,13 @@
 
                 <div>
                     <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;text-transform:uppercase;">Nome do Produto *</label>
-                    <input id="catalogoFormNome" placeholder="Ex: Ácido Sulfúrico P.A. 98%" style="width:100%;border:1.5px solid #ddd;border-radius:6px;padding:9px 11px;font-size:13px;box-sizing:border-box;" autocomplete="off">
+                    <div style="position:relative;">
+                        <input id="catalogoFormNome" placeholder="Ex: Ácido Sulfúrico P.A. 98%" style="width:100%;border:1.5px solid #ddd;border-radius:6px;padding:9px 11px;font-size:13px;box-sizing:border-box;" autocomplete="off"
+                            oninput="catFormNomeFiltrar(this,'quimico')" onfocus="catFormNomeFiltrar(this,'quimico')"
+                            onblur="setTimeout(()=>catFormNomeFecharDropdown('quimico'),150)">
+                        <div id="catalogoFormNomeDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--card-bg,#fff);border:1px solid #ccc;border-radius:5px;max-height:200px;overflow-y:auto;z-index:80;box-shadow:0 4px 14px rgba(0,0,0,.18);margin-top:2px;"></div>
+                    </div>
+                    <div id="catalogoFormNomeAviso" style="display:none;margin-top:6px;background:#fff8e1;border:1px solid #ffca80;border-radius:6px;padding:7px 10px;font-size:11px;color:#8a5a00;align-items:center;gap:8px;flex-wrap:wrap;"></div>
                 </div>
 
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
@@ -27539,11 +27540,11 @@ function reagImportarXML(input) {
 
                     // Unidade
                     const selects = div.querySelectorAll('select');
-                    if (selects[1]) {
-                        const opts = selects[1].options;
+                    if (selects[0]) {
+                        const opts = selects[0].options;
                         for (let i = 0; i < opts.length; i++) {
                             if (opts[i].value === item.unidade || opts[i].text === item.unidade) {
-                                selects[1].selectedIndex = i; break;
+                                selects[0].selectedIndex = i; break;
                             }
                         }
                     }
@@ -27567,19 +27568,10 @@ function reagImportarXML(input) {
             // Verificar alertas de lote apos preenchimento dos campos do XML
             setTimeout(_reagVerificarAlertasLoteNF, 100);
 
-            // ── DETECÇÃO AUTOMÁTICA DE CATEGORIA ─────────────────────
+            // ── DETECÇÃO AUTOMÁTICA DE CATEGORIA (só para o resumo abaixo) ──
             if (itens.length > 0) {
                 const deteccao = _reagDetectarCategoriaNF(itens);
                 const { predominante, contagem, valores } = deteccao;
-
-                // Selecionar radio correspondente (misto → default quimico)
-                const radioId = {
-                    quimico:     'reagNFCatQuimico',
-                    material:    'reagNFCatMaterial',
-                    equipamento: 'reagNFCatEquip'
-                }[predominante] || 'reagNFCatQuimico';
-                const radio = document.getElementById(radioId);
-                if (radio) { radio.checked = true; reagNFAtualizarCategoria(); }
 
                 // Montar resumo da detecção para exibir no feedback
                 const catNomes = { quimico:'🧪 Químico', material:'📦 Material', equipamento:'🔬 Equipamento' };
@@ -27866,22 +27858,6 @@ async function snfRegistrarEntrada() {
     }
 }
 
-// ── Atualiza visual dos botões de categoria ──────────────────────────
-function reagNFAtualizarCategoria() {
-    const cat = (document.querySelector('input[name="reagNFCategoria"]:checked') || {}).value || 'quimico';
-    const labels = {
-        quimico:     document.getElementById('reagNFCatQuimicoLabel'),
-        material:    document.getElementById('reagNFCatMaterialLabel'),
-        equipamento: document.getElementById('reagNFCatEquipLabel')
-    };
-    const cores = { quimico:'#1a2a6e', material:'#e67e22', equipamento:'#8e44ad' };
-    Object.entries(labels).forEach(([k, lbl]) => {
-        if (!lbl) return;
-        lbl.style.background = k === cat ? cores[k] : '#f0f0f0';
-        lbl.style.color      = k === cat ? '#fff'   : '#888';
-    });
-}
-
 async function reagAbrirModalNota() {
     // Garante que os dados e catálogos estejam carregados antes de abrir o modal
     if (!_reagentes || _reagentes.length === 0) { try { await reagCarregarDados(); } catch(e){} }
@@ -27901,9 +27877,6 @@ async function reagAbrirModalNota() {
     document.getElementById('reagNFEmissao').value    = '';
     document.getElementById('reagNFValorTotal').value = '';
     document.getElementById('reagNFItens').innerHTML  = '';
-    // Resetar categoria para Produto Químico
-    const radQuimico = document.getElementById('reagNFCatQuimico');
-    if (radQuimico) { radQuimico.checked = true; reagNFAtualizarCategoria(); }
     // Resetar XML
     const xmlFile = document.getElementById('reagXMLFile');
     if (xmlFile) xmlFile.value = '';
@@ -27925,6 +27898,7 @@ function reagAdicionarItemNota(nomeNF) {
     const div  = document.createElement('div');
     div.id = 'reagNFItem_' + idx;
     div.className = 'nf-item-row';
+    div.dataset.nomeNF = nomeNF || '';
 
     // Detecta categoria provável pelo nome vindo da NF
     let catDetectada = 'quimico';
@@ -27941,32 +27915,22 @@ function reagAdicionarItemNota(nomeNF) {
            </div>`
         : '';
 
-    // Constrói opções dos três catálogos
-    const _buildOpts = (lista, prefixo) => (lista||[])
-        .sort((a,b) => a.nome.localeCompare(b.nome, 'pt-BR'))
-        .map(p => `<option value="${prefixo}${p.id}" data-tipo="${prefixo==='q_'?'quimico':prefixo==='m_'?'material':'equipamento'}" data-catid="${p.id}" data-unidade="${p.unidade||'un'}">[${p.codigo||'—'}] ${p.nome}</option>`)
-        .join('');
-    const optsQ = _buildOpts(_catalogoProdutos, 'q_');
-    const optsM = _buildOpts(_catMateriais,     'm_');
-    const optsE = _buildOpts(_catEquipamentos,  'e_');
-
     // Auto-match nos catálogos pelo nome da NF
-    let autoVal = '', autoTipo = catDetectada;
+    let autoId = '', autoTipo = catDetectada, autoItem = null;
     if (nomeNF) {
         const nLC = nomeNF.toLowerCase();
-        const tryMatch = (lista, pref, tipo) => {
+        const tryMatch = (lista, tipo) => {
             const m = (lista||[]).find(p => { const n=(p.nome||'').toLowerCase(); return n===nLC||n.includes(nLC)||nLC.includes(n); });
-            if (m) { autoVal = pref+m.id; autoTipo = tipo; return true; }
+            if (m) { autoId = String(m.id); autoTipo = tipo; autoItem = m; return true; }
             return false;
         };
-        tryMatch(_catalogoProdutos,'q_','quimico') ||
-        tryMatch(_catMateriais,    'm_','material') ||
-        tryMatch(_catEquipamentos, 'e_','equipamento');
+        tryMatch(_catalogoProdutos,'quimico') ||
+        tryMatch(_catMateriais,    'material') ||
+        tryMatch(_catEquipamentos, 'equipamento');
     }
 
     const cores  = { quimico:'#1a2a6e', material:'#e67e22', equipamento:'#8e44ad' };
     const labels = { quimico:'🧪 Químico', material:'📦 Material', equipamento:'🔬 Equipamento' };
-    const optsPorCat = { quimico: optsQ, material: optsM, equipamento: optsE };
     const unDefault  = { quimico:'mL', material:'un', equipamento:'un' };
 
     div.innerHTML = `
@@ -27986,16 +27950,19 @@ function reagAdicionarItemNota(nomeNF) {
             </button>`).join('')}
         </div>
 
-        <!-- Select do catálogo -->
+        <!-- Busca do catálogo (digitável, filtra em tempo real) -->
         <div style="margin-bottom:8px;">
             <label style="font-size:10px;font-weight:700;color:#555;display:block;margin-bottom:3px;">PRODUTO DO CATÁLOGO *</label>
-            <div style="display:flex;gap:6px;">
-                <select class="nfItemCatSelect nf-input" data-cat="${autoTipo}"
-                    onchange="nfItemSelecionarCatalogo(this)"
-                    style="flex:1;border:1.5px solid ${cores[autoTipo]};border-radius:5px;padding:6px 8px;font-size:11px;">
-                    <option value="">— Selecione do catálogo —</option>
-                    ${optsPorCat[autoTipo]}
-                </select>
+            <div style="display:flex;gap:6px;position:relative;">
+                <div style="flex:1;position:relative;">
+                    <input type="text" class="nfItemCatInput nf-input" data-cat="${autoTipo}" data-catid="" data-nome=""
+                        placeholder="Digite para buscar no catálogo..." autocomplete="off"
+                        oninput="nfItemFiltrarCatalogo(this)"
+                        onfocus="nfItemFiltrarCatalogo(this)"
+                        onblur="setTimeout(()=>nfItemFecharDropdown(this),150)"
+                        style="width:100%;border:1.5px solid ${cores[autoTipo]};border-radius:5px;padding:6px 8px;font-size:11px;box-sizing:border-box;">
+                    <div class="nfItemCatDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--card-bg,#fff);border:1px solid #ccc;border-radius:5px;max-height:220px;overflow-y:auto;z-index:80;box-shadow:0 4px 14px rgba(0,0,0,.18);margin-top:2px;"></div>
+                </div>
                 <button type="button" onclick="nfItemAbrirNovoCatalogo(this)" title="Criar novo no catálogo"
                     style="background:#1a2a6e;color:#fff;border:none;border-radius:5px;padding:0 11px;font-size:13px;font-weight:700;cursor:pointer;">+</button>
             </div>
@@ -28046,14 +28013,93 @@ function reagAdicionarItemNota(nomeNF) {
     wrap.appendChild(div);
 
     // Auto-selecionar se encontrou match no catálogo
-    if (autoVal) {
-        const sel = div.querySelector('.nfItemCatSelect');
-        if (sel) { sel.value = autoVal; nfItemSelecionarCatalogo(sel); }
+    if (autoItem) {
+        const input = div.querySelector('.nfItemCatInput');
+        if (input) nfItemEscolherCatalogo(input, autoTipo, autoItem);
     }
     return div;
 }
 
-// ── Muda categoria do item e recarrega o select com o catálogo correto ─
+// ── Retorna a lista do catálogo correspondente à categoria ────────────
+function _nfItemCatalogoLista(cat) {
+    return cat==='material' ? (_catMateriais||[])
+         : cat==='equipamento' ? (_catEquipamentos||[])
+         : (_catalogoProdutos||[]);
+}
+
+// ── Filtra o catálogo conforme o usuário digita e mostra o dropdown ───
+function nfItemFiltrarCatalogo(input) {
+    const cat = input.getAttribute('data-cat') || 'quimico';
+    const row = input.closest('.nf-item-row'); if (!row) return;
+    const dropdown = row.querySelector('.nfItemCatDropdown'); if (!dropdown) return;
+    const query = input.value.trim().toLowerCase();
+    const lista = _nfItemCatalogoLista(cat);
+
+    const filtrados = lista
+        .filter(p => !query || (p.nome||'').toLowerCase().includes(query) || (p.codigo||'').toLowerCase().includes(query))
+        .sort((a,b) => a.nome.localeCompare(b.nome,'pt-BR'))
+        .slice(0, 50);
+
+    if (!filtrados.length) {
+        dropdown.innerHTML = `<div style="padding:8px 10px;font-size:11px;color:#999;">Nenhum produto encontrado${query?` para "${input.value.trim()}"`:''}.</div>`;
+    } else {
+        dropdown.innerHTML = filtrados.map(p => `
+            <div class="nfItemCatOpt" data-id="${p.id}"
+                onmousedown="event.preventDefault(); nfItemEscolherCatalogoPorId(this, '${cat}', '${String(p.id).replace(/'/g,"\\'")}')"
+                style="padding:7px 10px;font-size:11px;cursor:pointer;border-bottom:1px solid #f0f0f0;color:#2c3e50;"
+                onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+                <span style="font-weight:800;color:#1a2a6e;">[${p.codigo||'—'}]</span> <span style="color:#2c3e50;">${(p.nome||'').replace(/</g,'&lt;')}</span>
+            </div>`).join('')
+            + (lista.length > filtrados.length ? `<div style="padding:6px 10px;font-size:10px;color:#999;">Mostrando ${filtrados.length} de ${lista.length} — digite mais para refinar</div>` : '');
+    }
+    dropdown.style.display = 'block';
+}
+
+function nfItemFecharDropdown(input) {
+    const row = input.closest('.nf-item-row'); if (!row) return;
+    const dropdown = row.querySelector('.nfItemCatDropdown');
+    if (dropdown) dropdown.style.display = 'none';
+}
+
+// ── Handler de clique num item do dropdown ─────────────────────────────
+function nfItemEscolherCatalogoPorId(el, cat, id) {
+    const input = el.closest('.nf-item-row').querySelector('.nfItemCatInput');
+    const item = _nfItemCatalogoLista(cat).find(p => String(p.id) === String(id));
+    if (input && item) nfItemEscolherCatalogo(input, cat, item);
+    const row = el.closest('.nf-item-row');
+    const dropdown = row && row.querySelector('.nfItemCatDropdown');
+    if (dropdown) dropdown.style.display = 'none';
+}
+
+// ── Aplica a seleção de um produto do catálogo ao item da NF ──────────
+function nfItemEscolherCatalogo(input, cat, item) {
+    const row = input.closest('.nf-item-row'); if (!row) return;
+    const cores = { quimico:'#1a2a6e', material:'#e67e22', equipamento:'#8e44ad' };
+
+    input.value = `[${item.codigo||'—'}] ${item.nome}`;
+    input.setAttribute('data-catid', item.id);
+    input.setAttribute('data-nome', item.nome);
+
+    // Salva nos dados do row (mesmo contrato usado por reagSalvarNota)
+    row.dataset.itemTipo  = cat;
+    row.dataset.itemCatId = String(item.id);
+    row.dataset.itemNome  = item.nome;
+
+    // Preenche unidade automaticamente
+    const unSel = row.querySelector('.nfItemUnidade');
+    if (unSel) unSel.value = item.unidade || 'un';
+
+    // Mostra info
+    const info = row.querySelector('.nfItemProdInfo');
+    if (info) {
+        info.style.display = 'flex';
+        info.style.borderColor = cores[cat] || '#aed6f1';
+        const codEl = row.querySelector('.nfItemProdCodigo'); if (codEl) codEl.textContent = item.codigo || '—';
+        const nomEl = row.querySelector('.nfItemProdNome');   if (nomEl) nomEl.textContent = item.nome;
+    }
+}
+
+// ── Muda categoria do item e limpa a busca do catálogo ─────────────────
 function nfItemMudarCategoria(btn) {
     const cat = btn.getAttribute('data-cat');
     const row = btn.closest('.nf-item-row'); if (!row) return;
@@ -28067,20 +28113,13 @@ function nfItemMudarCategoria(btn) {
         b.style.color       = (c===cat) ? '#fff'   : cores[c];
     });
 
-    // Reconstrói select com catálogo correto
-    const sel = row.querySelector('.nfItemCatSelect'); if (!sel) return;
-    sel.setAttribute('data-cat', cat);
-    sel.style.borderColor = cores[cat];
-
-    const _buildOpts = (lista, pref, tipo) => (lista||[])
-        .sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'))
-        .map(p=>`<option value="${pref}${p.id}" data-tipo="${tipo}" data-catid="${p.id}" data-unidade="${p.unidade||'un'}">[${p.codigo||'—'}] ${p.nome}</option>`)
-        .join('');
-
-    const opts = cat==='quimico'  ? _buildOpts(_catalogoProdutos,'q_','quimico')
-               : cat==='material' ? _buildOpts(_catMateriais,    'm_','material')
-               :                    _buildOpts(_catEquipamentos, 'e_','equipamento');
-    sel.innerHTML = '<option value="">— Selecione do catálogo —</option>' + opts;
+    // Reseta o campo de busca do catálogo para a nova categoria
+    const input = row.querySelector('.nfItemCatInput'); if (!input) return;
+    input.setAttribute('data-cat', cat);
+    input.setAttribute('data-catid', '');
+    input.setAttribute('data-nome', '');
+    input.value = '';
+    input.style.borderColor = cores[cat];
 
     // Unidade padrão por categoria
     const unSel = row.querySelector('.nfItemUnidade');
@@ -28092,75 +28131,24 @@ function nfItemMudarCategoria(btn) {
     delete row.dataset.itemTipo; delete row.dataset.itemCatId; delete row.dataset.itemNome;
 }
 
-// ── Preenche info do produto ao selecionar no catálogo ────────────────
-function nfItemSelecionarCatalogo(sel) {
-    const row = sel.closest('.nf-item-row'); if (!row) return;
-    const opt = sel.options[sel.selectedIndex];
-    const info = row.querySelector('.nfItemProdInfo');
-    if (!sel.value || !opt) { if (info) info.style.display='none'; return; }
-
-    const tipo    = opt.getAttribute('data-tipo') || sel.getAttribute('data-cat') || 'quimico';
-    const catId   = opt.getAttribute('data-catid') || '';
-    const unidade = opt.getAttribute('data-unidade') || 'un';
-    const nome    = opt.textContent.replace(/^\[.*?\]\s*/,'').trim();
-    const codigo  = (opt.textContent.match(/\[(.*?)\]/) || [])[1] || '';
-    const cores   = { quimico:'#1a2a6e', material:'#e67e22', equipamento:'#8e44ad' };
-
-    // Salva nos dados do row
-    row.dataset.itemTipo  = tipo;
-    row.dataset.itemCatId = catId;
-    row.dataset.itemNome  = nome;
-
-    // Preenche unidade automaticamente
-    const unSel = row.querySelector('.nfItemUnidade');
-    if (unSel) unSel.value = unidade;
-
-    // Mostra info
-    if (info) {
-        info.style.display = 'flex';
-        info.style.borderColor = cores[tipo]||'#aed6f1';
-        const codEl = row.querySelector('.nfItemProdCodigo'); if(codEl) codEl.textContent=codigo;
-        const nomEl = row.querySelector('.nfItemProdNome');   if(nomEl) nomEl.textContent=nome;
-    }
-}
-
 // ── Abre catálogo certo para criar produto direto da NF ───────────────
 function nfItemAbrirNovoCatalogo(btn) {
     const row = btn.closest('.nf-item-row'); if (!row) return;
-    const sel = row.querySelector('.nfItemCatSelect');
-    const cat = sel ? sel.getAttribute('data-cat') : 'quimico';
-    if (cat==='quimico')      { if(typeof catalogoAbrirModal==='function')  catalogoAbrirModal().then(()=>catalogoAbrirFormNovo()); }
-    else if (cat==='material'){ if(typeof catMatAbrirModal==='function')    catMatAbrirModal().then(()=>catMatAbrirFormNovo()); }
-    else                      { if(typeof catEqAbrirModal==='function')     catEqAbrirModal().then(()=>catEqAbrirFormNovo()); }
-}
-
-// ── Re-detecta categoria da NF com base em todos os itens atuais ──
-function reagNFRedetectarCategoria() {
-    // Coletar nomes dos itens visíveis
-    const itens = [];
-    document.querySelectorAll('#reagNFItens > div').forEach(div => {
-        const badge = div.querySelector('span[style*="font-weight:900"]');
-        const sel   = div.querySelector('select.reagNFItemSelect');
-        const nome  = (badge ? badge.textContent.trim() : '')
-                   || (sel && sel.selectedIndex > 0 ? sel.options[sel.selectedIndex].text : '');
-        const custoEl = div.querySelector('input.reagNFItemCusto');
-        const qtdEl   = div.querySelector('input[type="number"]:not(.reagNFItemCusto)');
-        const custo = custoEl ? parseFloat(custoEl.value) || 0 : 0;
-        const qtd   = qtdEl  ? parseFloat(qtdEl.value)   || 0 : 0;
-        if (nome) itens.push({ nome, custo, qtd });
-    });
-    if (!itens.length) return;
-
-    const deteccao = _reagDetectarCategoriaNF(itens);
-    const { predominante } = deteccao;
-
-    // Selecionar radio (categoria predominante do conjunto de itens)
-    const radioId = {
-        quimico:'reagNFCatQuimico', material:'reagNFCatMaterial',
-        equipamento:'reagNFCatEquip'
-    }[predominante] || 'reagNFCatQuimico';
-    const radio = document.getElementById(radioId);
-    if (radio && !radio.checked) { radio.checked = true; reagNFAtualizarCategoria(); }
+    const input = row.querySelector('.nfItemCatInput');
+    const cat = input ? input.getAttribute('data-cat') : 'quimico';
+    const nomeSugerido = (input && input.value ? input.value.replace(/^\[.*?\]\s*/,'') : '') || row.dataset.nomeNF || '';
+    const preencher = (campoId, tipo) => {
+        setTimeout(() => {
+            const campo = document.getElementById(campoId);
+            if (campo && nomeSugerido) {
+                campo.value = nomeSugerido;
+                catFormNomeFiltrar(campo, tipo);
+            }
+        }, 150);
+    };
+    if (cat==='quimico')      { if(typeof catalogoAbrirModal==='function')  catalogoAbrirModal().then(()=>{ catalogoAbrirFormNovo(); preencher('catalogoFormNome','quimico'); }); }
+    else if (cat==='material'){ if(typeof catMatAbrirModal==='function')    catMatAbrirModal().then(()=>{ catMatAbrirFormNovo(); preencher('catMatFormNome','material'); }); }
+    else                      { if(typeof catEqAbrirModal==='function')     catEqAbrirModal().then(()=>{ catEqAbrirFormNovo(); preencher('catEqFormNome','equipamento'); }); }
 }
 
 function _reagVerificarAlertasLoteNF() {
@@ -28226,6 +28214,7 @@ async function reagSalvarNota() {
 
     // ── Coletar itens por categoria ───────────────────────────────
     const itensQ = [], itensM = [], itensE = [];
+    const itensNaoVinculados = []; // itens com qtd preenchida mas sem produto do catálogo selecionado
     document.querySelectorAll('#reagNFItens > div').forEach(div => {
         const tipo    = div.dataset.itemTipo  || 'quimico';
         const catId   = div.dataset.itemCatId || '';
@@ -28242,18 +28231,50 @@ async function reagSalvarNota() {
         const custo   = custoEl ? parseFloat(custoEl.value)||null : null;
         const pfEl    = div.querySelector('.reagNFItemPF');
         const pf      = pfEl ? pfEl.checked : false;
-        if (!qtd || (!catId && !nome)) return;
-        const item = { tipo, catId, nome, qtd, unidade, lote, validade, custo, pf };
+        if (!qtd) return; // linha sem quantidade nenhuma: ignora de fato (item vazio)
+        if (!catId && !nome) {
+            // Tinha quantidade preenchida mas nenhum produto do catálogo foi vinculado —
+            // antes isso era descartado em silêncio. Agora avisamos e bloqueamos o salvamento.
+            itensNaoVinculados.push({ nomeNF: div.dataset.nomeNF || '(sem nome da NF-e)', qtd, unidade });
+            return;
+        }
+        const nomeNF = div.dataset.nomeNF || '';
+        const item = { tipo, catId, nome, nomeNF, qtd, unidade, lote, validade, custo, pf };
         if (tipo==='material')    itensM.push(item);
         else if (tipo==='equipamento') itensE.push(item);
         else                      itensQ.push(item);
     });
+
+    if (itensNaoVinculados.length) {
+        const lista = itensNaoVinculados.map(i => `• ${i.nomeNF} — ${i.qtd} ${i.unidade}`).join('\n');
+        sgqToast(`⚠️ ${itensNaoVinculados.length} item(ns) da NF não foram vinculados a um produto do catálogo e NÃO seriam lançados. Selecione o produto correspondente (ou cadastre um novo com "+") antes de salvar:\n${lista}`, 'warning');
+        return;
+    }
 
     if (!itensQ.length && !itensM.length && !itensE.length) {
         sgqToast('⚠️ Selecione ao menos um produto com quantidade.','warning'); return;
     }
 
     const hoje = _reagHoje();
+
+    // ── Insere com fallback: tenta com catalogo_id + nome_nf_original;
+    //    se a coluna ainda não existir no banco (42703), vai removendo até funcionar ──
+    async function _reagInsertFallback(tabela, rowBase, extras) {
+        let campos = { ...rowBase, ...extras };
+        let chaves = Object.keys(extras);
+        while (true) {
+            const { data, error } = await _sbClient.from(tabela).insert(campos).select().single();
+            if (!error) return { data, error: null };
+            const msgColuna = chaves.find(k => (error.message||'').includes(k));
+            if (error.code === '42703' && msgColuna) {
+                delete campos[msgColuna];
+                chaves = chaves.filter(k => k !== msgColuna);
+                continue; // tenta de novo sem essa coluna
+            }
+            return { data: null, error };
+        }
+    }
+
     try {
         // ── 1. Produtos Químicos → novo lote em produtos_quimicos ──
         for (const item of itensQ) {
@@ -28271,11 +28292,8 @@ async function reagSalvarNota() {
                 custo_unit:  item.custo,
                 minimo:      cat ? (cat.minimo||0) : 0
             };
-            let {data:ins, error:err} = await _sbClient.from('produtos_quimicos')
-                .insert({...row, catalogo_id: item.catId||null}).select().single();
-            if (err && (err.code==='42703'||(err.message||'').includes('catalogo_id'))) {
-                ({data:ins, error:err} = await _sbClient.from('produtos_quimicos').insert(row).select().single());
-            }
+            let {data:ins, error:err} = await _reagInsertFallback('produtos_quimicos', row,
+                { catalogo_id: item.catId||null, nome_nf_original: item.nomeNF||null });
             if (err) throw err;
             if (ins) {
                 _reagentes.push(_reagNormalizar({...ins, catalogo_id:item.catId||null}));
@@ -28299,11 +28317,8 @@ async function reagSalvarNota() {
                 entrada:     hoje,
                 custo_unit:  item.custo
             };
-            let {data:ins, error:err} = await _sbClient.from('materiais')
-                .insert({...row, catalogo_id:item.catId||null}).select().single();
-            if (err && (err.code==='42703'||(err.message||'').includes('catalogo_id'))) {
-                ({data:ins, error:err} = await _sbClient.from('materiais').insert(row).select().single());
-            }
+            let {data:ins, error:err} = await _reagInsertFallback('materiais', row,
+                { catalogo_id: item.catId||null, nome_nf_original: item.nomeNF||null });
             if (err) throw err;
             if (ins) {
                 if (typeof _materiais!=='undefined') _materiais.push(ins);
@@ -28324,11 +28339,8 @@ async function reagSalvarNota() {
                 qtd:          item.qtd,
                 possui_calib: cat && cat.requerCalib ? 'sim' : 'nao'
             };
-            let {data:ins, error:err} = await _sbClient.from('equipamentos')
-                .insert({...row, catalogo_id:item.catId||null}).select().single();
-            if (err && (err.code==='42703'||(err.message||'').includes('catalogo_id'))) {
-                ({data:ins, error:err} = await _sbClient.from('equipamentos').insert(row).select().single());
-            }
+            let {data:ins, error:err} = await _reagInsertFallback('equipamentos', row,
+                { catalogo_id: item.catId||null, nome_nf_original: item.nomeNF||null });
             if (err) throw err;
             if (ins) {
                 if (typeof _equipamentos!=='undefined') _equipamentos.push(ins);
@@ -28364,7 +28376,13 @@ async function reagSalvarNota() {
         _reagNotas.unshift({...nota, id:'NF_'+Date.now()});
 
         reagFecharModalNota();
+        // Limpa todos os filtros que poderiam esconder os itens recém-lançados na tela
         const fs = document.getElementById('reagFiltroStatus'); if(fs&&fs.value!=='')fs.value='';
+        const fb = document.getElementById('reagFiltroBusca'); if(fb&&fb.value!=='')fb.value='';
+        const fc = document.getElementById('reagFiltroControlado'); if(fc&&fc.checked) fc.checked=false;
+        const fz = document.getElementById('reagFiltroOcultarZerado'); if(fz&&fz.checked) fz.checked=false;
+        const mfb = document.getElementById('matFiltroNome'); if(mfb&&mfb.value!=='')mfb.value='';
+        const efb = document.getElementById('eqFiltroNome'); if(efb&&efb.value!=='')efb.value='';
         reagRenderTabela(); reagRenderNotas(); reagAtualizarCards(); reagVerificarAlertas();
         if (typeof matRenderTabela==='function') matRenderTabela();
         if (typeof eqRenderTabela==='function')  eqRenderTabela();
@@ -30815,6 +30833,56 @@ html[data-theme="dark"] #reagModalCadastro input::placeholder,
 html[data-theme="dark"] #reagModalConsumo input::placeholder,
 html[data-theme="dark"] #reagModalNota input::placeholder {
     color: #484f58 !important;
+}
+
+/* Dropdown de busca do catálogo (item na NF) */
+html[data-theme="dark"] #reagModalNota .nfItemCatDropdown {
+    background: #0d1117 !important;
+    border-color: #30363d !important;
+}
+html[data-theme="dark"] #reagModalNota .nfItemCatOpt {
+    color: #e6edf3 !important;
+    border-bottom-color: #30363d !important;
+}
+html[data-theme="dark"] #reagModalNota .nfItemCatOpt span {
+    color: #e6edf3 !important;
+}
+html[data-theme="dark"] #reagModalNota .nfItemCatOpt span:first-child {
+    color: #58a6ff !important;
+}
+html[data-theme="dark"] #reagModalNota .nfItemCatOpt:hover {
+    background: rgba(88,166,255,0.12) !important;
+}
+
+/* Dropdown de padronização de nome (cadastro no catálogo) */
+html[data-theme="dark"] #catalogoFormNomeDropdown,
+html[data-theme="dark"] #catMatFormNomeDropdown,
+html[data-theme="dark"] #catEqFormNomeDropdown {
+    background: #0d1117 !important;
+    border-color: #30363d !important;
+}
+html[data-theme="dark"] #catalogoFormNomeDropdown > div,
+html[data-theme="dark"] #catMatFormNomeDropdown > div,
+html[data-theme="dark"] #catEqFormNomeDropdown > div {
+    color: #e6edf3 !important;
+    border-bottom-color: #30363d !important;
+}
+html[data-theme="dark"] #catalogoFormNomeDropdown > div span,
+html[data-theme="dark"] #catMatFormNomeDropdown > div span,
+html[data-theme="dark"] #catEqFormNomeDropdown > div span {
+    color: #e6edf3 !important;
+}
+html[data-theme="dark"] #catalogoFormNomeDropdown > div span:first-child,
+html[data-theme="dark"] #catMatFormNomeDropdown > div span:first-child,
+html[data-theme="dark"] #catEqFormNomeDropdown > div span:first-child {
+    color: #58a6ff !important;
+}
+html[data-theme="dark"] #catalogoFormNomeAviso,
+html[data-theme="dark"] #catMatFormNomeAviso,
+html[data-theme="dark"] #catEqFormNomeAviso {
+    background: #3a2e00 !important;
+    border-color: #7a5c00 !important;
+    color: #ffcf6b !important;
 }
 
 /* Labels (color:#555 → claro) */
@@ -34616,6 +34684,79 @@ function catalogoRender() {
 }
 
 // ── Abrir form novo ───────────────────────────────────────────────────
+// ── Padronização de nomes: busca no catálogo já cadastrado ao criar/editar produto ──
+function _catFormConfig(tipo) {
+    const cfgs = {
+        quimico:     { lista: () => _catalogoProdutos, editId: () => _catalogoEditId, campoId: 'catalogoFormNome', dropdownId: 'catalogoFormNomeDropdown', avisoId: 'catalogoFormNomeAviso', abrirEditar: (id) => catalogoAbrirFormEditar(id) },
+        material:    { lista: () => _catMateriais,     editId: () => _catMatEditId,   campoId: 'catMatFormNome',   dropdownId: 'catMatFormNomeDropdown',   avisoId: 'catMatFormNomeAviso',   abrirEditar: (id) => catMatAbrirFormEditar(id) },
+        equipamento: { lista: () => _catEquipamentos,  editId: () => _catEqEditId,    campoId: 'catEqFormNome',    dropdownId: 'catEqFormNomeDropdown',    avisoId: 'catEqFormNomeAviso',    abrirEditar: (id) => catEqAbrirFormEditar(id) }
+    };
+    return cfgs[tipo] || cfgs.quimico;
+}
+
+function catFormNomeFiltrar(input, tipo) {
+    const cfg = _catFormConfig(tipo);
+    const dropdown = document.getElementById(cfg.dropdownId);
+    const aviso = document.getElementById(cfg.avisoId);
+    if (aviso) aviso.style.display = 'none';
+    if (!dropdown) return;
+
+    const query = input.value.trim().toLowerCase();
+    const editId = cfg.editId();
+    const lista = (cfg.lista() || []).filter(p => String(p.id) !== String(editId));
+
+    const filtrados = lista
+        .filter(p => !query || (p.nome||'').toLowerCase().includes(query) || (p.codigo||'').toLowerCase().includes(query))
+        .sort((a,b) => a.nome.localeCompare(b.nome,'pt-BR'))
+        .slice(0, 50);
+
+    if (!filtrados.length) {
+        dropdown.innerHTML = query
+            ? `<div style="padding:8px 10px;font-size:11px;color:#27ae60;">✅ Nenhum produto parecido no catálogo — será criado como novo.</div>`
+            : `<div style="padding:8px 10px;font-size:11px;color:#999;">Digite para ver produtos já cadastrados...</div>`;
+    } else {
+        dropdown.innerHTML = filtrados.map(p => `
+            <div data-id="${p.id}"
+                onmousedown="event.preventDefault(); catFormNomeEscolher('${tipo}', '${String(p.id).replace(/'/g,"\\'")}')"
+                style="padding:7px 10px;font-size:11px;cursor:pointer;border-bottom:1px solid #f0f0f0;color:#2c3e50;"
+                onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+                <span style="font-weight:800;color:#1a2a6e;">[${p.codigo||'—'}]</span> <span style="color:#2c3e50;">${(p.nome||'').replace(/</g,'&lt;')}</span>
+            </div>`).join('');
+    }
+    dropdown.style.display = 'block';
+}
+
+function catFormNomeFecharDropdown(tipo) {
+    const cfg = _catFormConfig(tipo);
+    const dropdown = document.getElementById(cfg.dropdownId);
+    if (dropdown) dropdown.style.display = 'none';
+}
+
+function catFormNomeEscolher(tipo, id) {
+    const cfg = _catFormConfig(tipo);
+    const item = (cfg.lista() || []).find(p => String(p.id) === String(id));
+    if (!item) return;
+    const dropdown = document.getElementById(cfg.dropdownId);
+    if (dropdown) dropdown.style.display = 'none';
+
+    const editId = cfg.editId();
+    if (editId) {
+        // Já está editando um produto — só padroniza o texto digitado
+        const input = document.getElementById(cfg.campoId);
+        if (input) input.value = item.nome;
+        return;
+    }
+
+    // Modo "novo produto": avisa que já existe algo parecido, sem preencher/bloquear
+    const aviso = document.getElementById(cfg.avisoId);
+    if (aviso) {
+        aviso.style.display = 'flex';
+        aviso.innerHTML = `⚠️ Já existe: <strong>[${item.codigo||'—'}] ${item.nome}</strong>
+            <button type="button" onclick="_catFormConfig('${tipo}').abrirEditar('${String(id).replace(/'/g,"\\'")}')"
+                style="margin-left:auto;background:#e67e22;color:#fff;border:none;border-radius:5px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">Editar este produto</button>`;
+    }
+}
+
 function catalogoAbrirFormNovo() {
     _catalogoEditId = null;
     document.getElementById('catalogoFormTitulo').textContent  = '➕ Novo Produto no Catálogo';
@@ -34628,6 +34769,8 @@ function catalogoAbrirFormNovo() {
     document.getElementById('catalogoFormControlePF').checked  = false;
     document.getElementById('catalogoFormPortariaWrap').style.display = 'none';
     document.getElementById('catalogoFormPortaria').value      = '';
+    const avisoNovo = document.getElementById('catalogoFormNomeAviso'); if (avisoNovo) avisoNovo.style.display='none';
+    const ddNovo = document.getElementById('catalogoFormNomeDropdown'); if (ddNovo) ddNovo.style.display='none';
     document.getElementById('modalCatalogoForm').style.display = 'flex';
     setTimeout(() => document.getElementById('catalogoFormNome').focus(), 100);
 }
@@ -34647,6 +34790,8 @@ function catalogoAbrirFormEditar(id) {
     document.getElementById('catalogoFormControlePF').checked  = !!p.controlePF;
     document.getElementById('catalogoFormPortariaWrap').style.display = p.controlePF ? 'block' : 'none';
     document.getElementById('catalogoFormPortaria').value      = p.portaria || '';
+    const avisoEd = document.getElementById('catalogoFormNomeAviso'); if (avisoEd) avisoEd.style.display='none';
+    const ddEd = document.getElementById('catalogoFormNomeDropdown'); if (ddEd) ddEd.style.display='none';
     document.getElementById('modalCatalogoForm').style.display = 'flex';
 }
 
@@ -34896,6 +35041,8 @@ function catMatAbrirFormNovo(){
     document.getElementById('catMatFormCategoria').value='Outros';
     document.getElementById('catMatFormUnidade').value='un';
     document.getElementById('catMatFormMinimo').value='';
+    const avisoMatNovo=document.getElementById('catMatFormNomeAviso'); if(avisoMatNovo)avisoMatNovo.style.display='none';
+    const ddMatNovo=document.getElementById('catMatFormNomeDropdown'); if(ddMatNovo)ddMatNovo.style.display='none';
     document.getElementById('modalCatMatForm').style.display='flex';
     setTimeout(()=>document.getElementById('catMatFormNome').focus(),100);
 }
@@ -34910,6 +35057,8 @@ function catMatAbrirFormEditar(id){
     document.getElementById('catMatFormUnidade').value=p.unidade||'un';
     document.getElementById('catMatFormMinimo').value=p.minimo||'';
     document.getElementById('catMatFormObs').value=p.obs||'';
+    const avisoMatEd=document.getElementById('catMatFormNomeAviso'); if(avisoMatEd)avisoMatEd.style.display='none';
+    const ddMatEd=document.getElementById('catMatFormNomeDropdown'); if(ddMatEd)ddMatEd.style.display='none';
     document.getElementById('modalCatMatForm').style.display='flex';
 }
 function catMatFecharForm(){document.getElementById('modalCatMatForm').style.display='none';}
@@ -35045,6 +35194,8 @@ function catEqAbrirFormNovo(){
     ['catEqFormNome','catEqFormArea','catEqFormObs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     document.getElementById('catEqFormPeriodoCalib').value='';
     document.getElementById('catEqFormRequerCalib').checked=false;
+    const avisoEqNovo=document.getElementById('catEqFormNomeAviso'); if(avisoEqNovo)avisoEqNovo.style.display='none';
+    const ddEqNovo=document.getElementById('catEqFormNomeDropdown'); if(ddEqNovo)ddEqNovo.style.display='none';
     document.getElementById('modalCatEqForm').style.display='flex';
     setTimeout(()=>document.getElementById('catEqFormNome').focus(),100);
 }
@@ -35059,6 +35210,8 @@ function catEqAbrirFormEditar(id){
     document.getElementById('catEqFormPeriodoCalib').value=p.periodoCalib||'';
     document.getElementById('catEqFormObs').value=p.obs||'';
     document.getElementById('catEqFormRequerCalib').checked=!!p.requerCalib;
+    const avisoEqEd=document.getElementById('catEqFormNomeAviso'); if(avisoEqEd)avisoEqEd.style.display='none';
+    const ddEqEd=document.getElementById('catEqFormNomeDropdown'); if(ddEqEd)ddEqEd.style.display='none';
     document.getElementById('modalCatEqForm').style.display='flex';
 }
 function catEqFecharForm(){document.getElementById('modalCatEqForm').style.display='none';}
