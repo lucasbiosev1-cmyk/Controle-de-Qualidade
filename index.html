@@ -38254,14 +38254,14 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
 
     Object.entries(SCAN_CAMPO_MAP).forEach(([chave, cfg]) => {
       const rawVal = dados[chave];
-      let valStr = (rawVal === null || rawVal === undefined) ? '' : String(rawVal).trim();
+      // null/undefined = IA não leu; '0' (número) = IA leu zero; '-' = traço no laudo = 0
+      const iaNaoLeu = rawVal === null || rawVal === undefined;
+      let valStr = iaNaoLeu ? '' : String(rawVal).trim();
 
-      // Traço em campo numérico → '0'
+      // Traço isolado em campo numérico → '0'
       if (cfg.tipo === 'numero' && (valStr === '-' || valStr === '–' || valStr === '—')) valStr = '0';
-      // Campos numéricos com null/vazio → '0' (campo existe no laudo, valor era traço ou zero)
-      if (cfg.tipo === 'numero' && (valStr === '' || valStr === 'null')) valStr = '0';
 
-      // Campos select e numéricos sempre aparecem; texto/data/hora só se tiverem valor
+      // Campos select e numéricos sempre aparecem no painel; texto/data/hora só se tiverem valor
       const temValor = valStr !== '' && valStr !== 'null';
       if (!temValor && cfg.tipo !== 'select' && cfg.tipo !== 'numero' && chave !== 'fornecedor') return;
 
@@ -38282,10 +38282,33 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
       } else if (chave === 'fornecedor') {
         const lista = _getFornTodos();
         const vUp = (temValor ? valStr : '').toUpperCase().trim();
-        // Tenta match exato, depois parcial nos dois sentidos
-        const matched = lista.find(f => f.toUpperCase() === vUp)
-                     || lista.find(f => f.toUpperCase().includes(vUp) || vUp.includes(f.toUpperCase()))
-                     || '';
+
+        // Fuzzy match: calcula similaridade entre duas strings (0..1)
+        function _fuzzyScore(a, b) {
+          if (!a || !b) return 0;
+          if (a === b) return 1;
+          // Conta tokens da IA que aparecem no candidato
+          const tokA = a.split(/\s+/);
+          const tokB = b.split(/\s+/);
+          let hits = 0;
+          tokA.forEach(ta => { if (tokB.some(tb => tb.startsWith(ta.slice(0,3)) || ta.startsWith(tb.slice(0,3)))) hits++; });
+          return hits / Math.max(tokA.length, tokB.length);
+        }
+
+        // 1. Match exato
+        let matched = lista.find(f => f.toUpperCase() === vUp) || '';
+        // 2. Inclusão parcial
+        if (!matched) matched = lista.find(f => f.toUpperCase().includes(vUp) || vUp.includes(f.toUpperCase())) || '';
+        // 3. Fuzzy por tokens — encontra melhor score
+        if (!matched && vUp) {
+          let best = '', bestScore = 0.5; // threshold mínimo de 50%
+          lista.forEach(f => {
+            const score = _fuzzyScore(vUp, f.toUpperCase());
+            if (score > bestScore) { bestScore = score; best = f; }
+          });
+          matched = best;
+        }
+
         const opcoes = lista.map(f => ({value: f, text: f}));
         inputEl = _criarSelectEl(opcoes, matched);
         window._scanDadosEditados[chave] = matched;
@@ -38303,8 +38326,9 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
         inputEl.addEventListener('input', () => { window._scanDadosEditados[chave] = inputEl.value.trim(); });
 
       } else if (cfg.tipo === 'numero') {
+        // valStr vazio = IA não leu → mostra vazio no painel (não força 0)
         const num = parseFloat(valStr.replace(',', '.'));
-        const v = isNaN(num) ? '0' : String(num);
+        const v = (valStr === '' || valStr === 'null') ? '' : (isNaN(num) ? '' : String(num));
         inputEl = _criarInput(v);
         window._scanDadosEditados[chave] = v;
         inputEl.addEventListener('input', () => { window._scanDadosEditados[chave] = inputEl.value.trim(); });
@@ -38579,7 +38603,7 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
     margin-left:2px;
     letter-spacing:0;
     line-height:1.4;
-  ">v13</span>
+  ">v15</span>
 </div>
 
 <script>
