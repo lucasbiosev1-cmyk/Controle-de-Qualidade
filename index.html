@@ -38232,22 +38232,28 @@ Produto deve ser exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 0
 }`;
 
     try {
-      // Usa exatamente o mesmo padrão do sistema: chave local → direto; sem chave → proxy Supabase
+      // Verifica chave antes de tentar
       const chaveLocal = typeof _iaGetChave === 'function' ? _iaGetChave() : (localStorage.getItem('_ia_api_key') || '');
-      const url     = chaveLocal ? _IA_DIRECT_URL : _IA_PROXY_URL;
-      const headers = { 'Content-Type': 'application/json' };
-
-      if (chaveLocal) {
-        headers['Authorization'] = 'Bearer ' + chaveLocal;
-      } else {
-        try {
-          const { data: { session } } = await _sbClient.auth.getSession();
-          if (session?.access_token) headers['Authorization'] = 'Bearer ' + session.access_token;
-        } catch(e) {}
+      if (!chaveLocal) {
+        // Mostra status com botão para configurar chave
+        const statusEl = document.getElementById('scanClassStatus');
+        statusEl.innerHTML = '🔑 Chave OpenAI não configurada. <button onclick="_iaConfigurarChave();scanClassAnalisar();" style="background:#8e44ad;color:white;border:none;border-radius:5px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;margin-left:8px;">⚙️ Configurar Chave Agora</button>';
+        statusEl.style.color = '#7d3c98';
+        statusEl.style.background = '#f5eef8';
+        statusEl.style.borderColor = '#c9a0dc';
+        statusEl.style.display = 'block';
+        document.getElementById('btnScanClassAnalisar').disabled = false;
+        return;
       }
 
+      const url     = _IA_DIRECT_URL;
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + chaveLocal
+      };
+
       const body = {
-        model: _IA_MODEL,   // gpt-4o-mini — mesmo modelo do sistema, suporta visão
+        model: _IA_MODEL,
         max_tokens: 800,
         messages: [
           { role: 'system', content: systemPrompt },
@@ -38284,8 +38290,12 @@ Produto deve ser exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 0
 
     } catch(e) {
       const msg = e.message || String(e);
-      if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('fetch')) {
-        _scanSetStatus('⚠️ Sem conexão com a IA. Configure sua Chave OpenAI nas Configurações do sistema (⚙️ → IA → Chave API) e verifique se há internet.', '#e67e22', '#fef9e7');
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+        _scanSetStatus('❌ Sem conexão com a OpenAI. Verifique sua internet e se a chave está correta.', '#e74c3c', '#fdecea');
+      } else if (msg.includes('401') || msg.includes('invalid_api_key') || msg.includes('Incorrect API key')) {
+        const statusEl = document.getElementById('scanClassStatus');
+        statusEl.innerHTML = '🔑 Chave OpenAI inválida ou expirada. <button onclick="_iaConfigurarChave();" style="background:#e74c3c;color:white;border:none;border-radius:5px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;margin-left:8px;">⚙️ Corrigir Chave</button>';
+        statusEl.style.color = '#c0392b'; statusEl.style.background = '#fdecea'; statusEl.style.borderColor = '#e74c3c'; statusEl.style.display = 'block';
       } else {
         _scanSetStatus('❌ Erro ao analisar: ' + msg, '#e74c3c', '#fdecea');
       }
