@@ -38355,11 +38355,17 @@ Local/Destino: observe checkboxes ou marcações no cabeçalho. Os valores poss�
     // Abre o modal de cadastro primeiro
     if (typeof abrirModalCadastroClass === 'function') abrirModalCadastroClass();
 
-    // Aguarda o modal abrir e então preenche com os dados revisados
+    // Aguarda modal abrir + reset + classAtualizarCamposProduto('') terminar
     setTimeout(() => {
-      // 1. Campos simples
+      // 1. Produto PRIMEIRO — classAtualizarCamposProduto mostra/oculta campos numéricos
+      _scanPreencherCampo('cadProdutoClass', dados.produto, 'select');
+
+      // 2. Data, hora, obs
       _scanPreencherCampo('cadDataClass',       dados.data,        'data');
       _scanPreencherCampo('cadHoraClass',        dados.hora,        'hora');
+      _scanPreencherCampo('cadObsClass',         dados.observacao,  'texto');
+
+      // 3. Campos numéricos — '0' também é preenchido (campos com traço no laudo)
       _scanPreencherCampo('cadQueimadoClass',    dados.queimado,    'numero');
       _scanPreencherCampo('cadArdidoClass',      dados.ardido,      'numero');
       _scanPreencherCampo('cadMofadoClass',      dados.mofado,      'numero');
@@ -38378,14 +38384,6 @@ Local/Destino: observe checkboxes ou marcações no cabeçalho. Os valores poss�
       _scanPreencherCampo('cadFumonisinaClass',  dados.fumonisinas, 'numero');
       _scanPreencherCampo('cadZearalenonaClass', dados.zearalenona, 'numero');
       _scanPreencherCampo('cadDonClass',         dados.don,         'numero');
-      _scanPreencherCampo('cadObsClass',         dados.observacao,  'texto');
-
-      // 2. Produto (select)
-      _scanPreencherCampo('cadProdutoClass', dados.produto, 'select');
-      if (typeof classAtualizarCamposProduto === 'function') {
-        const selProd = document.getElementById('cadProdutoClass');
-        if (selProd && selProd.value) classAtualizarCamposProduto(selProd.value);
-      }
 
       // 3. Local/Destino — preenche sem chamar autoFornecedorClass
       //    (autoFornecedorClass limparia fornecedor/produto para locais sem mapeamento fixo)
@@ -38426,81 +38424,59 @@ Local/Destino: observe checkboxes ou marcações no cabeçalho. Os valores poss�
           sgqToast('✅ Formulário preenchido! Confira os campos e salve.', 'success', 6000);
         }
       }, 150);
-    }, 350);
+    }, 600);
   };
 
   // ── Preencher um campo individual ────────────────────────────
   function _scanPreencherCampo(id, valor, tipo) {
-    if (valor === null || valor === undefined || valor === '') return;
+    // Permite '0' (zero) — só descarta null, undefined e string vazia
+    if (valor === null || valor === undefined) return;
+    const v = String(valor).trim();
+    if (v === '' || v === 'null' || v === 'undefined') return;
     const el = document.getElementById(id);
     if (!el) return;
-    const v = String(valor).trim();
-    if (!v || v === 'null') return;
+    // Campos disabled: habilita temporariamente para receber valor
+    const eraDisabled = el.disabled;
+    if (eraDisabled) el.disabled = false;
 
     if (tipo === 'select') {
-      // Tenta match exato → text match → substring — value e text
       const opts = Array.from(el.options).filter(o => o.value);
       const vUp = v.toUpperCase();
       let match = opts.find(o => o.value.toUpperCase() === vUp);
       if (!match) match = opts.find(o => o.text.toUpperCase() === vUp);
-      // Lógica especial para Local/Destino (checkboxes combinados no laudo)
       if (!match && id === 'cadLocalClass') {
         const temProd  = /PRODU[CÇ]/i.test(vUp);
         const temSilo1 = /SILO\s*(N?[Ooº°])?\s*1\b/i.test(vUp) || /\bSILO\s+1\b/i.test(vUp);
         const temSilo2 = /SILO\s*(N?[Ooº°])?\s*2\b/i.test(vUp) || /\bSILO\s+2\b/i.test(vUp);
         const temMilho = /MILHO/i.test(vUp);
         const temSoja  = /SOJA/i.test(vUp);
-        if (temProd && temSilo2) match = opts.find(o => o.value === 'Produção Silo 2');
-        else if (temProd && temSilo1) match = opts.find(o => o.value === 'Produção Silo 1');
+        if      (temProd && temSilo2)  match = opts.find(o => o.value === 'Produção Silo 2');
+        else if (temProd && temSilo1)  match = opts.find(o => o.value === 'Produção Silo 1');
+        else if (temProd)              match = opts.find(o => o.value === 'Produção Silo 1');
         else if (temSilo2 && temMilho) match = opts.find(o => o.value === 'Silo 2 Milho');
         else if (temSilo1 && temMilho) match = opts.find(o => o.value === 'Silo 1 Milho');
         else if (temSilo1 && temSoja)  match = opts.find(o => o.value === 'Silo 1 Soja');
-        else if (temProd) match = opts.find(o => o.value === 'Produção Silo 1');
       }
       if (!match) match = opts.find(o => o.value.toUpperCase().includes(vUp) || vUp.includes(o.value.toUpperCase()));
       if (!match) match = opts.find(o => o.text.toUpperCase().includes(vUp) || vUp.includes(o.text.toUpperCase()));
       if (match) {
         el.value = match.value;
+        if (id === 'cadProdutoClass' && typeof classAtualizarCamposProduto === 'function') classAtualizarCamposProduto(match.value);
         el.dispatchEvent(new Event('change'));
       }
-      return;
-    }
-
-    if (tipo === 'autocomplete') {
-      // Campo de texto com autocomplete (ex: fornecedor)
+    } else if (tipo === 'numero') {
+      const num = parseFloat(v.replace(',', '.'));
+      el.value = isNaN(num) ? 0 : num;
+    } else if (tipo === 'data') {
+      let fmt = v;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(v)) { const [y,m,d] = v.split('-'); fmt = d+'/'+m+'/'+y; }
+      el.value = fmt;
+    } else {
+      // texto, hora, autocomplete
       el.value = v;
-      // Dispara 'input' para acionar classFornecedorAutoFill e lista de autocomplete
-      el.dispatchEvent(new Event('input', { bubbles: true }));
-      // Dispara 'change' também para garantir hooks secundários
-      el.dispatchEvent(new Event('change', { bubbles: true }));
-      // Fecha a lista do autocomplete após preenchimento
-      if (typeof sgqAutocompleteFechar === 'function') {
-        setTimeout(() => sgqAutocompleteFechar(id), 80);
-      }
-      return;
     }
-
-    if (tipo === 'numero') {
-      // "-" ou traço isolado = 0; substitui vírgula por ponto
-      if (v === '-' || v === '–' || v === '—') { el.value = 0; return; }
-      const num = v.replace(',', '.');
-      el.value = isNaN(parseFloat(num)) ? 0 : parseFloat(num);
-      return;
-    }
-
-    if (tipo === 'data') {
-      // Aceita DD/MM/AAAA ou AAAA-MM-DD e converte para DD/MM/AAAA
-      let dataFmt = v;
-      if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
-        const [y, m, d] = v.split('-');
-        dataFmt = d + '/' + m + '/' + y;
-      }
-      el.value = dataFmt;
-      return;
-    }
-
-    // texto, hora — preenche direto
-    el.value = v;
+    // Restaura disabled após setar valor
+    if (eraDisabled) el.disabled = true;
   }
 
   // ── Auxiliares ────────────────────────────────────────────────
@@ -38577,7 +38553,7 @@ Local/Destino: observe checkboxes ou marcações no cabeçalho. Os valores poss�
     margin-left:2px;
     letter-spacing:0;
     line-height:1.4;
-  ">v7</span>
+  ">v9</span>
 </div>
 
 <script>
