@@ -38090,12 +38090,19 @@ Retorne SOMENTE um JSON válido, sem texto extra, no formato abaixo.
 Use null para campos não encontrados.
 Formatos: data em DD/MM/AAAA, hora em HH:MM, números com ponto decimal (ex: 12.5).
 Produto deve ser exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 01, MILHO ESTOQUE 02 (ou null se não encontrado).
+Local/Destino: observe checkboxes ou marcações no cabeçalho. Os valores possíveis são exatamente:
+  "Silo 1 Milho", "Silo 2 Milho", "Silo 1 Soja", "Produção Silo 1", "Produção Silo 2".
+  Se o laudo mostrar "Produção" + "Silo 2" marcados juntos, retorne "Produção Silo 2".
+  Se o laudo mostrar "Produção" + "Silo 1" marcados juntos, retorne "Produção Silo 1".
+  Se mostrar apenas "Silo 1" com Milho, retorne "Silo 1 Milho". Se Silo 2 Milho, retorne "Silo 2 Milho". Soja: "Silo 1 Soja".
+  Se não encontrado, retorne null.
 {
   "data": "DD/MM/AAAA ou null",
   "hora": "HH:MM ou null",
   "nf": "número da nota fiscal ou null",
   "fornecedor": "nome do fornecedor ou null",
   "produto": "SOJA|MILHO|etc ou null",
+  "local": "Silo 1 Milho|Silo 2 Milho|Silo 1 Soja|Produção Silo 1|Produção Silo 2 ou null",
   "queimado": numero_ou_null,
   "ardido": numero_ou_null,
   "mofado": numero_ou_null,
@@ -38194,95 +38201,106 @@ Produto deve ser exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 0
   function _scanExibirResultado(dados) {
     const grid = document.getElementById('scanClassResultadoGrid');
     grid.innerHTML = '';
+    window._scanDadosEditados = {};
     let encontrados = 0;
 
-    // Guarda os dados editados pelo usuário
-    if (!window._scanDadosEditados) window._scanDadosEditados = {};
-    window._scanDadosEditados = {};
-
-    Object.entries(SCAN_CAMPO_MAP).forEach(([chave, cfg]) => {
-      const val = dados[chave];
-      const valStr = (val === null || val === undefined) ? '' : String(val).trim();
-      if (valStr === '' || valStr === 'null') return;
-      encontrados++;
-
-      // Inicializa com valor da IA
-      window._scanDadosEditados[chave] = valStr;
-
+    // ── Helpers ──────────────────────────────────────────────────
+    function _criarRow(labelTxt, destaque) {
       const row = document.createElement('div');
       row.style.cssText = 'display:flex;align-items:center;gap:10px;background:#f8f9fa;border:1px solid #e9ecef;border-radius:8px;padding:8px 12px;';
+      if (destaque) { row.style.borderColor = '#e67e22'; row.style.background = '#fef9f0'; }
+      const lbl = document.createElement('div');
+      lbl.style.cssText = 'font-size:10px;font-weight:700;color:' + (destaque ? '#e67e22' : '#888') + ';text-transform:uppercase;letter-spacing:.4px;min-width:120px;flex-shrink:0;';
+      lbl.textContent = labelTxt;
+      row.appendChild(lbl);
+      return row;
+    }
+    function _criarInput(val) {
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.style.cssText = 'flex:1;padding:5px 8px;border:1.5px solid #ddd;border-radius:5px;font-size:13px;color:#333;background:#fff;outline:none;';
+      inp.value = val;
+      return inp;
+    }
+    function _criarSelectEl(opcoes, sel) {
+      const s = document.createElement('select');
+      s.style.cssText = 'flex:1;padding:5px 8px;border:1.5px solid #ddd;border-radius:5px;font-size:13px;color:#333;background:#fff;outline:none;';
+      const b = document.createElement('option'); b.value = ''; b.textContent = '— não identificado —'; s.appendChild(b);
+      opcoes.forEach(o => { const op = document.createElement('option'); op.value = o.value; op.textContent = o.text; s.appendChild(op); });
+      s.value = sel || '';
+      return s;
+    }
+    function _getFornTodos() {
+      const set = new Set();
+      if (typeof classificacoes !== 'undefined' && Array.isArray(classificacoes))
+        classificacoes.forEach(r => { if (r.fornecedor) set.add(r.fornecedor.trim().toUpperCase()); });
+      if (typeof entradasMP !== 'undefined' && Array.isArray(entradasMP))
+        entradasMP.forEach(r => { if (r.fornecedor) set.add(r.fornecedor.trim().toUpperCase()); });
+      if (typeof _sgqGetFornecedores === 'function')
+        _sgqGetFornecedores('class').forEach(f => set.add(f.toUpperCase().trim()));
+      return [...set].filter(Boolean).sort();
+    }
 
-      const labelEl = document.createElement('div');
-      labelEl.style.cssText = 'font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;min-width:120px;flex-shrink:0;';
-      labelEl.textContent = cfg.label;
+    Object.entries(SCAN_CAMPO_MAP).forEach(([chave, cfg]) => {
+      const rawVal = dados[chave];
+      let valStr = (rawVal === null || rawVal === undefined) ? '' : String(rawVal).trim();
 
-      let inputEl;
+      // Traço em campo numérico → '0'
+      if (cfg.tipo === 'numero' && (valStr === '-' || valStr === '–' || valStr === '—')) valStr = '0';
+
+      // Campos select sempre aparecem; os demais só se tiverem valor
+      const temValor = valStr !== '' && valStr !== 'null';
+      if (!temValor && cfg.tipo !== 'select' && chave !== 'fornecedor') return;
+
+      encontrados++;
+      window._scanDadosEditados[chave] = temValor ? valStr : '';
+
+      let inputEl, destaque = false, hintTxt = '';
 
       if (cfg.tipo === 'select') {
-        // Cria um select espelhando as opções do campo real do formulário
-        inputEl = document.createElement('select');
-        inputEl.style.cssText = 'flex:1;padding:5px 8px;border:1.5px solid #ddd;border-radius:5px;font-size:13px;color:#333;background:#fff;outline:none;';
-        // Adiciona opção em branco
-        const optBlank = document.createElement('option');
-        optBlank.value = ''; optBlank.textContent = '— não identificado —';
-        inputEl.appendChild(optBlank);
-        // Copia opções do select real
         const selReal = document.getElementById(cfg.id);
-        if (selReal) {
-          Array.from(selReal.options).forEach(o => {
-            if (!o.value) return;
-            const opt = document.createElement('option');
-            opt.value = o.value;
-            opt.textContent = o.text;
-            inputEl.appendChild(opt);
-          });
-        }
-        // Tenta pré-selecionar com match inteligente
-        const matchedVal = _scanMatchSelect(cfg.id, valStr);
-        inputEl.value = matchedVal || '';
-        window._scanDadosEditados[chave] = inputEl.value;
+        const opcoes = selReal ? Array.from(selReal.options).filter(o => o.value).map(o => ({value: o.value, text: o.text})) : [];
+        const match = temValor ? _scanMatchSelect(cfg.id, valStr) : '';
+        inputEl = _criarSelectEl(opcoes, match);
+        window._scanDadosEditados[chave] = match;
+        if (!match && temValor) { destaque = true; hintTxt = '⚠️ IA leu: "' + valStr + '"'; }
         inputEl.addEventListener('change', () => { window._scanDadosEditados[chave] = inputEl.value; });
 
-      } else {
-        inputEl = document.createElement('input');
-        inputEl.type = 'text';
-        inputEl.style.cssText = 'flex:1;padding:5px 8px;border:1.5px solid #ddd;border-radius:5px;font-size:13px;color:#333;background:#fff;outline:none;';
-        // Formata o valor para exibição
-        if (cfg.tipo === 'data') {
-          let dataFmt = valStr;
-          if (/^\d{4}-\d{2}-\d{2}$/.test(valStr)) {
-            const [y, m, d] = valStr.split('-');
-            dataFmt = d + '/' + m + '/' + y;
-          }
-          inputEl.value = dataFmt;
-          window._scanDadosEditados[chave] = dataFmt;
-        } else if (cfg.tipo === 'numero') {
-          const num = valStr.replace(',', '.');
-          inputEl.value = isNaN(parseFloat(num)) ? valStr : parseFloat(num);
-          window._scanDadosEditados[chave] = inputEl.value;
-        } else {
-          inputEl.value = valStr;
-        }
+      } else if (chave === 'fornecedor') {
+        const lista = _getFornTodos();
+        const vUp = (temValor ? valStr : '').toUpperCase().trim();
+        const matched = lista.find(f => f === vUp) || lista.find(f => f.includes(vUp) || vUp.includes(f)) || '';
+        const opcoes = [];
+        if (!matched && vUp) opcoes.push({value: vUp, text: '✏️ ' + vUp + ' (lido pela IA)'});
+        lista.forEach(f => opcoes.push({value: f, text: f}));
+        inputEl = _criarSelectEl(opcoes, matched || vUp || '');
+        window._scanDadosEditados[chave] = inputEl.value;
+        if (!matched && vUp) { destaque = true; hintTxt = '⚠️ Verificar'; }
+        inputEl.addEventListener('change', () => { window._scanDadosEditados[chave] = inputEl.value; });
+
+      } else if (cfg.tipo === 'data') {
+        let fmt = valStr;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(valStr)) { const [y,m,d] = valStr.split('-'); fmt = d+'/'+m+'/'+y; }
+        inputEl = _criarInput(fmt);
+        window._scanDadosEditados[chave] = fmt;
         inputEl.addEventListener('input', () => { window._scanDadosEditados[chave] = inputEl.value.trim(); });
-        inputEl.addEventListener('change', () => { window._scanDadosEditados[chave] = inputEl.value.trim(); });
-      }
 
-      // Indicador visual: destaca em amarelo campos que a IA não conseguiu fazer match exato no select
-      if (cfg.tipo === 'select' && inputEl.value === '' && valStr) {
-        row.style.borderColor = '#e67e22';
-        row.style.background  = '#fef9f0';
-        labelEl.style.color   = '#e67e22';
-        const hint = document.createElement('div');
-        hint.style.cssText = 'font-size:10px;color:#e67e22;font-style:italic;flex-shrink:0;';
-        hint.textContent = '⚠️ IA leu: "' + valStr + '"';
-        row.appendChild(labelEl);
-        row.appendChild(inputEl);
-        row.appendChild(hint);
+      } else if (cfg.tipo === 'numero') {
+        const num = parseFloat(valStr.replace(',', '.'));
+        const v = isNaN(num) ? '0' : String(num);
+        inputEl = _criarInput(v);
+        window._scanDadosEditados[chave] = v;
+        inputEl.addEventListener('input', () => { window._scanDadosEditados[chave] = inputEl.value.trim(); });
+
       } else {
-        row.appendChild(labelEl);
-        row.appendChild(inputEl);
+        inputEl = _criarInput(valStr);
+        window._scanDadosEditados[chave] = valStr;
+        inputEl.addEventListener('input', () => { window._scanDadosEditados[chave] = inputEl.value.trim(); });
       }
 
+      const row = _criarRow(cfg.label, destaque);
+      row.appendChild(inputEl);
+      if (hintTxt) { const h = document.createElement('div'); h.style.cssText = 'font-size:10px;color:#e67e22;font-style:italic;flex-shrink:0;'; h.textContent = hintTxt; row.appendChild(h); }
       grid.appendChild(row);
     });
 
@@ -38298,16 +38316,36 @@ Produto deve ser exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 0
     if (!el) return '';
     const v = valor.toUpperCase().trim();
     const opts = Array.from(el.options).filter(o => o.value);
+
     // 1. Match exato no value
     let m = opts.find(o => o.value.toUpperCase() === v);
     if (m) return m.value;
     // 2. Match exato no text
     m = opts.find(o => o.text.toUpperCase() === v);
     if (m) return m.value;
-    // 3. O value contém o que a IA retornou, ou vice-versa
+
+    // 3. Lógica especial para cadLocalClass: combina checkboxes separados
+    if (id === 'cadLocalClass') {
+      // Normaliza Nº → N para facilitar match
+      const vN = v.replace(/[Nº°]/g, 'N').replace(/\s+/g, ' ');
+      const temProd  = /PRODU[CÇ]/i.test(v);
+      const temSilo1 = /SILO\s*(N|N?º|N?°)?\s*1\b/i.test(v) || /\bSILO\s+1\b/i.test(v);
+      const temSilo2 = /SILO\s*(N|N?º|N?°)?\s*2\b/i.test(v) || /\bSILO\s+2\b/i.test(v);
+      const temMilho = /MILHO/i.test(v);
+      const temSoja  = /SOJA/i.test(v);
+      if (temProd && temSilo2) { m = opts.find(o => o.value === 'Produção Silo 2'); if (m) return m.value; }
+      if (temProd && temSilo1) { m = opts.find(o => o.value === 'Produção Silo 1'); if (m) return m.value; }
+      if (temSilo2 && temMilho) { m = opts.find(o => o.value === 'Silo 2 Milho'); if (m) return m.value; }
+      if (temSilo1 && temMilho) { m = opts.find(o => o.value === 'Silo 1 Milho'); if (m) return m.value; }
+      if (temSilo1 && temSoja)  { m = opts.find(o => o.value === 'Silo 1 Soja');  if (m) return m.value; }
+      // Produção sem silo → Produção Silo 1 como padrão
+      if (temProd && !temSilo2) { m = opts.find(o => o.value === 'Produção Silo 1'); if (m) return m.value; }
+    }
+
+    // 4. O value contém o que a IA retornou, ou vice-versa
     m = opts.find(o => o.value.toUpperCase().includes(v) || v.includes(o.value.toUpperCase()));
     if (m) return m.value;
-    // 4. O text contém o que a IA retornou, ou vice-versa
+    // 5. O text contém o que a IA retornou, ou vice-versa
     m = opts.find(o => o.text.toUpperCase().includes(v) || v.includes(o.text.toUpperCase()));
     if (m) return m.value;
     return '';
@@ -38323,11 +38361,9 @@ Produto deve ser exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 0
 
     // Aguarda o modal abrir e então preenche com os dados revisados
     setTimeout(() => {
-      // Campos de texto / data / hora / número
+      // 1. Campos simples
       _scanPreencherCampo('cadDataClass',       dados.data,        'data');
       _scanPreencherCampo('cadHoraClass',        dados.hora,        'hora');
-      _scanPreencherCampo('cadNFClass',          dados.nf,          'texto');
-      _scanPreencherCampo('cadFornecedorClass',  dados.fornecedor,  'autocomplete');
       _scanPreencherCampo('cadQueimadoClass',    dados.queimado,    'numero');
       _scanPreencherCampo('cadArdidoClass',      dados.ardido,      'numero');
       _scanPreencherCampo('cadMofadoClass',      dados.mofado,      'numero');
@@ -38348,34 +38384,60 @@ Produto deve ser exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 0
       _scanPreencherCampo('cadDonClass',         dados.don,         'numero');
       _scanPreencherCampo('cadObsClass',         dados.observacao,  'texto');
 
-      // Selects: usa o valor já resolvido pelo painel de revisão
+      // 2. Produto (select)
       _scanPreencherCampo('cadProdutoClass', dados.produto, 'select');
-      _scanPreencherCampo('cadLocalClass',   dados.local,   'select');
+      if (typeof classAtualizarCamposProduto === 'function') {
+        const selProd = document.getElementById('cadProdutoClass');
+        if (selProd && selProd.value) classAtualizarCamposProduto(selProd.value);
+      }
 
-      // Dispara onchange do local para acionar autoFornecedorClass
+      // 3. Local/Destino (select) — aciona autoFornecedorClass que preenche fornecedor/NF
+      //    mas APENAS para os locais mapeados (Silo 1/2 Milho, Silo 1 Soja → AGRONOR)
+      _scanPreencherCampo('cadLocalClass', dados.local, 'select');
       const selLocal = document.getElementById('cadLocalClass');
       if (selLocal && selLocal.value && typeof autoFornecedorClass === 'function') {
         autoFornecedorClass(selLocal.value);
-        // Se mesmo assim o fornecedor estiver vazio e veio da IA, força o valor editado
-        setTimeout(() => {
-          const campForn = document.getElementById('cadFornecedorClass');
-          if (campForn && !campForn.value && dados.fornecedor) {
-            _scanPreencherCampo('cadFornecedorClass', dados.fornecedor, 'autocomplete');
+      }
+
+      // 4. Fornecedor — sobrescreve SEMPRE com o valor escolhido pelo usuário no painel
+      //    (mesmo que autoFornecedorClass tenha preenchido com AGRONOR)
+      //    Usa sgqAutocompleteSelecionar para disparar toda a cadeia corretamente
+      setTimeout(() => {
+        const forn = (dados.fornecedor || '').trim();
+        if (forn) {
+          if (typeof sgqAutocompleteSelecionar === 'function') {
+            sgqAutocompleteSelecionar('cadFornecedorClass', forn);
+          } else {
+            const el = document.getElementById('cadFornecedorClass');
+            if (el) {
+              el.value = forn;
+              el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
           }
-        }, 50);
-      }
+          // Aciona classFornecedorAutoFill com o valor final (controla campo NF)
+          if (typeof classFornecedorAutoFill === 'function') {
+            classFornecedorAutoFill(forn);
+          }
+          // Se o local NÃO tem fornecedor fixo (Produção Silo 1/2), preenche NF
+          setTimeout(() => {
+            const campNF = document.getElementById('cadNFClass');
+            if (campNF && !campNF.readOnly && dados.nf) {
+              _scanPreencherCampo('cadNFClass', dados.nf, 'texto');
+            }
+          }, 30);
+        } else if (dados.nf) {
+          // Sem fornecedor mas tem NF
+          _scanPreencherCampo('cadNFClass', dados.nf, 'texto');
+        }
+      }, 80);
 
-      // Dispara onchange do produto para atualizar campos dinâmicos
-      const selProd = document.getElementById('cadProdutoClass');
-      if (selProd && selProd.value && typeof classAtualizarCamposProduto === 'function') {
-        classAtualizarCamposProduto(selProd.value);
-      }
-
-      fecharScanClass();
-
-      if (typeof sgqToast === 'function') {
-        sgqToast('✅ Formulário preenchido! Confira os campos e salve.', 'success', 6000);
-      }
+      // Fecha o modal de scan e exibe confirmação após todos os preenchimentos
+      setTimeout(() => {
+        fecharScanClass();
+        if (typeof sgqToast === 'function') {
+          sgqToast('✅ Formulário preenchido! Confira os campos e salve.', 'success', 6000);
+        }
+      }, 150);
     }, 350);
   };
 
@@ -38393,6 +38455,20 @@ Produto deve ser exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 0
       const vUp = v.toUpperCase();
       let match = opts.find(o => o.value.toUpperCase() === vUp);
       if (!match) match = opts.find(o => o.text.toUpperCase() === vUp);
+      // Lógica especial para Local/Destino (checkboxes combinados no laudo)
+      if (!match && id === 'cadLocalClass') {
+        const temProd  = /PRODU[CÇ]/i.test(vUp);
+        const temSilo1 = /SILO\s*(N?[Ooº°])?\s*1\b/i.test(vUp) || /\bSILO\s+1\b/i.test(vUp);
+        const temSilo2 = /SILO\s*(N?[Ooº°])?\s*2\b/i.test(vUp) || /\bSILO\s+2\b/i.test(vUp);
+        const temMilho = /MILHO/i.test(vUp);
+        const temSoja  = /SOJA/i.test(vUp);
+        if (temProd && temSilo2) match = opts.find(o => o.value === 'Produção Silo 2');
+        else if (temProd && temSilo1) match = opts.find(o => o.value === 'Produção Silo 1');
+        else if (temSilo2 && temMilho) match = opts.find(o => o.value === 'Silo 2 Milho');
+        else if (temSilo1 && temMilho) match = opts.find(o => o.value === 'Silo 1 Milho');
+        else if (temSilo1 && temSoja)  match = opts.find(o => o.value === 'Silo 1 Soja');
+        else if (temProd) match = opts.find(o => o.value === 'Produção Silo 1');
+      }
       if (!match) match = opts.find(o => o.value.toUpperCase().includes(vUp) || vUp.includes(o.value.toUpperCase()));
       if (!match) match = opts.find(o => o.text.toUpperCase().includes(vUp) || vUp.includes(o.text.toUpperCase()));
       if (match) {
@@ -38417,9 +38493,10 @@ Produto deve ser exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 0
     }
 
     if (tipo === 'numero') {
-      // Substitui vírgula por ponto
+      // "-" ou traço isolado = 0; substitui vírgula por ponto
+      if (v === '-' || v === '–' || v === '—') { el.value = 0; return; }
       const num = v.replace(',', '.');
-      if (!isNaN(parseFloat(num))) el.value = parseFloat(num);
+      el.value = isNaN(parseFloat(num)) ? 0 : parseFloat(num);
       return;
     }
 
@@ -38502,6 +38579,17 @@ Produto deve ser exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 0
     <line x1="12" y1="15" x2="12" y2="3"></line>
   </svg>
   Download
+  <span style="
+    background:#fff;
+    color:#0a1e7f;
+    font-size:10px;
+    font-weight:900;
+    border-radius:50px;
+    padding:2px 7px;
+    margin-left:2px;
+    letter-spacing:0;
+    line-height:1.4;
+  ">v6</span>
 </div>
 
 <script>
