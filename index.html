@@ -38091,11 +38091,11 @@ Use null para campos não encontrados. Traços (-) em campos numéricos = 0.
 Formatos: data em DD/MM/AAAA, hora em HH:MM, números com ponto decimal (ex: 12.5).
 
 PRODUTO — REGRA CRÍTICA:
-Identifique qual grão está escrito no laudo (pode ser "MILHO", "SOJA", "TRIGO" etc).
-Se houver apenas "MILHO" sem indicação de estoque, retorne "MILHO".
-Se houver "SOJA" sem indicação de estoque, retorne "SOJA".
+A palavra do produto pode aparecer em QUALQUER lugar: no título ("Certificado de Análise - Classificação Milho"), no cabeçalho, num campo "Produto:", em texto corrido, ou em qualquer parte do documento.
+- Se aparecer a palavra "MILHO" em qualquer lugar → retorne "MILHO"
+- Se aparecer a palavra "SOJA" em qualquer lugar → retorne "SOJA"
+- Apenas retorne null se não encontrar nenhuma referência ao produto em nenhuma parte da imagem.
 Valores possíveis: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 01, MILHO ESTOQUE 02.
-Analise o cabeçalho, título, e todo o documento para encontrar o produto.
 
 LOCAL/DESTINO — REGRA CRÍTICA:
 O laudo tem checkboxes ou quadrinhos que podem estar MARCADOS (✓, X, risco, traço diagonal, preenchido) ou DESMARCADOS (vazio).
@@ -38192,6 +38192,20 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
       if (startIdx !== -1 && endIdx !== -1) jsonStr = jsonStr.slice(startIdx, endIdx + 1);
 
       _scanDadosIA = JSON.parse(jsonStr);
+
+      // ── Pós-processamento: inferir produto pelo local se ainda null ──
+      if (!_scanDadosIA.produto && _scanDadosIA.local) {
+        const loc = (_scanDadosIA.local || '').toUpperCase();
+        if (loc.includes('MILHO'))      _scanDadosIA.produto = 'MILHO';
+        else if (loc.includes('SOJA'))  _scanDadosIA.produto = 'SOJA';
+      }
+      // Inferir produto pelo conteúdo bruto da resposta da IA (se produto ainda null)
+      if (!_scanDadosIA.produto) {
+        const raw = content.toUpperCase();
+        if (/\bMILHO\b/.test(raw))      _scanDadosIA.produto = 'MILHO';
+        else if (/\bSOJA\b/.test(raw))  _scanDadosIA.produto = 'SOJA';
+      }
+
       _scanExibirResultado(_scanDadosIA);
       _scanSetStatus('✅ Laudo analisado com sucesso! Verifique os campos e clique em "Preencher Formulário".', '#27ae60', '#eafaf1');
       document.getElementById('btnScanClassConfirmar').style.display = 'inline-flex';
@@ -38603,7 +38617,7 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
     margin-left:2px;
     letter-spacing:0;
     line-height:1.4;
-  ">v15</span>
+  ">v16</span>
 </div>
 
 <script>
