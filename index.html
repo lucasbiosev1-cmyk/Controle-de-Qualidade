@@ -38231,22 +38231,23 @@ Produto deve ser exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 0
   "observacao": "texto ou null"
 }`;
 
-    // Usa o endpoint OpenAI com visão (GPT-4o)
-    const chaveLocal = localStorage.getItem('_ia_api_key') || '';
-    const url     = chaveLocal ? 'https://api.openai.com/v1/chat/completions' : _IA_PROXY_URL;
-    const headers = { 'Content-Type': 'application/json' };
-    if (chaveLocal) {
-      headers['Authorization'] = 'Bearer ' + chaveLocal;
-    } else {
-      try {
-        const { data: { session } } = await _sbClient.auth.getSession();
-        if (session?.access_token) headers['Authorization'] = 'Bearer ' + session.access_token;
-      } catch(e) {}
-    }
-
     try {
+      // Usa exatamente o mesmo padrão do sistema: chave local → direto; sem chave → proxy Supabase
+      const chaveLocal = typeof _iaGetChave === 'function' ? _iaGetChave() : (localStorage.getItem('_ia_api_key') || '');
+      const url     = chaveLocal ? _IA_DIRECT_URL : _IA_PROXY_URL;
+      const headers = { 'Content-Type': 'application/json' };
+
+      if (chaveLocal) {
+        headers['Authorization'] = 'Bearer ' + chaveLocal;
+      } else {
+        try {
+          const { data: { session } } = await _sbClient.auth.getSession();
+          if (session?.access_token) headers['Authorization'] = 'Bearer ' + session.access_token;
+        } catch(e) {}
+      }
+
       const body = {
-        model: 'gpt-4o',
+        model: _IA_MODEL,   // gpt-4o-mini — mesmo modelo do sistema, suporta visão
         max_tokens: 800,
         messages: [
           { role: 'system', content: systemPrompt },
@@ -38263,8 +38264,7 @@ Produto deve ser exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 0
       const resp = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
       if (!resp.ok) {
         const txt = await resp.text();
-        if (resp.status === 404 || resp.status === 405) throw new Error('PROXY_NAO_CONFIGURADO');
-        throw new Error('Erro ' + resp.status + ': ' + txt.slice(0, 200));
+        throw new Error('Erro ' + resp.status + ': ' + txt.slice(0, 300));
       }
       const result = await resp.json();
       const content = result.choices?.[0]?.message?.content || '';
@@ -38273,7 +38273,6 @@ Produto deve ser exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 0
       let jsonStr = content.trim();
       const m = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
       if (m) jsonStr = m[1].trim();
-      // Tenta encontrar o objeto JSON
       const startIdx = jsonStr.indexOf('{');
       const endIdx   = jsonStr.lastIndexOf('}');
       if (startIdx !== -1 && endIdx !== -1) jsonStr = jsonStr.slice(startIdx, endIdx + 1);
@@ -38284,10 +38283,11 @@ Produto deve ser exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 0
       document.getElementById('btnScanClassConfirmar').style.display = 'inline-flex';
 
     } catch(e) {
-      if (e.message === 'PROXY_NAO_CONFIGURADO') {
-        _scanSetStatus('⚠️ Proxy de IA não configurado. Configure sua chave OpenAI nas configurações do sistema (IA → Chave API).', '#e67e22', '#fef9e7');
+      const msg = e.message || String(e);
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('fetch')) {
+        _scanSetStatus('⚠️ Sem conexão com a IA. Configure sua Chave OpenAI nas Configurações do sistema (⚙️ → IA → Chave API) e verifique se há internet.', '#e67e22', '#fef9e7');
       } else {
-        _scanSetStatus('❌ Erro ao analisar: ' + e.message, '#e74c3c', '#fdecea');
+        _scanSetStatus('❌ Erro ao analisar: ' + msg, '#e74c3c', '#fdecea');
       }
     } finally {
       document.getElementById('btnScanClassAnalisar').disabled = false;
