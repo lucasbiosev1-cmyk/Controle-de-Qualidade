@@ -38231,14 +38231,10 @@ Local/Destino: observe checkboxes ou marcações no cabeçalho. Os valores poss�
       return s;
     }
     function _getFornTodos() {
-      const set = new Set();
-      if (typeof classificacoes !== 'undefined' && Array.isArray(classificacoes))
-        classificacoes.forEach(r => { if (r.fornecedor) set.add(r.fornecedor.trim().toUpperCase()); });
-      if (typeof entradasMP !== 'undefined' && Array.isArray(entradasMP))
-        entradasMP.forEach(r => { if (r.fornecedor) set.add(r.fornecedor.trim().toUpperCase()); });
-      if (typeof _sgqGetFornecedores === 'function')
-        _sgqGetFornecedores('class').forEach(f => set.add(f.toUpperCase().trim()));
-      return [...set].filter(Boolean).sort();
+      // Usa EXATAMENTE a mesma fonte do autocomplete do modal (tipo 'class')
+      return typeof _sgqGetFornecedores === 'function'
+        ? _sgqGetFornecedores('class')
+        : [];
     }
 
     Object.entries(SCAN_CAMPO_MAP).forEach(([chave, cfg]) => {
@@ -38391,45 +38387,37 @@ Local/Destino: observe checkboxes ou marcações no cabeçalho. Os valores poss�
         if (selProd && selProd.value) classAtualizarCamposProduto(selProd.value);
       }
 
-      // 3. Local/Destino (select) — aciona autoFornecedorClass que preenche fornecedor/NF
-      //    mas APENAS para os locais mapeados (Silo 1/2 Milho, Silo 1 Soja → AGRONOR)
-      _scanPreencherCampo('cadLocalClass', dados.local, 'select');
+      // 3. Local/Destino — preenche sem chamar autoFornecedorClass
+      //    (autoFornecedorClass limparia fornecedor/produto para locais sem mapeamento fixo)
       const selLocal = document.getElementById('cadLocalClass');
-      if (selLocal && selLocal.value && typeof autoFornecedorClass === 'function') {
-        autoFornecedorClass(selLocal.value);
+      if (selLocal && dados.local) {
+        const matchLocal = _scanMatchSelect('cadLocalClass', dados.local);
+        if (matchLocal) {
+          selLocal.value = matchLocal;
+          // dispara change sem chamar autoFornecedorClass
+          selLocal.dispatchEvent(new Event('change'));
+        }
       }
 
-      // 4. Fornecedor — sobrescreve SEMPRE com o valor escolhido pelo usuário no painel
-      //    (mesmo que autoFornecedorClass tenha preenchido com AGRONOR)
-      //    Usa sgqAutocompleteSelecionar para disparar toda a cadeia corretamente
+      // 4. Fornecedor — preenche diretamente no input sem abrir lista de autocomplete
       setTimeout(() => {
         const forn = (dados.fornecedor || '').trim();
-        if (forn) {
-          if (typeof sgqAutocompleteSelecionar === 'function') {
-            sgqAutocompleteSelecionar('cadFornecedorClass', forn);
-          } else {
-            const el = document.getElementById('cadFornecedorClass');
-            if (el) {
-              el.value = forn;
-              el.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-          }
-          // Aciona classFornecedorAutoFill com o valor final (controla campo NF)
+        const elForn = document.getElementById('cadFornecedorClass');
+        if (elForn && forn) {
+          elForn.value = forn;
+          // classFornecedorAutoFill controla o campo NF (readonly p/ AGRONOR)
           if (typeof classFornecedorAutoFill === 'function') {
             classFornecedorAutoFill(forn);
           }
-          // Se o local NÃO tem fornecedor fixo (Produção Silo 1/2), preenche NF
-          setTimeout(() => {
-            const campNF = document.getElementById('cadNFClass');
-            if (campNF && !campNF.readOnly && dados.nf) {
-              _scanPreencherCampo('cadNFClass', dados.nf, 'texto');
-            }
-          }, 30);
-        } else if (dados.nf) {
-          // Sem fornecedor mas tem NF
-          _scanPreencherCampo('cadNFClass', dados.nf, 'texto');
         }
-      }, 80);
+        // NF: preenche apenas se o campo não estiver bloqueado (readOnly = AGRONOR)
+        setTimeout(() => {
+          const campNF = document.getElementById('cadNFClass');
+          if (campNF && !campNF.readOnly && dados.nf) {
+            _scanPreencherCampo('cadNFClass', dados.nf, 'texto');
+          }
+        }, 30);
+      }, 60);
 
       // Fecha o modal de scan e exibe confirmação após todos os preenchimentos
       setTimeout(() => {
@@ -38589,7 +38577,7 @@ Local/Destino: observe checkboxes ou marcações no cabeçalho. Os valores poss�
     margin-left:2px;
     letter-spacing:0;
     line-height:1.4;
-  ">v6</span>
+  ">v7</span>
 </div>
 
 <script>
