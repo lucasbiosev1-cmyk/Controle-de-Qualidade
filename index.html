@@ -38084,6 +38084,9 @@ window.atualizarKpisCapa = function() {
     document.getElementById('scanClassResultado').style.display = 'none';
     document.getElementById('btnScanClassConfirmar').style.display = 'none';
 
+    // Lista de fornecedores cadastrados — enviada no prompt para a IA comparar diretamente
+    const _listaFornPrompt = (typeof _sgqGetFornecedores === 'function' ? _sgqGetFornecedores('class') : []).join('\n- ') || '(nenhum cadastrado)';
+
     const systemPrompt = `Você é um especialista em laudos de classificação de grãos (milho e soja) de fábricas de ração animal no Brasil.
 Analise a imagem fornecida e extraia TODOS os dados do laudo de classificação.
 Retorne SOMENTE um JSON válido, sem texto extra, no formato abaixo.
@@ -38096,6 +38099,17 @@ A palavra do produto pode aparecer em QUALQUER lugar: no título ("Certificado d
 - Se aparecer a palavra "SOJA" em qualquer lugar → retorne "SOJA"
 - Apenas retorne null se não encontrar nenhuma referência ao produto em nenhuma parte da imagem.
 Valores possíveis: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 01, MILHO ESTOQUE 02.
+
+FORNECEDOR — REGRA CRÍTICA:
+Leia o nome do fornecedor escrito no laudo. Depois compare com esta lista de fornecedores cadastrados no sistema:
+- ${_listaFornPrompt}
+
+Regras de comparação:
+1. Se o nome lido for IGUAL ou PARECIDO com algum da lista (mesmo com erros de OCR como letras trocadas, faltando ou acrescentadas), retorne EXATAMENTE o nome como está na lista acima.
+2. Compare foneticamente: "THAMIKES" ≈ "THAMIRES", "VANTAS" ≈ "DANTAS", "GRAO" ≈ "GRÃO", etc.
+3. Se o sobrenome e pelo menos um nome baterem → considere o mesmo fornecedor.
+4. Só retorne o nome como lido no laudo se realmente não houver nenhuma similaridade com a lista.
+5. Se não encontrar fornecedor no laudo, retorne null.
 
 LOCAL/DESTINO — REGRA CRÍTICA:
 O laudo tem checkboxes ou quadrinhos que podem estar MARCADOS (✓, X, risco, traço diagonal, preenchido) ou DESMARCADOS (vazio).
@@ -38617,7 +38631,7 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
     margin-left:2px;
     letter-spacing:0;
     line-height:1.4;
-  ">v16</span>
+  ">v17</span>
 </div>
 
 <script>
