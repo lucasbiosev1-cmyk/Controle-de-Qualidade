@@ -38087,36 +38087,46 @@ window.atualizarKpisCapa = function() {
     const systemPrompt = `Você é um especialista em laudos de classificação de grãos (milho e soja) de fábricas de ração animal no Brasil.
 Analise a imagem fornecida e extraia TODOS os dados do laudo de classificação.
 Retorne SOMENTE um JSON válido, sem texto extra, no formato abaixo.
-Use null para campos não encontrados.
+Use null para campos não encontrados. Traços (-) em campos numéricos = 0.
 Formatos: data em DD/MM/AAAA, hora em HH:MM, números com ponto decimal (ex: 12.5).
-Produto deve ser exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 01, MILHO ESTOQUE 02 (ou null se não encontrado).
-Local/Destino: observe checkboxes ou marcações no cabeçalho. Os valores possíveis são exatamente:
-  "Silo 1 Milho", "Silo 2 Milho", "Silo 1 Soja", "Produção Silo 1", "Produção Silo 2".
-  Se o laudo mostrar "Produção" + "Silo 2" marcados juntos, retorne "Produção Silo 2".
-  Se o laudo mostrar "Produção" + "Silo 1" marcados juntos, retorne "Produção Silo 1".
-  Se mostrar apenas "Silo 1" com Milho, retorne "Silo 1 Milho". Se Silo 2 Milho, retorne "Silo 2 Milho". Soja: "Silo 1 Soja".
-  Se não encontrado, retorne null.
+
+PRODUTO: exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 01, MILHO ESTOQUE 02 (ou null).
+
+LOCAL/DESTINO — REGRA CRÍTICA:
+O laudo tem checkboxes ou quadrinhos que podem estar MARCADOS (✓, X, risco, traço diagonal, preenchido) ou DESMARCADOS (vazio).
+Identifique QUAIS estão marcados e combine conforme abaixo:
+- "Produção" MARCADO + "Silo Nº 2" MARCADO → retorne EXATAMENTE: "Produção Silo 2"
+- "Produção" MARCADO + "Silo Nº 1" MARCADO → retorne EXATAMENTE: "Produção Silo 1"
+- "Produção" MARCADO + nenhum silo marcado → retorne EXATAMENTE: "Produção Silo 1"
+- Apenas "Silo Nº 2" MARCADO (sem Produção) + produto Milho → retorne EXATAMENTE: "Silo 2 Milho"
+- Apenas "Silo Nº 1" MARCADO (sem Produção) + produto Milho → retorne EXATAMENTE: "Silo 1 Milho"
+- Apenas "Silo Nº 1" MARCADO + produto Soja → retorne EXATAMENTE: "Silo 1 Soja"
+IMPORTANTE: Um checkbox com um risco diagonal (/) ou marca (✓) está MARCADO. Checkbox vazio está DESMARCADO.
+Se não conseguir identificar com certeza, retorne null.
+
+FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis erros ortográficos.
+
 {
   "data": "DD/MM/AAAA ou null",
   "hora": "HH:MM ou null",
   "nf": "número da nota fiscal ou null",
-  "fornecedor": "nome do fornecedor ou null",
+  "fornecedor": "nome exato como no laudo ou null",
   "produto": "SOJA|MILHO|etc ou null",
-  "local": "Silo 1 Milho|Silo 2 Milho|Silo 1 Soja|Produção Silo 1|Produção Silo 2 ou null",
-  "queimado": numero_ou_null,
-  "ardido": numero_ou_null,
-  "mofado": numero_ou_null,
-  "esverdeado": numero_ou_null,
-  "fermentando": numero_ou_null,
-  "chocho": numero_ou_null,
-  "picado": numero_ou_null,
-  "gessado": numero_ou_null,
-  "germinado": numero_ou_null,
-  "quebrado": numero_ou_null,
-  "carunchado": numero_ou_null,
-  "impureza": numero_ou_null,
-  "umidade": numero_ou_null,
-  "densidade": numero_ou_null,
+  "local": "Produção Silo 1|Produção Silo 2|Silo 1 Milho|Silo 2 Milho|Silo 1 Soja ou null",
+  "queimado": numero_ou_0_se_traco,
+  "ardido": numero_ou_0_se_traco,
+  "mofado": numero_ou_0_se_traco,
+  "esverdeado": numero_ou_0_se_traco,
+  "fermentando": numero_ou_0_se_traco,
+  "chocho": numero_ou_0_se_traco,
+  "picado": numero_ou_0_se_traco,
+  "gessado": numero_ou_0_se_traco,
+  "germinado": numero_ou_0_se_traco,
+  "quebrado": numero_ou_0_se_traco,
+  "carunchado": numero_ou_0_se_traco,
+  "impureza": numero_ou_0_se_traco,
+  "umidade": numero_ou_0_se_traco,
+  "densidade": numero_ou_0_se_traco,
   "aflatoxinas": numero_ou_null,
   "fumonisinas": numero_ou_null,
   "zearalenona": numero_ou_null,
@@ -38265,13 +38275,15 @@ Local/Destino: observe checkboxes ou marcações no cabeçalho. Os valores poss�
       } else if (chave === 'fornecedor') {
         const lista = _getFornTodos();
         const vUp = (temValor ? valStr : '').toUpperCase().trim();
-        const matched = lista.find(f => f === vUp) || lista.find(f => f.includes(vUp) || vUp.includes(f)) || '';
-        const opcoes = [];
-        if (!matched && vUp) opcoes.push({value: vUp, text: '✏️ ' + vUp + ' (lido pela IA)'});
-        lista.forEach(f => opcoes.push({value: f, text: f}));
-        inputEl = _criarSelectEl(opcoes, matched || vUp || '');
-        window._scanDadosEditados[chave] = inputEl.value;
-        if (!matched && vUp) { destaque = true; hintTxt = '⚠️ Verificar'; }
+        // Tenta match exato, depois parcial nos dois sentidos
+        const matched = lista.find(f => f.toUpperCase() === vUp)
+                     || lista.find(f => f.toUpperCase().includes(vUp) || vUp.includes(f.toUpperCase()))
+                     || '';
+        const opcoes = lista.map(f => ({value: f, text: f}));
+        inputEl = _criarSelectEl(opcoes, matched);
+        window._scanDadosEditados[chave] = matched;
+        if (!matched && vUp) { destaque = true; hintTxt = '⚠️ IA leu: "' + valStr + '" — selecione'; }
+        if (!matched) { destaque = true; }
         inputEl.addEventListener('change', () => { window._scanDadosEditados[chave] = inputEl.value; });
 
       } else if (cfg.tipo === 'data') {
@@ -38360,12 +38372,35 @@ Local/Destino: observe checkboxes ou marcações no cabeçalho. Os valores poss�
       // 1. Produto PRIMEIRO — classAtualizarCamposProduto mostra/oculta campos numéricos
       _scanPreencherCampo('cadProdutoClass', dados.produto, 'select');
 
-      // 2. Data, hora, obs
+      // 2. Fornecedor — preenche antes do Local para não ser sobrescrito pelo autoFornecedorClass
+      const forn = (dados.fornecedor || '').trim();
+      const elForn = document.getElementById('cadFornecedorClass');
+      if (elForn && forn) {
+        elForn.value = forn;
+        if (typeof classFornecedorAutoFill === 'function') classFornecedorAutoFill(forn);
+      }
+
+      // 3. Local/Destino — seta valor SEM disparar change para não chamar autoFornecedorClass
+      //    autoFornecedorClass sobrescreve fornecedor e produto quando local não está no mapa
+      const selLocal = document.getElementById('cadLocalClass');
+      if (selLocal && dados.local) {
+        const matchLocal = _scanMatchSelect('cadLocalClass', dados.local);
+        if (matchLocal) selLocal.value = matchLocal;
+        // NÃO dispara change — autoFornecedorClass limparia fornecedor/produto
+      }
+
+      // 4. Data, hora, obs
       _scanPreencherCampo('cadDataClass',       dados.data,        'data');
       _scanPreencherCampo('cadHoraClass',        dados.hora,        'hora');
       _scanPreencherCampo('cadObsClass',         dados.observacao,  'texto');
 
-      // 3. Campos numéricos — '0' também é preenchido (campos com traço no laudo)
+      // 5. NF — só se não bloqueado (AGRONOR bloqueia)
+      const campNF = document.getElementById('cadNFClass');
+      if (campNF && !campNF.readOnly && dados.nf) {
+        _scanPreencherCampo('cadNFClass', dados.nf, 'texto');
+      }
+
+      // 6. Campos numéricos — preenchidos DEPOIS do produto para campos disabled já configurados
       _scanPreencherCampo('cadQueimadoClass',    dados.queimado,    'numero');
       _scanPreencherCampo('cadArdidoClass',      dados.ardido,      'numero');
       _scanPreencherCampo('cadMofadoClass',      dados.mofado,      'numero');
@@ -38384,38 +38419,6 @@ Local/Destino: observe checkboxes ou marcações no cabeçalho. Os valores poss�
       _scanPreencherCampo('cadFumonisinaClass',  dados.fumonisinas, 'numero');
       _scanPreencherCampo('cadZearalenonaClass', dados.zearalenona, 'numero');
       _scanPreencherCampo('cadDonClass',         dados.don,         'numero');
-
-      // 3. Local/Destino — preenche sem chamar autoFornecedorClass
-      //    (autoFornecedorClass limparia fornecedor/produto para locais sem mapeamento fixo)
-      const selLocal = document.getElementById('cadLocalClass');
-      if (selLocal && dados.local) {
-        const matchLocal = _scanMatchSelect('cadLocalClass', dados.local);
-        if (matchLocal) {
-          selLocal.value = matchLocal;
-          // dispara change sem chamar autoFornecedorClass
-          selLocal.dispatchEvent(new Event('change'));
-        }
-      }
-
-      // 4. Fornecedor — preenche diretamente no input sem abrir lista de autocomplete
-      setTimeout(() => {
-        const forn = (dados.fornecedor || '').trim();
-        const elForn = document.getElementById('cadFornecedorClass');
-        if (elForn && forn) {
-          elForn.value = forn;
-          // classFornecedorAutoFill controla o campo NF (readonly p/ AGRONOR)
-          if (typeof classFornecedorAutoFill === 'function') {
-            classFornecedorAutoFill(forn);
-          }
-        }
-        // NF: preenche apenas se o campo não estiver bloqueado (readOnly = AGRONOR)
-        setTimeout(() => {
-          const campNF = document.getElementById('cadNFClass');
-          if (campNF && !campNF.readOnly && dados.nf) {
-            _scanPreencherCampo('cadNFClass', dados.nf, 'texto');
-          }
-        }, 30);
-      }, 60);
 
       // Fecha o modal de scan e exibe confirmação após todos os preenchimentos
       setTimeout(() => {
@@ -38462,7 +38465,8 @@ Local/Destino: observe checkboxes ou marcações no cabeçalho. Os valores poss�
       if (match) {
         el.value = match.value;
         if (id === 'cadProdutoClass' && typeof classAtualizarCamposProduto === 'function') classAtualizarCamposProduto(match.value);
-        el.dispatchEvent(new Event('change'));
+        // NÃO dispara change em cadLocalClass — autoFornecedorClass sobrescreveria campos
+        if (id !== 'cadLocalClass') el.dispatchEvent(new Event('change'));
       }
     } else if (tipo === 'numero') {
       const num = parseFloat(v.replace(',', '.'));
@@ -38553,7 +38557,7 @@ Local/Destino: observe checkboxes ou marcações no cabeçalho. Os valores poss�
     margin-left:2px;
     letter-spacing:0;
     line-height:1.4;
-  ">v9</span>
+  ">v11</span>
 </div>
 
 <script>
