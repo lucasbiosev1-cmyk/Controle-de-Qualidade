@@ -9703,7 +9703,7 @@
                         <div class="form-group"><label>Hora</label><input type="text" id="cadHoraClass" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" oninput="mascaraHora(this)" style="text-transform: uppercase;"></div>
                         <div class="form-group required">
                             <label>Local/Destino</label>
-                            <select id="cadLocalClass" required="" onchange="autoFornecedorClass(this.value)">
+                            <select id="cadLocalClass" required="" onchange="if(!window._scanPreenchendo) autoFornecedorClass(this.value)">
                                 <option value="">Selecione...</option>
                                 <option value="Silo 1 Milho">Silo 1 Milho</option>
                                 <option value="Silo 2 Milho">Silo 2 Milho</option>
@@ -38090,7 +38090,12 @@ Retorne SOMENTE um JSON válido, sem texto extra, no formato abaixo.
 Use null para campos não encontrados. Traços (-) em campos numéricos = 0.
 Formatos: data em DD/MM/AAAA, hora em HH:MM, números com ponto decimal (ex: 12.5).
 
-PRODUTO: exatamente um de: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 01, MILHO ESTOQUE 02 (ou null).
+PRODUTO — REGRA CRÍTICA:
+Identifique qual grão está escrito no laudo (pode ser "MILHO", "SOJA", "TRIGO" etc).
+Se houver apenas "MILHO" sem indicação de estoque, retorne "MILHO".
+Se houver "SOJA" sem indicação de estoque, retorne "SOJA".
+Valores possíveis: SOJA, SOJA ESTOQUE 01, MILHO, MILHO ESTOQUE 01, MILHO ESTOQUE 02.
+Analise o cabeçalho, título, e todo o documento para encontrar o produto.
 
 LOCAL/DESTINO — REGRA CRÍTICA:
 O laudo tem checkboxes ou quadrinhos que podem estar MARCADOS (✓, X, risco, traço diagonal, preenchido) ou DESMARCADOS (vazio).
@@ -38253,10 +38258,12 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
 
       // Traço em campo numérico → '0'
       if (cfg.tipo === 'numero' && (valStr === '-' || valStr === '–' || valStr === '—')) valStr = '0';
+      // Campos numéricos com null/vazio → '0' (campo existe no laudo, valor era traço ou zero)
+      if (cfg.tipo === 'numero' && (valStr === '' || valStr === 'null')) valStr = '0';
 
-      // Campos select sempre aparecem; os demais só se tiverem valor
+      // Campos select e numéricos sempre aparecem; texto/data/hora só se tiverem valor
       const temValor = valStr !== '' && valStr !== 'null';
-      if (!temValor && cfg.tipo !== 'select' && chave !== 'fornecedor') return;
+      if (!temValor && cfg.tipo !== 'select' && cfg.tipo !== 'numero' && chave !== 'fornecedor') return;
 
       encontrados++;
       window._scanDadosEditados[chave] = temValor ? valStr : '';
@@ -38289,6 +38296,8 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
       } else if (cfg.tipo === 'data') {
         let fmt = valStr;
         if (/^\d{4}-\d{2}-\d{2}$/.test(valStr)) { const [y,m,d] = valStr.split('-'); fmt = d+'/'+m+'/'+y; }
+        // DD/MM/AA (ano 2 dígitos) → DD/MM/20AA
+        if (/^\d{2}\/\d{2}\/\d{2}$/.test(fmt)) { const [d,m,y] = fmt.split('/'); fmt = d+'/'+m+'/20'+y; }
         inputEl = _criarInput(fmt);
         window._scanDadosEditados[chave] = fmt;
         inputEl.addEventListener('input', () => { window._scanDadosEditados[chave] = inputEl.value.trim(); });
@@ -38364,11 +38373,20 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
     const dados = window._scanDadosEditados || _scanDadosIA;
     if (!dados) return;
 
+    // Avisa se campos obrigatórios estão vazios mas não bloqueia
+    const avisos = [];
+    if (!dados.produto) avisos.push('Produto');
+    if (!dados.fornecedor) avisos.push('Fornecedor');
+    if (avisos.length > 0 && typeof sgqToast === 'function') {
+      sgqToast('⚠️ ' + avisos.join(' e ') + ' não identificado(s). Preencha manualmente no formulário.', 'warning', 5000);
+    }
+
     // Abre o modal de cadastro primeiro
     if (typeof abrirModalCadastroClass === 'function') abrirModalCadastroClass();
 
     // Aguarda modal abrir + reset + classAtualizarCamposProduto('') terminar
     setTimeout(() => {
+      window._scanPreenchendo = true; // bloqueia autoFornecedorClass durante preenchimento
       // 1. Produto PRIMEIRO — classAtualizarCamposProduto mostra/oculta campos numéricos
       _scanPreencherCampo('cadProdutoClass', dados.produto, 'select');
 
@@ -38422,6 +38440,7 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
 
       // Fecha o modal de scan e exibe confirmação após todos os preenchimentos
       setTimeout(() => {
+        window._scanPreenchendo = false; // libera autoFornecedorClass para uso manual
         fecharScanClass();
         if (typeof sgqToast === 'function') {
           sgqToast('✅ Formulário preenchido! Confira os campos e salve.', 'success', 6000);
@@ -38473,7 +38492,10 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
       el.value = isNaN(num) ? 0 : num;
     } else if (tipo === 'data') {
       let fmt = v;
+      // AAAA-MM-DD → DD/MM/AAAA
       if (/^\d{4}-\d{2}-\d{2}$/.test(v)) { const [y,m,d] = v.split('-'); fmt = d+'/'+m+'/'+y; }
+      // DD/MM/AA (ano 2 dígitos) → DD/MM/20AA
+      if (/^\d{2}\/\d{2}\/\d{2}$/.test(fmt)) { const [d,m,y] = fmt.split('/'); fmt = d+'/'+m+'/20'+y; }
       el.value = fmt;
     } else {
       // texto, hora, autocomplete
@@ -38557,7 +38579,7 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
     margin-left:2px;
     letter-spacing:0;
     line-height:1.4;
-  ">v11</span>
+  ">v13</span>
 </div>
 
 <script>
