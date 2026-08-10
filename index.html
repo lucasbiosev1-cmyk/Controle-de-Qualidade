@@ -4866,6 +4866,7 @@
                                     <th style="padding:6px;" id="thValor">DGM (µm)</th>
                                     <th style="padding:6px;" id="thDPG">DPG (µm)</th>
                                     <th style="padding:6px;">PROTEÍNA (%)</th>
+                                    <th style="padding:6px;">MAT. MINERAL (%)</th>
                                     <th style="padding:6px;">GRÂNULO 1 - 4mm (%)</th>
                                     <th style="padding:6px;">GRÂNULO 2 - 2mm (%)</th>
                                     <th style="padding:6px;">GRÂNULO 3 - 0,60mm (%)</th>
@@ -13256,8 +13257,8 @@ function renderGraficoBarRacoes(base, racoes, analise, analNome) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function _relLinhaMedia(dados) {
-    const CAMPOS_MEDIA = ['dgm','dpg','proteina','granulo1','granulo2','granulo3','fundo'];
-    const CASAS = { dgm:0, dpg:2, proteina:2, granulo1:2, granulo2:2, granulo3:2, fundo:2 };
+    const CAMPOS_MEDIA = ['dgm','dpg','proteina','mineral','granulo1','granulo2','granulo3','fundo'];
+    const CASAS = { dgm:0, dpg:2, proteina:2, mineral:2, granulo1:2, granulo2:2, granulo3:2, fundo:2 };
     const medias = {};
     CAMPOS_MEDIA.forEach(c => { medias[c] = _prodCalcularMedia(dados.map(r => r[c])); });
     const fmtMedia = c => medias[c] != null ? medias[c].toFixed(CASAS[c]) : '-';
@@ -13266,6 +13267,7 @@ function _relLinhaMedia(dados) {
         <td style="padding:5px 8px;">${fmtMedia('dgm')}</td>
         <td style="padding:5px 8px;">${fmtMedia('dpg')}</td>
         <td style="padding:5px 8px;">${fmtMedia('proteina')}</td>
+        <td style="padding:5px 8px;">${fmtMedia('mineral')}</td>
         <td style="padding:5px 8px;">${fmtMedia('granulo1')}</td>
         <td style="padding:5px 8px;">${fmtMedia('granulo2')}</td>
         <td style="padding:5px 8px;">${fmtMedia('granulo3')}</td>
@@ -13277,7 +13279,7 @@ function _relLinhaMedia(dados) {
 function renderDetalhe(dados, analise, analNome) {
     const tbody = document.getElementById('relTbodyDetalhe');
     if (!dados.length) {
-        tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:20px;color:#999;">Nenhum registro no período</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:20px;color:#999;">Nenhum registro no período</td></tr>';
         return;
     }
     const sorted = [...dados].sort((a,b) => a.data.localeCompare(b.data) || a.hora.localeCompare(b.hora));
@@ -13322,6 +13324,7 @@ function renderDetalhe(dados, analise, analNome) {
             <td style="padding:5px 8px;${dgmCor}">${dgmTexto}</td>
             <td style="padding:5px 8px;${dpgCor}">${dpgStatus}</td>
             <td style="padding:5px 8px;"${estiloFora(r.proteina,'prod',r.racao,'proteina',r.data)}>${fmtN(r.proteina,2)}</td>
+            <td style="padding:5px 8px;"${estiloFora(r.mineral,'prod',r.racao,'mineral',r.data)}>${fmtN(r.mineral,2)}</td>
             <td style="padding:5px 8px;"${estiloFora(r.granulo1,'prod',r.racao,'granulo1',r.data)}>${fmtN(r.granulo1,2)}</td>
             <td style="padding:5px 8px;"${estiloFora(r.granulo2,'prod',r.racao,'granulo2',r.data)}>${fmtN(r.granulo2,2)}</td>
             <td style="padding:5px 8px;"${estiloFora(r.granulo3,'prod',r.racao,'granulo3',r.data)}>${fmtN(r.granulo3,2)}</td>
