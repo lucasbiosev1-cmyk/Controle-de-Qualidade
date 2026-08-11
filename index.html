@@ -12070,7 +12070,7 @@ function salvarClassificacao(event) {
     const data       = dataParaISO(document.getElementById('cadDataClass').value);
     const nf         = document.getElementById('cadNFClass').value.trim();
     const local      = document.getElementById('cadLocalClass').value;
-    const fornecedor = document.getElementById('cadFornecedorClass').value.trim();
+    const fornecedor = _sgqConfirmarFornecedorParecido('class', document.getElementById('cadFornecedorClass').value.trim());
     const produto    = document.getElementById('cadProdutoClass').value;
     const isAgronorClass = fornecedor.toUpperCase() === 'AGRONOR';
     const nfFinal = (!nf && isAgronorClass) ? '-' : nf;
@@ -12374,7 +12374,7 @@ function salvarMateriaPrima(event) {
     event.preventDefault();
     const data       = dataParaISO(document.getElementById('cadDataMP').value);
     const produto    = document.getElementById('cadProdutoMP').value;
-    const fornecedor = document.getElementById('cadFornecedorMP').value.trim();
+    const fornecedor = _sgqConfirmarFornecedorParecido('mp', document.getElementById('cadFornecedorMP').value.trim());
     if (!data || !produto || !fornecedor) {
         mostrarErroMP('❌ PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS!'); return;
     }
@@ -16222,11 +16222,11 @@ function _empPopularSelectFornecedor(valorAtual) {
 function empAdicionarFornecedor() {
     const nome = prompt('Digite o nome do novo fornecedor:');
     if (!nome || !nome.trim()) return;
-    const nomeUp = nome.trim().toUpperCase();
+    const nomeFinal = _sgqConfirmarFornecedorParecido('emp', nome.trim());
     const inp = document.getElementById('cadFornecedorEMP');
     if (!inp) return;
-    _empFornecedorNovoPermitido.add(nomeUp);
-    inp.value = nomeUp;
+    _empFornecedorNovoPermitido.add(nomeFinal);
+    inp.value = nomeFinal;
 }
 
 function _empPopularSelectMP(valorAtual) {
@@ -34005,6 +34005,54 @@ function classFornecedorAutoFill(valor) {
         if (campNF.value === '-') campNF.value = '';
         if (nfGrupo) nfGrupo.classList.add('required');
     }
+}
+
+// ===== VERIFICAÇÃO DE FORNECEDOR PARECIDO (evita duplicidade por digitação) =====
+function _sgqLevenshtein(a, b) {
+    a = a || ''; b = b || '';
+    const m = a.length, n = b.length;
+    if (m === 0) return n;
+    if (n === 0) return m;
+    const dp = Array.from({length: m + 1}, () => new Array(n + 1).fill(0));
+    for (let i = 0; i <= m; i++) dp[i][0] = i;
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            const custo = a[i-1] === b[j-1] ? 0 : 1;
+            dp[i][j] = Math.min(dp[i-1][j] + 1, dp[i][j-1] + 1, dp[i-1][j-1] + custo);
+        }
+    }
+    return dp[m][n];
+}
+
+// Retorna o fornecedor já cadastrado mais parecido com "nome" (tipo: 'mp' | 'class' | 'emp'),
+// ou null se não houver nenhum parecido o suficiente (ou se for idêntico).
+function _sgqFornecedorParecido(tipo, nome) {
+    const alvo = (nome || '').trim().toUpperCase();
+    if (!alvo) return null;
+    const existentes = _sgqGetFornecedores(tipo);
+    let melhor = null, melhorDist = Infinity;
+    for (const f of existentes) {
+        if (f === alvo) return null; // já existe exatamente, nada a avisar
+        const dist = _sgqLevenshtein(alvo, f);
+        const limite = Math.max(2, Math.floor(Math.max(alvo.length, f.length) * 0.25));
+        if (dist <= limite && dist < melhorDist) { melhor = f; melhorDist = dist; }
+    }
+    return melhor;
+}
+
+// Pergunta ao usuário se o nome digitado é o mesmo de um fornecedor parecido já existente.
+// Retorna o nome final a ser usado.
+function _sgqConfirmarFornecedorParecido(tipo, nome) {
+    const parecido = _sgqFornecedorParecido(tipo, nome);
+    if (!parecido) return (nome || '').trim().toUpperCase();
+    const usar = confirm(
+        '⚠️ Já existe um fornecedor parecido cadastrado:\n\n"' + parecido + '"\n\n' +
+        'Você digitou: "' + (nome || '').trim().toUpperCase() + '"\n\n' +
+        'Clique OK para usar o fornecedor já existente ("' + parecido + '"),\n' +
+        'ou Cancelar para manter o nome novo (caso seja realmente um fornecedor diferente).'
+    );
+    return usar ? parecido : (nome || '').trim().toUpperCase();
 }
 
 function _sgqGetFornecedores(tipo) {
