@@ -4601,7 +4601,7 @@
                             <th>DATA</th><th>HORA</th><th>NF</th><th>PRODUTO</th><th>FORNECEDOR</th>
                             <th>UMIDADE %</th><th>DENSIDADE</th><th>EXTRATO ETÉRIO %</th><th>PROTEÍNA %</th><th>FIBRA %</th><th>SOLUBILIDADE %</th>
                             <th>MINERAL %</th><th>ACIDEZ</th><th>UREÁTICA</th><th>RANCIDEZ</th>
-                            <th>PERÓXIDO</th><th>DIGESTIBILIDADE</th><th>GRAN. 1</th><th>GRAN. 2</th><th>GRAN. 3</th><th>GRAN. 4</th><th>TEMP. RESFRIADOR</th><th>TEMP. CANHÃO</th><th>ALIM. HZ</th><th>CÁLCIO %</th><th>FÓSFORO %</th><th>STATUS</th>
+                            <th>PERÓXIDO</th><th>DIGESTIBILIDADE</th><th>GRAN. 1</th><th>GRAN. 2</th><th>GRAN. 3</th><th>GRAN. 4</th><th>TEMP. RESFRIADOR</th><th>TEMP. CANHÃO</th><th>ALIM. HZ</th><th>TEMP. AMBIENTE</th><th>CÁLCIO %</th><th>FÓSFORO %</th><th>STATUS</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaMaterias"><tr><td colspan="17" style="text-align:center;color:#999;">NENHUM REGISTRO ENCONTRADO</td></tr></tbody>
@@ -9988,6 +9988,7 @@
                         <div class="form-group"><label>Temp. Saída Resfriador</label><input type="number" id="cadTempResfriadorMP" step="0.01" min="0" autocomplete="off"></div>
                         <div class="form-group"><label>Temperatura Canhão</label><input type="number" id="cadTempCanhaoMP" step="0.01" min="0" autocomplete="off"></div>
                         <div class="form-group"><label>Alimentação HZ</label><input type="number" id="cadAlimentacaoHzMP" step="0.01" min="0" autocomplete="off"></div>
+                        <div class="form-group"><label>Temperatura Ambiente</label><input type="number" id="cadTempAmbienteMP" step="0.01" min="0" autocomplete="off"></div>
                     </div>
                 </div>
 
@@ -12330,6 +12331,7 @@ function abrirModalEdicaoMP(id) {
     document.getElementById('cadTempResfriadorMP').value          = r.tempResfriador ?? '';
     document.getElementById('cadTempCanhaoMP').value              = r.tempCanhao ?? '';
     document.getElementById('cadAlimentacaoHzMP').value           = r.alimentacaoHz ?? '';
+    document.getElementById('cadTempAmbienteMP').value            = r.tempAmbiente ?? '';
     document.getElementById('cadCalcioMP').value                  = r.calcio ?? '';
     document.getElementById('cadFosforoMP').value                 = r.fosforo ?? '';
     // Observação
@@ -12403,6 +12405,7 @@ function salvarMateriaPrima(event) {
         tempResfriador: _pfM('cadTempResfriadorMP'),
         tempCanhao:     _pfM('cadTempCanhaoMP'),
         alimentacaoHz:  _pfM('cadAlimentacaoHzMP'),
+        tempAmbiente:   _pfM('cadTempAmbienteMP'),
         calcio:         _pfM('cadCalcioMP'),
         fosforo:        _pfM('cadFosforoMP'),
         obs:            (document.getElementById('cadObsMP').value || '').trim()
@@ -12470,8 +12473,8 @@ function mpFornecedorAutoFill(valor) {
 }
 
 function _mpLinhaMedia(filtrados) {
-    const CAMPOS_MEDIA = ['umidade','densidade','extrato','proteina','fibra','solubil','mineral','acidez','ureatica','peroxido','digestibilidade','granulo1','granulo2','granulo3','granulo4','tempResfriador','tempCanhao','alimentacaoHz','calcio','fosforo'];
-    const CASAS = { umidade:2, densidade:2, extrato:2, proteina:2, fibra:2, solubil:2, mineral:2, acidez:2, ureatica:2, peroxido:2, digestibilidade:2, granulo1:2, granulo2:2, granulo3:2, granulo4:2, tempResfriador:1, tempCanhao:1, alimentacaoHz:2, calcio:2, fosforo:2 };
+    const CAMPOS_MEDIA = ['umidade','densidade','extrato','proteina','fibra','solubil','mineral','acidez','ureatica','peroxido','digestibilidade','granulo1','granulo2','granulo3','granulo4','tempResfriador','tempCanhao','alimentacaoHz','tempAmbiente','calcio','fosforo'];
+    const CASAS = { umidade:2, densidade:2, extrato:2, proteina:2, fibra:2, solubil:2, mineral:2, acidez:2, ureatica:2, peroxido:2, digestibilidade:2, granulo1:2, granulo2:2, granulo3:2, granulo4:2, tempResfriador:1, tempCanhao:1, alimentacaoHz:2, tempAmbiente:1, calcio:2, fosforo:2 };
     const medias = {};
     CAMPOS_MEDIA.forEach(c => { medias[c] = _prodCalcularMedia(filtrados.map(r => r[c])); });
     const fmtMedia = c => medias[c] != null ? medias[c].toFixed(CASAS[c]) : '-';
@@ -12500,6 +12503,7 @@ function _mpLinhaMedia(filtrados) {
         <td>${fmtMedia('tempResfriador')}</td>
         <td>${fmtMedia('tempCanhao')}</td>
         <td>${fmtMedia('alimentacaoHz')}</td>
+        <td>${fmtMedia('tempAmbiente')}</td>
         <td>${fmtMedia('calcio')}</td>
         <td>${fmtMedia('fosforo')}</td>
         <td>-</td>
@@ -12542,6 +12546,7 @@ function exibirTabelaMP() {
             <td>${fmtN(r.tempResfriador,1)}</td>
             <td>${fmtN(r.tempCanhao,1)}</td>
             <td>${fmtN(r.alimentacaoHz,2)}</td>
+            <td>${fmtN(r.tempAmbiente,1)}</td>
             <td>${fmtN(r.calcio,2)}</td>
             <td>${fmtN(r.fosforo,2)}</td>
             <td>${statusPorParametros(r, 'mp', r.produto, CAMPOS_MP, r.data)}</td>
@@ -15039,6 +15044,7 @@ const XLSX_MAP_MP = {
     tempResfriador:['temperatura saida do resfriador','temp saida resfriador','temp resfriador','temperatura saida'],
     tempCanhao:['temperatura canhao','temp canhao','temperatura canhao'],
     alimentacaoHz:['alimentacao hz','alimentacao hz','alimentacao','hz'],
+    tempAmbiente:['temperatura ambiente','temp ambiente','temperatura ambiente'],
     calcio:['calcio','calcio','calcium','ca%'],
     fosforo:['fosforo','fosforo','phosphorus','p%'],
 };
@@ -15240,7 +15246,7 @@ function xlsxBuildMP(rows) {
         ['extrato','proteina','fibra','solubil','umidade','densidade','mineral','acidez',
          'ureatica','rancidez','peroxido','digestibilidade',
          'granulo1','granulo2','granulo3','granulo4',
-         'tempResfriador','tempCanhao','alimentacaoHz','calcio','fosforo'].forEach(c => {
+         'tempResfriador','tempCanhao','alimentacaoHz','tempAmbiente','calcio','fosforo'].forEach(c => {
             obj[c] = xlsxParseNum(m[c]);
         });
         return obj;
@@ -15410,7 +15416,7 @@ function baixarModeloExcel() {
     // Aba MATERIA PRIMA
     const hMP = ['DATA','HORA','PRODUTO','FORNECEDOR','NF',
         'EXTRATO ETÉRIO%','PROTEINA%','FIBRA%','SOLUBILIDADE%','UMIDADE%','DENSIDADE','MINERAL%','ACIDEZ','UREÁTICA','RANCIDEZ','PERÓXIDO','DIGESTIBILIDADE%',
-        'GRAN.1%','GRAN.2%','GRAN.3%','GRAN.4%','TEMP.RESFRIADOR','TEMP.CANHÃO','ALIM.HZ','CÁLCIO%','FÓSFORO%'];
+        'GRAN.1%','GRAN.2%','GRAN.3%','GRAN.4%','TEMP.RESFRIADOR','TEMP.CANHÃO','ALIM.HZ','TEMP.AMBIENTE','CÁLCIO%','FÓSFORO%'];
     const dMP = [
         ['15/03/2026','09:00','FARELO DE SOJA','IMCOPA','FT-0055',11.2,0,44.8,6.2,6.1,0.3,0.02,0,1.2,88.5],
         ['15/03/2026','11:00','FOSFATO BICÁLCICO','FOSBRASIL','FB-112',0,0,0,0,0,0,0,0,0,0],
@@ -17652,7 +17658,7 @@ let _dadosCarregados = false;
 const _COLUNAS_TABELA = {
     producoes:          'id,data,hora,racao,lote,dgm,dpg,extrato,proteina,fibra,solubil,umidade,densidade,mineral,calcio,fosforo,granulo1,granulo2,granulo3,fundo,tela_moinho,obs',
     classificacoes:     'id,data,hora,produto,fornecedor,nf,local,queimado,ardido,mofado,esverdeado,fermentando,chocho,picado,gessado,quebrado,germinado,carunchado,impureza,umidade,densidade,aflatoxinas,fumonisinas,zearalenona,don,obs',
-    materias_primas:    'id,data,hora,produto,fornecedor,nf,umidade,densidade,extrato,proteina,fibra,solubil,mineral,acidez,ureatica,rancidez,peroxido,digestibilidade,granulo1,granulo2,granulo3,granulo4,tempResfriador,tempCanhao,alimentacaoHz,calcio,fosforo,obs',
+    materias_primas:    'id,data,hora,produto,fornecedor,nf,umidade,densidade,extrato,proteina,fibra,solubil,mineral,acidez,ureatica,rancidez,peroxido,digestibilidade,granulo1,granulo2,granulo3,granulo4,tempResfriador,tempCanhao,alimentacaoHz,tempAmbiente,calcio,fosforo,obs',
     entradas_mp:        'id,data,hora,fornecedor,materia_prima,nf,usuario,status,status_descarga,criado_em,placa,seq,obs,quantidade,hora_analise,hora_conclusao_descarga',
     mp_produtos_custom: 'id,nome',
     homogeneidade:      'id,dataISO,data,dataResultadoISO,dataResultado,produto,equipamento,marcador,tempo,responsavel,local,laboratorio,textoPadrao,amostras,n,media,dp,cv,complemento',
@@ -17703,6 +17709,7 @@ function _normMatGlobal(r) {
         tempResfriador:  r.tempResfriador  !== undefined ? (r.tempResfriador  !== null ? parseFloat(r.tempResfriador)  : null) : null,
         tempCanhao:      r.tempCanhao      !== undefined ? (r.tempCanhao      !== null ? parseFloat(r.tempCanhao)      : null) : null,
         alimentacaoHz:   r.alimentacaoHz   !== undefined ? (r.alimentacaoHz   !== null ? parseFloat(r.alimentacaoHz)   : null) : null,
+        tempAmbiente:    r.tempAmbiente    !== undefined ? (r.tempAmbiente    !== null ? parseFloat(r.tempAmbiente)    : null) : null,
         calcio:          r.calcio          !== undefined ? (r.calcio          !== null ? parseFloat(r.calcio)          : null) : null,
         fosforo:         r.fosforo         !== undefined ? (r.fosforo         !== null ? parseFloat(r.fosforo)         : null) : null,
     };
@@ -18121,6 +18128,7 @@ const CAMPOS_MP = [
     { key:'tempResfriador',  label:'Temp. Saída Resfriador'      },
     { key:'tempCanhao',      label:'Temperatura Canhão'          },
     { key:'alimentacaoHz',   label:'Alimentação HZ'              },
+    { key:'tempAmbiente',    label:'Temperatura Ambiente'        },
 ];
 
 // Rações de Produção agrupadas
