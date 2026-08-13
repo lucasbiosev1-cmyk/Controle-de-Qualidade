@@ -5031,9 +5031,22 @@
     <div id="aba-relClass" class="tab-content">
         <div class="relatorio-container">
 
-            <div style="display:flex;gap:10px;justify-content:flex-end;margin-bottom:15px;">
-                <button class="btn-print" onclick="imprimirRelClass()">🖨️ IMPRIMIR</button>
-                <button class="btn-pdf"   onclick="gerarPDFClass()">📄 GERAR PDF</button>
+            <div style="display:flex;gap:16px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:15px;">
+                <div id="rcSelecaoRelatorios" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:8px 12px;background:#f4f4f7;border:1px solid #ddd;border-radius:6px;">
+                    <span style="font-size:11px;font-weight:bold;color:#555;text-transform:uppercase;">📑 Exibir/Imprimir:</span>
+                    <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:#2980b9;user-select:none;">
+                        <input type="checkbox" id="rcChkRelClass" checked onchange="rcAtualizarSelecaoRelatorios()" style="width:15px;height:15px;cursor:pointer;" autocomplete="off">
+                        🌽 Classificação
+                    </label>
+                    <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:#8e44ad;user-select:none;">
+                        <input type="checkbox" id="rcChkRelMico" checked onchange="rcAtualizarSelecaoRelatorios()" style="width:15px;height:15px;cursor:pointer;" autocomplete="off">
+                        🧫 Micotoxinas
+                    </label>
+                </div>
+                <div style="display:flex;gap:10px;">
+                    <button class="btn-print" onclick="imprimirRelClass()">🖨️ IMPRIMIR</button>
+                    <button class="btn-pdf"   onclick="gerarPDFClass()">📄 GERAR PDF</button>
+                </div>
             </div>
 
             <div class="rel-filtros" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
@@ -5127,6 +5140,7 @@
               </div>
             </div>
 
+                <div id="rcClassSecao">
                 <div class="relatorio-title" id="rcTitulo">RELATÓRIO DE CLASSIFICAÇÃO</div>
                 <div class="relatorio-periodo" id="rcPeriodo"></div>
 
@@ -5227,6 +5241,7 @@
                         <tbody id="rcTbodyDetalhe"></tbody>
                     </table>
                 </div><!-- fim tabela-container detalhe -->
+                </div><!-- fim rcClassSecao -->
                 <!-- ===== SEÇÃO MICOTOXINAS ===== -->
                 <div id="rcMicoSecao" style="margin-top:32px;border-top:3px solid #8e44ad;padding-top:20px;">
                     <div class="secao-title" style="border-bottom-color:#8e44ad;color:#6c3483;margin-bottom:16px;">
@@ -14064,6 +14079,21 @@ function inicializarRelClass() {
 }
 
 function limparFiltrosRelClass() { inicializarRelClass(); }
+
+// ── Seleção de qual(is) relatório(s) exibir/imprimir (Classificação e/ou Micotoxinas) ──
+function rcAtualizarSelecaoRelatorios() {
+    const chkClass = document.getElementById('rcChkRelClass');
+    const chkMico  = document.getElementById('rcChkRelMico');
+    // impede desmarcar os dois ao mesmo tempo
+    if (!chkClass.checked && !chkMico.checked) {
+        chkClass.checked = true;
+        sgqToast('Selecione ao menos um relatório para exibir.', 'error');
+    }
+    const secClass = document.getElementById('rcClassSecao');
+    const secMico  = document.getElementById('rcMicoSecao');
+    if (secClass) secClass.style.display = chkClass.checked ? '' : 'none';
+    if (secMico)  secMico.style.display  = chkMico.checked  ? '' : 'none';
+}
 
 function getAvariados(r) {
     // Avariados = defeitos individuais (carunchado e quebrado excluídos da soma)
