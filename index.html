@@ -5244,9 +5244,10 @@
                 </div><!-- fim rcClassSecao -->
                 <!-- ===== SEÇÃO MICOTOXINAS ===== -->
                 <div id="rcMicoSecao" style="margin-top:32px;border-top:3px solid #8e44ad;padding-top:20px;">
-                    <div class="secao-title" style="border-bottom-color:#8e44ad;color:#6c3483;margin-bottom:16px;">
+                    <div class="secao-title" style="border-bottom-color:#8e44ad;color:#6c3483;margin-bottom:4px;">
                         🧫 RELATÓRIO DE MICOTOXINAS — AFLATOXINA &amp; FUMONISINA
                     </div>
+                    <div class="relatorio-periodo" id="rcMicoPeriodo" style="margin-bottom:16px;"></div>
 
                     <!-- CARDS MICOTOXINAS -->
                     <div id="rcMicoCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px;"></div>
@@ -14142,6 +14143,8 @@ async function aplicarFiltrosRelClass() {
     const _rcTit = document.getElementById('rcCapaTituloTexto');
     if(_rcTit) _rcTit.textContent = tituloSel || 'CLASSIFICAÇÃO';
     document.getElementById('rcPeriodo').textContent = 'PERÍODO: ' + diStr + ' ATÉ ' + dfStr + '  |  ' + dados.length + ' registro(s)';
+    const _rcMicoPer = document.getElementById('rcMicoPeriodo');
+    if (_rcMicoPer) _rcMicoPer.textContent = 'PERÍODO: ' + diStr + ' ATÉ ' + dfStr + '  |  ' + tituloSel;
 
     // Cards resumo
     const avVals  = dados.map(r => getAvariados(r));
