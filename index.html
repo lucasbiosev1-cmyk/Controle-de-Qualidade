@@ -12140,7 +12140,22 @@ function salvarClassificacao(event) {
         classificacoes.push(r);
     }
     // Salva no Supabase
-    dbUpsertOne('classificacoes', r).then(() => { sgqToast(idEdicaoClass ? '✓ Classificação atualizada com sucesso!' : '✓ Classificação salva com sucesso!', 'success'); _registrarAuditoria(idEdicaoClass ? 'EDIT' : 'CREATE', 'classificacoes', r.id, { produto: r.produto, data: r.data }).catch(() => {}); }).catch(e => { mostrarErroClass('❌ Erro ao salvar: ' + e.message); sgqToast('Erro ao salvar classificação: ' + e.message, 'error'); });
+    dbUpsertOne('classificacoes', r).then(() => {
+        sgqToast(idEdicaoClass ? '✓ Classificação atualizada com sucesso!' : '✓ Classificação salva com sucesso!', 'success');
+        _registrarAuditoria(idEdicaoClass ? 'EDIT' : 'CREATE', 'classificacoes', r.id, { produto: r.produto, data: r.data }).catch(() => {});
+        // Garante que o registro recém-salvo apareça na tabela mesmo se a data dele
+        // (ex: vinda da leitura por câmera) cair fora do filtro de data atualmente aplicado
+        // (que por padrão mostra só "mês atual até hoje").
+        const filtroIni = document.getElementById('filterDataInicioClass');
+        const filtroFim = document.getElementById('filterDataFimClass');
+        let filtroAlterado = false;
+        if (filtroIni && filtroIni.value && r.data < filtroIni.value) { filtroIni.value = r.data; filtroAlterado = true; }
+        if (filtroFim && filtroFim.value && r.data > filtroFim.value) { filtroFim.value = r.data; filtroAlterado = true; }
+        if (filtroAlterado) {
+            sgqToast('ℹ️ Filtro de data ajustado para exibir o registro salvo (data ' + new Date(r.data+'T00:00:00').toLocaleDateString('pt-BR') + ')', 'info', 6000);
+        }
+        exibirTabelaClass();
+    }).catch(e => { mostrarErroClass('❌ Erro ao salvar: ' + e.message); sgqToast('Erro ao salvar classificação: ' + e.message, 'error'); });
     fecharModalCadastroClass(); limparFormularioClass(); exibirTabelaClass();
     setTimeout(_empHookAposRegistro, 800);
 }
@@ -38649,6 +38664,9 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
       window._scanPreenchendo = true; // bloqueia autoFornecedorClass durante preenchimento
       // 1. Produto PRIMEIRO — classAtualizarCamposProduto mostra/oculta campos numéricos
       _scanPreencherCampo('cadProdutoClass', dados.produto, 'select');
+      // Produto efetivamente reconhecido no formulário (após o match do select), usado para
+      // bloquear o preenchimento de campos não aplicáveis (mesma regra do lançamento por computador)
+      const _produtoResolvidoScan = document.getElementById('cadProdutoClass').value || dados.produto || '';
 
       // 2. Fornecedor — preenche antes do Local para não ser sobrescrito pelo autoFornecedorClass
       const forn = (dados.fornecedor || '').trim();
@@ -38679,17 +38697,24 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
       }
 
       // 6. Campos numéricos — preenchidos DEPOIS do produto para campos disabled já configurados
+      //    Campos que não se aplicam ao produto reconhecido (ex: Esverdeado/Picado no Milho,
+      //    Gessado/Carunchado na Soja) são pulados — mesma regra do lançamento por computador —
+      //    em vez de serem preenchidos à força reabilitando o campo temporariamente.
+      const _scanPreencherSeAplicavel = (id, valor, campo) => {
+        if (typeof campoAplicavelClass === 'function' && !campoAplicavelClass(_produtoResolvidoScan, campo)) return;
+        _scanPreencherCampo(id, valor, 'numero');
+      };
       _scanPreencherCampo('cadQueimadoClass',    dados.queimado,    'numero');
       _scanPreencherCampo('cadArdidoClass',      dados.ardido,      'numero');
       _scanPreencherCampo('cadMofadoClass',      dados.mofado,      'numero');
-      _scanPreencherCampo('cadEsverdeadoClass',  dados.esverdeado,  'numero');
+      _scanPreencherSeAplicavel('cadEsverdeadoClass',  dados.esverdeado,  'esverdeado');
       _scanPreencherCampo('cadFermentandoClass', dados.fermentando, 'numero');
       _scanPreencherCampo('cadChochoClass',      dados.chocho,      'numero');
-      _scanPreencherCampo('cadPicadoClass',      dados.picado,      'numero');
-      _scanPreencherCampo('cadGessadoClass',     dados.gessado,     'numero');
+      _scanPreencherSeAplicavel('cadPicadoClass',      dados.picado,      'picado');
+      _scanPreencherSeAplicavel('cadGessadoClass',     dados.gessado,     'gessado');
       _scanPreencherCampo('cadGerminadoClass',   dados.germinado,   'numero');
       _scanPreencherCampo('cadQuebradoClass',    dados.quebrado,    'numero');
-      _scanPreencherCampo('cadCarunchadoClass',  dados.carunchado,  'numero');
+      _scanPreencherSeAplicavel('cadCarunchadoClass',  dados.carunchado,  'carunchado');
       _scanPreencherCampo('cadImpurezaClass',    dados.impureza,    'numero');
       _scanPreencherCampo('cadUmidadeClass',     dados.umidade,     'numero');
       _scanPreencherCampo('cadDensidadeClass',   dados.densidade,   'numero');
