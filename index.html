@@ -15896,8 +15896,9 @@ function exibirTabelaEMP(lista) {
             'REPROVADA':  'background:#fadbd8;color:#e74c3c;',
             'CONCLUÍDA':  'background:#e3f2fd;color:#1565c0;'
         };
-        // Se análise está CONCLUÍDA mas descarga ainda está DESCARREGANDO, exibe como APROVADA (dado inconsistente)
-        const _statusAnaliseExib = (r.status === 'CONCLUÍDA' && r.status_descarga === 'DESCARREGANDO') ? 'APROVADA' : r.status;
+        // Se análise está CONCLUÍDA mas a descarga real ainda não terminou (status_descarga != CONCLUÍDA),
+        // exibe como APROVADA — cobre tanto DESCARREGANDO quanto FILA (dado inconsistente, ex.: falha parcial de salvamento)
+        const _statusAnaliseExib = (r.status === 'CONCLUÍDA' && (r.status_descarga || '').toUpperCase() !== 'CONCLUÍDA') ? 'APROVADA' : r.status;
         const anStyle = analiseStyles[_statusAnaliseExib] || 'background:#eee;color:#555;';
         const anLabel = analiseLabels[_statusAnaliseExib] || _statusAnaliseExib;
         const analiseOpts = ['EM ANÁLISE','APROVADA','REPROVADA'].map(v =>
@@ -15944,7 +15945,10 @@ function exibirTabelaEMP(lista) {
         }
         // Horário em que o descarregamento foi concluído
         const horaDescargaCell = `<span style="font-size:11px;color:var(--gh-fg-muted);white-space:nowrap;">${_empFormatarDataHora(r.hora_conclusao_descarga)}</span>`;
-        const podeEditarLinha = podeEditar && r.status !== 'CONCLUÍDA';
+        // Só bloqueia edição quando a descarga REALMENTE terminou (status_descarga CONCLUÍDA);
+        // um r.status='CONCLUÍDA' órfão (sem status_descarga CONCLUÍDA) não deve travar a edição
+        const _descargaRealConcluida = (r.status_descarga || '').toUpperCase() === 'CONCLUÍDA';
+        const podeEditarLinha = podeEditar && !(r.status === 'CONCLUÍDA' && _descargaRealConcluida);
         const dblclickAttr = podeEditarLinha ? `ondblclick="editarEntradaMP(${r.id})" title="Clique duplo para editar"` : '';
         const cursorStyle = podeEditarLinha ? 'cursor:pointer;' : '';
         const fornecedorExib = r.obs
@@ -15987,6 +15991,9 @@ async function alterarStatusDescargaEMP(id, novoStatus) {
             return;
         }
     }
+    // Guarda valores anteriores para poder reverter em memória se o salvamento falhar de vez
+    const statusDescargaAnterior = entradasMP[idx].status_descarga;
+    const statusAnaliseAnterior = entradasMP[idx].status;
     entradasMP[idx].status_descarga = novoStatus;
     if (novoStatus === 'CONCLUÍDA') {
         entradasMP[idx].status = 'CONCLUÍDA';
@@ -16000,11 +16007,24 @@ async function alterarStatusDescargaEMP(id, novoStatus) {
     try {
         await dbUpsertOne('entradas_mp', entradasMP[idx]);
     } catch(e) {
-        // Coluna status_descarga pode não existir ainda — tenta salvar só o status principal
+        // Upsert completo falhou — tenta salvar status_descarga E status juntos via update simples,
+        // para nunca gravar um sem o outro (isso já causou o bug de status='CONCLUÍDA' com
+        // status_descarga desatualizado, fazendo a carga sumir da lista de pendentes)
         try {
-            const { error } = await _sbClient.from('entradas_mp').update({ status: entradasMP[idx].status }).eq('id', id);
-            if (error) console.error(error);
-        } catch(e2) { console.error(e2); }
+            const { error } = await _sbClient.from('entradas_mp')
+                .update({ status_descarga: entradasMP[idx].status_descarga, status: entradasMP[idx].status })
+                .eq('id', id);
+            if (error) throw error;
+        } catch(e2) {
+            // Ainda falhou (ex.: coluna status_descarga realmente não existe) — como último recurso,
+            // NÃO grava status isolado (evita reintroduzir a inconsistência); apenas avisa o usuário.
+            console.error(e2);
+            sgqToast('⚠ Falha ao salvar status da descarga. Tente novamente — nada foi gravado.', 'error');
+            entradasMP[idx].status_descarga = statusDescargaAnterior;
+            entradasMP[idx].status = statusAnaliseAnterior;
+            exibirTabelaEMP();
+            return;
+        }
     }
     const labels = { 'FILA':'⏳ Voltou para Fila', 'DESCARREGANDO':'🚛 Descarregando!', 'CONCLUÍDA':'✅ Descarga concluída!' };
     sgqToast(labels[novoStatus] || 'Status atualizado', 'sucesso');
@@ -16035,10 +16055,25 @@ async function iniciarDescargaEMP(id) {
 async function concluirDescargaEMP(id) {
     const idx = entradasMP.findIndex(e => String(e.id) === String(id));
     if (idx < 0) return;
+    // Guarda valores anteriores para reverter em memória se o salvamento falhar
+    const statusDescargaAnterior = entradasMP[idx].status_descarga;
+    const statusAnaliseAnterior = entradasMP[idx].status;
+    const horaConclusaoAnterior = entradasMP[idx].hora_conclusao_descarga;
     entradasMP[idx].status_descarga = 'CONCLUÍDA';
     entradasMP[idx].status = 'CONCLUÍDA';
     entradasMP[idx].hora_conclusao_descarga = new Date().toISOString();
-    try { await dbUpsertOne('entradas_mp', entradasMP[idx]); } catch(e) { console.error(e); }
+    try {
+        await dbUpsertOne('entradas_mp', entradasMP[idx]);
+    } catch(e) {
+        // dbUpsertOne salva status_descarga e status juntos num único upsert, então uma falha
+        // aqui não grava nenhum dos dois pela metade — mas reverte em memória e NÃO finge sucesso
+        console.error(e);
+        entradasMP[idx].status_descarga = statusDescargaAnterior;
+        entradasMP[idx].status = statusAnaliseAnterior;
+        entradasMP[idx].hora_conclusao_descarga = horaConclusaoAnterior;
+        exibirTabelaEMP();
+        return;
+    }
     sgqToast('✅ Descarga concluída!', 'sucesso');
     document.getElementById('modalAprovarEMP').style.display = 'none';
     exibirTabelaEMP();
@@ -16060,11 +16095,16 @@ async function desfazerDescargaEMP(id) {
 let _empModoAtual = 'pendentes';
 
 // Retorna true se a entrada está "em andamento" (pendente, análise ou descarregando)
+// IMPORTANTE: a conclusão real de uma carga é status_descarga === 'CONCLUÍDA'.
+// Não confiar apenas em r.status === 'CONCLUÍDA' — uma falha parcial de salvamento
+// pode deixar r.status='CONCLUÍDA' gravado no banco com status_descarga desatualizado
+// (ex.: ainda 'FILA'), o que faria a carga sumir da lista de pendentes sem ter sido
+// realmente descarregada. Por isso, para status APROVADA ou CONCLUÍDA, sempre
+// checamos o status_descarga real.
 function _empEhPendente(r) {
-    if (r.status === 'CONCLUÍDA') return false;
     if (r.status === 'REPROVADA') return false;
     if (r.status === 'EM ANÁLISE') return true;
-    if (r.status === 'APROVADA') {
+    if (r.status === 'APROVADA' || r.status === 'CONCLUÍDA') {
         const sd = (r.status_descarga || '').toUpperCase();
         return sd !== 'CONCLUÍDA';
     }
