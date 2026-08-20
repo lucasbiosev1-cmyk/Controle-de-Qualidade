@@ -4473,11 +4473,15 @@
                         <option value="CORTE R4 MCASSAB">CORTE R4 MCASSAB</option>
                         <option value="CORTE R5 MCASSAB">CORTE R5 MCASSAB</option>
                         <option value="POSTURA MCASSAB R1">POSTURA MCASSAB R1</option>
+                        <option value="POSTURA TECTRON R1">POSTURA TECTRON R1</option>
                         <option value="POSTURA MCASSAB R2">POSTURA MCASSAB R2</option>
+                        <option value="POSTURA TECTRON R2">POSTURA TECTRON R2</option>
                         <option value="POSTURA MCASSAB R3">POSTURA MCASSAB R3</option>
                         <option value="POSTURA MCASSAB R5">POSTURA MCASSAB R5</option>
                         <option value="POSTURA MCASSAB R6">POSTURA MCASSAB R6</option>
+                        <option value="POSTURA TECTRON R6">POSTURA TECTRON R6</option>
                         <option value="POSTURA MCASSAB R7">POSTURA MCASSAB R7</option>
+                        <option value="POSTURA MCASSAB R8">POSTURA MCASSAB R8</option>
                         <option value="POSTURA MCASSAB R9">POSTURA MCASSAB R9</option>
                         <option value="POSTURA MCASSAB R10">POSTURA MCASSAB R10</option>
                         <option value="POSTURA TECTRON R7">POSTURA TECTRON R7</option>
@@ -4697,20 +4701,24 @@
                         <option value="g:CORTE R5 WISIUM|CORTE R5 MCASSAB">CORTE R5 — TODOS</option>
                         <option value="CORTE R5 WISIUM">CORTE R5 WISIUM</option>
                         <option value="CORTE R5 MCASSAB">CORTE R5 MCASSAB</option>
-                        <option value="g:POSTURA MCASSAB R1">POSTURA R1 — TODOS</option>
+                        <option value="g:POSTURA MCASSAB R1|POSTURA TECTRON R1">POSTURA R1 — TODOS</option>
                         <option value="POSTURA MCASSAB R1">POSTURA MCASSAB R1</option>
-                        <option value="g:POSTURA MCASSAB R2">POSTURA R2 — TODOS</option>
+                        <option value="POSTURA TECTRON R1">POSTURA TECTRON R1</option>
+                        <option value="g:POSTURA MCASSAB R2|POSTURA TECTRON R2">POSTURA R2 — TODOS</option>
                         <option value="POSTURA MCASSAB R2">POSTURA MCASSAB R2</option>
+                        <option value="POSTURA TECTRON R2">POSTURA TECTRON R2</option>
                         <option value="g:POSTURA MCASSAB R3">POSTURA R3 — TODOS</option>
                         <option value="POSTURA MCASSAB R3">POSTURA MCASSAB R3</option>
                         <option value="g:POSTURA MCASSAB R5">POSTURA R5 — TODOS</option>
                         <option value="POSTURA MCASSAB R5">POSTURA MCASSAB R5</option>
-                        <option value="g:POSTURA MCASSAB R6">POSTURA R6 — TODOS</option>
+                        <option value="g:POSTURA MCASSAB R6|POSTURA TECTRON R6">POSTURA R6 — TODOS</option>
                         <option value="POSTURA MCASSAB R6">POSTURA MCASSAB R6</option>
+                        <option value="POSTURA TECTRON R6">POSTURA TECTRON R6</option>
                         <option value="g:POSTURA MCASSAB R7|POSTURA TECTRON R7">POSTURA R7 — TODOS</option>
                         <option value="POSTURA MCASSAB R7">POSTURA MCASSAB R7</option>
                         <option value="POSTURA TECTRON R7">POSTURA TECTRON R7</option>
-                        <option value="g:POSTURA TECTRON R8">POSTURA R8 — TODOS</option>
+                        <option value="g:POSTURA MCASSAB R8|POSTURA TECTRON R8">POSTURA R8 — TODOS</option>
+                        <option value="POSTURA MCASSAB R8">POSTURA MCASSAB R8</option>
                         <option value="POSTURA TECTRON R8">POSTURA TECTRON R8</option>
                         <option value="g:POSTURA MCASSAB R9|POSTURA TECTRON R9">POSTURA R9 — TODOS</option>
                         <option value="POSTURA MCASSAB R9">POSTURA MCASSAB R9</option>
@@ -12773,24 +12781,29 @@ const FASES_MAP = {
                           'CORTE R5 WISIUM','CORTE R5 MCASSAB'],
                  cor: '#1a3a9f' },
     pos_pre:   { label: 'PRÉ INICIAL POSTURA (R1)',
-                 racoes: ['POSTURA MCASSAB R1'],
+                 racoes: ['POSTURA MCASSAB R1','POSTURA TECTRON R1'],
                  cor: '#c0392b' },
     pos_ini:   { label: 'INICIAL POSTURA (R2)',
-                 racoes: ['POSTURA MCASSAB R2'],
+                 racoes: ['POSTURA MCASSAB R2','POSTURA TECTRON R2'],
                  cor: '#d35400' },
     pos_fin:   { label: 'FINAL POSTURA (R3-R10)',
                  racoes: ['POSTURA MCASSAB R3','POSTURA MCASSAB R5',
-                          'POSTURA MCASSAB R6','POSTURA MCASSAB R7',
+                          'POSTURA MCASSAB R6','POSTURA TECTRON R6',
+                          'POSTURA MCASSAB R7',
+                          'POSTURA MCASSAB R8','POSTURA TECTRON R8',
                           'POSTURA MCASSAB R9','POSTURA MCASSAB R10',
-                          'POSTURA TECTRON R7','POSTURA TECTRON R8',
+                          'POSTURA TECTRON R7',
                           'POSTURA TECTRON R9','POSTURA TECTRON R10'],
                  cor: '#16a085' },
     pos_all:   { label: 'TODAS AS FASES POSTURA',
-                 racoes: ['POSTURA MCASSAB R1','POSTURA MCASSAB R2',
+                 racoes: ['POSTURA MCASSAB R1','POSTURA TECTRON R1',
+                          'POSTURA MCASSAB R2','POSTURA TECTRON R2',
                           'POSTURA MCASSAB R3','POSTURA MCASSAB R5',
-                          'POSTURA MCASSAB R6','POSTURA MCASSAB R7',
+                          'POSTURA MCASSAB R6','POSTURA TECTRON R6',
+                          'POSTURA MCASSAB R7',
+                          'POSTURA MCASSAB R8','POSTURA TECTRON R8',
                           'POSTURA MCASSAB R9','POSTURA MCASSAB R10',
-                          'POSTURA TECTRON R7','POSTURA TECTRON R8',
+                          'POSTURA TECTRON R7',
                           'POSTURA TECTRON R9','POSTURA TECTRON R10'],
                  cor: '#2c3e50' },
 };
@@ -15996,7 +16009,10 @@ async function alterarStatusDescargaEMP(id, novoStatus) {
     const statusAnaliseAnterior = entradasMP[idx].status;
     entradasMP[idx].status_descarga = novoStatus;
     if (novoStatus === 'CONCLUÍDA') {
-        entradasMP[idx].status = 'CONCLUÍDA';
+        // A descarga (física) e a análise (laboratório) são independentes — concluir a descarga
+        // não pode aprovar/concluir a análise sozinha. Só marca status='CONCLUÍDA' se a análise
+        // já estava APROVADA; se ainda está EM ANÁLISE, permanece EM ANÁLISE (pendente).
+        if (entradasMP[idx].status === 'APROVADA') entradasMP[idx].status = 'CONCLUÍDA';
         entradasMP[idx].hora_conclusao_descarga = new Date().toISOString();
     } else if (novoStatus === 'FILA' || novoStatus === 'DESCARREGANDO') {
         if (entradasMP[idx].status === 'CONCLUÍDA') entradasMP[idx].status = 'APROVADA';
@@ -16060,7 +16076,10 @@ async function concluirDescargaEMP(id) {
     const statusAnaliseAnterior = entradasMP[idx].status;
     const horaConclusaoAnterior = entradasMP[idx].hora_conclusao_descarga;
     entradasMP[idx].status_descarga = 'CONCLUÍDA';
-    entradasMP[idx].status = 'CONCLUÍDA';
+    // A descarga (física) e a análise (laboratório) são independentes — concluir a descarga
+    // não pode aprovar/concluir a análise sozinha. Só marca status='CONCLUÍDA' se a análise
+    // já estava APROVADA; se ainda está EM ANÁLISE, permanece EM ANÁLISE (pendente).
+    if (entradasMP[idx].status === 'APROVADA') entradasMP[idx].status = 'CONCLUÍDA';
     entradasMP[idx].hora_conclusao_descarga = new Date().toISOString();
     try {
         await dbUpsertOne('entradas_mp', entradasMP[idx]);
@@ -18232,20 +18251,20 @@ const RACOES_GRUPOS = [
       formulacoes:['CORTE R4 WISIUM','CORTE R4 MCASSAB'] },
     { grupo:'CORTE R5',   label:'CORTE R5',   racoes:['CORTE R5 WISIUM','CORTE R5 MCASSAB'], cor:'#0e2f44',
       formulacoes:['CORTE R5 WISIUM','CORTE R5 MCASSAB'] },
-    { grupo:'POSTURA R1', label:'POSTURA R1', racoes:['POSTURA MCASSAB R1'], cor:'#1a3a9f',
-      formulacoes:['POSTURA MCASSAB R1'] },
-    { grupo:'POSTURA R2', label:'POSTURA R2', racoes:['POSTURA MCASSAB R2'], cor:'#1740b0',
-      formulacoes:['POSTURA MCASSAB R2'] },
+    { grupo:'POSTURA R1', label:'POSTURA R1', racoes:['POSTURA MCASSAB R1','POSTURA TECTRON R1'], cor:'#1a3a9f',
+      formulacoes:['POSTURA MCASSAB R1','POSTURA TECTRON R1'] },
+    { grupo:'POSTURA R2', label:'POSTURA R2', racoes:['POSTURA MCASSAB R2','POSTURA TECTRON R2'], cor:'#1740b0',
+      formulacoes:['POSTURA MCASSAB R2','POSTURA TECTRON R2'] },
     { grupo:'POSTURA R3', label:'POSTURA R3', racoes:['POSTURA MCASSAB R3'], cor:'#1550c0',
       formulacoes:['POSTURA MCASSAB R3'] },
     { grupo:'POSTURA R5', label:'POSTURA R5', racoes:['POSTURA MCASSAB R5'], cor:'#1260cc',
       formulacoes:['POSTURA MCASSAB R5'] },
-    { grupo:'POSTURA R6', label:'POSTURA R6', racoes:['POSTURA MCASSAB R6'], cor:'#0f70d8',
-      formulacoes:['POSTURA MCASSAB R6'] },
+    { grupo:'POSTURA R6', label:'POSTURA R6', racoes:['POSTURA MCASSAB R6','POSTURA TECTRON R6'], cor:'#0f70d8',
+      formulacoes:['POSTURA MCASSAB R6','POSTURA TECTRON R6'] },
     { grupo:'POSTURA R7', label:'POSTURA R7', racoes:['POSTURA MCASSAB R7','POSTURA TECTRON R7'], cor:'#0a80e0',
       formulacoes:['POSTURA MCASSAB R7','POSTURA TECTRON R7'] },
-    { grupo:'POSTURA R8', label:'POSTURA R8', racoes:['POSTURA TECTRON R8'], cor:'#0a90e8',
-      formulacoes:['POSTURA TECTRON R8'] },
+    { grupo:'POSTURA R8', label:'POSTURA R8', racoes:['POSTURA MCASSAB R8','POSTURA TECTRON R8'], cor:'#0a90e8',
+      formulacoes:['POSTURA MCASSAB R8','POSTURA TECTRON R8'] },
     { grupo:'POSTURA R9', label:'POSTURA R9', racoes:['POSTURA MCASSAB R9','POSTURA TECTRON R9'], cor:'#1a9af0',
       formulacoes:['POSTURA MCASSAB R9','POSTURA TECTRON R9'] },
     { grupo:'POSTURA R10',label:'POSTURA R10',racoes:['POSTURA MCASSAB R10','POSTURA TECTRON R10'], cor:'#2aaaf8',
@@ -19637,8 +19656,8 @@ function classificarFaseRacao(racao) {
         return { categoria: 'calcario', fase: 'CALCÁRIO', ordem: 98, cor: '#546e7a', icone: '🪨' };
     // ✅ Usa a MESMA lista explícita (FASES_MAP) do Relatório de Produção por Fase,
     // em vez de uma regex genérica — evita que rações fora da lista oficial
-    // (ex.: "POSTURA MCASSAB R8", que não existe) sejam incluídas aqui mas
-    // excluídas no relatório, gerando contagens e C.V. diferentes entre as telas.
+    // sejam incluídas aqui mas excluídas no relatório, gerando contagens e
+    // C.V. diferentes entre as telas.
     const _in = (lista) => lista.some(rac => _racaoEq(racao, rac));
     if (_in(FASES_MAP.corte_pre.racoes))
         return { categoria: 'corte_pre_inicial', fase: 'CORTE — PRÉ-INICIAL (R1)',    ordem: 1, cor: '#0B3C5D', icone: '🐣' };
@@ -33351,9 +33370,9 @@ Use linguagem executiva clara e técnica. Cite valores exatos dos dados. Inclua 
         const dgmCortePreIni = _dgmFase(['CORTE R1 WISIUM','CORTE R1 MCASSAB'], prodMes);
         const dgmCorteIni    = _dgmFase(['CORTE R2 WISIUM','CORTE R2 MCASSAB'], prodMes);
         const dgmCorteFin    = _dgmFase(['CORTE R3 WISIUM','CORTE R3 MCASSAB','CORTE R4 WISIUM','CORTE R4 MCASSAB','CORTE R5 WISIUM','CORTE R5 MCASSAB'], prodMes);
-        const dgmPosPreIni   = _dgmFase(['POSTURA MCASSAB R1'], prodMes);
-        const dgmPosIni      = _dgmFase(['POSTURA MCASSAB R2'], prodMes);
-        const dgmPosFin      = _dgmFase(['POSTURA MCASSAB R3','POSTURA MCASSAB R5','POSTURA MCASSAB R6','POSTURA MCASSAB R7','POSTURA MCASSAB R9','POSTURA MCASSAB R10','POSTURA TECTRON R7','POSTURA TECTRON R8','POSTURA TECTRON R9','POSTURA TECTRON R10'], prodMes);
+        const dgmPosPreIni   = _dgmFase(['POSTURA MCASSAB R1','POSTURA TECTRON R1'], prodMes);
+        const dgmPosIni      = _dgmFase(['POSTURA MCASSAB R2','POSTURA TECTRON R2'], prodMes);
+        const dgmPosFin      = _dgmFase(['POSTURA MCASSAB R3','POSTURA MCASSAB R5','POSTURA MCASSAB R6','POSTURA TECTRON R6','POSTURA MCASSAB R7','POSTURA MCASSAB R8','POSTURA MCASSAB R9','POSTURA MCASSAB R10','POSTURA TECTRON R7','POSTURA TECTRON R8','POSTURA TECTRON R9','POSTURA TECTRON R10'], prodMes);
         const dgmCortePreIniAnt = _dgmFase(['CORTE R1 WISIUM','CORTE R1 MCASSAB'], prodAnt);
         const dgmCorteIniAnt    = _dgmFase(['CORTE R2 WISIUM','CORTE R2 MCASSAB'], prodAnt);
         const dgmCorteFimAnt    = _dgmFase(['CORTE R3 WISIUM','CORTE R3 MCASSAB','CORTE R4 WISIUM','CORTE R4 MCASSAB','CORTE R5 WISIUM','CORTE R5 MCASSAB'], prodAnt);
