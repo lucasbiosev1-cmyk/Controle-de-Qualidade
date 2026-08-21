@@ -28456,14 +28456,15 @@ async function reagSalvarNota() {
                 nome:         cat ? cat.nome : item.nome,
                 fornecedor:   fornecedor,
                 nf_chave:     chave          || null,
-                entrada:      hoje,
                 valor:        item.custo,       // campo usado pela tabela/cards de equipamentos
-                custo_unit:   item.custo,       // mantido também para compatibilidade com cálculos por NF
                 qtd:          item.qtd,
                 possui_calib: cat && cat.requerCalib ? 'sim' : 'nao'
             };
+            // ✅ FIX: custo_unit/entrada movidos para "extras" — se a coluna não existir
+            // (ou ainda não tiver sido recarregada no schema cache), _reagInsertFallback
+            // remove só o campo que falhar e tenta de novo, em vez de travar o insert inteiro
             let {data:ins, error:err} = await _reagInsertFallback('equipamentos', row,
-                { catalogo_id: item.catId||null, nome_nf_original: item.nomeNF||null });
+                { catalogo_id: item.catId||null, nome_nf_original: item.nomeNF||null, custo_unit: item.custo, entrada: hoje });
             if (err) throw err;
             if (ins) {
                 if (typeof _equipamentos!=='undefined') _equipamentos.push(ins);
