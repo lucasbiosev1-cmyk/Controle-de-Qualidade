@@ -27626,6 +27626,10 @@ function reagImportarXML(input) {
                 if (chEl) chave = chEl.textContent.trim();
             }
 
+            // ── Número da NF-e (não confundir com a chave de 44 dígitos) ──
+            const nNFEl = doc.querySelector('ide > nNF, nNF');
+            const numeroNota = nNFEl ? nNFEl.textContent.trim() : '';
+
             // ── Emitente (fornecedor) ────────────────────────────────
             const xNome = doc.querySelector('emit > xNome');
             const fornecedor = xNome ? xNome.textContent.trim() : '';
@@ -27693,6 +27697,8 @@ function reagImportarXML(input) {
             if (fornecedor)     document.getElementById('reagNFFornecedor').value  = fornecedor;
             if (dataEmissao)    document.getElementById('reagNFEmissao').value     = dataEmissao;
             if (valorTotalNF)   document.getElementById('reagNFValorTotal').value  = valorTotalNF.toFixed(2);
+            const modalNota = document.getElementById('reagModalNota');
+            if (modalNota) modalNota.dataset.numeroNota = numeroNota;
 
             // Limpar itens e popular
             _reagItensNota = [];
@@ -28047,6 +28053,8 @@ async function reagAbrirModalNota() {
     document.getElementById('reagNFEmissao').value    = '';
     document.getElementById('reagNFValorTotal').value = '';
     document.getElementById('reagNFItens').innerHTML  = '';
+    const modalNota = document.getElementById('reagModalNota');
+    if (modalNota) delete modalNota.dataset.numeroNota;
     // Resetar XML
     const xmlFile = document.getElementById('reagXMLFile');
     if (xmlFile) xmlFile.value = '';
@@ -28385,6 +28393,7 @@ function _reagLoteOpcaoSomar(btn) {
 
 async function reagSalvarNota() {
     const chave        = document.getElementById('reagNFChave').value.trim();
+    const numeroNota   = document.getElementById('reagModalNota')?.dataset.numeroNota || '';
     const fornecedor   = document.getElementById('reagNFFornecedor').value.trim();
     const emissao      = document.getElementById('reagNFEmissao').value;
     const valorTotalNF = parseFloat(document.getElementById('reagNFValorTotal').value) || null;
@@ -28535,10 +28544,13 @@ async function reagSalvarNota() {
             const row = {
                 nome:         cat ? cat.nome : item.nome,
                 marca:        item.marca  || null,
+                fabricante:   item.fabricante || item.marca || null,
                 modelo:       item.modelo || null,
                 serie:        item.serie  || null,
                 fornecedor:   fornecedor,
                 nf_chave:     chave          || null,
+                tipo_entrada: 'com_nota',
+                num_nota:     numeroNota || null,
                 valor:        item.custo,       // campo usado pela tabela/cards de equipamentos
                 qtd:          item.qtd,
                 possui_calib: cat && cat.requerCalib ? 'sim' : 'nao'
