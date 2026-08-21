@@ -27550,6 +27550,42 @@ function _reagDetectarCategoriaNF(itens) {
     return { predominante, contagem, valores, total };
 }
 
+// Extrai somente dados identificados por rótulos explícitos no XML.
+// Não tenta adivinhar marca/modelo/série a partir de números soltos, evitando
+// confundir série fiscal, lote, código do produto ou patrimônio com o equipamento.
+function _reagExtrairDadosEquipamentoXML(nomeProduto, infoAdicional) {
+    const texto = [nomeProduto, infoAdicional]
+        .filter(Boolean)
+        .join(' ; ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const extrair = (rotulo, proximos) => {
+        const re = new RegExp(
+            '(?:^|[;|,\\s])(?:' + rotulo + ')\\s*(?:[:=\\-]\\s*)?(.+?)' +
+            '(?=\\s*(?:[;|,]|(?:' + proximos + ')\\s*(?:[:=\\-]|\\s)|$))',
+            'i'
+        );
+        const m = texto.match(re);
+        return m ? m[1].trim().replace(/^[\s:=-]+|[\s;|,]+$/g, '') : '';
+    };
+
+    const marca = extrair(
+        'marca|fabricante',
+        'modelo|mod\\.?|s[eé]rie|serial|n[º°o]?\\s*(?:de\\s*)?s[eé]rie'
+    );
+    const modelo = extrair(
+        'modelo|mod\\.?',
+        'marca|fabricante|s[eé]rie|serial|n[º°o]?\\s*(?:de\\s*)?s[eé]rie'
+    );
+    const serie = extrair(
+        's[eé]rie|serial|n[º°o]?\\s*(?:de\\s*)?s[eé]rie',
+        'marca|fabricante|modelo|mod\\.?'
+    );
+
+    return { marca, modelo, serie, infoAdicional: infoAdicional || '' };
+}
+
 function reagImportarXML(input) {
     const file = input.files[0];
     if (!file) return;
@@ -27616,6 +27652,7 @@ function reagImportarXML(input) {
                 const dFab    = det.querySelector('dFab');
                 const dVenc   = det.querySelector('dVal');
                 const vUnCom  = det.querySelector('vUnCom');
+                const infAdProd = det.querySelector('infAdProd');
 
                 const nome    = xProd  ? xProd.textContent.trim()                        : '';
                 const qtd     = qCom   ? parseFloat(qCom.textContent.replace(',', '.'))  : 0;
@@ -27624,8 +27661,16 @@ function reagImportarXML(input) {
                 const custo   = vUnCom ? parseFloat(vUnCom.textContent.replace(',', '.')) : null;
                 const lote    = nLote  ? nLote.textContent.trim()                        : '';
                 const validade= dVenc  ? dVenc.textContent.trim().substring(0, 10)       : '';
+                const infoAdicional = infAdProd ? infAdProd.textContent.trim() : '';
+                const dadosEquipamento = _reagExtrairDadosEquipamentoXML(nome, infoAdicional);
 
-                if (nome) itens.push({ nome, qtd, unidade, lote, validade, custo });
+                if (nome) itens.push({
+                    nome, qtd, unidade, lote, validade, custo,
+                    marca: dadosEquipamento.marca,
+                    modelo: dadosEquipamento.modelo,
+                    serie: dadosEquipamento.serie,
+                    infoAdicional
+                });
             });
 
             if (!fornecedor && itens.length === 0) {
@@ -27654,7 +27699,7 @@ function reagImportarXML(input) {
             if (itens.length > 0) {
                 itens.forEach(item => {
                     // Passa o nome do XML — será exibido como badge e cruzado com o cadastro
-                    const div = reagAdicionarItemNota(item.nome);
+                    const div = reagAdicionarItemNota(item.nome, item);
                     if (!div) return;
 
                     // Quantidade
@@ -28014,7 +28059,7 @@ function reagFecharModalNota() {
     document.getElementById('reagModalNota').style.display = 'none';
 }
 
-function reagAdicionarItemNota(nomeNF) {
+function reagAdicionarItemNota(nomeNF, dadosXML) {
     const idx  = _reagItensNota.length;
     _reagItensNota.push({});
     const wrap = document.getElementById('reagNFItens');
@@ -28022,6 +28067,10 @@ function reagAdicionarItemNota(nomeNF) {
     div.id = 'reagNFItem_' + idx;
     div.className = 'nf-item-row';
     div.dataset.nomeNF = nomeNF || '';
+    div.dataset.xmlMarca = dadosXML?.marca || '';
+    div.dataset.xmlModelo = dadosXML?.modelo || '';
+    div.dataset.xmlSerie = dadosXML?.serie || '';
+    div.dataset.xmlInfoAdicional = dadosXML?.infoAdicional || '';
 
     // Detecta categoria provável pelo nome vindo da NF
     let catDetectada = 'quimico';
@@ -28035,6 +28084,16 @@ function reagAdicionarItemNota(nomeNF) {
         ? `<div style="font-size:10px;color:#1a6496;background:#e8f4fd;border:1px solid #bee5fd;border-radius:4px;padding:4px 10px;margin-bottom:8px;font-weight:700;display:flex;align-items:center;gap:6px;">
                <span style="flex-shrink:0;">📄 Da NF-e:</span>
                <span style="font-weight:900;flex:1;">${nomeEsc}</span>
+           </div>`
+        : '';
+    const dadosEncontrados = [
+        dadosXML?.marca ? `Marca: ${dadosXML.marca}` : '',
+        dadosXML?.modelo ? `Modelo: ${dadosXML.modelo}` : '',
+        dadosXML?.serie ? `Série: ${dadosXML.serie}` : ''
+    ].filter(Boolean);
+    const badgeDadosEquipamento = dadosEncontrados.length
+        ? `<div style="font-size:10px;color:#196f3d;background:#eafaf1;border:1px solid #a9dfbf;border-radius:4px;padding:5px 10px;margin:-3px 0 8px;font-weight:700;">
+               🔎 Identificado no XML: ${dadosEncontrados.map(v => v.replace(/</g,'&lt;').replace(/>/g,'&gt;')).join(' • ')}
            </div>`
         : '';
 
@@ -28059,6 +28118,7 @@ function reagAdicionarItemNota(nomeNF) {
     div.innerHTML = `
         <button type="button" onclick="this.parentElement.remove()" style="position:absolute;top:6px;right:8px;background:none;border:none;font-size:16px;cursor:pointer;" class="nf-btn-remove">✕</button>
         ${badgeNF}
+        ${badgeDadosEquipamento}
 
         <!-- Botões de categoria por item -->
         <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;align-items:center;">
@@ -28362,7 +28422,13 @@ async function reagSalvarNota() {
             return;
         }
         const nomeNF = div.dataset.nomeNF || '';
-        const item = { tipo, catId, nome, nomeNF, qtd, unidade, lote, validade, custo, pf };
+        const item = {
+            tipo, catId, nome, nomeNF, qtd, unidade, lote, validade, custo, pf,
+            marca: div.dataset.xmlMarca || '',
+            modelo: div.dataset.xmlModelo || '',
+            serie: div.dataset.xmlSerie || '',
+            infoAdicional: div.dataset.xmlInfoAdicional || ''
+        };
         if (tipo==='material')    itensM.push(item);
         else if (tipo==='equipamento') itensE.push(item);
         else                      itensQ.push(item);
@@ -28388,8 +28454,20 @@ async function reagSalvarNota() {
         while (true) {
             const { data, error } = await _sbClient.from(tabela).insert(campos).select().single();
             if (!error) return { data, error: null };
-            const msgColuna = chaves.find(k => (error.message||'').includes(k));
-            if (error.code === '42703' && msgColuna) {
+            // O PostgREST/Supabase informa coluna ausente de duas formas:
+            // 42703 (PostgreSQL) ou PGRST204 (coluna ausente no schema cache).
+            // Em ambos os casos, remove apenas o campo opcional incompatível e
+            // repete a inclusão, preservando os dados essenciais do produto.
+            const mensagemErro = String(error.message || '');
+            const msgColuna = chaves.find(k =>
+                mensagemErro.toLowerCase().includes(String(k).toLowerCase())
+            );
+            const colunaOpcionalAusente = msgColuna && (
+                error.code === '42703' ||
+                error.code === 'PGRST204' ||
+                /column|coluna|schema cache/i.test(mensagemErro)
+            );
+            if (colunaOpcionalAusente) {
                 delete campos[msgColuna];
                 chaves = chaves.filter(k => k !== msgColuna);
                 continue; // tenta de novo sem essa coluna
@@ -28454,6 +28532,9 @@ async function reagSalvarNota() {
             const cat = (_catEquipamentos||[]).find(p=>String(p.id)===String(item.catId));
             const row = {
                 nome:         cat ? cat.nome : item.nome,
+                marca:        item.marca  || null,
+                modelo:       item.modelo || null,
+                serie:        item.serie  || null,
                 fornecedor:   fornecedor,
                 nf_chave:     chave          || null,
                 valor:        item.custo,       // campo usado pela tabela/cards de equipamentos
