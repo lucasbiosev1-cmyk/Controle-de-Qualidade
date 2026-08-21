@@ -27550,38 +27550,40 @@ function _reagDetectarCategoriaNF(itens) {
     return { predominante, contagem, valores, total };
 }
 
-// Extrai somente dados identificados por rótulos explícitos no XML.
-// Não tenta adivinhar marca/modelo/série a partir de números soltos, evitando
-// confundir série fiscal, lote, código do produto ou patrimônio com o equipamento.
+// Extrai dados de identificação do equipamento no xProd/infAdProd da NF-e.
+// Aceita tanto rótulos explícitos quanto o padrão comum dos fornecedores:
+// "MODELO - No.Serie: 123", mantendo a série restrita ao valor após o rótulo.
 function _reagExtrairDadosEquipamentoXML(nomeProduto, infoAdicional) {
-    const texto = [nomeProduto, infoAdicional]
-        .filter(Boolean)
-        .join(' ; ')
-        .replace(/\s+/g, ' ')
-        .trim();
+    const nome = String(nomeProduto || '').replace(/\s+/g, ' ').trim();
+    const info = String(infoAdicional || '').replace(/\s+/g, ' ').trim();
+    const texto = [nome, info].filter(Boolean).join(' ; ');
 
-    const extrair = (rotulo, proximos) => {
-        const re = new RegExp(
-            '(?:^|[;|,\\s])(?:' + rotulo + ')\\s*(?:[:=\\-]\\s*)?(.+?)' +
-            '(?=\\s*(?:[;|,]|(?:' + proximos + ')\\s*(?:[:=\\-]|\\s)|$))',
-            'i'
-        );
+    const valorRotulado = (re) => {
         const m = texto.match(re);
         return m ? m[1].trim().replace(/^[\s:=-]+|[\s;|,]+$/g, '') : '';
     };
 
-    const marca = extrair(
-        'marca|fabricante',
-        'modelo|mod\\.?|s[eé]rie|serial|n[º°o]?\\s*(?:de\\s*)?s[eé]rie'
-    );
-    const modelo = extrair(
-        'modelo|mod\\.?',
-        'marca|fabricante|s[eé]rie|serial|n[º°o]?\\s*(?:de\\s*)?s[eé]rie'
-    );
-    const serie = extrair(
-        's[eé]rie|serial|n[º°o]?\\s*(?:de\\s*)?s[eé]rie',
-        'marca|fabricante|modelo|mod\\.?'
-    );
+    // Formatos: "Marca: TECNAL" / "Fabricante TECNAL".
+    let marca = valorRotulado(/(?:marca|fabricante)\s*[:=-]?\s*([^;|,]+?)(?=\s+(?:modelo|mod\.?|n(?:[º°o]|ro)?\.?\s*(?:de\s*)?s[eé]rie|s[eé]rie|serial)\b|[;|,]|$)/i);
+
+    // Formatos rotulados ou, como nesta NF, modelo no início do infAdProd:
+    // "TE-008/50-04-BL - No.Serie: 26040301".
+    let modelo = valorRotulado(/(?:modelo|mod\.?)\s*[:=-]?\s*([A-Z0-9][A-Z0-9./_-]*)/i);
+    if (!modelo) {
+        const mModeloInicial = info.match(/^\s*([A-Z]{1,10}-[A-Z0-9][A-Z0-9./_-]*)\s*(?=\s+-\s+|;|$)/i);
+        if (mModeloInicial) modelo = mModeloInicial[1].trim();
+    }
+
+    // Formatos: "Série", "Serial", "Nº Série", "No.Serie".
+    const serie = valorRotulado(/(?:serial|(?:n(?:[º°o]|ro)?\.?\s*(?:de\s*)?)?s[eé]rie)\s*[:=-]?\s*([A-Z0-9][A-Z0-9./_-]*)/i);
+
+    // Alguns XMLs trazem a marca apenas como a última palavra de xProd.
+    // Aceita apenas palavra toda em maiúsculas e ignora termos comerciais comuns.
+    if (!marca) {
+        const mMarcaFinal = nome.match(/\b([A-ZÁÉÍÓÚÇ][A-ZÁÉÍÓÚÇ0-9._-]{2,})\s*$/);
+        const bloqueadas = ['LTDA','EIRELI','INDUSTRIAL','COMERCIAL','EQUIPAMENTO','LABORATORIO'];
+        if (mMarcaFinal && !bloqueadas.includes(mMarcaFinal[1])) marca = mMarcaFinal[1];
+    }
 
     return { marca, modelo, serie, infoAdicional: infoAdicional || '' };
 }
