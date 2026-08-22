@@ -25112,7 +25112,7 @@ function sgqOcultarLoading() {
 // =====================================================================
 
 // Bump este valor manualmente sempre que uma nova versão for gerada/publicada.
-const SGQ_BUILD_VERSAO = '2026.07.23-01';
+const SGQ_BUILD_VERSAO = '2026.08.22-02';
 
 // Ativo: quando o admin publica uma nova versão, quem estiver com o sistema
 // aberto atualiza sozinho (reload silencioso), sem mostrar nenhum aviso.
@@ -26746,6 +26746,7 @@ function _reagMontarEntradasLegadas() {
             valQuimico:     null,
             valMaterial:    null,
             valEquipamento: custo,
+            compraDireta:   true,
             legado:         true
         });
     });
@@ -26815,17 +26816,21 @@ function reagRenderNotas() {
     // Badge tipo de entrada (com NF / sem NF)
     const _tipoBadge = n => {
         const temNF = n.chave && n.chave.trim() !== '';
-        return temNF
-            ? `<div style="font-weight:700;font-size:12px;color:#1a5276;">${_reagNumeroNF(n.chave)}</div>
-               <div style="font-size:9px;color:#aaa;font-family:monospace;margin-top:2px;word-break:break-all;">${n.chave}</div>`
-            : `<span style="background:#e67e22;color:#fff;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;">🚫 Sem N.F</span>`;
+        if (temNF) {
+            return `<div style="font-weight:700;font-size:12px;color:#1a5276;">${_reagNumeroNF(n.chave)}</div>
+                    <div style="font-size:9px;color:#aaa;font-family:monospace;margin-top:2px;word-break:break-all;">${n.chave}</div>`;
+        }
+        if (n.compraDireta) {
+            return `<span style="background:#16a085;color:#fff;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;">🛒 Compra direta</span>`;
+        }
+        return `<span style="background:#e67e22;color:#fff;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;">🚫 Sem N.F</span>`;
     };
 
     tbody.innerHTML = lista.map((n,i) => `
         <tr style="border-bottom:1px solid #f0f0f0;background:${n.legado?'#fffbf0':(i%2===0?'#fff':'#fafbfc')};">
             <td style="padding:8px 12px;text-align:left;min-width:120px;">
                 ${_tipoBadge(n)}
-                ${n.legado ? '<div style="font-size:9px;color:#e67e22;font-weight:700;margin-top:3px;">📌 Reconstruído do cadastro</div>' : ''}
+                ${n.legado ? '<div style="font-size:9px;color:#16a085;font-weight:700;margin-top:3px;">📌 Cadastro antigo sem NF</div>' : ''}
             </td>
             <td style="padding:8px;text-align:center;">${_catBadge(n.categoriaNF || 'quimico')}</td>
             <td style="padding:8px;text-align:center;font-size:11px;white-space:nowrap;">${_fmtData(n.dataEmissao)}</td>
