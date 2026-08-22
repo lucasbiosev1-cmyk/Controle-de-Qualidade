@@ -25112,7 +25112,7 @@ function sgqOcultarLoading() {
 // =====================================================================
 
 // Bump este valor manualmente sempre que uma nova versão for gerada/publicada.
-const SGQ_BUILD_VERSAO = '2026.08.22-06';
+const SGQ_BUILD_VERSAO = '2026.08.22-07';
 
 // Ativo: quando o admin publica uma nova versão, quem estiver com o sistema
 // aberto atualiza sozinho (reload silencioso), sem mostrar nenhum aviso.
@@ -26837,8 +26837,7 @@ function reagRenderNotas() {
                             ? `<button onclick="reagVerNota('${n.id}')" style="background:#1a2a6e;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;">Ver</button>`
                             : `<span title="Esta entrada foi reconstruída a partir do cadastro de equipamento/material — não existe como registro de histórico no banco. Para editar, vá até o cadastro original." style="background:#f0f0f0;color:#999;border-radius:4px;padding:4px 10px;font-size:11px;cursor:help;">📌 Legado</span>`)
                         : `<button onclick="reagVerNota('${n.id}')" style="background:#1a2a6e;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;">Ver</button>
-                           ${n.totalItensNF==null?`<button onclick="reagCorrigirTotalNota('${n.id}')" title="Importar XML para corrigir total" style="background:#e67e22;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;">📄</button>`:''}
-                           <button onclick="reagExcluirNota('${n.id}')" style="background:#e74c3c;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;">🗑️</button>`
+                           ${n.totalItensNF==null?`<button onclick="reagCorrigirTotalNota('${n.id}')" title="Importar XML para corrigir total" style="background:#e67e22;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;">📄</button>`:''}`
                     }
                 </div>
             </td>
