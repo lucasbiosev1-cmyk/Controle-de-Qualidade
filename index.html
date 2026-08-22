@@ -27233,10 +27233,12 @@ function _detComprasRender(tipo) {
                     // Cadastro manual com campo "valor" preenchido = dado confiável, não é estimativa
                     const valorFinal = temValorManual ? custo : custo * qtd;
                     linhas.push({
-                        origem: temValorManual ? 'Sem NF (cadastro manual)' : 'Sem NF (legado)', temNF: false,
+                        origem: temValorManual ? 'Compra direta' : 'Sem NF (legado)',
+                        temNF: false,
+                        compraDireta: temValorManual,
                         data: e.entrada, fornecedor: e.fornecedor || '—',
                         composicao: temValorManual
-                            ? `${e.nome}: valor informado no cadastro — R$ ${custo.toLocaleString('pt-BR',{minimumFractionDigits:2})}`
+                            ? `${e.nome}: compra direta sem NF — valor informado no cadastro: R$ ${custo.toLocaleString('pt-BR',{minimumFractionDigits:2})}`
                             : `⚠️ ${e.nome}: estimado por estoque ATUAL (R$ ${custo.toLocaleString('pt-BR',{minimumFractionDigits:2})} × ${qtd}) — pode não refletir a quantidade comprada originalmente.`,
                         valor: valorFinal,
                         imprecisao: !temValorManual
@@ -27269,6 +27271,8 @@ function _detComprasRender(tipo) {
         const bgRow = l.imprecisao ? '#fff8e1' : (i%2===0?'#fff':'#fafbfc');
         const badgeOrigem = l.imprecisao
             ? `<span style="background:#f39c12;color:#fff;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;">⚠️ Estimado</span>`
+            : l.compraDireta
+                ? `<span style="background:#16a085;color:#fff;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;">🛒 Compra direta</span>`
             : l.temNF
                 ? `<span style="background:#1a5276;color:#fff;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;">📄 ${l.origem}</span>`
                 : `<span style="background:#e67e22;color:#fff;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;">🚫 Sem NF</span>`;
