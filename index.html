@@ -25112,7 +25112,7 @@ function sgqOcultarLoading() {
 // =====================================================================
 
 // Bump este valor manualmente sempre que uma nova versão for gerada/publicada.
-const SGQ_BUILD_VERSAO = '2026.08.22-04';
+const SGQ_BUILD_VERSAO = '2026.08.22-05';
 
 // Ativo: quando o admin publica uma nova versão, quem estiver com o sistema
 // aberto atualiza sozinho (reload silencioso), sem mostrar nenhum aviso.
@@ -26820,7 +26820,7 @@ function reagRenderNotas() {
                 ${_tipoBadge(n)}
                 ${n.legado
                     ? (n.compraDireta
-                        ? '<div style="font-size:9px;color:#16a085;font-weight:700;margin-top:3px;">📌 Cadastro antigo sem NF</div>'
+                        ? '<div style="font-size:9px;color:#16a085;font-weight:700;margin-top:3px;">📌 Aquisição sem NF</div>'
                         : '<div style="font-size:9px;color:#e67e22;font-weight:700;margin-top:3px;">📌 Reconstruído do cadastro</div>')
                     : ''}
             </td>
@@ -26833,7 +26833,9 @@ function reagRenderNotas() {
             <td style="padding:8px;text-align:center;">
                 <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
                     ${n.legado
-                        ? `<span title="Esta entrada foi reconstruída a partir do cadastro de equipamento/material — não existe como registro de histórico no banco. Para editar, vá até o cadastro original." style="background:#f0f0f0;color:#999;border-radius:4px;padding:4px 10px;font-size:11px;cursor:help;">📌 Legado</span>`
+                        ? (n.compraDireta
+                            ? `<span title="Compra direta sem NF. Os dados são gerenciados no cadastro original do equipamento." style="background:#e8f8f5;color:#117864;border-radius:4px;padding:4px 10px;font-size:11px;cursor:help;">📋 Cadastro do equipamento</span>`
+                            : `<span title="Esta entrada foi reconstruída a partir do cadastro de equipamento/material — não existe como registro de histórico no banco. Para editar, vá até o cadastro original." style="background:#f0f0f0;color:#999;border-radius:4px;padding:4px 10px;font-size:11px;cursor:help;">📌 Legado</span>`)
                         : `<button onclick="reagVerNota('${n.id}')" style="background:#1a2a6e;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;">Ver</button>
                            ${n.totalItensNF==null?`<button onclick="reagCorrigirTotalNota('${n.id}')" title="Importar XML para corrigir total" style="background:#e67e22;color:#fff;border:none;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:11px;">📄</button>`:''}
                            <button onclick="reagExcluirNota('${n.id}')" style="background:#e74c3c;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;">🗑️</button>`
