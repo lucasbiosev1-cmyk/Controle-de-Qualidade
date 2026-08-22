@@ -25112,26 +25112,18 @@ function sgqOcultarLoading() {
 // =====================================================================
 
 // Bump este valor manualmente sempre que uma nova versão for gerada/publicada.
-const SGQ_BUILD_VERSAO = '2026.08.22-02';
+const SGQ_BUILD_VERSAO = '2026.08.22-04';
 
 // Ativo: quando o admin publica uma nova versão, quem estiver com o sistema
 // aberto atualiza sozinho (reload silencioso), sem mostrar nenhum aviso.
-const SGQ_AVISO_ATUALIZACAO_ATIVO = true;
+// Desativado: o reload automático entrava em ciclo quando o valor salvo no
+// Supabase não era sincronizado junto com o deploy do HTML.
+const SGQ_AVISO_ATUALIZACAO_ATIVO = false;
 
 async function _sgqVerificarNovaVersao() {
-    if (!SGQ_AVISO_ATUALIZACAO_ATIVO) return;
-    try {
-        if (typeof _sbClient === 'undefined' || !_sbClient) return;
-        const { data, error } = await _sbClient
-            .from('parametros')
-            .select('valor')
-            .eq('chave', 'sgq_versao_atual')
-            .maybeSingle();
-        if (error || !data || !data.valor) return;
-        if (data.valor !== SGQ_BUILD_VERSAO) {
-            location.reload(true);
-        }
-    } catch (e) { /* silencioso — não atrapalha o uso normal do sistema */ }
+    // Desativado definitivamente. Atualizações passam a ser feitas somente
+    // por ação manual do usuário, evitando qualquer ciclo de recarregamento.
+    return;
 }
 
 // Botão em Configurações → Backup (visível só para admin). Chame depois de
@@ -25154,14 +25146,8 @@ async function sgqPublicarNovaVersao() {
     }
 }
 
-// Verifica ao carregar, a cada 3 minutos, e sempre que a aba volta a ficar visível
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(_sgqVerificarNovaVersao, 4000); // dá tempo do _sbClient estar pronto
-    setInterval(_sgqVerificarNovaVersao, 3 * 60 * 1000);
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') _sgqVerificarNovaVersao();
-    });
-});
+// A verificação automática foi removida. Não registrar timers nem eventos
+// de visibilidade para atualização de versão.
 
 // ── Toast Notifications ───────────────────────────────────────────────
 // tipo: 'success' | 'error' | 'warning' | 'info'
@@ -26746,7 +26732,9 @@ function _reagMontarEntradasLegadas() {
             valQuimico:     null,
             valMaterial:    null,
             valEquipamento: custo,
-            compraDireta:   true,
+            // Regra solicitada: somente compras do Mercado Livre recebem
+            // o rótulo "Compra direta". Outros registros antigos seguem Sem N.F.
+            compraDireta:   fornecStr.includes('MERCADO LIVRE'),
             legado:         true
         });
     });
@@ -26830,7 +26818,11 @@ function reagRenderNotas() {
         <tr style="border-bottom:1px solid #f0f0f0;background:${n.legado?'#fffbf0':(i%2===0?'#fff':'#fafbfc')};">
             <td style="padding:8px 12px;text-align:left;min-width:120px;">
                 ${_tipoBadge(n)}
-                ${n.legado ? '<div style="font-size:9px;color:#16a085;font-weight:700;margin-top:3px;">📌 Cadastro antigo sem NF</div>' : ''}
+                ${n.legado
+                    ? (n.compraDireta
+                        ? '<div style="font-size:9px;color:#16a085;font-weight:700;margin-top:3px;">📌 Cadastro antigo sem NF</div>'
+                        : '<div style="font-size:9px;color:#e67e22;font-weight:700;margin-top:3px;">📌 Reconstruído do cadastro</div>')
+                    : ''}
             </td>
             <td style="padding:8px;text-align:center;">${_catBadge(n.categoriaNF || 'quimico')}</td>
             <td style="padding:8px;text-align:center;font-size:11px;white-space:nowrap;">${_fmtData(n.dataEmissao)}</td>
@@ -27227,6 +27219,7 @@ function _detComprasRender(tipo) {
             const temNotaFluxo  = e.nf_chave && e.nf_chave.trim() !== '';
             const semNF = !temNotaManual && !temNotaFluxo;
             const temValorManual = e.valor != null && parseFloat(e.valor) > 0;
+            const compraDireta = temValorManual && (e.fornecedor || '').trim().toUpperCase().includes('MERCADO LIVRE');
             const custo = parseFloat(e.valor) || parseFloat(e.custo_unit) || 0;
             const qtd   = parseFloat(e.qtd) || 1;
             if (semNF && custo > 0) {
@@ -27238,12 +27231,12 @@ function _detComprasRender(tipo) {
                     // Cadastro manual com campo "valor" preenchido = dado confiável, não é estimativa
                     const valorFinal = temValorManual ? custo : custo * qtd;
                     linhas.push({
-                        origem: temValorManual ? 'Compra direta' : 'Sem NF (legado)',
+                        origem: compraDireta ? 'Compra direta' : (temValorManual ? 'Sem NF (cadastro manual)' : 'Sem NF (legado)'),
                         temNF: false,
-                        compraDireta: temValorManual,
+                        compraDireta,
                         data: e.entrada, fornecedor: e.fornecedor || '—',
                         composicao: temValorManual
-                            ? `${e.nome}: compra direta sem NF — valor informado no cadastro: R$ ${custo.toLocaleString('pt-BR',{minimumFractionDigits:2})}`
+                            ? `${e.nome}: ${compraDireta ? 'compra direta' : 'cadastro sem NF'} — valor informado: R$ ${custo.toLocaleString('pt-BR',{minimumFractionDigits:2})}`
                             : `⚠️ ${e.nome}: estimado por estoque ATUAL (R$ ${custo.toLocaleString('pt-BR',{minimumFractionDigits:2})} × ${qtd}) — pode não refletir a quantidade comprada originalmente.`,
                         valor: valorFinal,
                         imprecisao: !temValorManual
