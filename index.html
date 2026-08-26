@@ -21761,13 +21761,19 @@ const SAFE_TOX_SILOS_KEY = 'safe_tox_silos_milho_individuais_v3';
 function safeToxConfigSilos() {
     try {
         let v=JSON.parse(localStorage.getItem(SAFE_TOX_SILOS_KEY)||'null');
+        const semConfigSalva = !v;
         // Migra automaticamente a seleção da versão anterior, descartando as fases.
         if (!v) v=JSON.parse(localStorage.getItem('safe_tox_silos_milho_fases_v2')||'{}');
+        // Nenhuma configuração salva neste navegador (nem atual, nem legada): ativa os dois silos por padrão,
+        // já que a operação atual usa Silo 1 e Silo 2 Milho simultaneamente.
+        if (semConfigSalva && !v?.['Silo 1 Milho'] && !v?.['Silo 2 Milho']) {
+            return {'Silo 1 Milho':{ativo:true},'Silo 2 Milho':{ativo:true}};
+        }
         return {
             'Silo 1 Milho':{ativo:!!v?.['Silo 1 Milho']?.ativo},
             'Silo 2 Milho':{ativo:!!v?.['Silo 2 Milho']?.ativo}
         };
-    } catch(e) { return {'Silo 1 Milho':{ativo:false},'Silo 2 Milho':{ativo:false}}; }
+    } catch(e) { return {'Silo 1 Milho':{ativo:true},'Silo 2 Milho':{ativo:true}}; }
 }
 function safeToxSilosAtivos() { const c=safeToxConfigSilos(); return Object.keys(c).filter(s=>c[s].ativo); }
 function safeToxSalvarSilosAtivos() {
