@@ -5260,6 +5260,9 @@
                     <!-- CARDS MICOTOXINAS -->
                     <div id="rcMicoCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px;"></div>
 
+                    <!-- CONTROLE DE DOSAGEM SAFE TOX PLUS -->
+                    <div id="rcSafeToxControle" style="margin-bottom:20px;"></div>
+
                     <!-- GRÁFICO EVOLUÇÃO TEMPORAL -->
                     <div class="grafico-container" style="margin-bottom:20px;">
                         <div class="grafico-title" id="rcMicoGraficoTitulo">EVOLUÇÃO TEMPORAL — AFLATOXINA (PPB) E FUMONISINA (PPB÷1000)</div>
@@ -11575,6 +11578,21 @@ function _renderizarAlertas({ pctProd, pctProdAnt, pctMP, pctMPAnt, pctClass, nc
         const racoesFora = [...new Set(dgmForaLimite.map(r => r.racao))].slice(0,3).join(', ');
         alertas.push({ nivel:'alto', icone:'📏', titulo: 'DGM fora do limite em ' + dgmForaLimite.length + ' registro(s) nos últimos 3 dias', desc: 'Rações: ' + racoesFora + '. Acesse o Relatório de Produção para detalhes.', tag:'DGM', tagClass:'tag-param', acao: () => trocarAba('relatorio', document.getElementById('tabRelatorio')) });
     }
+
+    // Dosagem vigente SAFE TOX PLUS (Silo 1 e Silo 2 Milho)
+    try {
+        const silosAtivosSafeTox = safeToxSilosAtivos();
+        if (silosAtivosSafeTox.length) {
+            const baseSafeTox = (typeof classificacoes !== 'undefined' && classificacoes.length) ? classificacoes : [];
+            const dosesSafeTox = silosAtivosSafeTox.map(silo => {
+                const ctl = safeToxProcessarHistorico(baseSafeTox, null, [silo]);
+                return { silo, doseVigente: ctl.doseVigente, ultimo: ctl.historico[ctl.historico.length - 1] || null };
+            });
+            const doseTxt = dosesSafeTox.map(d => d.silo.replace(' Milho','') + ': ' + d.doseVigente.toFixed(1) + ' kg/t').join(' • ');
+            const riscoAlto = dosesSafeTox.some(d => d.ultimo && d.ultimo.safe.riscoFinal === 'Alto');
+            alertas.push({ nivel: riscoAlto ? 'alto' : 'medio', icone:'🛡️', titulo: 'Dosagem vigente SAFE TOX PLUS', desc: doseTxt, tag:'DOSAGEM', tagClass: riscoAlto ? 'tag-nc-critico' : 'tag-param', acao: () => trocarAba('relClass', document.getElementById('tabRelClass')) });
+        }
+    } catch(e) { console.error('alerta SAFE TOX PLUS:', e); }
 
     // Renderiza
     if (badge) { badge.textContent = alertas.length; badge.style.display = alertas.length > 0 ? 'inline' : 'none'; }
@@ -19180,7 +19198,7 @@ function renderizarTabelasParametros() {
 // ─────────────────────────────────────────────────────────────────────────────
 const MICO_STORAGE_KEY = 'sistema_mico_params_v2';
 
-// Estrutura: { afla: { leve: 5, moderado: 10, critico: 10 }, fumo: { leve: 2000, moderado: 4000, critico: 4000 } }
+// Estrutura interna: leve=Baixo, moderado=Moderado e critico=Alto.
 const MICO_DEFAULTS = {
     afla: { leve: 5,    moderado: 10,   critico: 10   },
     fumo: { leve: 2000, moderado: 4000, critico: 4000 }
@@ -19216,9 +19234,9 @@ function getMicoNivel(valor, tipo) {
 function getMicoBadge(nivel) {
     if (!nivel) return '';
     const map = {
-        leve:     '<span style="background:#27ae60;color:white;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:bold;">LEVE</span>',
+        leve:     '<span style="background:#27ae60;color:white;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:bold;">BAIXO</span>',
         moderado: '<span style="background:#e67e22;color:white;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:bold;">MODERADO</span>',
-        critico:  '<span style="background:#e74c3c;color:white;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:bold;">CRÍTICO</span>',
+        critico:  '<span style="background:#e74c3c;color:white;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:bold;">ALTO</span>',
     };
     return map[nivel] || '';
 }
@@ -19239,14 +19257,12 @@ function getMicoClass(nivel) {
     return map[nivel] || '';
 }
 
-// Risco geral para o ranking: usa o pior entre afla e fumo (baseado na MÉDIA)
+// Risco final combinado conforme matriz operacional do Safe Tox Plus.
+// Para esta matriz, níveis moderado e crítico individuais pertencem à classe operacional "Moderado".
 function getMicoRiscoGeral(aflaMedia, fumoMedia) {
-    const nivelAfla = getMicoNivel(aflaMedia, 'afla');
-    const nivelFumo = getMicoNivel(fumoMedia, 'fumo');
-    const ordem = [null, 'leve', 'moderado', 'critico'];
-    const pior = ordem[Math.max(ordem.indexOf(nivelAfla), ordem.indexOf(nivelFumo))];
-    if (!pior) return '<span style="background:#27ae60;color:white;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;">C</span>';
-    return getMicoBadge(pior);
+    const calc = safeToxCalcularRisco(aflaMedia, fumoMedia);
+    if (!calc.completo) return '<span style="background:#7f8c8d;color:white;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;">INCOMPLETO</span>';
+    return safeToxBadge(calc.riscoFinal);
 }
 
 function salvarMicoParams() {
@@ -19307,7 +19323,7 @@ function renderPanelMicotoxinas() {
                 </thead>
                 <tbody>
                     <tr style="background:#0d3320;">
-                        <td style="padding:8px;"><span style="background:#27ae60;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">LEVE</span></td>
+                        <td style="padding:8px;"><span style="background:#27ae60;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">BAIXO</span></td>
                         <td style="padding:8px;text-align:center;color:var(--gh-fg-default,#e6edf3);">até <input id="micoAflaLeve" type="number" min="0" step="0.1" value="${L.afla.leve}" style="width:80px;padding:5px;border:1px solid var(--gh-border-default,#30363d);border-radius:4px;text-align:center;font-size:12px;background:var(--gh-bg,#0d1117);color:var(--gh-fg-default,#e6edf3);" autocomplete="off"></td>
                         <td style="padding:8px;font-size:10px;color:var(--gh-fg-muted,#8b949e);">ppb</td>
                     </tr>
@@ -19317,7 +19333,7 @@ function renderPanelMicotoxinas() {
                         <td style="padding:8px;font-size:10px;color:var(--gh-fg-muted,#8b949e);">ppb</td>
                     </tr>
                     <tr style="background:#5c1010;">
-                        <td style="padding:8px;"><span style="background:#e74c3c;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">CRÍTICO</span></td>
+                        <td style="padding:8px;"><span style="background:#e74c3c;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">ALTO</span></td>
                         <td style="padding:8px;text-align:center;color:var(--gh-fg-default,#e6edf3);">acima de <input id="micoAflaCrit" type="number" min="0" step="1" value="${L.afla.critico}" style="width:80px;padding:5px;border:1px solid var(--gh-border-default,#30363d);border-radius:4px;text-align:center;font-size:12px;background:var(--gh-bg,#0d1117);color:var(--gh-fg-default,#e6edf3);" autocomplete="off"></td>
                         <td style="padding:8px;font-size:10px;color:var(--gh-fg-muted,#8b949e);">ppb</td>
                     </tr>
@@ -19340,7 +19356,7 @@ function renderPanelMicotoxinas() {
                 </thead>
                 <tbody>
                     <tr style="background:#0d3320;">
-                        <td style="padding:8px;"><span style="background:#27ae60;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">LEVE</span></td>
+                        <td style="padding:8px;"><span style="background:#27ae60;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">BAIXO</span></td>
                         <td style="padding:8px;text-align:center;color:var(--gh-fg-default,#e6edf3);">até <input id="micoFumoLeve" type="number" min="0" step="0.1" value="${L.fumo.leve}" style="width:90px;padding:5px;border:1px solid var(--gh-border-default,#30363d);border-radius:4px;text-align:center;font-size:12px;background:var(--gh-bg,#0d1117);color:var(--gh-fg-default,#e6edf3);" autocomplete="off"></td>
                         <td style="padding:8px;font-size:10px;color:var(--gh-fg-muted,#8b949e);">ppb</td>
                     </tr>
@@ -19350,7 +19366,7 @@ function renderPanelMicotoxinas() {
                         <td style="padding:8px;font-size:10px;color:var(--gh-fg-muted,#8b949e);">ppb</td>
                     </tr>
                     <tr style="background:#5c1010;">
-                        <td style="padding:8px;"><span style="background:#e74c3c;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">CRÍTICO</span></td>
+                        <td style="padding:8px;"><span style="background:#e74c3c;color:white;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:bold;">ALTO</span></td>
                         <td style="padding:8px;text-align:center;color:var(--gh-fg-default,#e6edf3);">acima de <input id="micoFumoCrit" type="number" min="0" step="100" value="${L.fumo.critico}" style="width:90px;padding:5px;border:1px solid var(--gh-border-default,#30363d);border-radius:4px;text-align:center;font-size:12px;background:var(--gh-bg,#0d1117);color:var(--gh-fg-default,#e6edf3);" autocomplete="off"></td>
                         <td style="padding:8px;font-size:10px;color:var(--gh-fg-muted,#8b949e);">ppb</td>
                     </tr>
@@ -19360,9 +19376,9 @@ function renderPanelMicotoxinas() {
     </div>
 
     <div style="margin-top:16px;padding:12px;background:var(--gh-canvas-subtle,#161b22);border-left:4px solid #3498db;border-radius:3px;font-size:11px;color:var(--gh-fg-default,#e6edf3);">
-        ℹ️ <strong>Como funciona:</strong> Valores = 0 ficam em branco. Acima de 0 até o limite Leve → <span style="color:#2ecc71;font-weight:bold;">LEVE</span>. 
-        Do Leve até o Moderado → <span style="color:#f39c12;font-weight:bold;">MODERADO</span>. 
-        Acima do Crítico → <span style="color:#ff6b6b;font-weight:bold;">CRÍTICO</span>. 
+        ℹ️ <strong>Como funciona:</strong> Valores = 0 ficam em branco. Acima de 0 até o limite Baixo → <span style="color:#2ecc71;font-weight:bold;">BAIXO</span>. 
+        Acima do Baixo até o Moderado → <span style="color:#f39c12;font-weight:bold;">MODERADO</span>. 
+        Acima do Moderado → <span style="color:#ff6b6b;font-weight:bold;">ALTO</span>. 
         Estes limites aplicam-se no Relatório de Micotoxinas e nas colunas de Aflatoxina/Fumonisina na Classificação.
     </div>`;
 }
@@ -21695,6 +21711,139 @@ let _rcMicoGraficoInst = null;
 
 function _rcMed(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
 
+// CONTROLE OPERACIONAL DE DOSAGEM — SAFE TOX PLUS
+// Recebimento gera alerta; somente resultados de processo alteram a recomendação.
+const SAFE_TOX_INICIO_MONITORAMENTO = '2026-03-02';
+const SAFE_TOX_ENTREGA_LEITORA = '2026-02-23';
+function safeToxClasseIndividual(valor, tipo) {
+    const nivel = getMicoNivel(Number(valor) || 0, tipo);
+    if (!nivel) return null;
+    return nivel === 'leve' ? 'Baixo' : (nivel === 'moderado' ? 'Moderado' : 'Alto');
+}
+
+function safeToxCalcularRisco(aflatoxina, fumonisina) {
+    const afla = Number(aflatoxina) || 0, fumo = Number(fumonisina) || 0;
+    if (afla <= 0 || fumo <= 0) return { completo:false, riscoFinal:'Incompleto', dose:null };
+    const riscoAfla = safeToxClasseIndividual(afla, 'afla');
+    const riscoFumo = safeToxClasseIndividual(fumo, 'fumo');
+    const algumAlto = riscoAfla === 'Alto' || riscoFumo === 'Alto';
+    const ambosModerados = riscoAfla === 'Moderado' && riscoFumo === 'Moderado';
+    const ambosBaixos = riscoAfla === 'Baixo' && riscoFumo === 'Baixo';
+    return { completo:true, riscoAfla, riscoFumo,
+        riscoFinal: (algumAlto || ambosModerados) ? 'Alto' : (ambosBaixos ? 'Baixo' : 'Moderado'),
+        dose: (algumAlto || ambosModerados) ? 2.0 : (ambosBaixos ? 1.0 : 1.5) };
+}
+
+function safeToxBadge(risco) {
+    const cfg = { Baixo:['#27ae60','BAIXO'], Moderado:['#e67e22','MODERADO'],
+        Alto:['#e74c3c','ALTO'], Incompleto:['#7f8c8d','INCOMPLETO'] }[risco] || ['#7f8c8d','INCOMPLETO'];
+    return `<span style="background:${cfg[0]};color:white;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;white-space:nowrap;">${cfg[1]}</span>`;
+}
+
+function safeToxEhMilho(r) {
+    const produto = String(r?.produto || '').trim().toUpperCase();
+    const local = String(r?.local || '').trim().toUpperCase();
+    return produto.startsWith('MILHO') || /^SILO\s*[12]\s+MILHO$/.test(local);
+}
+// No cadastro atual, os silos de milho representam o estoque acompanhado no processo.
+function safeToxEhProcesso(r) {
+    const local = String(r?.local || '').trim();
+    return safeToxEhMilho(r) && /^SILO\s*[12]\s+MILHO$/i.test(local);
+}
+// "Produção Silo 1/2" é recebimento de milho destinado diretamente à produção.
+function safeToxEhRecebimento(r) {
+    const local = String(r?.local || '').trim();
+    return safeToxEhMilho(r) && /^PRODU[CÇ][AÃ]O\s+SILO\s*[12]$/i.test(local);
+}
+function safeToxDataHora(r) { return (r?.data || '1900-01-01') + 'T' + (r?.hora || '00:00').padEnd(5,'0'); }
+
+const SAFE_TOX_SILOS_KEY = 'safe_tox_silos_milho_individuais_v3';
+function safeToxConfigSilos() {
+    try {
+        let v=JSON.parse(localStorage.getItem(SAFE_TOX_SILOS_KEY)||'null');
+        // Migra automaticamente a seleção da versão anterior, descartando as fases.
+        if (!v) v=JSON.parse(localStorage.getItem('safe_tox_silos_milho_fases_v2')||'{}');
+        return {
+            'Silo 1 Milho':{ativo:!!v?.['Silo 1 Milho']?.ativo},
+            'Silo 2 Milho':{ativo:!!v?.['Silo 2 Milho']?.ativo}
+        };
+    } catch(e) { return {'Silo 1 Milho':{ativo:false},'Silo 2 Milho':{ativo:false}}; }
+}
+function safeToxSilosAtivos() { const c=safeToxConfigSilos(); return Object.keys(c).filter(s=>c[s].ativo); }
+function safeToxSalvarSilosAtivos() {
+    const cfg={
+        'Silo 1 Milho':{ativo:!!document.getElementById('safeToxSilo1Ativo')?.checked},
+        'Silo 2 Milho':{ativo:!!document.getElementById('safeToxSilo2Ativo')?.checked}
+    };
+    const ativos=Object.keys(cfg).filter(s=>cfg[s].ativo);
+    if (!ativos.length) { sgqToast('Selecione pelo menos um silo de milho em produção.', 'warning'); return; }
+    localStorage.setItem(SAFE_TOX_SILOS_KEY,JSON.stringify(cfg));
+    sgqToast('Silos em produção atualizados.', 'success');
+    try { aplicarFiltrosRelClass(); } catch(e) {}
+}
+
+function safeToxProcessarHistorico(registros, dataLimite, silosAtivos) {
+    const validos = registros.filter(r => safeToxEhProcesso(r) && silosAtivos.includes(r.local) && r.data >= SAFE_TOX_INICIO_MONITORAMENTO && (!dataLimite || r.data <= dataLimite))
+        .map(r => ({...r, safe:safeToxCalcularRisco(r.aflatoxinas,r.fumonisinas)}))
+        .filter(r => r.safe.completo).sort((a,b)=>safeToxDataHora(a).localeCompare(safeToxDataHora(b)));
+    let doseVigente = 1.0, candidatosReducao = [];
+    const historico = [];
+    validos.forEach(r => {
+        const anterior = doseVigente, alvo = r.safe.dose;
+        let decisao = `Manter ${doseVigente.toFixed(1)} kg/t`;
+        if (alvo > doseVigente) {
+            doseVigente = alvo; candidatosReducao = [];
+            decisao = `Aumentar de ${anterior.toFixed(1)} para ${doseVigente.toFixed(1)} kg/t no menor prazo possível`;
+        } else if (alvo < doseVigente) {
+            candidatosReducao.push(alvo);
+            if (candidatosReducao.length >= 2) {
+                doseVigente = Math.max(...candidatosReducao.slice(-2));
+                decisao = `Reduzir de ${anterior.toFixed(1)} para ${doseVigente.toFixed(1)} kg/t — 2 resultados consecutivos`;
+                candidatosReducao = [];
+            } else decisao = `Manter ${doseVigente.toFixed(1)} kg/t — aguardando 2º resultado para redução`;
+        } else {
+            candidatosReducao = [];
+            decisao = `Manter ${doseVigente.toFixed(1)} kg/t — risco ${r.safe.riscoFinal.toLowerCase()} confirmado`;
+        }
+        historico.push({...r,doseAlvo:alvo,doseVigente,decisao});
+    });
+    return { doseVigente, historico, ultimo:historico[historico.length-1] || null };
+}
+
+function safeToxInicioSemana(dataISO) {
+    const d = new Date((dataISO || new Date().toISOString().slice(0,10))+'T12:00:00');
+    d.setDate(d.getDate()-(d.getDay()===0?6:d.getDay()-1));
+    return d.toISOString().slice(0,10);
+}
+
+function renderSafeToxControle(dadosPeriodo, dataFinal) {
+    const el = document.getElementById('rcSafeToxControle'); if (!el) return;
+    const base = (typeof classificacoes!=='undefined' && classificacoes.length) ? classificacoes : dadosPeriodo;
+    const cfgSilos=safeToxConfigSilos(), silosAtivos=safeToxSilosAtivos();
+    const configurado=silosAtivos.length>0;
+    // Cada silo possui controle, dose e sequência de redução próprios.
+    const controles=silosAtivos.map(silo=>({silo,ctl:safeToxProcessarHistorico(base,dataFinal,[silo])}));
+    const todosHistoricos=controles.flatMap(g=>g.ctl.historico).sort((a,b)=>safeToxDataHora(a).localeCompare(safeToxDataHora(b)));
+    const inicio=safeToxInicioSemana(dataFinal);
+    const fd=new Date(inicio+'T12:00:00'); fd.setDate(fd.getDate()+6); const fim=fd.toISOString().slice(0,10);
+    const semana=base.filter(r=>safeToxEhProcesso(r)&&silosAtivos.includes(r.local)&&r.data>=SAFE_TOX_INICIO_MONITORAMENTO&&r.data>=inicio&&r.data<=fim&&safeToxCalcularRisco(r.aflatoxinas,r.fumonisinas).completo);
+    const silos={}; semana.forEach(r=>{const k=r.local||'Processo sem silo';silos[k]=(silos[k]||0)+1;});
+    const metaPorSilo=silosAtivos.length===1?4:2;
+    const metaOk=configurado&&silosAtivos.every(s=>(silos[s]||0)>=metaPorSilo);
+    const rec=[...base].filter(r=>safeToxEhRecebimento(r)&&r.data>=SAFE_TOX_INICIO_MONITORAMENTO&&(!dataFinal||r.data<=dataFinal)&&safeToxCalcularRisco(r.aflatoxinas,r.fumonisinas).completo)
+        .sort((a,b)=>safeToxDataHora(b).localeCompare(safeToxDataHora(a)))[0];
+    const riscoRec=rec?safeToxCalcularRisco(rec.aflatoxinas,rec.fumonisinas):null, ultimo=todosHistoricos[todosHistoricos.length-1]||null;
+    const fmt=d=>d?new Date(d+'T12:00:00').toLocaleDateString('pt-BR'):'—';
+    const card=(titulo,valor,sub,cor)=>`<div style="border:1px solid #ddd;border-top:4px solid ${cor};border-radius:6px;padding:12px;text-align:center;"><div style="font-size:10px;color:#777;font-weight:bold;">${titulo}</div><div style="font-size:21px;font-weight:900;margin:7px 0;color:${cor};">${valor}</div><div style="font-size:9px;color:#777;">${sub}</div></div>`;
+    const rows=todosHistoricos.slice(-10).reverse();
+    const dosesHtml=configurado&&controles.length?controles.map(g=>`<div style="margin:3px 0;"><span style="font-size:10px;display:block;color:#777;">${g.silo}</span><strong>${g.ctl.doseVigente.toFixed(1)} kg/t</strong></div>`).join(''):'CONFIGURE OS SILOS';
+    const decisoesResumo=configurado&&controles.length?controles.map(g=>`${g.silo}: ${g.ctl.ultimo?g.ctl.ultimo.decisao:'sem resultado completo'}`).join(' • '):'Marque o silo em produção e clique em Aplicar';
+    el.innerHTML=`<div style="border:1px solid #8e44ad;border-radius:8px;overflow:hidden;background:transparent;">
+      <div style="padding:12px 12px 12px;"><div style="font-size:11px;font-weight:bold;color:#6c3483;margin:4px 0 8px;">🛡️ HISTÓRICO RECENTE DE DECISÕES POR SILO — SAFE TOX PLUS</div><div class="tabela-container"><table style="width:100%;border-collapse:collapse;font-size:10px;"><thead><tr style="background:#6c3483;color:white;"><th style="padding:6px;">DATA</th><th style="padding:6px;">SILO</th><th style="padding:6px;">AFLATOXINA</th><th style="padding:6px;">FUMONISINA</th><th style="padding:6px;">RISCO FINAL</th><th style="padding:6px;">DOSE-ALVO</th><th style="padding:6px;">DECISÃO</th></tr></thead><tbody>
+        ${rows.length?rows.map((r,i)=>`<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}"><td style="padding:6px;text-align:center;">${fmt(r.data)}</td><td style="padding:6px;text-align:center;font-weight:bold;">${r.local||'—'}</td><td style="padding:6px;text-align:center;">${Number(r.aflatoxinas).toFixed(2)} ppb<br><b>${r.safe.riscoAfla}</b></td><td style="padding:6px;text-align:center;">${Number(r.fumonisinas).toFixed(0)} ppb<br><b>${r.safe.riscoFumo}</b></td><td style="padding:6px;text-align:center;">${safeToxBadge(r.safe.riscoFinal)}</td><td style="padding:6px;text-align:center;font-weight:bold;">${r.doseAlvo.toFixed(1)} kg/t</td><td style="padding:6px;">${r.decisao}</td></tr>`).join(''):'<tr><td colspan="7" style="padding:14px;text-align:center;color:#999;">Nenhuma análise completa de processo encontrada.</td></tr>'}
+      </tbody></table></div><div style="margin-top:9px;padding:9px;border-left:4px solid #3498db;background:rgba(52,152,219,.08);font-size:10px;line-height:1.5;"><b>Regras:</b> Produção Silo 1/2 = recebimento e somente alerta; Silo 1/2 Milho = estoque e base do ajuste; mínimo de 4 análises semanais divididas entre os silos de milho em uso; aumento no dia seguinte ou no menor prazo possível; redução somente após 2 resultados consecutivos. Soja não participa desta dosagem.</div></div></div>`;
+}
+
 function renderRCMicotoxinas(dados, di, df) {
     // Sempre recarrega parâmetros do localStorage antes de calcular riscos
     carregarMicoParams();
@@ -21739,6 +21888,8 @@ function renderRCMicotoxinas(dados, di, df) {
             <div style="font-size:20px;font-weight:bold;color:${i.cor};">${i.value}</div>
             <div style="font-size:9px;color:#999;margin-top:4px;text-transform:uppercase;">${i.sub}</div>
         </div>`).join('');
+
+    renderSafeToxControle(dados, df);
 
     // ---- GRÁFICO TEMPORAL ----
     const ctx = document.getElementById('rcMicoGraficoLinha').getContext('2d');
