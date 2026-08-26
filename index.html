@@ -5853,75 +5853,101 @@
 
     <!-- ===== ABA ANÁLISE DE ESTOQUE ===== -->
     <div id="aba-analiseEstoque" class="tab-content">
-    <div style="width:100%;padding:16px 10px;">
+    <div style="width:100%;padding:16px 20px;box-sizing:border-box;">
 
-        <!-- HEADER -->
-        <div style="margin-bottom:16px;">
-            <div style="font-size:18px;font-weight:900;color:#1a2a6e;letter-spacing:.5px;">📊 Análise de Estoque</div>
-            <div style="font-size:11px;color:#888;margin-top:2px;">Custos, totais de compra e histórico de entradas de Produtos Químicos, Materiais e Equipamentos</div>
+        <!-- BARRA DE CONSULTA DE PERÍODO / IMPRESSÃO -->
+        <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #eee;border-radius:8px;padding:12px 16px;margin-bottom:14px;">
+            <div>
+                <label style="display:block;font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:4px;">De</label>
+                <input type="date" id="paDataIni" onchange="paConsultarPeriodo()" style="padding:7px 9px;border:1px solid #ddd;border-radius:5px;font-size:12px;" autocomplete="off">
+            </div>
+            <div>
+                <label style="display:block;font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Até</label>
+                <input type="date" id="paDataFim" onchange="paConsultarPeriodo()" style="padding:7px 9px;border:1px solid #ddd;border-radius:5px;font-size:12px;" autocomplete="off">
+            </div>
+            <button onclick="paConsultarPeriodo()" style="background:#1a2a6e;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;">🔍 Consultar</button>
+            <button onclick="paLimparPeriodo()" style="background:#f0f0f0;color:#555;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;">Ver tudo</button>
+            <div style="flex:1;"></div>
+            <button onclick="paImprimirRelatorio()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;">🖨️ Imprimir</button>
         </div>
 
-        <!-- CARDS DE ANÁLISE -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:18px;">
-            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #27ae60;">
-                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">💰 Custo em Estoque (Atual)</div>
-                <div id="analiseCardCusto" style="font-size:22px;font-weight:900;color:#27ae60;margin-top:4px;">—</div>
-                <div id="analiseCardCustoLegenda" style="font-size:9px;color:#aaa;margin-top:3px;">Produtos químicos em estoque agora</div>
-            </div>
-            <div style="background:#fff;border-radius:8px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,0.07);border-left:4px solid #2980b9;">
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
-                    <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">💳 Total de Compras</div>
-                    <select id="reagCardComprasTipo" onchange="reagAtualizarCardComprasAtivo()" style="border:1px solid #ddd;border-radius:5px;padding:3px 7px;font-size:10px;font-weight:700;color:#34495e;background:#f8f9fa;cursor:pointer;max-width:100%;">
-                        <option value="quimico">🧪 Produtos Químicos</option>
-                        <option value="material">📦 Materiais</option>
-                        <option value="equipamento">🔬 Equipamentos</option>
-                    </select>
+        <!-- ═══════════════════ PÁGINA 1 — PAINEL GERENCIAL ═══════════════════ -->
+        <div style="background:linear-gradient(135deg,#1a2a6e,#223a8f);border-radius:10px 10px 0 0;padding:18px 22px;color:#fff;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+                <div>
+                    <div style="font-size:17px;font-weight:900;letter-spacing:.5px;">📊 PAINEL GERENCIAL DE ESTOQUE E COMPRAS</div>
+                    <div style="font-size:11px;opacity:.85;margin-top:2px;">Visão executiva — todas as categorias e origens</div>
                 </div>
-                <div id="reagCardComprasAtivo" style="font-size:20px;font-weight:900;color:#1a2a6e;white-space:nowrap;">—</div>
-                <button onclick="reagAbrirDetalheCompras()" style="background:none;border:none;color:#2980b9;font-size:10px;font-weight:700;cursor:pointer;text-decoration:underline;padding:0;margin-top:4px;">📊 Ver detalhamento</button>
+                <div style="text-align:right;font-size:10px;opacity:.9;line-height:1.5;">
+                    SGQ · Gestão da Qualidade<br>
+                    <span id="paGovPeriodo">Período —</span>
+                </div>
+            </div>
+            <div style="margin-top:10px;font-size:10px;opacity:.85;">
+                <b>ESCOPO</b> Todas as notas, compras diretas e registros antigos
             </div>
         </div>
 
-        <!-- HISTORICO DE ENTRADAS -->
-        <div>
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
-                <div style="font-size:13px;font-weight:800;color:#1a2a6e;letter-spacing:.5px;">📋 HISTÓRICO DE ENTRADAS</div>
-                <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;">
-                    <select id="reagNotasFiltroTipo" onchange="reagRenderNotas()" style="border:1px solid #ddd;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;color:#34495e;">
-                        <option value="">📄 Com NF + Sem NF</option>
-                        <option value="com_nf">📄 Somente com Nota Fiscal</option>
-                        <option value="sem_nf">🚫 Somente sem Nota Fiscal</option>
-                    </select>
-                    <select id="reagNotasFiltroCategoria" onchange="const _selCard=document.getElementById('reagCardComprasTipo'); if(this.value&&_selCard&&_selCard.value!==this.value){_selCard.value=this.value;reagAtualizarCardComprasAtivo();}else{reagRenderNotas();}" style="border:1px solid #ddd;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;color:#34495e;">
-                        <option value="">🗂️ Todas as categorias</option>
-                        <option value="quimico">🧪 Produtos Químicos</option>
-                        <option value="material">📦 Materiais</option>
-                        <option value="equipamento">🔬 Equipamentos</option>
-                    </select>
-                    <span id="reagNotasContador" style="font-size:11px;color:#888;font-weight:700;white-space:nowrap;"></span>
+        <div style="background:#fff;border-radius:0 0 10px 10px;box-shadow:0 1px 6px rgba(0,0,0,0.07);padding:20px 22px 24px;margin-bottom:22px;">
+
+            <!-- TOTAL GERAL -->
+            <div style="text-align:center;padding:12px 0 18px;border-bottom:1px solid #eee;margin-bottom:18px;">
+                <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">💳 Compras Históricas <span style="font-weight:400;text-transform:none;">— soma das três categorias</span></div>
+                <div id="paTotalGeral" style="font-size:32px;font-weight:900;color:#1a2a6e;margin-top:4px;">—</div>
+            </div>
+
+            <!-- CARDS POR CATEGORIA -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:22px;">
+                <div style="background:#f6f8ff;border-radius:8px;padding:14px;border-left:4px solid #1a2a6e;">
+                    <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">🧪 Produtos Químicos</div>
+                    <div id="paCardQuimico" style="font-size:19px;font-weight:900;color:#1a2a6e;margin-top:4px;">—</div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">
+                        <div style="font-size:9px;color:#aaa;">histórico + estimados</div>
+                        <button onclick="reagAbrirDetalheCompras('quimico')" style="background:none;border:none;color:#2980b9;font-size:9px;font-weight:700;cursor:pointer;text-decoration:underline;padding:0;white-space:nowrap;">Detalhar →</button>
+                    </div>
+                </div>
+                <div style="background:#fff8f0;border-radius:8px;padding:14px;border-left:4px solid #e67e22;">
+                    <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">📦 Materiais</div>
+                    <div id="paCardMaterial" style="font-size:19px;font-weight:900;color:#e67e22;margin-top:4px;">—</div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">
+                        <div style="font-size:9px;color:#aaa;">histórico + estimados</div>
+                        <button onclick="reagAbrirDetalheCompras('material')" style="background:none;border:none;color:#2980b9;font-size:9px;font-weight:700;cursor:pointer;text-decoration:underline;padding:0;white-space:nowrap;">Detalhar →</button>
+                    </div>
+                </div>
+                <div style="background:#f9f4fc;border-radius:8px;padding:14px;border-left:4px solid #8e44ad;">
+                    <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">🔬 Equipamentos</div>
+                    <div id="paCardEquipamento" style="font-size:19px;font-weight:900;color:#8e44ad;margin-top:4px;">—</div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">
+                        <div style="font-size:9px;color:#aaa;">histórico + estimados</div>
+                        <button onclick="reagAbrirDetalheCompras('equipamento')" style="background:none;border:none;color:#2980b9;font-size:9px;font-weight:700;cursor:pointer;text-decoration:underline;padding:0;white-space:nowrap;">Detalhar →</button>
+                    </div>
                 </div>
             </div>
-            <div style="background:#fff;border-radius:8px;box-shadow:0 1px 6px rgba(0,0,0,0.07);overflow:hidden;">
-                <div style="overflow-x:auto;">
-                    <table style="width:100%;border-collapse:collapse;font-size:12px;">
-                        <thead>
-                            <tr style="background:#34495e;color:#fff;">
-                                <th style="padding:9px 12px;text-align:left;">CHAVE NF / TIPO</th>
-                                <th style="padding:9px 8px;text-align:center;">CATEGORIA</th>
-                                <th style="padding:9px 8px;text-align:center;">DATA EMISSÃO</th>
-                                <th style="padding:9px 8px;text-align:center;">DATA ENTRADA</th>
-                                <th style="padding:9px 8px;text-align:center;">FORNECEDOR</th>
-                                <th style="padding:9px 8px;text-align:center;">ITENS</th>
-                                <th style="padding:9px 8px;text-align:center;">CUSTO TOTAL</th>
-                                <th style="padding:9px 8px;text-align:center;">AÇÕES</th>
-                            </tr>
-                        </thead>
-                        <tbody id="reagNotasTbody">
-                            <tr><td colspan="8" style="text-align:center;padding:30px;color:#aaa;">Nenhuma entrada registrada.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+
+            <!-- VALOR HISTÓRICO POR CATEGORIA (barras) -->
+            <div style="margin-bottom:22px;">
+                <div style="font-size:12px;font-weight:800;color:#1a2a6e;letter-spacing:.5px;margin-bottom:2px;">📈 VALOR HISTÓRICO POR CATEGORIA</div>
+                <div style="font-size:10px;color:#888;margin-bottom:12px;">Comparação financeira geral do SGQ</div>
+                <div id="paBarras"></div>
             </div>
+
+            <!-- PERCENTUAIS -->
+            <div id="paPercentuais" style="display:flex;gap:26px;flex-wrap:wrap;margin-bottom:22px;padding-bottom:4px;"></div>
+
+            <!-- LEITURA RÁPIDA -->
+            <div style="background:#f0f4ff;border:1px solid #c0ccee;border-radius:8px;padding:14px 16px;">
+                <div style="font-size:11px;font-weight:800;color:#1a2a6e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">💡 Leitura Rápida</div>
+                <div id="paLeituraRapida" style="font-size:12px;color:#444;line-height:1.6;">—</div>
+            </div>
+
+        </div>
+
+        <!-- RODAPÉ METODOLOGIA -->
+        <div style="background:#fafbfd;border:1px solid #eee;border-radius:8px;padding:14px 18px;font-size:10px;color:#888;line-height:1.7;margin-bottom:10px;">
+            <b style="color:#1a2a6e;">COMO ESTE RELATÓRIO FUNCIONA NO SGQ</b><br>
+            <b>1</b> Reúne todas as notas, entradas sem NF e registros antigos cadastrados. &nbsp;
+            <b>2</b> Soma o valor total comprado por categoria (químicos, materiais e equipamentos). &nbsp;
+            <b>3</b> Use "Detalhar →" em cada card para ver nota a nota o que compõe o valor daquela categoria.
         </div>
 
     </div>
@@ -5937,11 +5963,25 @@
                 <div style="font-size:18px;font-weight:900;color:#1a2a6e;letter-spacing:.5px;">📦 Materiais</div>
                 <div style="font-size:11px;color:#888;margin-top:2px;">Controle de materiais de laboratório e consumíveis</div>
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
                 <button onclick="matAbrirModalCadastro()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">+ Cadastrar Material</button>
-                <button onclick="catMatAbrirModal()" style="background:#1a2a6e;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">📋 Gerenciar Catálogo</button>
-                <button onclick="imprimirConferenciaMateriais()" style="background:#e67e22;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">🖨️ Imprimir Conferência</button>
-                <button onclick="matExportar()" style="background:#1a2a6e;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">⬇️ Exportar CSV</button>
+                <!-- Dropdown Ações -->
+                <div style="position:relative;" id="matAcoesDropdownWrap">
+                    <button onclick="matToggleAcoes()" style="background:#2c3e50;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:6px;">
+                        ⚙️ Ações <span style="font-size:10px;opacity:.8;">▾</span>
+                    </button>
+                    <div id="matAcoesDropdown" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.13);z-index:999;min-width:210px;overflow:hidden;">
+                        <button onclick="catMatAbrirModal();matFecharAcoes()" style="width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:700;color:#1a2a6e;display:flex;align-items:center;gap:8px;">
+                            📋 Gerenciar Catálogo
+                        </button>
+                        <button onclick="imprimirConferenciaMateriais();matFecharAcoes()" style="width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:700;color:#e67e22;display:flex;align-items:center;gap:8px;">
+                            🖨️ Imprimir Conferência
+                        </button>
+                        <button onclick="matExportar();matFecharAcoes()" style="width:100%;text-align:left;background:none;border:none;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:700;color:#1a2a6e;display:flex;align-items:center;gap:8px;">
+                            ⬇️ Exportar CSV
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -6443,11 +6483,23 @@
                 <div style="font-size:18px;font-weight:900;color:#1a2a6e;letter-spacing:.5px;">🔬 Equipamentos</div>
                 <div style="font-size:11px;color:#888;margin-top:2px;">Cadastro e controle de calibração de equipamentos laboratoriais</div>
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
                 <button onclick="eqVerAlertas()" id="btnEqAlertas" style="background:#e67e22;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12px;display:none;">🔔 Alertas Calibração <span id="eqAlertCount" style="background:#fff;color:#e67e22;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:900;margin-left:4px;"></span></button>
                 <button onclick="eqAbrirModal()" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">+ Cadastrar Equipamento</button>
-                <button onclick="catEqAbrirModal()" style="background:#1a2a6e;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">📋 Gerenciar Catálogo</button>
-                <button onclick="eqExportar()" style="background:#1a2a6e;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-weight:700;cursor:pointer;font-size:12px;">⬇️ Exportar CSV</button>
+                <!-- Dropdown Ações -->
+                <div style="position:relative;" id="eqAcoesDropdownWrap">
+                    <button onclick="eqToggleAcoes()" style="background:#2c3e50;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:6px;">
+                        ⚙️ Ações <span style="font-size:10px;opacity:.8;">▾</span>
+                    </button>
+                    <div id="eqAcoesDropdown" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.13);z-index:999;min-width:210px;overflow:hidden;">
+                        <button onclick="catEqAbrirModal();eqFecharAcoes()" style="width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #f0f0f0;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:700;color:#1a2a6e;display:flex;align-items:center;gap:8px;">
+                            📋 Gerenciar Catálogo
+                        </button>
+                        <button onclick="eqExportar();eqFecharAcoes()" style="width:100%;text-align:left;background:none;border:none;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:700;color:#1a2a6e;display:flex;align-items:center;gap:8px;">
+                            ⬇️ Exportar CSV
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -7177,8 +7229,8 @@
     <!-- ============================================================ -->
     <!-- MODAL DETALHAMENTO — TOTAL DE COMPRAS                       -->
     <!-- ============================================================ -->
-    <div id="modalDetalheCompras" style="display:none;position:fixed;inset:0;z-index:9300;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;">
-        <div style="background:#fff;border-radius:14px;width:96%;max-width:920px;max-height:93vh;display:flex;flex-direction:column;box-shadow:0 12px 60px rgba(0,0,0,0.3);overflow:hidden;">
+    <div id="modalDetalheCompras" style="display:none;position:fixed;inset:0;z-index:9300;background:#fff;align-items:stretch;justify-content:stretch;">
+        <div style="background:#fff;width:100%;height:100%;max-width:none;max-height:none;display:flex;flex-direction:column;overflow:hidden;">
             <!-- Header -->
             <div id="detComprasHeader" style="background:linear-gradient(135deg,#1a2a6e,#2980b9);color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
                 <div>
@@ -26349,6 +26401,44 @@ function _reagFecharAcoesFora(e) {
     if (wrap && !wrap.contains(e.target)) reagFecharAcoes();
 }
 
+// ── Dropdown Ações — Materiais ─────────────────────────────────────
+function matToggleAcoes() {
+    const dd = document.getElementById('matAcoesDropdown');
+    if (!dd) return;
+    const aberto = dd.style.display === 'block';
+    dd.style.display = aberto ? 'none' : 'block';
+    if (!aberto) {
+        setTimeout(() => document.addEventListener('click', _matFecharAcoesFora, { once: true }), 10);
+    }
+}
+function matFecharAcoes() {
+    const dd = document.getElementById('matAcoesDropdown');
+    if (dd) dd.style.display = 'none';
+}
+function _matFecharAcoesFora(e) {
+    const wrap = document.getElementById('matAcoesDropdownWrap');
+    if (wrap && !wrap.contains(e.target)) matFecharAcoes();
+}
+
+// ── Dropdown Ações — Equipamentos ──────────────────────────────────
+function eqToggleAcoes() {
+    const dd = document.getElementById('eqAcoesDropdown');
+    if (!dd) return;
+    const aberto = dd.style.display === 'block';
+    dd.style.display = aberto ? 'none' : 'block';
+    if (!aberto) {
+        setTimeout(() => document.addEventListener('click', _eqFecharAcoesFora, { once: true }), 10);
+    }
+}
+function eqFecharAcoes() {
+    const dd = document.getElementById('eqAcoesDropdown');
+    if (dd) dd.style.display = 'none';
+}
+function _eqFecharAcoesFora(e) {
+    const wrap = document.getElementById('eqAcoesDropdownWrap');
+    if (wrap && !wrap.contains(e.target)) eqFecharAcoes();
+}
+
 async function reagCarregarDados() {
     // Tenta buscar COM catalogo_id; se a coluna não existir ainda no banco,
     // faz fallback sem ela — assim os dados existentes nunca somem.
@@ -27255,16 +27345,294 @@ async function _analiseEstoqueCarregarEExibir() {
 
     // Atualiza histórico de entradas
     try { reagRenderNotas(); } catch(e) {}
+
+    // Atualiza o Painel Gerencial (visão executiva no topo da aba)
+    try { _renderPainelGerencial(); } catch(e) { console.warn('Painel Gerencial: erro ao renderizar', e); }
+}
+
+// =====================================================================
+// 📊 PAINEL GERENCIAL DE COMPRAS — visão executiva
+// Reaproveita os totais já calculados pelos cards ocultos (reagCardCompras/
+// matCardCompras/eqCardCompras) para montar o resumo por categoria
+// (totais, barras, percentuais e leitura rápida), sem duplicar nenhuma
+// fonte de dados. Cada card tem seu próprio link "Detalhar →" que abre
+// o modal de detalhamento já filtrado na categoria correspondente.
+// =====================================================================
+function _paParseMoeda(txt) {
+    if (!txt) return 0;
+    const limpo = String(txt).replace(/[^\d,.\-]/g, '').trim();
+    if (!limpo) return 0;
+    const semMilhar = limpo.replace(/\./g, '').replace(',', '.');
+    const v = parseFloat(semMilhar);
+    return isNaN(v) ? 0 : v;
+}
+function _paFmtMoeda(v) {
+    return 'R$ ' + (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function _renderPainelGerencial() {
+    // ── Página 1: totais por categoria, calculados dentro do período selecionado ──
+    const { ini, fim } = _paPeriodoAtual();
+    const somarCategoria = (tipo) => _paMontarLinhasCategoria(tipo)
+        .filter(l => _paDentroPeriodo(l.data, ini, fim))
+        .reduce((s, l) => s + (l.valor || 0), 0);
+
+    const vQ = somarCategoria('quimico');
+    const vM = somarCategoria('material');
+    const vE = somarCategoria('equipamento');
+    const total = vQ + vM + vE;
+
+    const set = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+    set('paTotalGeral',     total > 0 ? _paFmtMoeda(total) : '—');
+    set('paCardQuimico',    vQ > 0 ? _paFmtMoeda(vQ) : '—');
+    set('paCardMaterial',   vM > 0 ? _paFmtMoeda(vM) : '—');
+    set('paCardEquipamento',vE > 0 ? _paFmtMoeda(vE) : '—');
+
+    // Período do relatório: reflete exatamente o que está selecionado nos filtros
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    let periodoLabel;
+    if (!ini && !fim) {
+        periodoLabel = 'Período: todo o histórico (até ' + hoje + ')';
+    } else {
+        periodoLabel = 'Período: ' + (ini ? _fmtData(ini) : 'início do histórico') + ' a ' + (fim ? _fmtData(fim) : hoje);
+    }
+    set('paGovPeriodo', periodoLabel);
+
+    // ── Barras de comparação por categoria ──
+    const categorias = [
+        { nome: 'Produtos Químicos', valor: vQ, cor: '#1a2a6e' },
+        { nome: 'Materiais',         valor: vM, cor: '#e67e22' },
+        { nome: 'Equipamentos',      valor: vE, cor: '#8e44ad' }
+    ].sort((a, b) => b.valor - a.valor);
+    const maxValor = Math.max(vQ, vM, vE, 1);
+    const barrasEl = document.getElementById('paBarras');
+    if (barrasEl) {
+        barrasEl.innerHTML = categorias.map(c => {
+            const largura = c.valor > 0 ? Math.max((c.valor / maxValor * 100), 2) : 0;
+            return `<div style="margin-bottom:10px;">
+                <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#444;margin-bottom:3px;">
+                    <span>${c.nome}</span><span>${c.valor > 0 ? _paFmtMoeda(c.valor) : '—'}</span>
+                </div>
+                <div style="background:#f0f0f0;border-radius:5px;height:10px;overflow:hidden;">
+                    <div style="width:${largura}%;height:100%;background:${c.cor};border-radius:5px;"></div>
+                </div>
+            </div>`;
+        }).join('') + `<div style="display:flex;justify-content:space-between;font-size:11px;font-weight:900;color:#1a2a6e;margin-top:10px;padding-top:8px;border-top:1px solid #eee;">
+            <span>TOTAL HISTÓRICO</span><span>${total > 0 ? _paFmtMoeda(total) : '—'}</span>
+        </div>`;
+    }
+
+    // ── Percentuais por categoria ──
+    const percEl = document.getElementById('paPercentuais');
+    if (percEl) {
+        if (total > 0) {
+            percEl.innerHTML = [
+                { nome: 'Produtos químicos', valor: vQ, cor: '#1a2a6e' },
+                { nome: 'Materiais',         valor: vM, cor: '#e67e22' },
+                { nome: 'Equipamentos',      valor: vE, cor: '#8e44ad' }
+            ].map(c => `<div>
+                <div style="font-size:20px;font-weight:900;color:${c.cor};">${(c.valor / total * 100).toFixed(1)}%</div>
+                <div style="font-size:10px;color:#888;font-weight:700;">${c.nome}</div>
+            </div>`).join('');
+        } else {
+            percEl.innerHTML = '<div style="font-size:11px;color:#aaa;">Sem compras suficientes para calcular percentuais.</div>';
+        }
+    }
+
+    // ── Leitura rápida ──
+    const leituraEl = document.getElementById('paLeituraRapida');
+    if (leituraEl) {
+        if (total > 0) {
+            const maior = categorias[0];
+            leituraEl.innerHTML = `${maior.nome} representa a maior parcela financeira (${(maior.valor / total * 100).toFixed(1)}%).<br>Consumo por período depende das baixas registradas.`;
+        } else {
+            leituraEl.innerHTML = 'Não há compras registradas dentro do período selecionado.';
+        }
+    }
+
+}
+
+// Botão "Consultar" do período — apenas recalcula o painel com as datas atuais.
+function paConsultarPeriodo() {
+    try { _renderPainelGerencial(); } catch(e) { console.warn('Painel Gerencial: erro ao consultar período', e); }
+}
+// Limpa o filtro de período e volta a mostrar todo o histórico.
+function paLimparPeriodo() {
+    const i = document.getElementById('paDataIni'); if (i) i.value = '';
+    const f = document.getElementById('paDataFim'); if (f) f.value = '';
+    paConsultarPeriodo();
+}
+
+// =====================================================================
+// 🖨️ IMPRESSÃO — Painel Gerencial de Estoque e Compras
+// Gera um relatório limpo, em página própria (mesmo padrão usado nos
+// demais relatórios do sistema), respeitando o período selecionado.
+// =====================================================================
+function paImprimirRelatorio() {
+    const { ini, fim } = _paPeriodoAtual();
+    const somarCategoria = (tipo) => _paMontarLinhasCategoria(tipo)
+        .filter(l => _paDentroPeriodo(l.data, ini, fim))
+        .reduce((s, l) => s + (l.valor || 0), 0);
+
+    const vQ = somarCategoria('quimico');
+    const vM = somarCategoria('material');
+    const vE = somarCategoria('equipamento');
+    const total = vQ + vM + vE;
+
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    const periodoTxt = (!ini && !fim)
+        ? `Todo o histórico (até ${hoje})`
+        : `${ini ? _fmtData(ini) : 'início do histórico'} a ${fim ? _fmtData(fim) : hoje}`;
+
+    const categorias = [
+        { nome: 'Produtos Químicos', valor: vQ, cor: '#1a2a6e' },
+        { nome: 'Materiais',         valor: vM, cor: '#e67e22' },
+        { nome: 'Equipamentos',      valor: vE, cor: '#8e44ad' }
+    ].sort((a, b) => b.valor - a.valor);
+    const maxValor = Math.max(vQ, vM, vE, 1);
+
+    const barrasHTML = categorias.map(c => {
+        const largura = c.valor > 0 ? Math.max((c.valor / maxValor * 100), 2) : 0;
+        return `<div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#444;margin-bottom:4px;">
+                <span>${c.nome}</span><span>${c.valor > 0 ? _paFmtMoeda(c.valor) : '—'}</span>
+            </div>
+            <div style="background:#eee;border-radius:5px;height:12px;overflow:hidden;">
+                <div style="width:${largura}%;height:100%;background:${c.cor};"></div>
+            </div>
+        </div>`;
+    }).join('');
+
+    const percHTML = total > 0 ? [
+        { nome: 'Produtos químicos', valor: vQ, cor: '#1a2a6e' },
+        { nome: 'Materiais',         valor: vM, cor: '#e67e22' },
+        { nome: 'Equipamentos',      valor: vE, cor: '#8e44ad' }
+    ].map(c => `<div style="text-align:center;">
+        <div style="font-size:22px;font-weight:900;color:${c.cor};">${(c.valor / total * 100).toFixed(1)}%</div>
+        <div style="font-size:11px;color:#888;font-weight:700;">${c.nome}</div>
+    </div>`).join('') : '<div style="font-size:12px;color:#aaa;">Sem compras suficientes para calcular percentuais.</div>';
+
+    const leituraTxt = total > 0
+        ? `${categorias[0].nome} representa a maior parcela financeira (${(categorias[0].valor / total * 100).toFixed(1)}%). Consumo por período depende das baixas registradas.`
+        : 'Não há compras registradas dentro do período selecionado.';
+
+    const popup = window.open('', '_blank', 'width=1000,height=800,scrollbars=yes');
+    popup.document.write(`<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Painel Gerencial de Estoque e Compras</title>
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    body { font-family: Arial, Helvetica, sans-serif; background:#fff; color:#222; padding:24px; }
+    .no-print { display:flex; gap:10px; justify-content:flex-end; margin-bottom:18px; }
+    .no-print button { padding:8px 20px; border:none; border-radius:5px; font-weight:bold; font-size:12px; cursor:pointer; }
+    .btn-imp { background:#1a2a6e; color:#fff; }
+    .btn-fec { background:#95a5a6; color:#fff; }
+    .cabecalho { background:linear-gradient(135deg,#1a2a6e,#223a8f); color:#fff; padding:18px 22px; border-radius:8px 8px 0 0; }
+    .cabecalho h1 { font-size:17px; letter-spacing:.5px; }
+    .cabecalho .sub { font-size:11px; opacity:.85; margin-top:2px; }
+    .cabecalho .meta { text-align:right; font-size:10px; opacity:.9; }
+    .corpo { border:1px solid #eee; border-top:none; border-radius:0 0 8px 8px; padding:22px; }
+    .total-geral { text-align:center; padding-bottom:16px; border-bottom:1px solid #eee; margin-bottom:18px; }
+    .total-geral .lbl { font-size:11px; color:#888; font-weight:700; text-transform:uppercase; }
+    .total-geral .val { font-size:30px; font-weight:900; color:#1a2a6e; margin-top:4px; }
+    .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:22px; }
+    .card { border-radius:8px; padding:14px; }
+    .card .lbl { font-size:11px; color:#888; font-weight:700; text-transform:uppercase; }
+    .card .val { font-size:18px; font-weight:900; margin-top:4px; }
+    .secao-titulo { font-size:12px; font-weight:800; color:#1a2a6e; letter-spacing:.5px; margin-bottom:2px; }
+    .secao-sub { font-size:10px; color:#888; margin-bottom:12px; }
+    .total-hist { display:flex; justify-content:space-between; font-size:12px; font-weight:900; color:#1a2a6e; margin-top:8px; padding-top:8px; border-top:1px solid #eee; }
+    .percentuais { display:flex; gap:30px; justify-content:center; margin:22px 0; }
+    .leitura { background:#f0f4ff; border:1px solid #c0ccee; border-radius:8px; padding:14px 16px; font-size:12px; color:#444; line-height:1.6; }
+    .leitura b { color:#1a2a6e; text-transform:uppercase; font-size:11px; letter-spacing:.5px; display:block; margin-bottom:6px; }
+    @media print {
+        .no-print { display:none !important; }
+        body { padding:10px; }
+    }
+</style>
+</head>
+<body>
+<div class="no-print">
+    <button class="btn-imp" onclick="paPrepararEImprimir()">🖨️ Imprimir</button>
+    <button class="btn-fec" onclick="window.close()">✕ Fechar</button>
+</div>
+
+<div class="cabecalho">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+        <div>
+            <h1>📊 PAINEL GERENCIAL DE ESTOQUE E COMPRAS</h1>
+            <div class="sub">Visão executiva — todas as categorias e origens</div>
+        </div>
+        <div class="meta">SGQ · Gestão da Qualidade<br>${periodoTxt}</div>
+    </div>
+    <div style="margin-top:10px;font-size:10px;opacity:.85;"><b>ESCOPO</b> Todas as notas, compras diretas e registros antigos</div>
+</div>
+
+<div class="corpo">
+    <div class="total-geral">
+        <div class="lbl">💳 Compras Históricas — soma das três categorias</div>
+        <div class="val">${total > 0 ? _paFmtMoeda(total) : '—'}</div>
+    </div>
+
+    <div class="cards">
+        <div class="card" style="background:#f6f8ff;border-left:4px solid #1a2a6e;">
+            <div class="lbl">🧪 Produtos Químicos</div>
+            <div class="val" style="color:#1a2a6e;">${vQ > 0 ? _paFmtMoeda(vQ) : '—'}</div>
+        </div>
+        <div class="card" style="background:#fff8f0;border-left:4px solid #e67e22;">
+            <div class="lbl">📦 Materiais</div>
+            <div class="val" style="color:#e67e22;">${vM > 0 ? _paFmtMoeda(vM) : '—'}</div>
+        </div>
+        <div class="card" style="background:#f9f4fc;border-left:4px solid #8e44ad;">
+            <div class="lbl">🔬 Equipamentos</div>
+            <div class="val" style="color:#8e44ad;">${vE > 0 ? _paFmtMoeda(vE) : '—'}</div>
+        </div>
+    </div>
+
+    <div class="secao-titulo">📈 VALOR HISTÓRICO POR CATEGORIA</div>
+    <div class="secao-sub">Comparação financeira geral do SGQ</div>
+    ${barrasHTML}
+    <div class="total-hist"><span>TOTAL DO PERÍODO</span><span>${total > 0 ? _paFmtMoeda(total) : '—'}</span></div>
+
+    <div class="percentuais">${percHTML}</div>
+
+    <div class="leitura"><b>💡 Leitura Rápida</b>${leituraTxt}</div>
+</div>
+
+<script>
+    // Reforço além do @media print: garante que os botões somem mesmo em
+    // navegadores/leitores que capturam a página sem respeitar a media query.
+    function paPrepararEImprimir() {
+        document.querySelectorAll('.no-print').forEach(function (el) { el.style.display = 'none'; });
+        window.print();
+        setTimeout(function () {
+            document.querySelectorAll('.no-print').forEach(function (el) { el.style.display = 'flex'; });
+        }, 500);
+    }
+    window.addEventListener('beforeprint', function () {
+        document.querySelectorAll('.no-print').forEach(function (el) { el.style.display = 'none'; });
+    });
+    window.addEventListener('afterprint', function () {
+        document.querySelectorAll('.no-print').forEach(function (el) { el.style.display = 'flex'; });
+    });
+<\/script>
+</body>
+</html>`);
+    popup.document.close();
 }
 
 // =====================================================================
 // 📊 RELATÓRIO DE DETALHAMENTO — Total de Compras
 // Mostra linha a linha exatamente o que compõe o valor do card,
-// para a categoria selecionada no dropdown (quimico/material/equipamento)
+// para a categoria informada (quimico/material/equipamento)
 // =====================================================================
-function reagAbrirDetalheCompras() {
-    const sel = document.getElementById('reagCardComprasTipo');
-    const tipo = sel ? sel.value : 'quimico';
+function reagAbrirDetalheCompras(tipoParam) {
+    let tipo = tipoParam;
+    if (!tipo) {
+        const sel = document.getElementById('reagCardComprasTipo');
+        tipo = sel ? sel.value : 'quimico';
+    }
     _detComprasRender(tipo);
     document.getElementById('modalDetalheCompras').style.display = 'flex';
 }
@@ -27272,26 +27640,10 @@ function reagFecharDetalheCompras() {
     document.getElementById('modalDetalheCompras').style.display = 'none';
 }
 
-function _detComprasRender(tipo) {
-    const cores  = { quimico:'#1a2a6e', material:'#e67e22', equipamento:'#8e44ad' };
-    const titulos= { quimico:'🧪 Produtos Químicos', material:'📦 Materiais', equipamento:'🔬 Equipamentos' };
-    const cor = cores[tipo] || '#1a2a6e';
-
-    // Atualiza cabeçalho visual
-    const header = document.getElementById('detComprasHeader');
-    if (header) header.style.background = `linear-gradient(135deg, ${cor}, ${tipo==='quimico'?'#2980b9':cor})`;
-    const tituloEl = document.getElementById('detComprasTitulo');
-    if (tituloEl) tituloEl.textContent = `📊 Detalhamento — ${titulos[tipo]}`;
-
-    // Fórmula explicativa
-    const formulaEl = document.getElementById('detComprasFormula');
-    if (formulaEl) {
-        formulaEl.innerHTML = `<b>Fórmula:</b> Soma do <b>valor total de cada Nota Fiscal</b> registrada nesta categoria
-            + Soma do <b>custo × quantidade</b> de cada <b>entrada sem Nota Fiscal</b> desta categoria.
-            <br><span style="color:#888;">Este é o valor histórico total comprado — não reflete o estoque atual, que pode já ter sido parcialmente consumido.</span>`;
-    }
-
-    // Monta linhas: NFs da categoria + entradas sem NF da categoria
+// Monta todas as linhas (NFs + entradas sem NF) que compõem o valor histórico
+// de uma categoria. Não aplica filtro de período — isso é feito por quem chama.
+function _paMontarLinhasCategoria(tipo) {
+    const titulos = { quimico:'🧪 Produtos Químicos', material:'📦 Materiais', equipamento:'🔬 Equipamentos' };
     const linhas = [];
 
     // 1) Notas Fiscais (incluindo parcela de NFs "misto")
@@ -27403,6 +27755,52 @@ function _detComprasRender(tipo) {
             }
         });
     }
+
+    return linhas;
+}
+
+// Verifica se uma data (YYYY-MM-DD) está dentro do período [ini, fim].
+// ini/fim vazios ou nulos significam "sem limite" naquele lado.
+function _paDentroPeriodo(dataStr, ini, fim) {
+    if (!dataStr) return true; // sem data registrada: não exclui do período
+    if (ini && dataStr < ini) return false;
+    if (fim && dataStr > fim) return false;
+    return true;
+}
+
+// Lê o período atualmente selecionado no Painel Gerencial (inputs de data).
+function _paPeriodoAtual() {
+    const ini = (document.getElementById('paDataIni') || {}).value || '';
+    const fim = (document.getElementById('paDataFim') || {}).value || '';
+    return { ini, fim };
+}
+
+function _detComprasRender(tipo) {
+    const cores  = { quimico:'#1a2a6e', material:'#e67e22', equipamento:'#8e44ad' };
+    const titulos= { quimico:'🧪 Produtos Químicos', material:'📦 Materiais', equipamento:'🔬 Equipamentos' };
+    const cor = cores[tipo] || '#1a2a6e';
+
+    // Atualiza cabeçalho visual
+    const header = document.getElementById('detComprasHeader');
+    if (header) header.style.background = `linear-gradient(135deg, ${cor}, ${tipo==='quimico'?'#2980b9':cor})`;
+    const tituloEl = document.getElementById('detComprasTitulo');
+    if (tituloEl) tituloEl.textContent = `📊 Detalhamento — ${titulos[tipo]}`;
+
+    const { ini, fim } = _paPeriodoAtual();
+    const periodoTxt = (ini || fim)
+        ? `Período: ${ini ? _fmtData(ini) : 'início do histórico'} a ${fim ? _fmtData(fim) : 'hoje'}`
+        : 'Período: todo o histórico';
+
+    // Fórmula explicativa
+    const formulaEl = document.getElementById('detComprasFormula');
+    if (formulaEl) {
+        formulaEl.innerHTML = `<b>Fórmula:</b> Soma do <b>valor total de cada Nota Fiscal</b> registrada nesta categoria
+            + Soma do <b>custo × quantidade</b> de cada <b>entrada sem Nota Fiscal</b> desta categoria.
+            <br><span style="color:#888;">${periodoTxt} — não reflete o estoque atual, que pode já ter sido parcialmente consumido.</span>`;
+    }
+
+    // Monta linhas da categoria e filtra pelo período selecionado no painel
+    const linhas = _paMontarLinhasCategoria(tipo).filter(l => _paDentroPeriodo(l.data, ini, fim));
 
     // Ordena por data desc
     linhas.sort((a,b) => (b.data||'0000-00-00').localeCompare(a.data||'0000-00-00'));
