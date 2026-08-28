@@ -39856,7 +39856,7 @@ REGRAS FINAIS DE PRECISÃO:
       if (body)  { body.style.padding='0'; body.style.overflow='hidden'; body.style.gap='0'; }
       if (cam)   cam.style.display = 'none';
       if (pv)    pv.style.display = 'none';
-      if (vf)    { vf.style.flex='none'; vf.style.height=Math.max(200, H-130)+'px'; vf.style.minHeight=Math.max(200, H-130)+'px'; vf.style.borderRadius='0'; vf.style.background='#000'; }
+      if (vf)    { vf.style.display='block'; vf.style.position='relative'; vf.style.overflow='visible'; vf.style.flex='none'; vf.style.width='100%'; vf.style.height=Math.max(200, H-130)+'px'; vf.style.minHeight=Math.max(200, H-130)+'px'; vf.style.borderRadius='0'; vf.style.background='#000'; }
       if (video) { video.style.width='100%'; video.style.height='100%'; video.style.maxHeight='none'; video.style.objectFit='cover'; video.style.borderRadius='0'; }
       // Mostra o painel de diagnóstico da câmera
       const dbg = document.getElementById('scanDbg'); if (dbg) dbg.style.display = 'block';
@@ -39921,7 +39921,10 @@ REGRAS FINAIS DE PRECISÃO:
 
     // Referência: o contêiner do visor (sempre visível), não o elemento de vídeo
     const vf = video.parentElement;
-    const cw = vf.clientWidth, ch = vf.clientHeight;
+    let rect = vf ? vf.getBoundingClientRect() : { width: 0, height: 0 };
+    let cw = Math.round(rect.width), ch = Math.round(rect.height);
+    if (!cw || !ch) { cw = vf ? vf.clientWidth : 0; ch = vf ? vf.clientHeight : 0; }
+    if (!cw || !ch) { cw = window.innerWidth || 360; ch = Math.max(200, (window.innerHeight || 720) - 120); }
     if (dbg) dbg.textContent = 'câmera: ' + vw + 'x' + vh + '  visor: ' + cw + 'x' + ch;
     if (!cw || !ch) return;
     ov.style.left = '0'; ov.style.top = '0';
