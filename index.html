@@ -39831,9 +39831,35 @@ REGRAS FINAIS DE PRECISÃO:
   }
 
   // ── Auxiliares ────────────────────────────────────────────────
+  // Modo tela cheia aplicado direto via JS (mais confiável que CSS em celulares).
+  var _fsOrig = null;
   function _scanSetFullscreen(on) {
     const modal = document.getElementById('modalScanClass');
-    if (modal) modal.classList.toggle('scanfull', !!on);
+    if (!modal) return;
+    const box    = modal.querySelector('.scanClassBox');
+    const body   = modal.querySelector('.scanClassBody');
+    const vf     = modal.querySelector('.scanClassVF');
+    const video  = document.getElementById('scanClassVideo');
+    const cam    = document.getElementById('scanClassCameraWrap');
+    const pv     = document.getElementById('scanClassPreviewWrap');
+    if (!_fsOrig) {
+      _fsOrig = { box:{}, body:{}, vf:{}, video:{}, cam:{} };
+      const cap = (el, o) => { for (const k in o) o[k] = el.style[k]; };
+      cap(box, _fsOrig.box); cap(body, _fsOrig.body); cap(vf, _fsOrig.vf); cap(video, _fsOrig.video); cap(cam, _fsOrig.cam);
+    }
+    if (on) {
+      modal.style.alignItems = 'stretch'; modal.style.justifyContent = 'stretch'; modal.style.background = '#000';
+      if (box)   { box.style.width='100%'; box.style.maxWidth='100%'; box.style.height='100vh'; box.style.maxHeight='100vh'; box.style.borderRadius='0'; box.style.boxShadow='none'; }
+      if (body)  { body.style.padding='0'; body.style.overflow='hidden'; body.style.gap='0'; }
+      if (cam)   cam.style.display = 'none';
+      if (pv)    pv.style.display = 'none';
+      if (vf)    { vf.style.flex='1'; vf.style.minHeight='0'; vf.style.borderRadius='0'; vf.style.background='#000'; }
+      if (video) { video.style.width='100%'; video.style.height='100%'; video.style.maxHeight='none'; video.style.objectFit='cover'; video.style.borderRadius='0'; }
+    } else {
+      modal.style.alignItems=''; modal.style.justifyContent=''; modal.style.background='';
+      const rest = (el, o) => { if (!el) return; for (const k in o) el.style[k] = o[k]; };
+      rest(box, _fsOrig.box); rest(body, _fsOrig.body); rest(vf, _fsOrig.vf); rest(video, _fsOrig.video); rest(cam, _fsOrig.cam);
+    }
   }
   function _scanPararStream() {
     _scanSetFullscreen(false);
