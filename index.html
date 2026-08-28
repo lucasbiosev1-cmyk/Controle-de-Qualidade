@@ -38816,6 +38816,7 @@ window.atualizarKpisCapa = function() {
 
   <!-- Câmera em tela cheia: cobre toda a tela; cabeçalho e botões ficam por cima -->
   <canvas id="scanClassFullCanvas" style="position:fixed;inset:0;width:100vw;height:100vh;z-index:19400;pointer-events:none;display:none;background:#000;"></canvas>
+  <img id="scanClassLiveImg" alt="" style="position:fixed;inset:0;width:100vw;height:100vh;z-index:19480;pointer-events:none;display:none;object-fit:cover;background:#000;"/>
 </div><!-- fim modal scan -->
 
 <script>
@@ -39839,6 +39840,7 @@ REGRAS FINAIS DE PRECISÃO:
   // Modo tela cheia aplicado direto via JS (mais confiável que CSS em celulares).
   var _fsOrig = null;
   var _scanFrameCanvas = null;
+  var _scanPreviewCanvas = null;
   function _scanSetFullscreen(on) {
     const modal = document.getElementById('modalScanClass');
     if (!modal) return;
@@ -39857,7 +39859,7 @@ REGRAS FINAIS DE PRECISÃO:
       if (pv)    pv.style.display = 'none';
       // rodapé opaco para os botões ficarem visíveis sobre a câmera
       if (box && box.lastElementChild) box.lastElementChild.style.background = '#fff';
-      if (vf)    { vf.style.display='block'; vf.style.position='relative'; vf.style.overflow='visible'; vf.style.flex='none'; vf.style.width='100%'; vf.style.height=Math.max(200, H-130)+'px'; vf.style.minHeight=Math.max(200, H-130)+'px'; vf.style.borderRadius='0'; vf.style.background='#000'; }
+      if (vf)    { vf.style.display='block'; vf.style.position='relative'; vf.style.overflow='visible'; vf.style.flex='none'; vf.style.width='100%'; vf.style.height=Math.max(200, H-130)+'px'; vf.style.minHeight=Math.max(200, H-130)+'px'; vf.style.borderRadius='0'; vf.style.background='transparent'; }
       if (video) { video.style.width='100%'; video.style.height='100%'; video.style.maxHeight='none'; video.style.objectFit='cover'; video.style.borderRadius='0'; video.style.opacity='0'; }
       // Mostra o painel de diagnóstico da câmera
       const dbg = document.getElementById('scanDbg'); if (dbg) dbg.style.display = 'block';
@@ -39886,11 +39888,13 @@ REGRAS FINAIS DE PRECISÃO:
     _scanPararOverlay();
     _scanQuadAtual = null;
     const fcv = document.getElementById('scanClassFullCanvas');
-    if (fcv) { fcv.style.display = 'block'; fcv.style.zIndex = '19400'; }
+    if (fcv) fcv.style.display = 'none';
+    const limg = document.getElementById('scanClassLiveImg');
+    if (limg) limg.style.display = 'block';
     const ov = document.getElementById('scanClassOverlayCanvas');
     if (ov) ov.style.display = 'none';
     const video = document.getElementById('scanClassVideo');
-    if (video) video.style.opacity = '0'; // esconde o <video> nativo (fica branco no Redmi); a câmera é desenhada no canvas acima
+    if (video) video.style.opacity = '0'; // esconde o <video> nativo (fica branco no Redmi); a câmera é exibida como <img> (renderização garantida)
     // Vigia: se a câmera abriu mas não chega imagem, mostra o motivo na tela
     setTimeout(function() {
       if (_scanStream && video && !video.videoWidth && !video.srcObject) { /* já parado */ }
@@ -39899,7 +39903,7 @@ REGRAS FINAIS DE PRECISÃO:
       }
     }, 3000);
     const loop = function() {
-      _scanOverlayTimer = setTimeout(loop, 100);
+      _scanOverlayTimer = setTimeout(loop, 150);
       try { _scanDesenharOverlay(); } catch(e) {}
     };
     loop();
@@ -39909,13 +39913,15 @@ REGRAS FINAIS DE PRECISÃO:
     _scanQuadAtual = null;
     const fcv = document.getElementById('scanClassFullCanvas');
     if (fcv) { fcv.style.display = 'none'; const c = fcv.getContext('2d'); if (c) c.clearRect(0, 0, fcv.width, fcv.height); }
+    const limg = document.getElementById('scanClassLiveImg');
+    if (limg) { limg.style.display = 'none'; try { limg.removeAttribute('src'); } catch(e){} }
     const ov = document.getElementById('scanClassOverlayCanvas');
     if (ov) { ov.style.display = 'none'; const c = ov.getContext('2d'); if (c) c.clearRect(0, 0, ov.width, ov.height); }
   }
   function _scanDesenharOverlay() {
     const video = document.getElementById('scanClassVideo');
-    const ov = document.getElementById('scanClassFullCanvas');
-    if (!video || !ov || !video.srcObject) return;
+    const img = document.getElementById('scanClassLiveImg');
+    if (!video || !img || !video.srcObject) return;
     const vw = video.videoWidth, vh = video.videoHeight;
     const dbg = document.getElementById('scanDbg');
     if (!vw || !vh) {
@@ -39933,10 +39939,12 @@ REGRAS FINAIS DE PRECISÃO:
     // Tela cheia: cobre toda a tela
     let cw = window.innerWidth || 360, ch = window.innerHeight || 720;
     if (!cw || !ch) return;
-    ov.style.left = '0'; ov.style.top = '0';
-    ov.style.width = cw + 'px'; ov.style.height = ch + 'px';
+    if (!_scanPreviewCanvas) _scanPreviewCanvas = document.createElement('canvas');
+    const ov = _scanPreviewCanvas;
     ov.width = Math.max(1, cw); ov.height = Math.max(1, ch);
     const ctx = ov.getContext('2d');
+    // Helper: envia o quadro para o <img> (renderização garantida em todos os aparelhos)
+    function pushImg() { try { img.src = ov.toDataURL('image/jpeg', 0.72); } catch(e){} }
 
     // Desenha a câmera ocupando o visor todo (efeito "object-fit: cover")
     ctx.clearRect(0, 0, cw, ch);
@@ -39964,7 +39972,7 @@ REGRAS FINAIS DE PRECISÃO:
     }
 
     // Sem documento: câmera limpa + dica discreta
-    if (!quad) { _scanQuadAtual = null; _scanDesenharHint(ctx, 'Posicione o laudo dentro do quadro'); return; }
+    if (!quad) { _scanQuadAtual = null; _scanDesenharHint(ctx, 'Posicione o laudo dentro do quadro'); pushImg(); return; }
 
     // Mapeia os cantos detectados (espaço da miniatura) para o canvas do visor
     const pts = quad.corners.map(([x, y]) => [(x / sw * vw) * scale + dx, (y / sh * vh) * scale + dy]);
@@ -40000,6 +40008,7 @@ REGRAS FINAIS DE PRECISÃO:
     }
 
     _scanDesenharHint(ctx, good ? '✅ Formulário em foco — toque em Capturar' : '📄 Ajuste a posição');
+    pushImg();
   }
   function _scanDesenharHint(ctx, txt) {
     const w = ctx.canvas.width;
