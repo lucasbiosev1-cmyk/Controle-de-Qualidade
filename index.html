@@ -38813,6 +38813,9 @@ window.atualizarKpisCapa = function() {
     </div>
 
   </div>
+
+  <!-- Câmera em tela cheia: cobre toda a tela; cabeçalho e botões ficam por cima -->
+  <canvas id="scanClassFullCanvas" style="position:fixed;inset:0;width:100vw;height:100vh;z-index:19400;pointer-events:none;display:none;background:#000;"></canvas>
 </div><!-- fim modal scan -->
 
 <script>
@@ -39845,27 +39848,28 @@ REGRAS FINAIS DE PRECISÃO:
     const video  = document.getElementById('scanClassVideo');
     const cam    = document.getElementById('scanClassCameraWrap');
     const pv     = document.getElementById('scanClassPreviewWrap');
-    if (!_fsOrig) {
-      _fsOrig = { box:{}, body:{}, vf:{}, video:{}, cam:{} };
-      const cap = (el, o) => { for (const k in o) o[k] = el.style[k]; };
-      cap(box, _fsOrig.box); cap(body, _fsOrig.body); cap(vf, _fsOrig.vf); cap(video, _fsOrig.video); cap(cam, _fsOrig.cam);
-    }
     if (on) {
       const H = window.innerHeight || window.screen.availHeight || 720;
       modal.style.alignItems = 'stretch'; modal.style.justifyContent = 'stretch'; modal.style.background = '#000';
-      if (box)   { box.style.width='100%'; box.style.maxWidth='100%'; box.style.height=H+'px'; box.style.maxHeight='none'; box.style.borderRadius='0'; box.style.boxShadow='none'; }
-      if (body)  { body.style.padding='0'; body.style.overflow='hidden'; body.style.gap='0'; }
+      if (box)   { box.style.width='100%'; box.style.maxWidth='100%'; box.style.height=H+'px'; box.style.maxHeight='none'; box.style.borderRadius='0'; box.style.boxShadow='none'; box.style.zIndex='19499'; box.style.background='transparent'; }
+      if (body)  { body.style.padding='0'; body.style.overflow='hidden'; body.style.gap='0'; body.style.background='transparent'; }
       if (cam)   cam.style.display = 'none';
       if (pv)    pv.style.display = 'none';
+      // rodapé opaco para os botões ficarem visíveis sobre a câmera
+      if (box && box.lastElementChild) box.lastElementChild.style.background = '#fff';
       if (vf)    { vf.style.display='block'; vf.style.position='relative'; vf.style.overflow='visible'; vf.style.flex='none'; vf.style.width='100%'; vf.style.height=Math.max(200, H-130)+'px'; vf.style.minHeight=Math.max(200, H-130)+'px'; vf.style.borderRadius='0'; vf.style.background='#000'; }
       if (video) { video.style.width='100%'; video.style.height='100%'; video.style.maxHeight='none'; video.style.objectFit='cover'; video.style.borderRadius='0'; video.style.opacity='0'; }
       // Mostra o painel de diagnóstico da câmera
       const dbg = document.getElementById('scanDbg'); if (dbg) dbg.style.display = 'block';
     } else {
       modal.style.alignItems=''; modal.style.justifyContent=''; modal.style.background='';
-      const rest = (el, o) => { if (!el) return; for (const k in o) el.style[k] = o[k]; };
-      rest(box, _fsOrig.box); rest(body, _fsOrig.body); rest(vf, _fsOrig.vf); rest(video, _fsOrig.video); rest(cam, _fsOrig.cam);
-      if (video) video.style.opacity = '';
+      if (box)   { box.style.width=''; box.style.maxWidth=''; box.style.height=''; box.style.maxHeight=''; box.style.borderRadius=''; box.style.boxShadow=''; box.style.zIndex=''; box.style.background=''; }
+      if (body)  { body.style.padding=''; body.style.overflow=''; body.style.gap=''; body.style.background=''; }
+      if (cam)   cam.style.display = '';
+      if (pv)    pv.style.display = '';
+      if (box && box.lastElementChild) box.lastElementChild.style.background = '';
+      if (vf)    { vf.style.display=''; vf.style.position=''; vf.style.overflow=''; vf.style.flex=''; vf.style.width=''; vf.style.height=''; vf.style.minHeight=''; vf.style.borderRadius=''; vf.style.background=''; }
+      if (video) { video.style.width=''; video.style.height=''; video.style.maxHeight=''; video.style.objectFit=''; video.style.borderRadius=''; video.style.opacity=''; }
       const dbg = document.getElementById('scanDbg'); if (dbg) dbg.style.display = 'none';
     }
   }
@@ -39881,8 +39885,10 @@ REGRAS FINAIS DE PRECISÃO:
   function _scanIniciarOverlay() {
     _scanPararOverlay();
     _scanQuadAtual = null;
+    const fcv = document.getElementById('scanClassFullCanvas');
+    if (fcv) { fcv.style.display = 'block'; fcv.style.zIndex = '19400'; }
     const ov = document.getElementById('scanClassOverlayCanvas');
-    if (ov) { ov.style.display = 'block'; ov.style.zIndex = '50'; }
+    if (ov) ov.style.display = 'none';
     const video = document.getElementById('scanClassVideo');
     if (video) video.style.opacity = '0'; // esconde o <video> nativo (fica branco no Redmi); a câmera é desenhada no canvas acima
     // Vigia: se a câmera abriu mas não chega imagem, mostra o motivo na tela
@@ -39901,12 +39907,14 @@ REGRAS FINAIS DE PRECISÃO:
   function _scanPararOverlay() {
     if (_scanOverlayTimer) { clearTimeout(_scanOverlayTimer); _scanOverlayTimer = null; }
     _scanQuadAtual = null;
+    const fcv = document.getElementById('scanClassFullCanvas');
+    if (fcv) { fcv.style.display = 'none'; const c = fcv.getContext('2d'); if (c) c.clearRect(0, 0, fcv.width, fcv.height); }
     const ov = document.getElementById('scanClassOverlayCanvas');
     if (ov) { ov.style.display = 'none'; const c = ov.getContext('2d'); if (c) c.clearRect(0, 0, ov.width, ov.height); }
   }
   function _scanDesenharOverlay() {
     const video = document.getElementById('scanClassVideo');
-    const ov = document.getElementById('scanClassOverlayCanvas');
+    const ov = document.getElementById('scanClassFullCanvas');
     if (!video || !ov || !video.srcObject) return;
     const vw = video.videoWidth, vh = video.videoHeight;
     const dbg = document.getElementById('scanDbg');
@@ -39922,12 +39930,8 @@ REGRAS FINAIS DE PRECISÃO:
       quad = _scanDetectarQuadrado(sm, sw);
     } catch (e) { quad = null; }
 
-    // Referência: o contêiner do visor (sempre visível), não o elemento de vídeo
-    const vf = video.parentElement;
-    let rect = vf ? vf.getBoundingClientRect() : { width: 0, height: 0 };
-    let cw = Math.round(rect.width), ch = Math.round(rect.height);
-    if (!cw || !ch) { cw = vf ? vf.clientWidth : 0; ch = vf ? vf.clientHeight : 0; }
-    if (!cw || !ch) { cw = window.innerWidth || 360; ch = Math.max(200, (window.innerHeight || 720) - 120); }
+    // Tela cheia: cobre toda a tela
+    let cw = window.innerWidth || 360, ch = window.innerHeight || 720;
     if (!cw || !ch) return;
     ov.style.left = '0'; ov.style.top = '0';
     ov.style.width = cw + 'px'; ov.style.height = ch + 'px';
@@ -40002,9 +40006,9 @@ REGRAS FINAIS DE PRECISÃO:
     ctx.font = 'bold 14px sans-serif';
     const tw = ctx.measureText(txt).width;
     ctx.fillStyle = 'rgba(0,0,0,0.55)';
-    ctx.fillRect((w - tw) / 2 - 12, ctx.canvas.height - 40, tw + 24, 28);
+    ctx.fillRect((w - tw) / 2 - 12, 92, tw + 24, 28);
     ctx.fillStyle = '#fff';
-    ctx.fillText(txt, (w - tw) / 2, ctx.canvas.height - 21);
+    ctx.fillText(txt, (w - tw) / 2, 111);
   }
 
   function _scanSetStatus(msg, cor, bg) {
