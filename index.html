@@ -38751,7 +38751,10 @@ window.atualizarKpisCapa = function() {
         <!-- Preview da foto capturada -->
         <div id="scanClassPreviewWrap" style="display:none;">
           <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">📸 Foto capturada</div>
-          <img id="scanClassPreviewImg" src="" alt="Preview" style="width:100%;border-radius:8px;border:2px solid #8e44ad;max-height:200px;object-fit:contain;background:#f5f5f5;">
+          <img id="scanClassPreviewImg" src="" alt="Preview" style="width:100%;border-radius:8px;border:2px solid #8e44ad;max-height:70vh;object-fit:contain;background:#222;cursor:zoom-in;" ondblclick="this.style.maxHeight = this.style.maxHeight === 'none' ? '70vh' : 'none';">          <div style="margin-top:4px;font-size:11px;color:#8e44ad;">Toque duas vezes na imagem para ampliar/restaurar.</div>
+          <label style="display:flex;align-items:center;gap:7px;margin-top:8px;font-size:12px;color:#333;font-weight:600;cursor:pointer;">
+            <input type="checkbox" id="scanClassEfeitoScanner" checked style="width:17px;height:17px;accent-color:#8e44ad;cursor:pointer;"> ✨ Efeito scanner: endireitar documento e realçar informações
+          </label>
         </div>
 
         <!-- Alternativa: upload de arquivo -->
@@ -38877,15 +38880,30 @@ window.atualizarKpisCapa = function() {
 
   // ── Iniciar câmera ────────────────────────────────────────────
   window.scanClassIniciar = async function() {
+    // Câmera só funciona em página segura (HTTPS). Como arquivo local/baixado no celular, é bloqueada.
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      _scanSetStatus('📵 Câmera bloqueada neste navegador. A página precisa ser aberta por HTTPS (endereço com cadeado), e NÃO como um arquivo baixado aberto direto no celular.', '#e74c3c', '#fdecea');
+      return;
+    }
     const deviceId = document.getElementById('scanClassCameraSelect').value;
-    const constraints = {
-      video: deviceId
-        ? { deviceId: { exact: deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } }
-        : { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }
-    };
     try {
       _scanPararStream();
-      _scanStream = await navigator.mediaDevices.getUserMedia(constraints);
+      let constraints = {
+        video: deviceId
+          ? { deviceId: { exact: deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+          : { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+      };
+      // Tenta com as configurações ideais; se o aparelho rejeitar, tenta o modo padrão simples
+      try {
+        _scanStream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch(err1) {
+        if (err1 && (err1.name === 'OverconstrainedError' || err1.name === 'NotFoundError' || /constraint|not ?found/i.test(err1.message || ''))) {
+          constraints = { video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'environment' } };
+          _scanStream = await navigator.mediaDevices.getUserMedia(constraints);
+        } else {
+          throw err1;
+        }
+      }
       const video = document.getElementById('scanClassVideo');
       video.srcObject = _scanStream;
       document.getElementById('scanClassPlaceholder').style.display = 'none';
@@ -38896,7 +38914,16 @@ window.atualizarKpisCapa = function() {
       // Re-lista câmeras com labels (requer permissão)
       await _scanListarCameras();
     } catch(e) {
-      _scanSetStatus('⚠️ Não foi possível acessar a câmera: ' + (e.message || e), '#e74c3c', '#fdecea');
+      const msg = String((e && (e.name || e.message)) || e || '');
+      if (/permission|denied|NotAllowed|not allowed|deneg/i.test(msg)) {
+        _scanSetStatus('🔒 Permissão da câmera negada. Toque no ícone de cadeado na barra de endereço e permita "Câmera". A página precisa estar aberta por HTTPS (não como arquivo local).', '#e74c3c', '#fdecea');
+      } else if (/NotFound|no camera|notfound/i.test(msg)) {
+        _scanSetStatus('📷 Nenhuma câmera encontrada neste aparelho.', '#e74c3c', '#fdecea');
+      } else if (/secure|https|insecure|MediaDevices/i.test(msg)) {
+        _scanSetStatus('📵 Câmera bloqueada: abra a página por HTTPS (endereço com cadeado), não como arquivo local.', '#e74c3c', '#fdecea');
+      } else {
+        _scanSetStatus('⚠️ Não foi possível acessar a câmera: ' + (e.message || e), '#e74c3c', '#fdecea');
+      }
     }
   };
 
@@ -38915,6 +38942,276 @@ window.atualizarKpisCapa = function() {
     document.getElementById('btnScanClassAbrir').onclick = scanClassIniciar;
   };
 
+  // ── Melhorar a foto para leitura da IA ───────────────────────
+  // Recorta as bordas vazias, amplia o conteúdo e aumenta o contraste,
+  // para que os textos/valores ocupem mais espaço na imagem enviada à IA.
+  function _scanAutoCropBox(img) {
+    const w = img.naturalWidth, h = img.naturalHeight;
+    const cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    const cx = cv.getContext('2d', { willReadFrequently: true });
+    cx.drawImage(img, 0, 0);
+    const { data } = cx.getImageData(0, 0, w, h);
+    const sample = 3;
+    const lum = (x, y) => { const i = (y * w + x) * 4; return 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2]; };
+    const rowStd = [], colStd = [];
+    for (let y = 0; y < h; y += sample) {
+      let s = 0, s2 = 0, n = 0;
+      for (let x = 0; x < w; x += sample) { const v = lum(x, y); s += v; s2 += v * v; n++; }
+      const m = s / n; rowStd.push({ y, v: Math.sqrt(Math.max(0, s2 / n - m * m)) });
+    }
+    for (let x = 0; x < w; x += sample) {
+      let s = 0, s2 = 0, n = 0;
+      for (let y = 0; y < h; y += sample) { const v = lum(x, y); s += v; s2 += v * v; n++; }
+      const m = s / n; colStd.push({ x, v: Math.sqrt(Math.max(0, s2 / n - m * m)) });
+    }
+    const maxRow = Math.max(...rowStd.map(r => r.v));
+    const maxCol = Math.max(...colStd.map(c => c.v));
+    if (!maxRow || !maxCol) return { x: 0, y: 0, w, h };
+    const thrRow = maxRow * 0.12, thrCol = maxCol * 0.12;
+    let top = 0, bottom = h, left = 0, right = w;
+    for (const r of rowStd) { if (r.v >= thrRow) { top = Math.max(0, r.y - 8); break; } }
+    for (let i = rowStd.length - 1; i >= 0; i--) { if (rowStd[i].v >= thrRow) { bottom = Math.min(h, rowStd[i].y + sample + 8); break; } }
+    for (const c of colStd) { if (c.v >= thrCol) { left = Math.max(0, c.x - 8); break; } }
+    for (let i = colStd.length - 1; i >= 0; i--) { if (colStd[i].v >= thrCol) { right = Math.min(w, colStd[i].x + sample + 8); break; } }
+    if (right - left < 30 || bottom - top < 30) return { x: 0, y: 0, w, h };
+    return { x: left, y: top, w: right - left, h: bottom - top };
+  }
+
+  // ── Efeito scanner: correção de perspectiva ──────────────────
+  // Detecta o documento na imagem, localiza os 4 cantos e "endireita"
+  // (retira o ângulo/deformação) como um digitalizador automático.
+  function _scanMaiorComponente(bin, w, h) {
+    const visited = new Uint8Array(w * h);
+    let bestSize = 0, best = null;
+    for (let i = 0; i < w * h; i++) {
+      if (!bin[i] || visited[i]) continue;
+      const stack = [i]; visited[i] = 1; let size = 0; const comp = [];
+      while (stack.length) {
+        const idx = stack.pop(); size++; comp.push(idx);
+        const x = idx % w, y = (idx / w) | 0;
+        if (x > 0 && !visited[idx - 1] && bin[idx - 1]) { visited[idx - 1] = 1; stack.push(idx - 1); }
+        if (x < w - 1 && !visited[idx + 1] && bin[idx + 1]) { visited[idx + 1] = 1; stack.push(idx + 1); }
+        if (y > 0 && !visited[idx - w] && bin[idx - w]) { visited[idx - w] = 1; stack.push(idx - w); }
+        if (y < h - 1 && !visited[idx + w] && bin[idx + w]) { visited[idx + w] = 1; stack.push(idx + w); }
+      }
+      if (size > bestSize) { bestSize = size; best = comp; }
+    }
+    const mask = new Uint8Array(w * h);
+    if (best) for (const i of best) mask[i] = 1;
+    return { mask, size: bestSize };
+  }
+
+  function _scanCorners(mask, w, h) {
+    let sx = 0, sy = 0, cnt = 0;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      if (mask[y * w + x]) { sx += x; sy += y; cnt++; }
+    }
+    if (!cnt) return null;
+    const cx = sx / cnt, cy = sy / cnt;
+    const corners = [null, null, null, null]; // TR, BR, BL, TL
+    const best = [-1, -1, -1, -1];
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      if (!mask[y * w + x]) continue;
+      const dx = x - cx, dy = y - cy, d = dx * dx + dy * dy;
+      let q;
+      if (dx >= 0 && dy <= 0) q = 0;
+      else if (dx >= 0 && dy > 0) q = 1;
+      else if (dx < 0 && dy > 0) q = 2;
+      else q = 3;
+      if (d > best[q]) { best[q] = d; corners[q] = [x, y]; }
+    }
+    if (corners.some(c => !c)) return null;
+    return [corners[3], corners[0], corners[1], corners[2]]; // TL, TR, BR, BL
+  }
+
+  function _scanDetectarQuadrado(srcCanvas) {
+    const sW = srcCanvas.width, sH = srcCanvas.height;
+    const w = 1000, h = Math.max(1, Math.round(sH * 1000 / sW));
+    const wc = document.createElement('canvas'); wc.width = w; wc.height = h;
+    const wctx = wc.getContext('2d', { willReadFrequently: true });
+    wctx.drawImage(srcCanvas, 0, 0, w, h);
+    const d = wctx.getImageData(0, 0, w, h).data;
+    const gray = new Uint8Array(w * h);
+    for (let i = 0; i < gray.length; i++) { const j = i * 4; gray[i] = 0.299 * d[j] + 0.587 * d[j + 1] + 0.114 * d[j + 2]; }
+    // Limiar de Otsu
+    const hist = new Uint32Array(256);
+    for (let i = 0; i < gray.length; i++) hist[gray[i]]++;
+    let sum = 0; for (let t = 0; t < 256; t++) sum += t * hist[t];
+    let sumB = 0, wB = 0, maxVar = -1, thr = 127;
+    for (let t = 0; t < 256; t++) {
+      wB += hist[t]; if (!wB) continue;
+      const wF = gray.length - wB; if (!wF) break;
+      sumB += t * hist[t];
+      const mB = sumB / wB, mF = (sum - sumB) / wF;
+      const v = wB * wF * (mB - mF) * (mB - mF);
+      if (v > maxVar) { maxVar = v; thr = t; }
+    }
+    const bright = new Uint8Array(gray.length), dark = new Uint8Array(gray.length);
+    for (let i = 0; i < gray.length; i++) { bright[i] = gray[i] > thr ? 1 : 0; dark[i] = gray[i] <= thr ? 1 : 0; }
+    const cb = _scanMaiorComponente(bright, w, h);
+    const cd = _scanMaiorComponente(dark, w, h);
+    const total = w * h;
+    const ok = s => s > total * 0.04 && s < total * 0.96;
+    let chosen = null;
+    if (ok(cb.size)) chosen = cb;
+    else if (ok(cd.size)) chosen = cd;
+    else chosen = (cb.size >= cd.size ? cb : cd);
+    if (!chosen || chosen.size < total * 0.03) return null;
+    const corners = _scanCorners(chosen.mask, w, h);
+    if (!corners) return null;
+    const [tl, tr, br, bl] = corners;
+    const area = Math.abs(tl[0] * (tr[1] - bl[1]) + tr[0] * (br[1] - tl[1]) + br[0] * (bl[1] - tr[1]) + bl[0] * (tl[1] - br[1])) / 2;
+    if (area < 0.2 * w * h) return null;
+    return { corners, scale: sW / w, area };
+  }
+
+  function _scanResolver8(A, b) {
+    const n = 8;
+    const M = A.map((row, i) => row.concat(b[i]));
+    for (let col = 0; col < n; col++) {
+      let piv = col;
+      for (let r = col + 1; r < n; r++) if (Math.abs(M[r][col]) > Math.abs(M[piv][col])) piv = r;
+      if (Math.abs(M[piv][col]) < 1e-12) throw new Error('singular');
+      if (piv !== col) { const t = M[col]; M[col] = M[piv]; M[piv] = t; }
+      const pv = M[col][col];
+      for (let r = 0; r < n; r++) {
+        if (r === col) continue;
+        const f = M[r][col] / pv;
+        for (let c = col; c <= n; c++) M[r][c] -= f * M[col][c];
+      }
+    }
+    const x = [];
+    for (let r = 0; r < n; r++) x.push(M[r][n] / M[r][r]);
+    return x;
+  }
+
+  function _scanHomografia(src, dst) {
+    const A = [], b = [];
+    for (let i = 0; i < 4; i++) {
+      const x = src[i][0], y = src[i][1], u = dst[i][0], v = dst[i][1];
+      A.push([x, y, 1, 0, 0, 0, -u * x, -u * y]); b.push(u);
+      A.push([0, 0, 0, x, y, 1, -v * x, -v * y]); b.push(v);
+    }
+    const h = _scanResolver8(A, b);
+    return [h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7], 1];
+  }
+
+  function _scanWarpPerspectiva(srcCanvas, quad) {
+    const sW = srcCanvas.width, sH = srcCanvas.height, k = quad.scale;
+    const src = quad.corners.map(([x, y]) => [x * k, y * k]);
+    const bw = Math.hypot(src[1][0] - src[0][0], src[1][1] - src[0][1]);
+    const bh = Math.hypot(src[3][0] - src[0][0], src[3][1] - src[0][1]);
+    if (!bw || !bh) return null;
+    const ow = sW, oh = Math.max(1, Math.round(sW * bh / bw));
+    const dst = [[0, 0], [ow, 0], [ow, oh], [0, oh]];
+    const H = _scanHomografia(src, dst);
+    const out = document.createElement('canvas');
+    out.width = ow; out.height = oh;
+    const octx = out.getContext('2d');
+    const od = octx.createImageData(ow, oh);
+    const sctx = srcCanvas.getContext('2d', { willReadFrequently: true });
+    const sdata = sctx.getImageData(0, 0, sW, sH).data;
+    const a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], hh = H[7], ii = H[8];
+    for (let y = 0; y < oh; y++) {
+      for (let x = 0; x < ow; x++) {
+        const w0 = g * x + hh * y + ii;
+        const sx = (a * x + b * y + c) / w0;
+        const sy = (d * x + e * y + f) / w0;
+        const idx = (y * ow + x) * 4;
+        if (sx < 1 || sy < 1 || sx >= sW - 2 || sy >= sH - 2) { od.data[idx] = od.data[idx + 1] = od.data[idx + 2] = 255; od.data[idx + 3] = 255; continue; }
+        const x0 = Math.floor(sx), y0 = Math.floor(sy), fx = sx - x0, fy = sy - y0;
+        const p00 = (y0 * sW + x0) * 4, p10 = (y0 * sW + x0 + 1) * 4, p01 = ((y0 + 1) * sW + x0) * 4, p11 = ((y0 + 1) * sW + x0 + 1) * 4;
+        for (let cc = 0; cc < 3; cc++) {
+          const top = sdata[p00 + cc] * (1 - fx) + sdata[p10 + cc] * fx;
+          const bot = sdata[p01 + cc] * (1 - fx) + sdata[p11 + cc] * fx;
+          od.data[idx + cc] = top * (1 - fy) + bot * fy;
+        }
+        od.data[idx + 3] = 255;
+      }
+    }
+    octx.putImageData(od, 0, 0);
+    return out;
+  }
+
+  // ── Escurecer as informações (efeito digitalização) ──────────
+  // Converte para cinza, ajusta níveis e escurece a tinta clareando o fundo.
+  function _scanEscurecer(canvas) {
+    return new Promise((resolve) => {
+      try {
+        const w = canvas.width, h = canvas.height;
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        const cx = cv.getContext('2d', { willReadFrequently: true });
+        cx.fillStyle = '#fff'; cx.fillRect(0, 0, w, h);
+        cx.drawImage(canvas, 0, 0);
+        const id = cx.getImageData(0, 0, w, h); const dd = id.data;
+        const g = new Uint8Array(w * h);
+        for (let i = 0; i < w * h; i++) { const j = i * 4; g[i] = 0.299 * dd[j] + 0.587 * dd[j + 1] + 0.114 * dd[j + 2]; }
+        let mn = 255, mx = 0;
+        for (let i = 0; i < g.length; i++) { if (g[i] < mn) mn = g[i]; if (g[i] > mx) mx = g[i]; }
+        const range = Math.max(1, mx - mn);
+        for (let i = 0; i < w * h; i++) {
+          let v = (g[i] - mn) / range * 255;
+          v = Math.pow(v / 255, 1.7) * 255; // escurece texto, clareia fundo
+          const c2 = Math.max(0, Math.min(255, v));
+          const j = i * 4; dd[j] = dd[j + 1] = dd[j + 2] = c2;
+        }
+        cx.putImageData(id, 0, 0);
+        resolve(cv.toDataURL('image/jpeg', 0.92));
+      } catch (e) { resolve(canvas.toDataURL('image/jpeg', 0.92)); }
+    });
+  }
+
+  function _scanMelhorar(dataUrl) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = function() {
+        try {
+          const efeitoScanner = !document.getElementById('scanClassEfeitoScanner') || document.getElementById('scanClassEfeitoScanner').checked;
+          const box = _scanAutoCropBox(img);
+          const srcW = box.w, srcH = box.h;
+          const targetW = Math.max(srcW, 1600); // amplia conteúdo pequeno
+          const scale = targetW / srcW;
+          const outW = Math.round(srcW * scale);
+          const outH = Math.round(srcH * scale);
+          const cv = document.createElement('canvas');
+          cv.width = outW; cv.height = outH;
+          const ctx = cv.getContext('2d');
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, outW, outH);
+          ctx.drawImage(img, box.x, box.y, srcW, srcH, 0, 0, outW, outH);
+
+          if (!efeitoScanner) {
+            // Sem efeito: só recorte + leve contraste
+            const id = ctx.getImageData(0, 0, outW, outH); const d = id.data, f = 1.25;
+            for (let i = 0; i < d.length; i += 4) {
+              d[i]   = Math.max(0, Math.min(255, (d[i]   - 128) * f + 128));
+              d[i+1] = Math.max(0, Math.min(255, (d[i+1] - 128) * f + 128));
+              d[i+2] = Math.max(0, Math.min(255, (d[i+2] - 128) * f + 128));
+            }
+            ctx.putImageData(id, 0, 0);
+            resolve(cv.toDataURL('image/jpeg', 0.92));
+            return;
+          }
+
+          // Efeito scanner: corrige perspectiva e escurece as informações
+          let scanCanvas = cv;
+          try {
+            const quad = _scanDetectarQuadrado(cv);
+            if (quad && quad.area > 0.22 * outW * outH) {
+              const warped = _scanWarpPerspectiva(cv, quad);
+              if (warped) scanCanvas = warped;
+            }
+          } catch (e) {}
+          _scanEscurecer(scanCanvas).then(res => resolve(res)).catch(() => resolve(dataUrl));
+        } catch (e) { resolve(dataUrl); }
+      };
+      img.onerror = function() { resolve(dataUrl); };
+      img.src = dataUrl;
+    });
+  }
+
   // ── Capturar frame do vídeo ───────────────────────────────────
   window.scanClassCapturar = function() {
     const video  = document.getElementById('scanClassVideo');
@@ -38924,20 +39221,23 @@ window.atualizarKpisCapa = function() {
     canvas.height = video.videoHeight || 720;
     canvas.getContext('2d').drawImage(video, 0, 0);
     _scanMimeType = 'image/jpeg';
-    _scanImageB64 = canvas.toDataURL(_scanMimeType, 0.92).split(',')[1];
-    // Mostra preview
-    const preview = document.getElementById('scanClassPreviewImg');
-    preview.src = 'data:image/jpeg;base64,' + _scanImageB64;
-    document.getElementById('scanClassPreviewWrap').style.display = 'block';
-    // Botões
-    document.getElementById('btnScanClassAnalisar').style.display = 'inline-flex';
-    document.getElementById('btnScanClassNovafoto').style.display = 'inline-flex';
-    document.getElementById('scanClassStatus').style.display = 'none';
-    document.getElementById('scanClassResultado').style.display = 'none';
-    _scanDadosIA = null;
-    document.getElementById('btnScanClassConfirmar').style.display = 'none';
-    // Pausa o vídeo
-    scanClassParar();
+    _scanSetStatus('✨ Digitalizando a foto: endireitando o documento e realçando as informações… aguarde.', '#8e44ad', '#f5eef8');
+    _scanMelhorar(canvas.toDataURL(_scanMimeType, 0.92)).then(better => {
+      _scanImageB64 = better.split(',')[1];
+      // Mostra preview (ampliado)
+      const preview = document.getElementById('scanClassPreviewImg');
+      preview.src = better;
+      document.getElementById('scanClassPreviewWrap').style.display = 'block';
+      // Botões
+      document.getElementById('btnScanClassAnalisar').style.display = 'inline-flex';
+      document.getElementById('btnScanClassNovafoto').style.display = 'inline-flex';
+      document.getElementById('scanClassStatus').style.display = 'none';
+      document.getElementById('scanClassResultado').style.display = 'none';
+      _scanDadosIA = null;
+      document.getElementById('btnScanClassConfirmar').style.display = 'none';
+      // Pausa o vídeo
+      scanClassParar();
+    });
   };
 
   // ── Upload de arquivo ─────────────────────────────────────────
@@ -38966,16 +39266,19 @@ window.atualizarKpisCapa = function() {
       }
       // Imagem
       _scanMimeType = file.type || 'image/jpeg';
-      _scanImageB64 = dataUrl.split(',')[1];
-      const preview = document.getElementById('scanClassPreviewImg');
-      preview.src = dataUrl;
-      document.getElementById('scanClassPreviewWrap').style.display = 'block';
-      document.getElementById('btnScanClassAnalisar').style.display = 'inline-flex';
-      document.getElementById('btnScanClassNovafoto').style.display = 'inline-flex';
-      document.getElementById('scanClassStatus').style.display = 'none';
-      document.getElementById('scanClassResultado').style.display = 'none';
-      _scanDadosIA = null;
-      document.getElementById('btnScanClassConfirmar').style.display = 'none';
+      _scanSetStatus('✨ Digitalizando a imagem: endireitando o documento e realçando as informações… aguarde.', '#8e44ad', '#f5eef8');
+      _scanMelhorar(dataUrl).then(better => {
+        _scanImageB64 = better.split(',')[1];
+        const preview = document.getElementById('scanClassPreviewImg');
+        preview.src = better;
+        document.getElementById('scanClassPreviewWrap').style.display = 'block';
+        document.getElementById('btnScanClassAnalisar').style.display = 'inline-flex';
+        document.getElementById('btnScanClassNovafoto').style.display = 'inline-flex';
+        document.getElementById('scanClassStatus').style.display = 'none';
+        document.getElementById('scanClassResultado').style.display = 'none';
+        _scanDadosIA = null;
+        document.getElementById('btnScanClassConfirmar').style.display = 'none';
+      });
     };
     reader.readAsDataURL(file);
   };
