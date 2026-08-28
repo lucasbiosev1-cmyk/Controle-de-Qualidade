@@ -38922,6 +38922,7 @@ window.atualizarKpisCapa = function() {
       }
       const video = document.getElementById('scanClassVideo');
       video.srcObject = _scanStream;
+      try { const p = video.play(); if (p && p.then) p.catch(function(){}); } catch(e) {}
       document.getElementById('scanClassPlaceholder').style.display = 'none';
       _scanSetFullscreen(true);
       document.getElementById('scanClassGuia').style.display = 'none';
@@ -39884,18 +39885,18 @@ REGRAS FINAIS DE PRECISÃO:
     ov.height = Math.max(1, Math.round(vr.height));
     const ctx = ov.getContext('2d');
     ctx.clearRect(0, 0, ov.width, ov.height);
-    // Filtro azul translúcido por cima de toda a imagem
-    ctx.fillStyle = 'rgba(0,110,255,0.20)';
-    ctx.fillRect(0, 0, ov.width, ov.height);
 
-    if (!quad) { _scanQuadAtual = null; _scanDesenharHint(ctx, 'Mova a câmera para o formulário'); return; }
+    // Sem documento: mostra a câmera limpa, só com uma dica discreta
+    if (!quad) { _scanQuadAtual = null; _scanDesenharHint(ctx, 'Posicione o laudo dentro do quadro'); return; }
 
     const pts = quad.corners.map(([x, y]) => [x * vr.width / sw, y * vr.height / sh]);
     const area = Math.abs(pts[0][0]*(pts[1][1]-pts[3][1]) + pts[1][0]*(pts[2][1]-pts[0][1]) + pts[2][0]*(pts[3][1]-pts[1][1]) + pts[3][0]*(pts[0][1]-pts[2][1])) / 2;
     const good = area > 0.28 * (ov.width * ov.height);
     _scanQuadAtual = { corners: quad.corners, sw: sw, sh: sh, good: good };
 
-    // Recorta a região do documento, removendo o filtro azul de cima dele
+    // Filtro azul apenas na área FORA do documento (como WhatsApp); o laudo fica visível
+    ctx.fillStyle = 'rgba(0,110,255,0.22)';
+    ctx.fillRect(0, 0, ov.width, ov.height);
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
     ctx.moveTo(pts[0][0], pts[0][1]); ctx.lineTo(pts[1][0], pts[1][1]); ctx.lineTo(pts[2][0], pts[2][1]); ctx.lineTo(pts[3][0], pts[3][1]); ctx.closePath(); ctx.fill();
