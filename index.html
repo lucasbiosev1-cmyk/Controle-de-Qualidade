@@ -39835,6 +39835,7 @@ REGRAS FINAIS DE PRECISÃO:
   // ── Auxiliares ────────────────────────────────────────────────
   // Modo tela cheia aplicado direto via JS (mais confiável que CSS em celulares).
   var _fsOrig = null;
+  var _scanFrameCanvas = null;
   function _scanSetFullscreen(on) {
     const modal = document.getElementById('modalScanClass');
     if (!modal) return;
@@ -39927,7 +39928,6 @@ REGRAS FINAIS DE PRECISÃO:
     let cw = Math.round(rect.width), ch = Math.round(rect.height);
     if (!cw || !ch) { cw = vf ? vf.clientWidth : 0; ch = vf ? vf.clientHeight : 0; }
     if (!cw || !ch) { cw = window.innerWidth || 360; ch = Math.max(200, (window.innerHeight || 720) - 120); }
-    if (dbg) dbg.textContent = 'câmera: ' + vw + 'x' + vh + '  visor: ' + cw + 'x' + ch;
     if (!cw || !ch) return;
     ov.style.left = '0'; ov.style.top = '0';
     ov.style.width = cw + 'px'; ov.style.height = ch + 'px';
@@ -39940,7 +39940,24 @@ REGRAS FINAIS DE PRECISÃO:
     const scale = Math.max(cw / vw, ch / vh);
     const dw = vw * scale, dh = vh * scale;
     const dx = (cw - dw) / 2, dy = (ch - dh) / 2;
-    ctx.drawImage(video, dx, dy, dw, dh);
+    // Desenha primeiro num canvas no tamanho natural (mesmo caminho da captura, que funciona) e depois escala
+    let drawOK = false;
+    try {
+      if (!_scanFrameCanvas) _scanFrameCanvas = document.createElement('canvas');
+      const fc = _scanFrameCanvas; fc.width = vw; fc.height = vh;
+      fc.getContext('2d').drawImage(video, 0, 0, vw, vh);
+      ctx.drawImage(fc, dx, dy, dw, dh);
+      drawOK = true;
+    } catch (e) {
+      try { ctx.drawImage(video, dx, dy, dw, dh); drawOK = true; } catch (e2) {}
+    }
+    // Diagnóstico: cor de um pixel central para saber se o canvas tem imagem ou está vazio/branco
+    if (dbg) {
+      try {
+        const px = ctx.getImageData(Math.round(cw / 2), Math.round(ch / 2), 1, 1).data;
+        dbg.textContent = 'câmera: ' + vw + 'x' + vh + '  visor: ' + cw + 'x' + ch + '\ndesenho: ' + (drawOK ? 'ok' : 'erro') + '  centro rgb(' + px[0] + ',' + px[1] + ',' + px[2] + ')';
+      } catch (e) { dbg.textContent = 'câmera: ' + vw + 'x' + vh + '  visor: ' + cw + 'x' + ch + '\ndesenho: ' + (drawOK ? 'ok' : 'erro'); }
+    }
 
     // Sem documento: câmera limpa + dica discreta
     if (!quad) { _scanQuadAtual = null; _scanDesenharHint(ctx, 'Posicione o laudo dentro do quadro'); return; }
