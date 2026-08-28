@@ -39857,13 +39857,14 @@ REGRAS FINAIS DE PRECISÃO:
       if (cam)   cam.style.display = 'none';
       if (pv)    pv.style.display = 'none';
       if (vf)    { vf.style.display='block'; vf.style.position='relative'; vf.style.overflow='visible'; vf.style.flex='none'; vf.style.width='100%'; vf.style.height=Math.max(200, H-130)+'px'; vf.style.minHeight=Math.max(200, H-130)+'px'; vf.style.borderRadius='0'; vf.style.background='#000'; }
-      if (video) { video.style.width='100%'; video.style.height='100%'; video.style.maxHeight='none'; video.style.objectFit='cover'; video.style.borderRadius='0'; }
+      if (video) { video.style.width='100%'; video.style.height='100%'; video.style.maxHeight='none'; video.style.objectFit='cover'; video.style.borderRadius='0'; video.style.opacity='0'; }
       // Mostra o painel de diagnóstico da câmera
       const dbg = document.getElementById('scanDbg'); if (dbg) dbg.style.display = 'block';
     } else {
       modal.style.alignItems=''; modal.style.justifyContent=''; modal.style.background='';
       const rest = (el, o) => { if (!el) return; for (const k in o) el.style[k] = o[k]; };
       rest(box, _fsOrig.box); rest(body, _fsOrig.body); rest(vf, _fsOrig.vf); rest(video, _fsOrig.video); rest(cam, _fsOrig.cam);
+      if (video) video.style.opacity = '';
       const dbg = document.getElementById('scanDbg'); if (dbg) dbg.style.display = 'none';
     }
   }
@@ -39880,8 +39881,9 @@ REGRAS FINAIS DE PRECISÃO:
     _scanPararOverlay();
     _scanQuadAtual = null;
     const ov = document.getElementById('scanClassOverlayCanvas');
-    if (ov) ov.style.display = 'block';
+    if (ov) { ov.style.display = 'block'; ov.style.zIndex = '50'; }
     const video = document.getElementById('scanClassVideo');
+    if (video) video.style.opacity = '0'; // esconde o <video> nativo (fica branco no Redmi); a câmera é desenhada no canvas acima
     // Vigia: se a câmera abriu mas não chega imagem, mostra o motivo na tela
     setTimeout(function() {
       if (_scanStream && video && !video.videoWidth && !video.srcObject) { /* já parado */ }
