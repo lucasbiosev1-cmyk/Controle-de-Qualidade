@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script src="https://happyseeds.ai/app/__happyseeds__/preview-runtime.js"></script><script src="https://happyseeds.ai/app/__happyseeds__/preview-runtime.js"></script>
+<head><script src="https://happyseeds.ai/app/__happyseeds__/preview-runtime.js"></script><script src="https://happyseeds.ai/app/__happyseeds__/preview-runtime.js"></script><script src="https://happyseeds.ai/app/__happyseeds__/preview-runtime.js"></script>
     <meta charset="UTF-8">
     <script>
         // Aplica tema salvo ANTES do CSS renderizar — evita flash de tema errado
@@ -39090,7 +39090,13 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
   "zearalenona": numero_ou_null,
   "don": numero_ou_null,
   "observacao": "texto ou null"
-}`;
+}
+
+REGRAS FINAIS DE PRECISÃO:
+- NUNCA invente ou estime um valor. Se um campo estiver ilegível, apagado, cortado ou com pouca confiança, retorne null.
+- Números sem unidade, sem símbolo de % e sem separador de milhar. Use ponto decimal (ex: 12.5). Se aparecer vírgula, troque por ponto.
+- Um campo vazio no laudo = null (não use 0 a menos que haja traço ou zero escrito).
+- Responda APENAS com o JSON no formato pedido, sem texto fora do objeto.`;
 
     try {
       // Verifica chave antes de tentar
@@ -39115,7 +39121,9 @@ FORNECEDOR: copie o nome EXATAMENTE como escrito no laudo, incluindo possíveis 
 
       const body = {
         model: _IA_MODEL,
-        max_tokens: 800,
+        max_tokens: 3000,
+        temperature: 0,
+        response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: systemPrompt },
           {
