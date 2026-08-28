@@ -38721,6 +38721,8 @@ window.atualizarKpisCapa = function() {
   #modalScanClass.scanfull .scanClassHeader{ padding:10px 14px !important; }
 </style>
 <div id="modalScanClass" style="display:none;position:fixed;inset:0;z-index:19000;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;">
+  <!-- Painel de diagnóstico da câmera (para suporte) -->
+  <div id="scanDbg" style="position:fixed;left:8px;bottom:86px;z-index:99999;background:rgba(0,0,0,0.82);color:#0f0;font:11px/1.5 monospace;padding:6px 9px;border-radius:6px;display:none;pointer-events:none;white-space:pre-wrap;max-width:80vw;"></div>
   <div class="scanClassBox" style="background:#fff;border-radius:14px;width:560px;max-width:97vw;box-shadow:0 24px 70px rgba(0,0,0,0.45);overflow:hidden;display:flex;flex-direction:column;max-height:95vh;">
 
     <!-- Header -->
@@ -39848,17 +39850,21 @@ REGRAS FINAIS DE PRECISÃO:
       cap(box, _fsOrig.box); cap(body, _fsOrig.body); cap(vf, _fsOrig.vf); cap(video, _fsOrig.video); cap(cam, _fsOrig.cam);
     }
     if (on) {
+      const H = window.innerHeight || window.screen.availHeight || 720;
       modal.style.alignItems = 'stretch'; modal.style.justifyContent = 'stretch'; modal.style.background = '#000';
-      if (box)   { box.style.width='100%'; box.style.maxWidth='100%'; box.style.height='100vh'; box.style.maxHeight='100vh'; box.style.borderRadius='0'; box.style.boxShadow='none'; }
+      if (box)   { box.style.width='100%'; box.style.maxWidth='100%'; box.style.height=H+'px'; box.style.maxHeight='none'; box.style.borderRadius='0'; box.style.boxShadow='none'; }
       if (body)  { body.style.padding='0'; body.style.overflow='hidden'; body.style.gap='0'; }
       if (cam)   cam.style.display = 'none';
       if (pv)    pv.style.display = 'none';
-      if (vf)    { vf.style.flex='1'; vf.style.minHeight='0'; vf.style.borderRadius='0'; vf.style.background='#000'; }
+      if (vf)    { vf.style.flex='none'; vf.style.height=Math.max(200, H-130)+'px'; vf.style.minHeight=Math.max(200, H-130)+'px'; vf.style.borderRadius='0'; vf.style.background='#000'; }
       if (video) { video.style.width='100%'; video.style.height='100%'; video.style.maxHeight='none'; video.style.objectFit='cover'; video.style.borderRadius='0'; }
+      // Mostra o painel de diagnóstico da câmera
+      const dbg = document.getElementById('scanDbg'); if (dbg) dbg.style.display = 'block';
     } else {
       modal.style.alignItems=''; modal.style.justifyContent=''; modal.style.background='';
       const rest = (el, o) => { if (!el) return; for (const k in o) el.style[k] = o[k]; };
       rest(box, _fsOrig.box); rest(body, _fsOrig.body); rest(vf, _fsOrig.vf); rest(video, _fsOrig.video); rest(cam, _fsOrig.cam);
+      const dbg = document.getElementById('scanDbg'); if (dbg) dbg.style.display = 'none';
     }
   }
   function _scanPararStream() {
@@ -39900,7 +39906,11 @@ REGRAS FINAIS DE PRECISÃO:
     const ov = document.getElementById('scanClassOverlayCanvas');
     if (!video || !ov || !video.srcObject) return;
     const vw = video.videoWidth, vh = video.videoHeight;
-    if (!vw || !vh) return;
+    const dbg = document.getElementById('scanDbg');
+    if (!vw || !vh) {
+      if (dbg) dbg.textContent = 'câmera aberta mas sem frames.\nvideoWidth=' + vw + ' videoHeight=' + vh;
+      return;
+    }
     const sw = 400, sh = Math.max(1, Math.round(vh * sw / vw));
     let quad = null;
     try {
@@ -39912,6 +39922,7 @@ REGRAS FINAIS DE PRECISÃO:
     // Referência: o contêiner do visor (sempre visível), não o elemento de vídeo
     const vf = video.parentElement;
     const cw = vf.clientWidth, ch = vf.clientHeight;
+    if (dbg) dbg.textContent = 'câmera: ' + vw + 'x' + vh + '  visor: ' + cw + 'x' + ch;
     if (!cw || !ch) return;
     ov.style.left = '0'; ov.style.top = '0';
     ov.style.width = cw + 'px'; ov.style.height = ch + 'px';
