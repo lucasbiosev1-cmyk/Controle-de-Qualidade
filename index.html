@@ -39875,8 +39875,16 @@ REGRAS FINAIS DE PRECISÃO:
     _scanQuadAtual = null;
     const ov = document.getElementById('scanClassOverlayCanvas');
     if (ov) ov.style.display = 'block';
+    const video = document.getElementById('scanClassVideo');
+    // Vigia: se a câmera abriu mas não chega imagem, mostra o motivo na tela
+    setTimeout(function() {
+      if (_scanStream && video && !video.videoWidth && !video.srcObject) { /* já parado */ }
+      else if (_scanStream && video && !video.videoWidth) {
+        _scanFalha('⚠️ A câmera iniciou, mas NÃO está transmitindo imagem neste aparelho/navegador. Toque no cadeado da barra de endereço e permita a Câmera; abra por HTTPS (cadeado), recarregue e tente de novo.');
+      }
+    }, 3000);
     const loop = function() {
-      _scanOverlayTimer = setTimeout(loop, 150);
+      _scanOverlayTimer = setTimeout(loop, 100);
       try { _scanDesenharOverlay(); } catch(e) {}
     };
     loop();
@@ -39901,28 +39909,35 @@ REGRAS FINAIS DE PRECISÃO:
       quad = _scanDetectarQuadrado(sm, sw);
     } catch (e) { quad = null; }
 
-    const vr = video.getBoundingClientRect();
-    const cr = video.parentElement.getBoundingClientRect();
-    ov.style.left = (vr.left - cr.left) + 'px';
-    ov.style.top = (vr.top - cr.top) + 'px';
-    ov.style.width = vr.width + 'px';
-    ov.style.height = vr.height + 'px';
-    ov.width = Math.max(1, Math.round(vr.width));
-    ov.height = Math.max(1, Math.round(vr.height));
+    // Referência: o contêiner do visor (sempre visível), não o elemento de vídeo
+    const vf = video.parentElement;
+    const cw = vf.clientWidth, ch = vf.clientHeight;
+    if (!cw || !ch) return;
+    ov.style.left = '0'; ov.style.top = '0';
+    ov.style.width = cw + 'px'; ov.style.height = ch + 'px';
+    ov.width = Math.max(1, cw); ov.height = Math.max(1, ch);
     const ctx = ov.getContext('2d');
-    ctx.clearRect(0, 0, ov.width, ov.height);
 
-    // Sem documento: mostra a câmera limpa, só com uma dica discreta
+    // Desenha a câmera ocupando o visor todo (efeito "object-fit: cover")
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cw, ch);
+    const scale = Math.max(cw / vw, ch / vh);
+    const dw = vw * scale, dh = vh * scale;
+    const dx = (cw - dw) / 2, dy = (ch - dh) / 2;
+    ctx.drawImage(video, dx, dy, dw, dh);
+
+    // Sem documento: câmera limpa + dica discreta
     if (!quad) { _scanQuadAtual = null; _scanDesenharHint(ctx, 'Posicione o laudo dentro do quadro'); return; }
 
-    const pts = quad.corners.map(([x, y]) => [x * vr.width / sw, y * vr.height / sh]);
+    // Mapeia os cantos detectados (espaço da miniatura) para o canvas do visor
+    const pts = quad.corners.map(([x, y]) => [(x / sw * vw) * scale + dx, (y / sh * vh) * scale + dy]);
     const area = Math.abs(pts[0][0]*(pts[1][1]-pts[3][1]) + pts[1][0]*(pts[2][1]-pts[0][1]) + pts[2][0]*(pts[3][1]-pts[1][1]) + pts[3][0]*(pts[0][1]-pts[2][1])) / 2;
-    const good = area > 0.28 * (ov.width * ov.height);
+    const good = area > 0.28 * (cw * ch);
     _scanQuadAtual = { corners: quad.corners, sw: sw, sh: sh, good: good };
 
     // Filtro azul apenas na área FORA do documento (como WhatsApp); o laudo fica visível
     ctx.fillStyle = 'rgba(0,110,255,0.22)';
-    ctx.fillRect(0, 0, ov.width, ov.height);
+    ctx.fillRect(0, 0, cw, ch);
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
     ctx.moveTo(pts[0][0], pts[0][1]); ctx.lineTo(pts[1][0], pts[1][1]); ctx.lineTo(pts[2][0], pts[2][1]); ctx.lineTo(pts[3][0], pts[3][1]); ctx.closePath(); ctx.fill();
@@ -39967,6 +39982,25 @@ REGRAS FINAIS DE PRECISÃO:
     el.style.borderColor = cor || '#ddd';
     el.style.display = 'block';
   }
+
+  // Falha da câmera: para tudo, sai do tela cheia e mostra o motivo de forma visível
+  function _scanFalha(msg) {
+    try { _scanPararStream(); } catch(e) {}
+    try { _scanSetFullscreen(false); } catch(e) {}
+    document.getElementById('scanClassPlaceholder').style.display = 'flex';
+    document.getElementById('btnScanClassCapturar').style.display = 'none';
+    const abrir = document.getElementById('btnScanClassAbrir');
+    if (abrir) { abrir.textContent = '▶ Iniciar Câmera'; abrir.onclick = scanClassIniciar; }
+    _scanSetStatus(msg, '#c0392b', '#fdecea');
+  }
+
+  // Mostra na tela qualquer erro de JavaScript que ocorrer (para diagnóstico)
+  window.addEventListener('error', function(ev) {
+    _scanFalha('⚠️ Erro no sistema: ' + (ev.message || 'desconhecido'));
+  });
+  window.addEventListener('unhandledrejection', function(ev) {
+    _scanFalha('⚠️ Erro no sistema: ' + ((ev.reason && ev.reason.message) || ev.reason || 'desconhecido'));
+  });
 
   function _scanReset() {
     _scanPararStream();
