@@ -25430,6 +25430,18 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // ✅ Verifica se há sessão ativa (persiste entre abas/recargas)
     sgqMostrarLoading('Verificando acesso...');
+    // Proteção anti-travamento: se o Supabase não responder (offline/indisponível/CORS),
+    // mostra a tela de login sozinha após 8s, em vez de ficar "carregando" para sempre.
+    setTimeout(function() {
+        try {
+            const _ms = document.getElementById('mainSystem');
+            if (!_ms || _ms.style.display !== 'block') {
+                sgqOcultarLoading();
+                const _ls = document.getElementById('loginScreen');
+                if (_ls) _ls.style.display = 'flex';
+            }
+        } catch(e) {}
+    }, 8000);
     try {
         const { data: { session } } = await _sbClient.auth.getSession();
         if (session && session.user) {
@@ -39859,7 +39871,7 @@ REGRAS FINAIS DE PRECISÃO:
       if (pv)    pv.style.display = 'none';
       // rodapé opaco para os botões ficarem visíveis sobre a câmera
       if (box && box.lastElementChild) box.lastElementChild.style.background = '#fff';
-      if (vf)    { vf.style.display='block'; vf.style.position='relative'; vf.style.overflow='visible'; vf.style.flex='none'; vf.style.width='100%'; vf.style.height=Math.max(200, H-130)+'px'; vf.style.minHeight=Math.max(200, H-130)+'px'; vf.style.borderRadius='0'; vf.style.background='#000'; }
+      if (vf)    { vf.style.display='block'; vf.style.position='relative'; vf.style.overflow='visible'; vf.style.flex='none'; vf.style.width='100%'; vf.style.height=Math.max(200, H-130)+'px'; vf.style.minHeight=Math.max(200, H-130)+'px'; vf.style.borderRadius='0'; vf.style.background='transparent'; }
       if (video) { video.style.width='100%'; video.style.height='100%'; video.style.maxHeight='none'; video.style.objectFit='cover'; video.style.borderRadius='0'; video.style.opacity='0'; }
       // Mostra o painel de diagnóstico da câmera
       const dbg = document.getElementById('scanDbg'); if (dbg) dbg.style.display = 'block';
