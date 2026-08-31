@@ -17426,6 +17426,22 @@ window.imprimirRelatorioEMPPorTipo = function() {
 
 // Abre o modal e monta a lista de checkboxes com as matérias-primas
 // que possuem ao menos uma carga pendente no momento
+// ✅ Lista de Coleta: mostra somente matérias-primas "macro" (agropecuárias em maior volume).
+// Minerais e melhoradores de desempenho não entram nesta lista de seleção/impressão —
+// isso NÃO afeta nenhuma outra tela do sistema (cadastro, filtros, entradas continuam mostrando tudo).
+const _EMP_LISTA_COLETA_PERMITIDAS = [
+    'MILHO EM GRÃOS', 'SOJA EM GRÃOS', 'FARINHA DE CARNE E OSSO',
+    'FARELO DE SOJA', 'CALCÁRIO GROSSO', 'CALCÁRIO FINO', 'SAL MOÍDO'
+];
+// Compara ignorando acentuação/maiúsculas, para tolerar pequenas variações de digitação no cadastro
+function _empNormSemAcento(s) {
+    return (s || '').toString().trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+function _empEhMateriaColetaPermitida(nome) {
+    const alvo = _empNormSemAcento(nome);
+    return _EMP_LISTA_COLETA_PERMITIDAS.some(p => _empNormSemAcento(p) === alvo);
+}
+
 function empAbrirModalListaColeta() {
     const box = document.getElementById('empListaColetaCheckboxes');
     if (!box) return;
@@ -17435,7 +17451,10 @@ function empAbrirModalListaColeta() {
     const mpsComPendencia = [...new Set(pendentes.map(r => (r.materia_prima || '').trim().toUpperCase()).filter(Boolean))];
 
     // Une com a lista cadastrada de matérias-primas (para sempre poder escolher, mesmo sem pendência no momento)
-    const todasMPs = [...new Set([...(_empListaMP || []).map(m => m.toUpperCase()), ...mpsComPendencia])].sort();
+    // ✅ Restringe apenas a lista de coleta às matérias-primas macro permitidas
+    const todasMPs = [...new Set([...(_empListaMP || []).map(m => m.toUpperCase()), ...mpsComPendencia])]
+        .filter(_empEhMateriaColetaPermitida)
+        .sort();
 
     if (!todasMPs.length) {
         box.innerHTML = '<div style="color:#999;font-size:12px;text-align:center;padding:10px;">Nenhuma matéria prima cadastrada.</div>';
