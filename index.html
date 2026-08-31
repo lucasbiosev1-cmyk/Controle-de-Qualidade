@@ -9178,6 +9178,7 @@
                 <div class="emp-toolbar-btns">
                     <button onclick="abrirModalEMP()" class="emp-btn-registrar">+ REGISTRAR ENTRADA</button>
                     <button onclick="atualizarStatusEMP(this)" class="emp-btn-atualizar" title="Recarrega os status do banco de dados">🔄 Atualizar Status</button>
+                    <button onclick="empAbrirModalListaColeta()" class="emp-btn-atualizar" style="background:#8e44ad;" title="Gerar lista impressa de cargas pendentes de coleta">📋 LISTA DE COLETA</button>
                 </div>
                 <span class="emp-total-label">TOTAL DE REGISTROS: <span id="totalRegistrosEMP">0</span></span>
             </div>
@@ -9318,6 +9319,35 @@
                         <button type="button" id="btnExcluirEMP" class="btn-delete btn-action" style="margin-left:auto;padding:8px 18px;font-size:11px;font-weight:bold;display:none;" onclick="excluirEMPDoModal()">🗑️ EXCLUIR</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL LISTA DE COLETA (ENTRADA MP) ===== -->
+    <div id="modalListaColetaEMP" class="modal">
+        <div class="modal-content" style="max-width:460px;">
+            <div class="modal-header">
+                <h2>📋 Lista de Coleta — Matéria Prima</h2>
+                <button class="close" onclick="empFecharModalListaColeta()">&times;</button>
+            </div>
+            <div class="form-wrapper" style="padding:16px 18px;">
+                <div style="font-size:12px;color:#555;margin-bottom:12px;line-height:1.5;">
+                    Selecione a(s) matéria(s) prima(s). Será gerada uma lista impressa com as cargas
+                    <b>pendentes de coleta</b> (data, hora e nº de sequência) para entregar ao pessoal de coleta.
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:10px;">
+                    <button type="button" onclick="empListaColetaMarcarTodos(true)" style="flex:1;padding:6px;font-size:11px;font-weight:700;background:#eef1f7;border:1px solid #d0d6e0;border-radius:5px;cursor:pointer;color:#1B2A4A;">MARCAR TODAS</button>
+                    <button type="button" onclick="empListaColetaMarcarTodos(false)" style="flex:1;padding:6px;font-size:11px;font-weight:700;background:#eef1f7;border:1px solid #d0d6e0;border-radius:5px;cursor:pointer;color:#1B2A4A;">DESMARCAR TODAS</button>
+                </div>
+                <input type="text" id="empListaColetaPesquisa" placeholder="🔎 Pesquisar matéria prima..." oninput="_empListaColetaFiltrar(this.value)" style="width:100%;padding:8px 10px;font-size:12px;border:1px solid #d0d6e0;border-radius:6px;margin-bottom:10px;box-sizing:border-box;">
+                <div id="empListaColetaCheckboxes" style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;border:1px solid #e2e6ee;border-radius:6px;padding:10px;">
+                    <!-- checkboxes preenchidos via JS -->
+                </div>
+                <div id="empListaColetaContagem" style="font-size:11px;color:#888;margin-top:8px;"></div>
+                <div class="form-buttons" style="margin-top:16px;">
+                    <button type="button" class="btn-salvar" style="background:#8e44ad;" onclick="empGerarListaColeta()">🖨️ GERAR E IMPRIMIR</button>
+                    <button type="button" class="btn-cancelar" onclick="empFecharModalListaColeta()">CANCELAR</button>
+                </div>
             </div>
         </div>
     </div>
@@ -11211,7 +11241,19 @@ function trocarAba(aba, btn) {
             trocarSubCfg('aparencia', document.getElementById('cfgBtn-aparencia'));
         }
     }
-    if (aba === 'entradaMP') { exibirTabelaEMP(); }
+    if (aba === 'entradaMP') {
+        exibirTabelaEMP(); // renderiza imediatamente com os dados já em memória (evita tela vazia)
+        // ✅ Recarrega do Supabase sempre que a aba é aberta, para refletir
+        // entradas/alterações feitas por outros usuários enquanto a tela estava fechada
+        Promise.all([carregarEntradasMP(), carregarListaMP()])
+            .then(() => {
+                _empSincronizarListaComRegistros();
+                _empPopularFiltroFornecedor();
+                try { _empAtualizarStatusConclusoes(); } catch(e){}
+                exibirTabelaEMP();
+            })
+            .catch(e => console.error('Erro ao atualizar Entrada de Matéria Prima:', e));
+    }
     if (aba === 'estoqueReagentes') { try { reagCarregarDados(); setTimeout(_reagInjetarCampoEmail, 500); } catch(e){} }
     if (aba === 'estoqueMateriais') { try { matCarregarDados(); } catch(e){} }
     if (aba === 'equipamentos') { try { eqCarregarDados(); } catch(e){} }
@@ -17374,6 +17416,232 @@ window.imprimirRelatorioEMPPorTipo = function() {
     popup.focus();
     setTimeout(() => popup.print(), 700);
 };
+
+// ══════════════════════════════════════════════════════════════
+// LISTA DE COLETA — Entrada de Matéria Prima
+// Modal com checkboxes por matéria prima → gera lista impressa das
+// cargas PENDENTES (aguardando coleta/análise) com data, hora e sequência,
+// para entregar ao pessoal que vai realizar a coleta.
+// ══════════════════════════════════════════════════════════════
+
+// Abre o modal e monta a lista de checkboxes com as matérias-primas
+// que possuem ao menos uma carga pendente no momento
+function empAbrirModalListaColeta() {
+    const box = document.getElementById('empListaColetaCheckboxes');
+    if (!box) return;
+
+    // Lista de matérias-primas com cargas pendentes agora (para não mostrar opções vazias)
+    const pendentes = (entradasMP || []).filter(_empEhPendente);
+    const mpsComPendencia = [...new Set(pendentes.map(r => (r.materia_prima || '').trim().toUpperCase()).filter(Boolean))];
+
+    // Une com a lista cadastrada de matérias-primas (para sempre poder escolher, mesmo sem pendência no momento)
+    const todasMPs = [...new Set([...(_empListaMP || []).map(m => m.toUpperCase()), ...mpsComPendencia])].sort();
+
+    if (!todasMPs.length) {
+        box.innerHTML = '<div style="color:#999;font-size:12px;text-align:center;padding:10px;">Nenhuma matéria prima cadastrada.</div>';
+    } else {
+        box.innerHTML = todasMPs.map(mp => {
+            const qtdPend = pendentes.filter(r => (r.materia_prima || '').trim().toUpperCase() === mp).length;
+            const badge = qtdPend > 0
+                ? `<span style="margin-left:auto;background:#e3a008;color:#fff;border-radius:8px;padding:1px 8px;font-size:10px;font-weight:700;">${qtdPend} pendente${qtdPend > 1 ? 's' : ''}</span>`
+                : `<span style="margin-left:auto;color:#bbb;font-size:10px;">sem pendências</span>`;
+            return `<label class="empColetaItem" data-nome="${mp.replace(/"/g,'&quot;').toLowerCase()}" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:5px 6px;border-radius:4px;font-size:12px;font-weight:600;color:#1B2A4A;">
+                <input type="checkbox" class="empColetaChk" value="${mp.replace(/"/g,'&quot;')}" style="width:15px;height:15px;accent-color:#8e44ad;">
+                ${mp} ${badge}
+            </label>`;
+        }).join('');
+    }
+
+    const inputPesquisa = document.getElementById('empListaColetaPesquisa');
+    if (inputPesquisa) inputPesquisa.value = '';
+
+    _empListaColetaAtualizarContagem();
+    document.getElementById('modalListaColetaEMP').classList.add('show');
+}
+
+// Filtra os itens da lista de coleta por nome/parte do nome digitado
+function _empListaColetaFiltrar(termo) {
+    const t = (termo || '').trim().toLowerCase();
+    document.querySelectorAll('#empListaColetaCheckboxes .empColetaItem').forEach(item => {
+        const nome = item.getAttribute('data-nome') || '';
+        item.style.display = !t || nome.includes(t) ? 'flex' : 'none';
+    });
+}
+
+function empFecharModalListaColeta() {
+    document.getElementById('modalListaColetaEMP').classList.remove('show');
+}
+
+function empListaColetaMarcarTodos(marcar) {
+    document.querySelectorAll('#empListaColetaCheckboxes .empColetaChk').forEach(chk => chk.checked = marcar);
+    _empListaColetaAtualizarContagem();
+}
+
+function _empListaColetaAtualizarContagem() {
+    const el = document.getElementById('empListaColetaContagem');
+    if (!el) return;
+    const selecionadas = document.querySelectorAll('#empListaColetaCheckboxes .empColetaChk:checked').length;
+    el.textContent = selecionadas + ' matéria(s) prima(s) selecionada(s).';
+}
+// Atualiza contagem sempre que algum checkbox for clicado (delegação de evento)
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.classList && e.target.classList.contains('empColetaChk')) {
+        _empListaColetaAtualizarContagem();
+    }
+});
+
+// Gera e imprime a lista de coleta com as matérias-primas selecionadas
+function empGerarListaColeta() {
+    const selecionadas = [...document.querySelectorAll('#empListaColetaCheckboxes .empColetaChk:checked')].map(chk => chk.value);
+    if (!selecionadas.length) { sgqToast('Selecione ao menos uma matéria prima.', 'warning'); return; }
+
+    // Filtra apenas cargas PENDENTES (aguardando coleta/análise) das matérias selecionadas
+    let dados = (entradasMP || []).filter(r => {
+        if (!_empEhPendente(r)) return false;
+        return selecionadas.includes((r.materia_prima || '').trim().toUpperCase());
+    });
+
+    if (!dados.length) {
+        sgqToast('Nenhuma carga pendente encontrada para as matérias selecionadas.', 'warning');
+        return;
+    }
+
+    // Agrupa por matéria prima
+    const grupos = {};
+    for (const r of dados) {
+        const mpKey = (r.materia_prima || 'OUTROS').toUpperCase();
+        if (!grupos[mpKey]) grupos[mpKey] = [];
+        grupos[mpKey].push(r);
+    }
+    const mpsSorted = Object.keys(grupos).sort();
+
+    const _empCoresRel = {
+        'MILHO':'#e8f5e9','SOJA':'#e3f2fd','FARELO DE SOJA':'#fff3e0',
+        'FARELO DE TRIGO':'#f3e5f5','FARINHA DE CARNE E OSSO':'#fce4ec'
+    };
+
+    let rowsHtml = '';
+    let totalCargas = 0;
+
+    for (const mpKey of mpsSorted) {
+        const corGrupo = _empCoresRel[mpKey] || '#f5f5f5';
+        const regs = grupos[mpKey];
+
+        // Ordena por sequência (menor → maior); sem sequência vai por último, depois por data/hora
+        regs.sort((a, b) => {
+            const nA = (a.seq != null && a.seq !== '') ? Number(a.seq) : 999999;
+            const nB = (b.seq != null && b.seq !== '') ? Number(b.seq) : 999999;
+            if (nA !== nB) return nA - nB;
+            return (a.data || '').localeCompare(b.data || '') || (a.hora || '').localeCompare(b.hora || '');
+        });
+
+        totalCargas += regs.length;
+
+        rowsHtml += `<tr>
+            <td colspan="7" style="background:#1B2A4A;color:white;padding:6px 10px;font-weight:700;font-size:9pt;letter-spacing:1.2px;text-transform:uppercase;">
+                &#128230; ${mpKey} &nbsp;<span style="font-weight:normal;opacity:0.75;font-size:8pt;">(${regs.length} carga${regs.length > 1 ? 's' : ''} pendente${regs.length > 1 ? 's' : ''})</span>
+            </td>
+        </tr>`;
+
+        regs.forEach((r, i) => {
+            const bg = i % 2 === 0 ? corGrupo : '#fff';
+            const seqExib = (r.seq != null && r.seq !== '') ? r.seq : '-';
+            const dataFmt = r.data ? new Date(r.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+            rowsHtml += `<tr style="background:${bg};">
+                <td style="padding:7px 8px;border:1px solid #d0d6e0;text-align:center;font-weight:800;font-size:11pt;color:#8e44ad;">${seqExib}</td>
+                <td style="padding:7px 8px;border:1px solid #d0d6e0;text-align:center;">${dataFmt}</td>
+                <td style="padding:7px 8px;border:1px solid #d0d6e0;text-align:center;">${r.hora || '-'}</td>
+                <td style="padding:7px 8px;border:1px solid #d0d6e0;font-weight:600;">${(r.fornecedor || '-').toUpperCase()}</td>
+                <td style="padding:7px 8px;border:1px solid #d0d6e0;text-align:center;">${r.nf || '-'}</td>
+                <td style="padding:7px 8px;border:1px solid #d0d6e0;text-align:center;letter-spacing:1px;font-weight:bold;">${r.placa || '-'}</td>
+                <td style="padding:7px 8px;border:1px solid #d0d6e0;text-align:center;">
+                    <div class="chk-box" onclick="toggleColeta(this)"></div>
+                </td>
+            </tr>`;
+        });
+    }
+
+    const now = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    const filtrosTxt = selecionadas.join(' &nbsp;|&nbsp; ');
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Lista de Coleta — Matéria Prima</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  @page { size:A4 portrait; margin:10mm 12mm; }
+  body { font-family:Arial,sans-serif; font-size:9pt; color:#1B2A4A; background:#fff; }
+  @media print {
+    .no-print { display:none !important; }
+    * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  }
+  .doc-header { display:grid; grid-template-columns:150px 1fr 200px; height:52px; margin-bottom:14px; }
+  .dh-left  { background:#1B2A4A; padding:8px 12px; display:flex; flex-direction:column; justify-content:center; }
+  .dh-center{ background:#0D1B2E; display:flex; align-items:center; justify-content:center; padding:8px; }
+  .dh-right { background:#1B2A4A; padding:8px 12px; display:flex; flex-direction:column; justify-content:flex-end; align-items:flex-end; }
+  .dh-brand { color:#fff; font-weight:700; font-size:10pt; }
+  .dh-sub   { color:#9aa3b8; font-size:6.5pt; letter-spacing:1px; }
+  .dh-title { color:#fff; font-weight:700; font-size:9.5pt; text-align:center; }
+  .dh-meta  { color:#c0c8dc; font-size:6.5pt; line-height:1.7; text-align:right; }
+  .list-info { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:8pt; }
+  .list-badge { background:#8e44ad; color:#fff; border-radius:10px; padding:2px 10px; font-size:7.5pt; font-weight:700; }
+  .list-filtros { color:#5a6480; font-size:7.5pt; }
+  table { width:100%; border-collapse:collapse; font-size:8.5pt; }
+  thead th { background:#1B2A4A; color:#fff; padding:6px 8px; text-align:left; border:1px solid #2d3f5e; font-size:7.5pt; }
+  thead th.center { text-align:center; }
+  .doc-footer { border-top:1px solid #1B2A4A; margin-top:14px; padding:4px 0; display:flex; justify-content:space-between; font-size:6.5pt; color:#9aa3b8; }
+  .no-print { position:fixed; top:12px; right:12px; background:#8e44ad; color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:12px; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.25); }
+  .chk-box { width:18px; height:18px; border:2px solid #1B2A4A; border-radius:4px; margin:0 auto; cursor:pointer; display:flex; align-items:center; justify-content:center; background:#fff; user-select:none; }
+  .chk-box.checked { background:#27ae60; border-color:#1e8449; }
+  .chk-box.checked::after { content:'\\2713'; color:#fff; font-weight:900; font-size:13px; line-height:1; }
+</style>
+</head>
+<body>
+<button class="no-print" onclick="window.print()">&#128424; Imprimir</button>
+<script>
+  function toggleColeta(el) { el.classList.toggle('checked'); }
+<\/script>
+<div class="doc-header">
+  <div class="dh-left"><div class="dh-brand">AGRONOR</div><div class="dh-sub">A L I M E N T O S</div></div>
+  <div class="dh-center"><div class="dh-title">LISTA DE COLETA &mdash; MAT\u00c9RIA PRIMA PENDENTE</div></div>
+  <div class="dh-right"><div class="dh-meta">Emitido em: ${now}<br>Usu\u00e1rio: ${(USUARIOS[usuarioAtual]?.nome || usuarioAtual || '').toUpperCase()}</div></div>
+</div>
+<div class="list-info">
+  <span class="list-filtros">&#128230; Mat\u00e9rias selecionadas: ${filtrosTxt}</span>
+  <span class="list-badge">Total: ${totalCargas} carga(s) pendente(s)</span>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th class="center" style="width:9%;">SEQ.</th>
+      <th class="center" style="width:12%;">DATA</th>
+      <th class="center" style="width:9%;">HORA</th>
+      <th style="width:26%;">FORNECEDOR</th>
+      <th class="center" style="width:14%;">NOTA FISCAL</th>
+      <th class="center" style="width:16%;">PLACA</th>
+      <th class="center" style="width:14%;">COLETADO</th>
+    </tr>
+  </thead>
+  <tbody>${rowsHtml}</tbody>
+</table>
+<div class="doc-footer">
+  <span>Gest\u00e3o da Qualidade | Agronor Alimentos</span>
+  <span>Impresso em ${now}</span>
+</div>
+</body>
+</html>`;
+
+    const popup = window.open('', '_blank', 'width=900,height=750,scrollbars=yes');
+    if (!popup) { sgqToast('Permita popups no navegador para imprimir.', 'warning'); return; }
+    popup.document.write(html);
+    popup.document.close();
+    popup.focus();
+    setTimeout(() => popup.print(), 700);
+
+    empFecharModalListaColeta();
+}
 
 // Hook: sempre que salvar classificação ou matéria prima, verifica conclusões de entradas
 function _empHookAposRegistro() {
