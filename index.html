@@ -9868,7 +9868,7 @@
                 </div>
             </div>
             <div class="form-section">
-                <h3>Valores por Parâmetro <span style="font-weight:normal;font-size:11px;color:#888;">— o valor interno já lançado aparece como referência; lançamentos externos já salvos aparecem preenchidos, com opção de excluir</span></h3>
+                <h3>Valores por Parâmetro <span style="font-weight:normal;font-size:11px;color:#888;">— valores externos já salvos aparecem preenchidos; apague o valor e salve para excluí-lo</span></h3>
                 <div id="epCamposParametrosProd" class="form-grid form-grid-4"></div>
             </div>
             <div class="form-section">
@@ -10011,7 +10011,7 @@
                 </div>
             </div>
             <div class="form-section">
-                <h3>Valores por Parâmetro <span style="font-weight:normal;font-size:11px;color:#888;">— o valor interno já lançado aparece como referência; lançamentos externos já salvos aparecem preenchidos, com opção de excluir</span></h3>
+                <h3>Valores por Parâmetro <span style="font-weight:normal;font-size:11px;color:#888;">— valores externos já salvos aparecem preenchidos; apague o valor e salve para excluí-lo</span></h3>
                 <div id="epCamposParametrosClass" class="form-grid form-grid-4"></div>
             </div>
             <div class="form-section">
@@ -10150,7 +10150,7 @@
                 </div>
             </div>
             <div class="form-section">
-                <h3>Valores por Parâmetro <span style="font-weight:normal;font-size:11px;color:#888;">— o valor interno já lançado aparece como referência; lançamentos externos já salvos aparecem preenchidos, com opção de excluir</span></h3>
+                <h3>Valores por Parâmetro <span style="font-weight:normal;font-size:11px;color:#888;">— valores externos já salvos aparecem preenchidos; apague o valor e salve para excluí-lo</span></h3>
                 <div id="epCamposParametrosMP" class="form-grid form-grid-4"></div>
             </div>
             <div class="form-section">
@@ -21007,15 +21007,60 @@ function epLabelQuali(parametro, valor) {
 
 let _epDados = [];
 let _epGraficoInst = null;
-let _epIncertezas = {}; // { chave (modulo|registro_id_interno|parametro|data_amostra): incerteza } — vinculada à análise específica, não ao produto/parâmetro em geral
+let _epIncertezas = {}; // Compatível com chaves antigas por análise e novas por laboratório + parâmetro
+let _epIncertezasHistoricas = { porLaboratorio: {}, porProduto: {} };
+
+function epNormalizarLaboratorio(nome) {
+    return (nome || '').trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ');
+}
+
+function epChaveIncertezaLaboratorio(nomeLaboratorio, parametro) {
+    const lab = epNormalizarLaboratorio(nomeLaboratorio);
+    return lab ? ['LAB', encodeURIComponent(lab), parametro].join('|') : '';
+}
+
+function epChaveIncertezaProduto(modulo, produto, parametro) {
+    const prod = epNormalizarLaboratorio(produto);
+    return [modulo || '', prod, parametro || ''].join('|');
+}
+
+function epConstruirHistoricoIncertezas(registros) {
+    const grupos = {};
+    (registros || []).forEach(r => {
+        const chave = [r.modulo_origem, r.registro_id_interno, r.parametro, r.data_amostra].join('|');
+        if (!grupos[chave]) grupos[chave] = { chave, modulo:r.modulo_origem, produto:r.produto, parametro:r.parametro, data:r.data_amostra || '', laboratorios:[], ultimoId:0 };
+        grupos[chave].ultimoId = Math.max(grupos[chave].ultimoId, Number(r.id) || 0);
+        if (r.fonte !== 'interno' && r.nome_laboratorio) grupos[chave].laboratorios.push({ nome:r.nome_laboratorio, id:Number(r.id) || 0 });
+    });
+    const historico = { porLaboratorio: {}, porProduto: {} };
+    const guardarMaisRecente = (mapa, chave, item) => {
+        if (!chave) return;
+        const atual = mapa[chave];
+        if (!atual || item.data > atual.data || (item.data === atual.data && item.id > atual.id)) mapa[chave] = item;
+    };
+    Object.values(grupos).forEach(g => {
+        const inc = _epIncertezas[g.chave];
+        if (inc === undefined || isNaN(inc)) return;
+        const lab = g.laboratorios.length ? g.laboratorios.sort((a,b)=>b.id-a.id)[0].nome : '';
+        const item = { valor:inc, data:g.data, id:g.ultimoId };
+        guardarMaisRecente(historico.porLaboratorio, epChaveIncertezaLaboratorio(lab, g.parametro), item);
+        guardarMaisRecente(historico.porProduto, epChaveIncertezaProduto(g.modulo, g.produto, g.parametro), item);
+    });
+    _epIncertezasHistoricas = historico;
+}
 
 async function epCarregarIncertezas() {
     try {
         const linhas = await dbGetAll('ep_incertezas');
         _epIncertezas = {};
         (linhas || []).forEach(l => { _epIncertezas[l.id] = parseFloat(l.incerteza); });
+        // Converte também os cadastros antigos, que eram vinculados somente à
+        // análise, em um histórico utilizável pelas próximas análises.
+        const ensaios = await dbGetAll('ensaios_proficiencia');
+        epConstruirHistoricoIncertezas(ensaios);
     } catch (e) {
         _epIncertezas = {};
+        _epIncertezasHistoricas = { porLaboratorio: {}, porProduto: {} };
     }
 }
 
@@ -21078,13 +21123,23 @@ function epAtualizarOpcoesProduto() {
     if (produtos.includes(valorAtual)) selProduto.value = valorAtual;
 }
 
-async function epAtualizarIncerteza(chave, valorStr, inputEl) {
+async function epAtualizarIncerteza(chave, laboratorioCodificado, parametro, valorStr, inputEl) {
     const valStr = (valorStr || '').trim();
     const val = valStr === '' ? null : parseFloat(valStr);
     if (valStr !== '' && isNaN(val)) { sgqToast('Valor de incerteza inválido.', 'error'); return; }
     try {
+        const laboratorio = decodeURIComponent(laboratorioCodificado || '');
+        const chaveLaboratorio = epChaveIncertezaLaboratorio(laboratorio, parametro);
         await dbUpsertOne('ep_incertezas', { id: chave, incerteza: val, atualizado_em: new Date().toISOString() });
+        // A incerteza mais recente deste laboratório/parâmetro passa a ser o padrão
+        // automático para os próximos ensaios do mesmo laboratório.
+        if (chaveLaboratorio) {
+            await dbUpsertOne('ep_incertezas', { id: chaveLaboratorio, incerteza: val, atualizado_em: new Date().toISOString() });
+        }
         if (val === null) delete _epIncertezas[chave]; else _epIncertezas[chave] = val;
+        if (chaveLaboratorio) {
+            if (val === null) delete _epIncertezas[chaveLaboratorio]; else _epIncertezas[chaveLaboratorio] = val;
+        }
         sgqToast('✓ Incerteza atualizada!', 'success');
         epRenderTabela(_epDados); // atualiza apenas a linha desta análise específica
     } catch (e) {
@@ -21158,8 +21213,11 @@ function epAgrupar(dados) {
             grupos[chave] = {
                 chave, modulo_origem: r.modulo_origem, produto: r.produto, parametro: r.parametro,
                 data_amostra: r.data_amostra, qualitativo: epEhQualitativo(r.parametro), nf: r.nf || null,
-                valores: { interno: [], externo: [], fornecedor: [] }
+                valores: { interno: [], externo: [], fornecedor: [] }, laboratorios: []
             };
+        }
+        if (r.fonte !== 'interno' && r.nome_laboratorio) {
+            grupos[chave].laboratorios.push({ nome: r.nome_laboratorio, id: Number(r.id) || 0 });
         }
         if (epEhQualitativo(r.parametro)) {
             if (r.valor_texto && grupos[chave].valores[r.fonte]) grupos[chave].valores[r.fonte].push(r.valor_texto);
@@ -21183,12 +21241,27 @@ function epAgrupar(dados) {
         if (mInt !== null && mForn !== null) diffs.push(Math.abs(mInt - mForn) / (mInt || 1) * 100);
         if (mExt !== null && mForn !== null) diffs.push(Math.abs(mExt - mForn) / (mExt || 1) * 100);
         const maiorDif = diffs.length ? Math.max(...diffs) : null;
-        const incerteza = _epIncertezas[g.chave] !== undefined && !isNaN(_epIncertezas[g.chave]) ? _epIncertezas[g.chave] : null;
+        const labMaisRecente = g.laboratorios.length
+            ? g.laboratorios.slice().sort((a,b) => b.id - a.id)[0].nome : '';
+        const chaveLab = epChaveIncertezaLaboratorio(labMaisRecente, g.parametro);
+        const chaveProduto = epChaveIncertezaProduto(g.modulo_origem, g.produto, g.parametro);
+        // Prioriza eventual valor específico desta análise; se não existir, herda o
+        // último valor cadastrado para o mesmo laboratório e parâmetro. Para
+        // cadastros antigos sem nome do laboratório, usa o mesmo produto/parâmetro.
+        const incEspecifica = _epIncertezas[g.chave];
+        const incLaboratorio = chaveLab ? _epIncertezas[chaveLab] : undefined;
+        const histLab = chaveLab ? _epIncertezasHistoricas.porLaboratorio[chaveLab] : null;
+        const histProduto = _epIncertezasHistoricas.porProduto[chaveProduto];
+        const incerteza = incEspecifica !== undefined && !isNaN(incEspecifica)
+            ? incEspecifica
+            : (incLaboratorio !== undefined && !isNaN(incLaboratorio)
+                ? incLaboratorio
+                : (histLab ? histLab.valor : (!labMaisRecente && histProduto ? histProduto.valor : null)));
         const diffExtIntBruto  = (mExt !== null && mInt !== null)  ? (mExt - mInt)  : null;
         const diffFornExtBruto = (mForn !== null && mExt !== null) ? (mForn - mExt) : null;
         const diffExtInt  = epAjustarDiferenca(diffExtIntBruto, incerteza);
         const diffFornExt = epAjustarDiferenca(diffFornExtBruto, incerteza);
-        return { ...g, mInt, mExt, mForn, maiorDif, concorda: null, incerteza, diffExtInt, diffFornExt };
+        return { ...g, mInt, mExt, mForn, maiorDif, concorda: null, incerteza, diffExtInt, diffFornExt, laboratorio: labMaisRecente };
     });
 }
 
@@ -21280,7 +21353,7 @@ function epRenderTabela(dados) {
                 <input type="number" step="0.01" value="${g.incerteza !== null ? g.incerteza : ''}" placeholder="—"
                     class="ep-inc-input"
                     style="width:70px;text-align:center;padding:3px;font-size:11px;border-radius:3px;color:inherit;"
-                    onchange="epAtualizarIncerteza('${g.chave}', this.value, this)" autocomplete="off">
+                    onchange="epAtualizarIncerteza('${g.chave}', '${encodeURIComponent(g.laboratorio || '')}', '${g.parametro}', this.value, this)" autocomplete="off">
             </td>
             <td style="padding:5px;text-align:center;">${g.qualitativo ? '—' : fmtDif(g.diffExtInt)}</td>
             <td style="padding:5px;text-align:center;">${g.qualitativo ? '—' : fmtDif(g.diffFornExt)}</td>
@@ -21345,6 +21418,7 @@ const EP_SUFFIX_MODULO = { MP: 'materia_prima', Class: 'classificacao', Prod: 'p
 
 // Registro atualmente carregado em cada aba de proficiência (um por modal)
 let _epRegistroPorAba = { MP: null, Class: null, Prod: null };
+let _epLancamentosPorAba = { MP: [], Class: [], Prod: [] };
 
 // Alterna entre a aba "Dados do Registro" e a aba "Análise de Proficiência" dentro de um modal de cadastro
 function trocarSubabaModal(suffix, aba) {
@@ -21356,6 +21430,10 @@ function trocarSubabaModal(suffix, aba) {
     if (aba === 'prof') {
         btnDados.classList.remove('active'); btnProf.classList.add('active');
         abaDados.classList.remove('active'); abaProf.classList.add('active');
+        // Sempre refaz a busca por Data + Produto/Ração. Isso também cobre o caso
+        // em que existe um registro interno vazio, mas a proficiência foi salva
+        // separadamente com outro identificador.
+        epCarregarProfienciaSemInterna(suffix);
     } else {
         btnProf.classList.remove('active'); btnDados.classList.add('active');
         abaProf.classList.remove('active'); abaDados.classList.add('active');
@@ -21383,10 +21461,6 @@ function epMontarCamposParametros(suffix, modulo, registro, lancamentos) {
             }
         }
         const lancado = porParametro[c.key];
-        const registroId = registro ? registro.id : '';
-        const delBtn = lancado
-            ? `<button type="button" onclick="epExcluirValorParametro('${suffix}','${modulo}','${registroId}',${lancado.id})" title="Excluir este lançamento" style="background:#e74c3c;color:#fff;border:none;border-radius:4px;width:28px;height:28px;flex-shrink:0;cursor:pointer;font-size:12px;">🗑️</button>`
-            : '';
         // Select (campo qualitativo, ex: rancidez): a referência interna vira a 1ª opção pré-selecionável de leitura, sem poluir o label
         const inputHtml = quali
             ? `<select id="epParam_${suffix}_${c.key}"><option value="">${temRef ? 'Interno: ' + valorRef : 'Selecione...'}</option>${Object.entries(quali).map(([v,l]) => `<option value="${v}" ${lancado && lancado.valor_texto === v ? 'selected' : ''}>${l}</option>`).join('')}</select>`
@@ -21394,9 +21468,8 @@ function epMontarCamposParametros(suffix, modulo, registro, lancamentos) {
         return `
         <div class="form-group">
             <label>${c.label}</label>
-            <div style="display:flex;gap:6px;align-items:center;">
+            <div>
                 ${inputHtml}
-                ${delBtn}
             </div>
         </div>`;
     }).join('');
@@ -21406,6 +21479,7 @@ function epMontarCamposParametros(suffix, modulo, registro, lancamentos) {
 function epResetAba(suffix) {
     trocarSubabaModal(suffix, 'dados');
     _epRegistroPorAba[suffix] = null;
+    _epLancamentosPorAba[suffix] = [];
     const obs = document.getElementById('epObservacoes' + suffix);
     if (obs) obs.value = '';
     const lab = document.getElementById('epNomeLaboratorio' + suffix);
@@ -21451,6 +21525,18 @@ async function epPrepararAba(suffix, id) {
         lancamentosExternos = (todos || []).filter(r =>
             r.modulo_origem === modulo && String(r.registro_id_interno) === String(id) && r.fonte !== 'interno');
     } catch (e) { /* segue com os campos vazios se a busca falhar */ }
+    _epLancamentosPorAba[suffix] = lancamentosExternos;
+
+    const ultimoExterno = lancamentosExternos.slice().sort((a,b) => Number(b.id) - Number(a.id))[0];
+    if (ultimoExterno) {
+        const labEl = document.getElementById('epNomeLaboratorio' + suffix);
+        const fonteEl = document.getElementById('epFonte' + suffix);
+        const replicaEl = document.getElementById('epReplica' + suffix);
+        if (labEl) labEl.value = ultimoExterno.nome_laboratorio || '';
+        if (fonteEl) fonteEl.value = ultimoExterno.fonte || 'externo';
+        if (replicaEl) replicaEl.value = String(ultimoExterno.replica || 1);
+        if (dataResultEl) dataResultEl.value = ultimoExterno.data_resultado || dataResultEl.value;
+    }
 
     // Mantém a observação já lançada anteriormente para esta amostra (a mais recente com texto)
     const obsEl = document.getElementById('epObservacoes' + suffix);
@@ -21470,17 +21556,118 @@ async function epExcluirValorParametro(suffix, modulo, registroId, id) {
     try {
         await dbDeleteOne('ensaios_proficiencia', id);
         sgqToast('🗑️ Lançamento de proficiência excluído.', 'success');
-        await epPrepararAba(suffix, registroId);
+        if (_epRegistroPorAba[suffix] && _epRegistroPorAba[suffix]._epSomenteProficiencia) {
+            _epLancamentosPorAba[suffix] = (_epLancamentosPorAba[suffix] || []).filter(r => String(r.id) !== String(id));
+            epMontarCamposParametros(suffix, modulo, null, _epLancamentosPorAba[suffix]);
+        } else {
+            await epPrepararAba(suffix, registroId);
+        }
     } catch (e) {
         sgqToast('Erro ao excluir lançamento: ' + e.message, 'error');
+    }
+}
+
+// Permite lançar somente o resultado de proficiência, sem obrigar a criação de
+// uma análise interna. Nesse caso, Data e Produto/Ração informados na aba
+// "Dados do Registro" servem apenas para identificar a amostra externa.
+function epObterContextoSemAnaliseInterna(suffix, cfg) {
+    const ids = {
+        Prod:  { data: 'cadDataProd',  produto: 'cadRacaoProdSelect', produtoAlt: 'cadRacaoProd', nf: 'cadLoteProd' },
+        Class: { data: 'cadDataClass', produto: 'cadProdutoClass',                         nf: 'cadNFClass' },
+        MP:    { data: 'cadDataMP',    produto: 'cadProdutoMP',                            nf: 'cadNFMP' }
+    }[suffix];
+    if (!ids) return null;
+    const valor = id => ((document.getElementById(id) || {}).value || '').trim();
+    const data = dataParaISO(valor(ids.data));
+    const produto = valor(ids.produto) || (ids.produtoAlt ? valor(ids.produtoAlt) : '');
+    if (!data || !produto) return null;
+    const idTemporario = Date.now();
+    return {
+        id: idTemporario,
+        data,
+        nf: valor(ids.nf) || null,
+        [cfg.produtoKey]: produto,
+        _epSomenteProficiencia: true
+    };
+}
+
+async function epCarregarProfienciaSemInterna(suffix) {
+    const modulo = EP_SUFFIX_MODULO[suffix];
+    const cfg = EP_MODULO_CONFIG[modulo];
+    if (!cfg) return;
+    const ids = {
+        Prod:  { data:'cadDataProd',  produto:'cadRacaoProdSelect', produtoAlt:'cadRacaoProd', nf:'cadLoteProd' },
+        Class: { data:'cadDataClass', produto:'cadProdutoClass',                          nf:'cadNFClass' },
+        MP:    { data:'cadDataMP',    produto:'cadProdutoMP',                             nf:'cadNFMP' }
+    }[suffix];
+    const valor = id => ((document.getElementById(id) || {}).value || '').trim();
+    const data = dataParaISO(valor(ids.data));
+    const normalizarTexto = v => (v || '').trim().toUpperCase().normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ');
+    const produtoDigitado = normalizarTexto(valor(ids.produto) || (ids.produtoAlt ? valor(ids.produtoAlt) : ''));
+    if (!data) return;
+
+    try {
+        const todos = await dbGetAll('ensaios_proficiencia');
+        let candidatos = (todos || []).filter(r =>
+            r.modulo_origem === modulo && r.fonte !== 'interno' && String(r.data_amostra || '').slice(0,10) === data);
+        if (produtoDigitado) candidatos = candidatos.filter(r => normalizarTexto(r.produto) === produtoDigitado);
+        if (!candidatos.length) return;
+
+        // Pode haver mais de um identificador para a mesma data/produto (por
+        // exemplo, após uma correção antiga). Usa o conjunto mais recentemente
+        // salvo, em vez de deixar os campos vazios.
+        const ultimoCandidato = candidatos.slice().sort((a,b) => Number(b.id) - Number(a.id))[0];
+        const registroId = ultimoCandidato.registro_id_interno;
+        const lancamentos = (todos || []).filter(r =>
+            r.modulo_origem === modulo && r.fonte !== 'interno' && String(r.registro_id_interno) === String(registroId));
+        const ultimo = lancamentos.slice().sort((a,b) => Number(b.id) - Number(a.id))[0];
+        const produto = ultimo.produto || produtoDigitado;
+        const registro = {
+            id: registroId, data: ultimo.data_amostra, nf: ultimo.nf || null,
+            [cfg.produtoKey]: produto, _epSomenteProficiencia: true
+        };
+        _epRegistroPorAba[suffix] = registro;
+        _epLancamentosPorAba[suffix] = lancamentos;
+
+        // Completa a identificação visível quando a busca foi feita somente pela data.
+        const produtoEl = document.getElementById(ids.produto);
+        if (produtoEl && !produtoEl.value) produtoEl.value = produto;
+        if (ids.produtoAlt) {
+            const produtoAltEl = document.getElementById(ids.produtoAlt);
+            if (produtoAltEl) produtoAltEl.value = produto;
+        }
+        const nfEl = document.getElementById(ids.nf);
+        if (nfEl && !nfEl.value && ultimo.nf) nfEl.value = ultimo.nf;
+
+        const labEl = document.getElementById('epNomeLaboratorio' + suffix);
+        const fonteEl = document.getElementById('epFonte' + suffix);
+        const replicaEl = document.getElementById('epReplica' + suffix);
+        const resultadoEl = document.getElementById('epDataResultado' + suffix);
+        const respEl = document.getElementById('epResponsavel' + suffix);
+        const obsEl = document.getElementById('epObservacoes' + suffix);
+        if (labEl) labEl.value = ultimo.nome_laboratorio || '';
+        if (fonteEl) fonteEl.value = ultimo.fonte || 'externo';
+        if (replicaEl) replicaEl.value = String(ultimo.replica || 1);
+        if (resultadoEl) resultadoEl.value = ultimo.data_resultado || '';
+        if (respEl) respEl.value = ultimo.responsavel || respEl.value;
+        if (obsEl) obsEl.value = ultimo.observacoes || '';
+        epMontarCamposParametros(suffix, modulo, null, lancamentos);
+        sgqToast('✓ Lançamento de proficiência localizado e carregado para correção.', 'success');
+    } catch (e) {
+        sgqToast('Erro ao localizar a proficiência pela data: ' + e.message, 'error');
     }
 }
 
 async function epSalvarResultadoSuffix(suffix) {
     const modulo = EP_SUFFIX_MODULO[suffix];
     const cfg = EP_MODULO_CONFIG[modulo];
-    const registro = _epRegistroPorAba[suffix];
-    if (!cfg || !registro) { sgqToast('Salve o registro na aba "Dados do Registro" antes de lançar o resultado de proficiência.', 'error'); return; }
+    if (!cfg) return;
+    const registro = _epRegistroPorAba[suffix] || epObterContextoSemAnaliseInterna(suffix, cfg);
+    if (!registro) {
+        sgqToast('Para lançar somente a proficiência, informe ao menos a Data e o Produto/Ração na aba "Dados do Registro". Não é necessário salvar uma análise interna.', 'error');
+        return;
+    }
 
     const fonte = document.getElementById('epFonte' + suffix).value;
     const nomeLaboratorio = document.getElementById('epNomeLaboratorio' + suffix).value.trim();
@@ -21498,6 +21685,7 @@ async function epSalvarResultadoSuffix(suffix) {
     // 1) Garante a referência "interno" (1 lançamento por parâmetro, réplica 1) — usa o valor que já
     //    está salvo no cadastro ("Dados do Registro"). Se o campo lá estiver vazio, nada é criado aqui.
     camposNumericos.forEach(c => {
+        if (registro._epSomenteProficiencia) return;
         const vInt = registro[c.key];
         if (vInt === null || vInt === undefined || vInt === '') return;
         const quali = EP_PARAMS_QUALITATIVOS[c.key];
@@ -21511,15 +21699,23 @@ async function epSalvarResultadoSuffix(suffix) {
         });
     });
 
-    // 2) Resultado da fonte externa/fornecedor — só os campos que o usuário preencheu
+    // 2) Resultado da fonte externa/fornecedor. Se um valor que já existia foi
+    // apagado, ele será excluído ao salvar.
     let algumPreenchido = false;
+    const idsExcluir = [];
     camposNumericos.forEach(c => {
         const el = document.getElementById('epParam_' + suffix + '_' + c.key);
-        if (!el || el.value === '') return;
+        const existente = (_epLancamentosPorAba[suffix] || []).find(r =>
+            r.parametro === c.key && r.fonte === fonte && Number(r.replica || 1) === replica);
+        if (!el) return;
+        if (el.value === '') {
+            if (existente) idsExcluir.push(existente.id);
+            return;
+        }
         algumPreenchido = true;
         const quali = EP_PARAMS_QUALITATIVOS[c.key];
         novosRegistros.push({
-            id: _epNovoId(),
+            id: existente ? existente.id : _epNovoId(),
             modulo_origem: modulo, registro_id_interno: registro.id, produto: produtoNome,
             fonte, nome_laboratorio: nomeLaboratorio || null, parametro: c.key, replica,
             valor: quali ? null : parseFloat(el.value), valor_texto: quali ? el.value : null,
@@ -21528,7 +21724,7 @@ async function epSalvarResultadoSuffix(suffix) {
         });
     });
 
-    if (!algumPreenchido) { sgqToast('Preencha ao menos um parâmetro com o valor do laboratório externo/fornecedor.', 'error'); return; }
+    if (!algumPreenchido && !idsExcluir.length) { sgqToast('Preencha ao menos um parâmetro com o valor do laboratório externo/fornecedor.', 'error'); return; }
 
     try {
         // Evita duplicar a referência interna: verifica o que já existe para essa amostra
@@ -21538,13 +21734,28 @@ async function epSalvarResultadoSuffix(suffix) {
             .map(r => r.parametro));
 
         const aSalvar = novosRegistros.filter(r => r.fonte !== 'interno' || !jaTemInterno.has(r.parametro));
+        for (const id of idsExcluir) {
+            await dbDeleteOne('ensaios_proficiencia', id);
+        }
         for (const reg of aSalvar) {
             await dbUpsertOne('ensaios_proficiencia', reg);
         }
         sgqToast('✓ Resultado do Ensaio de Proficiência salvo com sucesso!', 'success');
         // Recarrega os campos já com os valores recém-salvos preenchidos (cada um com botão de excluir)
         // — a observação também é recarregada do que foi salvo, permanecendo fixada no campo
-        await epPrepararAba(suffix, registro.id);
+        if (registro._epSomenteProficiencia) {
+            _epRegistroPorAba[suffix] = registro;
+            const salvosExternos = aSalvar.filter(r => r.fonte !== 'interno');
+            const idsSalvos = new Set(salvosExternos.map(r => String(r.id)));
+            const idsExcluidos = new Set(idsExcluir.map(String));
+            _epLancamentosPorAba[suffix] = [
+                ...(_epLancamentosPorAba[suffix] || []).filter(r => !idsSalvos.has(String(r.id)) && !idsExcluidos.has(String(r.id))),
+                ...salvosExternos
+            ];
+            epMontarCamposParametros(suffix, modulo, null, _epLancamentosPorAba[suffix]);
+        } else {
+            await epPrepararAba(suffix, registro.id);
+        }
     } catch (e) {
         sgqToast('Erro ao salvar Ensaio de Proficiência: ' + e.message, 'error');
     }
