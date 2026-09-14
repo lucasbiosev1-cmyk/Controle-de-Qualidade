@@ -16694,9 +16694,9 @@ async function salvarEntradaMP(event) {
     }
 
     if (_empEditandoId) {
-        // Ao editar: bloqueia NF duplicada excluindo o próprio registro
+        // Ao editar: bloqueia NF duplicada (mesma NF + mesmo fornecedor) excluindo o próprio registro
         if (nf) {
-            const nfDupEdit = entradasMP.find(e => String(e.id) !== String(_empEditandoId) && (e.nf||'').toString().trim().toUpperCase() === nf);
+            const nfDupEdit = entradasMP.find(e => String(e.id) !== String(_empEditandoId) && (e.nf||'').toString().trim().toUpperCase() === nf && (e.fornecedor||'').toString().trim().toUpperCase() === fornecedor);
             if (nfDupEdit) {
                 mostrarMsgEMP('erro', `⚠️ NF "${nf}" já está registrada (Fornecedor: ${nfDupEdit.fornecedor || '-'}, Data: ${nfDupEdit.data ? nfDupEdit.data.split('-').reverse().join('/') : '-'}). Não é possível duplicar.`);
                 return;
@@ -16720,9 +16720,9 @@ async function salvarEntradaMP(event) {
     } else {
         const nfUp = nf.toUpperCase();
 
-        // ── BLOQUEIO TOTAL: NF informada e já existe ──────────────────
+        // ── BLOQUEIO TOTAL: NF informada e já existe para o mesmo fornecedor ──
         if (nfUp && nfUp !== '-') {
-            const nfDupNovo = entradasMP.find(e => (e.nf||'').toString().trim().toUpperCase() === nfUp);
+            const nfDupNovo = entradasMP.find(e => (e.nf||'').toString().trim().toUpperCase() === nfUp && (e.fornecedor||'').toString().trim().toUpperCase() === fornecedor);
             if (nfDupNovo) {
                 mostrarMsgEMP('erro', `⚠️ NF "${nfUp}" já está registrada (Fornecedor: ${nfDupNovo.fornecedor || '-'}, Data: ${nfDupNovo.data ? nfDupNovo.data.split('-').reverse().join('/') : '-'}). Não é possível duplicar.`);
                 return;
