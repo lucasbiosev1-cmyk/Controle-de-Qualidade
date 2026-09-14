@@ -12383,7 +12383,9 @@ function filtrarDadosClass() {
     const fornecedor = document.getElementById('filterFornecedorClass').value;
     return classificacoes.filter(r =>
         (!nf         || r.nf.toLowerCase().includes(nf))
-     && (!di         || r.data >= di) && (!df || r.data <= df)
+     // Pesquisa por NF não deve travar no filtro de data — se o campo NF estiver
+     // preenchido, ignora o intervalo de datas e busca em todo o histórico
+     && (nf || ((!di || r.data >= di) && (!df || r.data <= df)))
      && (!produto    || r.produto === produto)
      && (!fornecedor || r.fornecedor === fornecedor)
     ).sort((a, b) => new Date(b.data) - new Date(a.data));
@@ -12408,9 +12410,19 @@ function popularFornecedoresClass() {
 }
 
 async function aplicarFiltrosClass() {
-    const di = document.getElementById('filterDataInicioClass').value;
-    const df = document.getElementById('filterDataFimClass').value;
-    if (di && df) await _garantirPeriodoCarregado(di, df);
+    const nf = document.getElementById('filterNFClass').value.trim();
+    // Pesquisa por NF não deve travar no filtro de data — se o campo NF estiver
+    // preenchido, garante que TODO o histórico esteja carregado em memória antes
+    // de filtrar (ignorando o período selecionado, que pode não cobrir a NF buscada)
+    if (nf) {
+        if (_periodoCarregado.ini !== '0001-01-01' || _periodoCarregado.fim !== '9999-12-31') {
+            await carregarTodosAsync(true, true);
+        }
+    } else {
+        const di = document.getElementById('filterDataInicioClass').value;
+        const df = document.getElementById('filterDataFimClass').value;
+        if (di && df) await _garantirPeriodoCarregado(di, df);
+    }
     exibirTabelaClass();
 }
 function limparFiltrosClass() {
@@ -12712,15 +12724,27 @@ function filtrarDadosMP() {
     const produto = document.getElementById('filterProdutoMP').value;
     return materiasPrimas.filter(r =>
         (!nf      || (r.nf||'').toLowerCase().includes(nf))
-     && (!di      || r.data >= di) && (!df || r.data <= df)
+     // Pesquisa por NF não deve travar no filtro de data — se o campo NF estiver
+     // preenchido, ignora o intervalo de datas e busca em todo o histórico
+     && (nf || ((!di || r.data >= di) && (!df || r.data <= df)))
      && (!produto || r.produto === produto)
     ).sort((a, b) => new Date(b.data) - new Date(a.data));
 }
 
 async function aplicarFiltrosMP() {
-    const di = document.getElementById('filterDataInicioMP').value;
-    const df = document.getElementById('filterDataFimMP').value;
-    if (di && df) await _garantirPeriodoCarregado(di, df);
+    const nf = document.getElementById('filterNFMP').value.trim();
+    // Pesquisa por NF não deve travar no filtro de data — se o campo NF estiver
+    // preenchido, garante que TODO o histórico esteja carregado em memória antes
+    // de filtrar (ignorando o período selecionado, que pode não cobrir a NF buscada)
+    if (nf) {
+        if (_periodoCarregado.ini !== '0001-01-01' || _periodoCarregado.fim !== '9999-12-31') {
+            await carregarTodosAsync(true, true);
+        }
+    } else {
+        const di = document.getElementById('filterDataInicioMP').value;
+        const df = document.getElementById('filterDataFimMP').value;
+        if (di && df) await _garantirPeriodoCarregado(di, df);
+    }
     exibirTabelaMP();
 }
 function limparFiltrosMP() {
