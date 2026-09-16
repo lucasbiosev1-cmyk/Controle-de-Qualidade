@@ -18207,12 +18207,17 @@ async function _carregarDashboardFast() {
     try {
         const agora = new Date();
         const prefixo = agora.getFullYear() + '-' + String(agora.getMonth() + 1).padStart(2, '0');
+        // Os cards de Milho e Soja exibem também o total anual. Por isso,
+        // Classificação precisa ser carregada desde janeiro já na abertura;
+        // caso contrário o total do ano só ficava correto após navegar entre meses.
+        const inicioAno = agora.getFullYear() + '-01-01';
 
         const colP = _COLUNAS_TABELA['producoes']       || '*';
         const colC = _COLUNAS_TABELA['classificacoes']  || '*';
         const colM = _COLUNAS_TABELA['materias_primas'] || '*';
 
-        // Busca os 3 meses (atual + anterior para comparativo de tendência) + NC em paralelo
+        // Busca mês atual + anterior para os comparativos. Classificação e NCs
+        // partem de janeiro porque alimentam os totais anuais dos cards.
         const prefAnt = (() => {
             const d = new Date(agora.getFullYear(), agora.getMonth() - 1, 1);
             return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
@@ -18223,11 +18228,11 @@ async function _carregarDashboardFast() {
             _sbClient.from('producoes').select(colP)
                 .gte('data', prefAnt + '-01').lte('data', prefixo + '-31'),
             _sbClient.from('classificacoes').select(colC)
-                .gte('data', prefAnt + '-01').lte('data', prefixo + '-31'),
+                .gte('data', inicioAno).lte('data', prefixo + '-31'),
             _sbClient.from('materias_primas').select(colM)
                 .gte('data', prefAnt + '-01').lte('data', prefixo + '-31'),
             _sbClient.from('nao_conformidades').select('*')
-                .gte('data', prefAnt + '-01').lte('data', prefixo + '-31')
+                .gte('data', inicioAno).lte('data', prefixo + '-31')
         ]);
 
         // Preenche os arrays com dados do mês — suficiente para os KPIs
@@ -18262,7 +18267,10 @@ async function carregarTodosAsync(forcar = false, completo = false) {
     // completo=true: usado após importação em massa / correções, onde os dados alterados
     // podem ser de qualquer data — nesses casos, carrega o histórico inteiro (sem filtro).
     const hoje = new Date();
-    const dataIni = completo ? null : new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
+    // O dashboard possui indicadores anuais. Manter o ano corrente em memória
+    // garante que eles nasçam corretos ao abrir/restaurar a sessão, sem exigir
+    // que o usuário navegue para o mês anterior primeiro.
+    const dataIni = completo ? null : `${hoje.getFullYear()}-01-01`;
     const dataFim = completo ? null : hoje.toISOString().split('T')[0];
     _periodoCarregado = completo ? { ini: '0001-01-01', fim: '9999-12-31' } : { ini: dataIni, fim: dataFim };
 
@@ -26078,12 +26086,22 @@ async function carregarNCeDevSupabase() {
         // (nao_conformidades mantém select('*') até confirmarmos o schema exato dela e
         // aplicarmos a mesma otimização com segurança.)
         const _colsDev = 'id,numero,data,produto,fornecedor,motivo,tipo,lote,status,classificacao,criado_em,placa,desc_motivo,parametro';
-        const [ncData, devData] = await Promise.all([
+        const _anoNC = new Date().getFullYear();
+        const _inicioAnoNC = _anoNC + '-01-01';
+        const _fimAnoNC = _anoNC + '-12-31';
+        const [ncData, ncAnoData, devData] = await Promise.all([
             _sbClient.from('nao_conformidades').select('*').order('id', { ascending: false }).limit(500),
+            // Consulta anual dedicada: impede que o limite dos 500 registros mais
+            // recentes deixe o card "NC no ano" incompleto em bases maiores.
+            _sbClient.from('nao_conformidades').select('*')
+                .gte('data', _inicioAnoNC).lte('data', _fimAnoNC)
+                .order('id', { ascending: false }),
             _sbClient.from('devolucoes').select(_colsDev).order('id', { ascending: false }).limit(200)
         ]);
         if (ncData.data) {
-            listaNC = ncData.data;
+            // Mescla o histórico recente com todo o ano corrente, sem duplicar IDs.
+            const _ncMescladas = [...(ncData.data || []), ...(ncAnoData.data || [])];
+            listaNC = [...new Map(_ncMescladas.map(n => [String(n.id), n])).values()];
             // ✅ Filtra automaticamente o mês atual ao carregar
             const hojeNC = new Date();
             const anoMesNC = hojeNC.getFullYear() + '-' + String(hojeNC.getMonth() + 1).padStart(2, '0');
