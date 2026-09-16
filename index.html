@@ -891,6 +891,30 @@
             opacity: 0;
         }
 
+        /* ===== ENTRADA PROFISSIONAL DO PORTAL ===== */
+        .sgq-portal-intro{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 72% 28%,rgba(39,139,225,.22),transparent 30%),linear-gradient(145deg,#062a51,#084d8c);opacity:0;transition:opacity .22s ease;}
+        .sgq-portal-intro.ativo{opacity:1;}
+        .sgq-portal-intro.saindo{opacity:0;transition:opacity .32s ease;pointer-events:none;}
+        .sgq-intro-conteudo{text-align:center;color:#fff;transform:translateY(10px) scale(.985);opacity:0;transition:transform .38s cubic-bezier(.2,.8,.2,1),opacity .3s ease;}
+        .sgq-portal-intro.ativo .sgq-intro-conteudo{transform:none;opacity:1;}
+        .sgq-intro-marca{font-family:'Montserrat',Arial,sans-serif;font-weight:900;font-size:32px;letter-spacing:1px;line-height:1;}
+        .sgq-intro-submarca{font-size:9px;font-weight:800;letter-spacing:7px;color:#9ed0ff;margin:7px 0 27px 6px;}
+        .sgq-intro-selo{width:48px;height:48px;border-radius:15px;margin:0 auto 17px;display:grid;place-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);box-shadow:0 14px 35px rgba(0,0,0,.18);font-size:22px;}
+        .sgq-intro-titulo{font-size:15px;font-weight:750;letter-spacing:.2px;margin-bottom:5px;}
+        .sgq-intro-status{font-size:10px;color:rgba(225,241,255,.68);letter-spacing:.7px;min-height:15px;}
+        .sgq-intro-trilho{width:210px;height:3px;margin:17px auto 0;border-radius:5px;background:rgba(255,255,255,.13);overflow:hidden;}
+        .sgq-intro-progresso{height:100%;width:12%;border-radius:5px;background:linear-gradient(90deg,#55b4ff,#fff);transition:width .58s cubic-bezier(.2,.8,.2,1);box-shadow:0 0 12px rgba(120,200,255,.8);}
+        .sgq-portal-intro.verificado .sgq-intro-progresso{width:100%;}
+        #mainSystem.sgq-portal-prep .nav-tabs,#mainSystem.sgq-portal-prep #mainHeader{transform:translateX(-24px);opacity:0;}
+        #mainSystem.sgq-portal-prep .capa-welcome{transform:translateY(-12px);opacity:0;}
+        #mainSystem.sgq-portal-prep .capa-kpis .kpi-mod,#mainSystem.sgq-portal-prep .capa-kpis-sec .kpi-mod,#mainSystem.sgq-portal-prep .capa-alertas{transform:translateY(12px);opacity:0;}
+        #mainSystem.sgq-portal-pronto .nav-tabs,#mainSystem.sgq-portal-pronto #mainHeader{transition:transform .42s cubic-bezier(.2,.8,.2,1),opacity .35s ease;transform:none;opacity:1;}
+        #mainSystem.sgq-portal-pronto .capa-welcome{transition:transform .42s .05s cubic-bezier(.2,.8,.2,1),opacity .35s .05s ease;transform:none;opacity:1;}
+        #mainSystem.sgq-portal-pronto .capa-kpis .kpi-mod,#mainSystem.sgq-portal-pronto .capa-kpis-sec .kpi-mod,#mainSystem.sgq-portal-pronto .capa-alertas{transition:transform .42s cubic-bezier(.2,.8,.2,1),opacity .35s ease;transform:none;opacity:1;}
+        #mainSystem.sgq-portal-pronto .capa-kpis .kpi-mod:nth-child(1){transition-delay:.10s} #mainSystem.sgq-portal-pronto .capa-kpis .kpi-mod:nth-child(2){transition-delay:.14s} #mainSystem.sgq-portal-pronto .capa-kpis .kpi-mod:nth-child(3){transition-delay:.18s} #mainSystem.sgq-portal-pronto .capa-kpis .kpi-mod:nth-child(4){transition-delay:.07s}
+        #mainSystem.sgq-portal-pronto .capa-kpis-sec .kpi-mod{transition-delay:.20s} #mainSystem.sgq-portal-pronto .capa-alertas{transition-delay:.24s}
+        @media (prefers-reduced-motion:reduce){.sgq-portal-intro,.sgq-intro-conteudo,.sgq-intro-progresso,#mainSystem.sgq-portal-pronto *{transition-duration:.01ms!important;transition-delay:0s!important;}}
+
         /* ===== MOBILE LOGIN ===== */
         @media (max-width: 600px) {
             #loginScreen {
@@ -4071,7 +4095,7 @@ document.addEventListener('DOMContentLoaded', function(){
   .capa-welcome{min-height:132px!important;height:132px!important;margin:0 -18px 12px!important;padding:18px 26px!important;}
   .capa-welcome-left:before{margin-bottom:7px!important;}
   .capa-welcome h2{font-size:27px!important;margin-bottom:4px!important;}
-  .capa-welcome:after{top:18px!important;right:28px!important;}
+  .capa-welcome:after{content:"QUALIDADE QUE ALIMENTA\A O AMANHÃ"!important;top:14px!important;right:28px!important;width:260px!important;line-height:1.35!important;white-space:pre-line!important;text-align:right!important;}
   .capa-welcome>div:last-child{right:26px!important;bottom:16px!important;}
 
   .capa-kpis{gap:10px!important;margin-bottom:10px!important;}
@@ -10807,6 +10831,61 @@ function _abrirCortinaLogin() {
     });
 }
 
+// Redefine a antiga cortina como uma apresentação institucional leve.
+// completo=true mantém a experiência mais marcante; false usa a mesma linguagem
+// visual em duração reduzida para o modo padrão.
+function _abrirCortinaLogin(completo = true) {
+    return new Promise((resolve) => {
+        const btn = document.querySelector('.login-btn');
+        const loginScreen = document.getElementById('loginScreen');
+        const mainSystem = document.getElementById('mainSystem');
+        const wrapper = loginScreen && loginScreen.querySelector('.login-wrapper');
+        const loadingOverlay = document.getElementById('sgq-loading-overlay');
+        const nomeCompleto = (document.getElementById('nomeUsuario')?.textContent || 'Usuário').trim();
+        const primeiroNome = nomeCompleto.split(/\s+/)[0] || 'Usuário';
+        const tempo = completo ? { fade:220, ok:500, revelar:720, fim:1120 } : { fade:100, ok:260, revelar:400, fim:720 };
+
+        if (btn) { btn.textContent = 'Acesso autorizado ✓'; btn.disabled = true; }
+        if (loadingOverlay) loadingOverlay.classList.remove('show', 'fade-out');
+        mainSystem.classList.remove('sgq-portal-pronto');
+        mainSystem.classList.add('sgq-portal-prep');
+        mainSystem.style.display = 'block';
+
+        const intro = document.createElement('div');
+        intro.className = 'sgq-portal-intro';
+        intro.innerHTML = '<div class="sgq-intro-conteudo">' +
+            '<div class="sgq-intro-marca">AGRONOR</div>' +
+            '<div class="sgq-intro-submarca">ALIMENTOS</div>' +
+            '<div class="sgq-intro-selo">✓</div>' +
+            '<div class="sgq-intro-titulo">Bem-vindo, ' + primeiroNome.replace(/[&<>"']/g,'') + '</div>' +
+            '<div class="sgq-intro-status">Preparando seu painel de qualidade…</div>' +
+            '<div class="sgq-intro-trilho"><div class="sgq-intro-progresso"></div></div>' +
+            '</div>';
+        document.body.appendChild(intro);
+        requestAnimationFrame(() => intro.classList.add('ativo'));
+
+        setTimeout(() => {
+            if (wrapper) wrapper.classList.add('login-wrapper-fade-out');
+        }, tempo.fade);
+        setTimeout(() => {
+            intro.classList.add('verificado');
+            const st = intro.querySelector('.sgq-intro-status');
+            if (st) st.textContent = 'Painel pronto';
+            if (loginScreen) loginScreen.style.display = 'none';
+        }, tempo.ok);
+        setTimeout(() => {
+            intro.classList.add('saindo');
+            mainSystem.classList.remove('sgq-portal-prep');
+            mainSystem.classList.add('sgq-portal-pronto');
+        }, tempo.revelar);
+        setTimeout(() => {
+            intro.remove();
+            mainSystem.classList.remove('sgq-portal-pronto');
+            resolve();
+        }, tempo.fim);
+    });
+}
+
 async function fazerLogin() {
     const usernameRaw = document.getElementById('loginUser').value.trim().toLowerCase();
     const pass        = document.getElementById('loginPass').value;
@@ -10916,13 +10995,10 @@ async function fazerLogin() {
 
         aplicarPermissoes();
 
-        // Revela o dashboard — instantâneo (padrão) ou com efeito de cortina, conforme configurado
-        if (MODO_ABERTURA_LOGIN === 'cortina') {
-            await _abrirCortinaLogin();
-        } else {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('mainSystem').style.display  = 'block';
-        }
+        // Após a abertura original "Verificando acesso", entra direto no sistema.
+        // Evita exibir uma segunda tela de apresentação após o login.
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainSystem').style.display  = 'block';
         carregarParametros();
 
         localStorage.removeItem('producoes');
@@ -26129,14 +26205,10 @@ document.addEventListener('DOMContentLoaded', async function() {
 
                 aplicarPermissoes();
 
-                // Revela o dashboard — instantâneo (padrão) ou com efeito de cortina, conforme
-                // configurado em "Modo de Abertura do Login" (mesma lógica do login manual)
-                if (MODO_ABERTURA_LOGIN === 'cortina' && typeof _abrirCortinaLogin === 'function') {
-                    await _abrirCortinaLogin();
-                } else {
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('mainSystem').style.display  = 'block';
-                }
+                // Após a abertura original, entra direto no sistema também ao
+                // restaurar uma sessão válida — sem uma segunda apresentação.
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainSystem').style.display  = 'block';
 
                 carregarParametros();
                 setTimeout(sgqIniciarPresenca, 800);
