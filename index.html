@@ -3988,6 +3988,126 @@
     });
 })();
 </script>
+<style id="sgq-site-redesign-v1">
+/* Redesign 2026 — portal corporativo. Mantém a estrutura funcional existente. */
+@media (min-width: 901px) {
+  #mainSystem{padding-left:220px!important;background:#f2f7fc!important;min-height:100vh;}
+  #mainHeader{position:fixed!important;z-index:1200;left:0;top:0;width:220px!important;height:166px!important;box-sizing:border-box!important;padding:27px 24px!important;background:linear-gradient(165deg,#082f5b 0%,#06396b 100%)!important;border:0!important;align-items:flex-start!important;box-shadow:none!important;}
+  #mainHeader .header-left{display:block!important;}
+  #mainHeader .header-left>div:first-child span:first-child{font-size:24px!important;letter-spacing:.8px!important;}
+  #mainHeader .header-left>div:first-child span:last-child{font-size:9px!important;letter-spacing:5px!important;color:#a9d2ff!important;margin-top:3px;}
+  #headerDivider,#headerDivider2{display:none!important;}
+  #headerSubtitle{display:block!important;width:165px;margin-top:19px;font-size:10px!important;line-height:1.55!important;letter-spacing:.3px!important;text-transform:none!important;color:rgba(225,240,255,.62)!important;}
+  #mainHeader>div:last-child{display:none!important;}
+
+  .nav-tabs{position:fixed!important;z-index:1190;left:0;top:166px;bottom:0;width:220px!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:4px!important;padding:10px 10px 86px!important;overflow:visible!important;background:linear-gradient(180deg,#073a6d 0%,#052d55 100%)!important;border:0!important;}
+  .nav-tabs .nav-tab,.nav-tabs .nav-dropdown-btn{width:100%!important;min-height:45px!important;justify-content:flex-start!important;text-align:left!important;border:0!important;border-radius:9px!important;padding:0 14px!important;color:#dcecff!important;background:transparent!important;font-size:11px!important;font-weight:650!important;letter-spacing:0!important;white-space:nowrap!important;}
+  .nav-tabs .nav-tab:hover,.nav-tabs .nav-tab.active{background:linear-gradient(135deg,#1680f5,#0863d7)!important;color:#fff!important;box-shadow:0 8px 20px rgba(0,91,205,.28)!important;}
+  .nav-tabs .nav-dropdown{width:100%!important;position:relative!important;}
+  .nav-tabs .nav-dropdown-menu{left:204px!important;top:0!important;min-width:230px!important;border-radius:10px!important;border:1px solid #dbe7f2!important;box-shadow:0 15px 40px rgba(12,43,73,.2)!important;background:#fff!important;}
+  .nav-tabs .nav-dropdown-item{color:#183d63!important;background:#fff!important;}
+  .nav-tabs .nav-dropdown-item:hover{background:#eef6ff!important;color:#0875e1!important;}
+  .nav-tabs .btn-logout{position:absolute!important;left:20px;bottom:22px!important;margin:0!important;border:0!important;color:#dcecff!important;background:transparent!important;}
+
+  #aba-capa{padding:0!important;background:#f2f7fc!important;}
+  #dashQualidadeWrap{padding:0 22px 28px!important;background:#f2f7fc!important;}
+  .capa-welcome{position:relative!important;min-height:174px!important;margin:0 -22px 18px!important;padding:26px 30px!important;box-sizing:border-box!important;align-items:flex-start!important;overflow:hidden!important;background:linear-gradient(100deg,#e8f5ff 0%,#f5fbff 48%,#dceefa 100%)!important;border-bottom:1px solid #dce8f2!important;}
+  .capa-welcome:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 68% 115%,rgba(48,145,80,.22) 0 15%,transparent 15.5%),radial-gradient(circle at 77% 88%,rgba(211,164,66,.24) 0 8%,transparent 8.5%),linear-gradient(118deg,transparent 58%,rgba(8,74,132,.08));pointer-events:none;}
+  .capa-welcome:after{content:"QUALIDADE QUE ALIMENTA O AMANHÃ";position:absolute;right:34px;top:28px;width:150px;font:800 10px/1.65 'Montserrat',Arial,sans-serif;letter-spacing:2.3px;color:#0c3e70;text-align:right;}
+  .capa-welcome-left{position:relative;z-index:1;max-width:590px;}
+  .capa-welcome-left:before{content:"Visão geral  /  Painel executivo";display:block;margin-bottom:13px;font-size:11px;font-weight:650;color:#3270a7;}
+  .capa-welcome h2{font-size:31px!important;line-height:1.08!important;color:#092f5b!important;letter-spacing:-.7px!important;margin:0 0 7px!important;}
+  .capa-welcome p{font-size:12px!important;color:#416887!important;margin:0!important;}
+  .capa-welcome>div:last-child{position:absolute!important;z-index:2;right:30px;bottom:25px;padding:7px 9px;background:#fff;border:1px solid #d5e4f1;border-radius:10px;box-shadow:0 7px 20px rgba(23,64,102,.08);}
+
+  .capa-kpis{display:grid!important;grid-template-columns:1.45fr repeat(3,1fr)!important;gap:13px!important;margin-bottom:13px!important;}
+  .capa-kpis .kpi-mod{min-height:230px!important;box-sizing:border-box!important;padding:20px!important;border:1px solid #dfebf5!important;border-left:1px solid #dfebf5!important;border-radius:14px!important;background:#fff!important;box-shadow:0 7px 22px rgba(18,62,101,.065)!important;position:relative!important;overflow:hidden!important;}
+  .capa-kpis .kpi-mod:nth-child(4){grid-column:1;grid-row:1;background:linear-gradient(145deg,#073b70,#0758a8)!important;border:0!important;color:#fff!important;}
+  .capa-kpis .kpi-mod:nth-child(1){grid-column:2;grid-row:1;}
+  .capa-kpis .kpi-mod:nth-child(2){grid-column:3;grid-row:1;}
+  .capa-kpis .kpi-mod:nth-child(3){grid-column:4;grid-row:1;}
+  .capa-kpis .kpi-mod:nth-child(4):before{content:"";display:block;width:112px;height:112px;margin:13px auto 4px;border-radius:50%;background:conic-gradient(#ff6767 var(--sgq-geral,50%),rgba(255,255,255,.22) 0);box-shadow:inset 0 0 0 15px rgba(7,59,112,.95);}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-row{position:absolute!important;left:0;right:0;top:90px;justify-content:center!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-val{color:#fff!important;font-size:31px!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-label,.capa-kpis .kpi-mod:nth-child(4) .kpi-mod-pct,.capa-kpis .kpi-mod:nth-child(4) #kpiConfGeralSub{color:#fff!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-bar{display:none!important;}
+  .kpi-mod-label{font-size:10px!important;letter-spacing:.6px!important;color:#274b70!important;}
+  .kpi-mod-val{font-size:29px!important;color:#0b315a!important;}
+  .kpi-mod-bar{height:7px!important;border-radius:8px!important;background:#e8eef4!important;overflow:hidden!important;}
+  .kpi-mod-bar-fill{border-radius:8px!important;}
+  .kpi-mod-sub{font-size:10px!important;color:#55718c!important;}
+
+  .capa-kpis-sec{gap:13px!important;margin-bottom:16px!important;}
+  .capa-kpis-sec .kpi-mod{min-height:108px!important;padding:15px 18px 13px 74px!important;border:1px solid #dbe8f3!important;border-left:1px solid #dbe8f3!important;border-radius:13px!important;background:linear-gradient(135deg,#fff,#f6faff)!important;box-shadow:0 5px 16px rgba(19,63,103,.045)!important;position:relative!important;}
+  .capa-kpis-sec .kpi-mod:before{position:absolute;left:18px;top:23px;width:39px;height:39px;border-radius:50%;display:grid;place-items:center;font-size:19px;background:#e4f2ff;color:#0875de;}
+  .capa-kpis-sec .kpi-mod:nth-child(1):before{content:"⚗";}
+  .capa-kpis-sec .kpi-mod:nth-child(2):before{content:"!";background:#e4f8ee;color:#11945a;font-weight:900;}
+  .capa-kpis-sec .kpi-mod:nth-child(3):before{content:"🌽";background:#fff5d9;}
+  .capa-kpis-sec .kpi-mod:nth-child(4):before{content:"🫘";background:#eee8ff;color:#7251cc;}
+  .capa-kpis-sec .kpi-mod-bar{height:4px!important;}
+
+  .capa-alertas{background:#fff!important;border:1px solid #dce8f2!important;border-radius:14px!important;padding:17px 18px 12px!important;box-shadow:0 7px 20px rgba(19,63,103,.05)!important;}
+  .capa-alertas-titulo{font-size:14px!important;color:#0a3764!important;letter-spacing:.2px!important;margin-bottom:11px!important;}
+  #painelAlertas>div{border:1px solid #e4ebf2!important;border-left:4px solid #ef5350!important;border-radius:10px!important;margin-bottom:7px!important;box-shadow:none!important;background:#fff!important;}
+}
+@media (max-width:900px){#mainSystem{padding-left:0!important}.capa-welcome:after{display:none}.capa-kpis,.capa-kpis-sec{grid-template-columns:1fr!important}}
+</style>
+<script>
+// Alimenta o arco visual da Conformidade Geral sem interferir nos cálculos originais.
+document.addEventListener('DOMContentLoaded', function(){
+  var alvo=document.getElementById('kpiConfGeralVal');
+  var card=alvo&&alvo.closest('.kpi-mod');
+  if(!alvo||!card)return;
+  function sincronizarArco(){var n=parseFloat(alvo.textContent)||0;card.style.setProperty('--sgq-geral',Math.max(0,Math.min(100,n))+'%');}
+  new MutationObserver(sincronizarArco).observe(alvo,{childList:true,characterData:true,subtree:true});
+  sincronizarArco();
+});
+</script>
+<style id="sgq-dashboard-fit-v2">
+/* Ajuste de proporção e encaixe integral da capa em desktop. */
+@media (min-width:901px) and (min-height:720px){
+  #aba-capa.active{height:100vh!important;overflow:hidden!important;}
+  #dashQualidadeWrap{height:100vh!important;box-sizing:border-box!important;padding:0 18px 14px!important;overflow:hidden!important;}
+  .capa-welcome{min-height:132px!important;height:132px!important;margin:0 -18px 12px!important;padding:18px 26px!important;}
+  .capa-welcome-left:before{margin-bottom:7px!important;}
+  .capa-welcome h2{font-size:27px!important;margin-bottom:4px!important;}
+  .capa-welcome:after{top:18px!important;right:28px!important;}
+  .capa-welcome>div:last-child{right:26px!important;bottom:16px!important;}
+
+  .capa-kpis{gap:10px!important;margin-bottom:10px!important;}
+  .capa-kpis .kpi-mod{height:190px!important;min-height:190px!important;padding:17px!important;}
+  .capa-kpis .kpi-mod:nth-child(4){padding:0!important;}
+  .capa-kpis .kpi-mod:nth-child(4):before{position:absolute!important;content:""!important;left:31px!important;top:28px!important;width:148px!important;height:148px!important;margin:0!important;box-shadow:inset 0 0 0 20px rgba(7,59,112,.96)!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-label{position:absolute!important;left:202px!important;top:31px!important;font-size:12px!important;letter-spacing:.4px!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-row{position:absolute!important;left:31px!important;right:auto!important;top:83px!important;width:148px!important;display:flex!important;justify-content:center!important;align-items:center!important;gap:3px!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-val{font-size:35px!important;line-height:1!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-pct{position:absolute!important;left:162px!important;top:10px!important;width:80px!important;color:#ff7d7d!important;white-space:nowrap!important;}
+  .capa-kpis .kpi-mod:nth-child(4)>div:last-child{position:absolute!important;left:202px!important;top:69px!important;margin:0!important;}
+  .capa-kpis .kpi-mod:nth-child(4) #kpiConfGeralSub{display:inline-block!important;padding:7px 10px!important;background:rgba(255,255,255,.1)!important;border-radius:8px!important;font-size:10px!important;}
+  .capa-kpis .kpi-mod:not(:nth-child(4)) .kpi-mod-label{min-height:27px!important;}
+
+  .capa-kpis-sec{gap:10px!important;margin-bottom:10px!important;}
+  .capa-kpis-sec .kpi-mod{height:86px!important;min-height:86px!important;padding:11px 14px 9px 62px!important;}
+  .capa-kpis-sec .kpi-mod:before{left:14px!important;top:22px!important;width:35px!important;height:35px!important;font-size:16px!important;}
+  .capa-kpis-sec .kpi-mod-label{line-height:1.15!important;min-height:22px!important;}
+  .capa-kpis-sec .kpi-mod-row{line-height:1!important;margin:0!important;}
+  .capa-kpis-sec .kpi-mod-val{font-size:23px!important;line-height:1!important;}
+  .capa-kpis-sec .kpi-mod-bar{margin:4px 0 3px!important;}
+
+  .capa-alertas{padding:10px 13px 7px!important;border-radius:12px!important;}
+  .capa-alertas-titulo{font-size:12px!important;margin-bottom:7px!important;}
+  #painelAlertas>div{min-height:43px!important;margin-bottom:5px!important;padding-top:6px!important;padding-bottom:6px!important;box-sizing:border-box!important;}
+}
+@media (min-width:901px) and (max-height:820px){
+  .capa-welcome{height:110px!important;min-height:110px!important;padding-top:13px!important;}
+  .capa-welcome h2{font-size:24px!important;}
+  .capa-kpis .kpi-mod{height:172px!important;min-height:172px!important;}
+  .capa-kpis .kpi-mod:nth-child(4):before{width:132px!important;height:132px!important;top:25px!important;box-shadow:inset 0 0 0 18px rgba(7,59,112,.96)!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-row{top:75px!important;width:132px!important;}
+  .capa-kpis-sec .kpi-mod{height:78px!important;min-height:78px!important;}
+  #painelAlertas>div{min-height:38px!important;}
+}
+</style>
 </head>
 <body>
 
