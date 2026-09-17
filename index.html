@@ -14395,24 +14395,55 @@ function _rfmGraficoSVG(regs, titulo) {
     </svg>`;
 }
 
-function _rfmCard(label, valor, sub) {
-    return `<div class="rfm-card"><div class="rfm-card-label">${label}</div><div class="rfm-card-val">${valor}</div><div class="rfm-card-sub">${sub}</div></div>`;
+function _rfmTendencia(atual, anterior, casas=0, unidade='') {
+    if (!Number.isFinite(atual) || !Number.isFinite(anterior)) {
+        return '<div class="rfm-trend rfm-trend-na">— sem referência anterior</div>';
+    }
+    const diferenca = atual - anterior;
+    const tolerancia = Math.pow(10, -casas) / 2;
+    if (Math.abs(diferenca) < tolerancia) {
+        return '<div class="rfm-trend rfm-trend-eq">= sem alteração</div>';
+    }
+    const classe = diferenca > 0 ? 'rfm-trend-up' : 'rfm-trend-down';
+    const seta = diferenca > 0 ? '↑' : '↓';
+    const numero = Math.abs(diferenca).toLocaleString('pt-BR', {
+        minimumFractionDigits:casas,
+        maximumFractionDigits:casas
+    });
+    return `<div class="rfm-trend ${classe}">${seta} ${numero}${unidade}</div>`;
 }
 
-function _rfmBloco(grupo, regs, di, df) {
+function _rfmCard(label, valor, sub, atual, anterior, casas=0, unidade='') {
+    return `<div class="rfm-card"><div class="rfm-card-label">${label}</div><div class="rfm-card-val">${valor}</div>${_rfmTendencia(atual,anterior,casas,unidade)}<div class="rfm-card-sub">${sub}</div></div>`;
+}
+
+function _rfmMetricas(regs) {
     const dgm=regs.map(r=>parseFloat(r.dgm)||0).filter(v=>v>0);
     const dpg=regs.map(r=>parseFloat(r.dpg)||0).filter(v=>v>0);
-    const e=calcEstat(dgm);
     const media=a=>a.length?a.reduce((s,v)=>s+v,0)/a.length:null;
+    const e=dgm.length?calcEstat(dgm):null;
+    return {
+        registros:regs.length,
+        dgmMedia:e?e.media:null,
+        dpgMedia:media(dpg),
+        minimo:e?e.min:null,
+        maximo:e?e.max:null,
+        cv:e?e.cv:null
+    };
+}
+
+function _rfmBloco(grupo, regs, regsAnterior, di, df) {
+    const atual=_rfmMetricas(regs);
+    const anterior=_rfmMetricas(regsAnterior||[]);
     const fmtData=s=>new Date(s+'T00:00:00').toLocaleDateString('pt-BR');
     const vazio='-';
     const cards = [
-        _rfmCard('REGISTROS', regs.length, 'NO PERÍODO'),
-        _rfmCard('DGM MÉDIO', dgm.length?Math.round(e.media):vazio, 'DGM (µm)'),
-        _rfmCard('DPG MÉDIO', dpg.length?media(dpg).toFixed(2):vazio, 'DPG (µm)'),
-        _rfmCard('MÍNIMO', dgm.length?Math.round(e.min):vazio, 'DGM (µm)'),
-        _rfmCard('MÁXIMO', dgm.length?Math.round(e.max):vazio, 'DGM (µm)'),
-        _rfmCard('C.V (%)', dgm.length?e.cv.toFixed(2)+'%':vazio, 'COEF. DE VARIAÇÃO')
+        _rfmCard('REGISTROS', atual.registros, 'NO PERÍODO', atual.registros, anterior.registros||null, 0, ''),
+        _rfmCard('DGM MÉDIO', atual.dgmMedia!=null?Math.round(atual.dgmMedia):vazio, 'DGM (µm)', atual.dgmMedia, anterior.dgmMedia, 0, ' µm'),
+        _rfmCard('DPG MÉDIO', atual.dpgMedia!=null?atual.dpgMedia.toFixed(2):vazio, 'DPG (µm)', atual.dpgMedia, anterior.dpgMedia, 2, ''),
+        _rfmCard('MÍNIMO', atual.minimo!=null?Math.round(atual.minimo):vazio, 'DGM (µm)', atual.minimo, anterior.minimo, 0, ' µm'),
+        _rfmCard('MÁXIMO', atual.maximo!=null?Math.round(atual.maximo):vazio, 'DGM (µm)', atual.maximo, anterior.maximo, 0, ' µm'),
+        _rfmCard('C.V (%)', atual.cv!=null?atual.cv.toFixed(2)+'%':vazio, 'COEF. DE VARIAÇÃO', atual.cv, anterior.cv, 2, ' p.p.')
     ].join('');
     return `<section class="rfm-bloco">
         <div class="rfm-bloco-titulo">RELATÓRIO: ${_rfmEsc(grupo.titulo)}</div>
@@ -14437,11 +14468,24 @@ async function gerarRelFabricaModeloPDF(destino='pdf') {
     const ultimo=new Date(ano,mes,0).getDate();
     const di=`${ano}-${String(mes).padStart(2,'0')}-01`;
     const df=`${ano}-${String(mes).padStart(2,'0')}-${String(ultimo).padStart(2,'0')}`;
-    await _garantirPeriodoCarregado(di,df);
+    const dataMesAnterior=new Date(ano,mes-2,1);
+    const anoAnterior=dataMesAnterior.getFullYear();
+    const mesAnterior=dataMesAnterior.getMonth()+1;
+    const mesAnteriorVal=`${anoAnterior}-${String(mesAnterior).padStart(2,'0')}`;
+    const ultimoAnterior=new Date(anoAnterior,mesAnterior,0).getDate();
+    const diAnterior=`${mesAnteriorVal}-01`;
+    const dfAnterior=`${mesAnteriorVal}-${String(ultimoAnterior).padStart(2,'0')}`;
+    // Carrega os dois meses em uma única faixa para garantir uma comparação consistente.
+    await _garantirPeriodoCarregado(diAnterior,df);
     const dadosMes=(producoes||[]).filter(r=>(r.data||'').startsWith(mesVal));
+    const dadosMesAnterior=(producoes||[]).filter(r=>(r.data||'').startsWith(mesAnteriorVal));
     // Exibe somente as fases que realmente tiveram produção no mês selecionado.
     const grupos=_rfmDefinirGrupos(tipo)
-        .map(g=>({...g,regs:_rfmRegistrosGrupo(dadosMes,tipo,g.niveis)}))
+        .map(g=>({
+            ...g,
+            regs:_rfmRegistrosGrupo(dadosMes,tipo,g.niveis),
+            regsAnterior:_rfmRegistrosGrupo(dadosMesAnterior,tipo,g.niveis)
+        }))
         .filter(g=>g.regs.length>0);
     if(!grupos.length){
         if(janelaImpressao) janelaImpressao.close();
@@ -14455,7 +14499,7 @@ async function gerarRelFabricaModeloPDF(destino='pdf') {
         const fatia=grupos.slice(i,i+3);
         paginas.push(`<div class="rfm-page">
             ${i===0 ? `<header class="rfm-topo"><div><strong>Relatório Mensal Ração ${tipo==='CORTE'?'Corte':'Postura'}</strong> - ${mesTitulo}</div><span>AGRONOR ALIMENTOS</span></header>` : ''}
-            ${fatia.map(g=>_rfmBloco(g,g.regs,di,df)).join('')}
+            ${fatia.map(g=>_rfmBloco(g,g.regs,g.regsAnterior,di,df)).join('')}
             <footer>Relatório gerado automaticamente pelo SIGQ - ${new Date().toLocaleDateString('pt-BR')}</footer>
         </div>`);
     }
@@ -14467,7 +14511,7 @@ async function gerarRelFabricaModeloPDF(destino='pdf') {
       @page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
       .rfm-page{width:210mm;min-height:297mm;padding:8mm 8mm 7mm;background:#fff;color:#172033;font-family:Arial,sans-serif;box-sizing:border-box;page-break-after:always;position:relative}
       .rfm-page:last-child{page-break-after:auto}.rfm-topo{height:15mm;border:1.5px solid #23364d;border-bottom:3px solid #0a4f8a;padding:3mm 4mm;display:flex;justify-content:space-between;align-items:center;box-sizing:border-box;font-size:18px}.rfm-topo span{font-size:8px;font-weight:800;letter-spacing:1.5px;color:#0a4f8a}
-      .rfm-bloco{height:85mm;border-bottom:1px solid #334155;padding:3mm 1mm 2mm;box-sizing:border-box;page-break-inside:avoid}.rfm-bloco-titulo{text-align:center;font-size:10px;font-weight:800;letter-spacing:.2px}.rfm-periodo{text-align:center;font-size:7px;color:#64748b;margin:1.5mm 0 2mm}.rfm-cards{display:grid;grid-template-columns:repeat(6,1fr);gap:2mm}.rfm-card{height:17mm;border:1px solid #dce3ea;border-top:2px solid #0a4f8a;border-radius:2mm;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fafcff}.rfm-card-label{font-size:6.5px;color:#64748b}.rfm-card-val{font-size:13px;font-weight:800;color:#172033;margin:.7mm 0}.rfm-card-sub{font-size:5.7px;color:#94a3b8}.rfm-grafico{height:48mm;margin-top:2mm}.rfm-grafico svg{width:100%;height:100%;display:block}.rfm-sem-dados{height:100%;display:grid;place-items:center;border:1px dashed #cbd5e1;color:#94a3b8;font-size:9px}footer{position:absolute;bottom:3mm;left:8mm;right:8mm;text-align:center;font-size:6px;color:#94a3b8}
+      .rfm-bloco{height:85mm;border-bottom:1px solid #334155;padding:3mm 1mm 2mm;box-sizing:border-box;page-break-inside:avoid}.rfm-bloco-titulo{text-align:center;font-size:10px;font-weight:800;letter-spacing:.2px}.rfm-periodo{text-align:center;font-size:7px;color:#64748b;margin:1.5mm 0 2mm}.rfm-cards{display:grid;grid-template-columns:repeat(6,1fr);gap:2mm}.rfm-card{height:18mm;border:1px solid #dce3ea;border-top:2px solid #0a4f8a;border-radius:2mm;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.7mm .4mm;background:#fafcff;box-sizing:border-box}.rfm-card-label{font-size:6.3px;color:#64748b}.rfm-card-val{font-size:12.5px;font-weight:800;color:#172033;margin:.35mm 0 .2mm}.rfm-trend{font-size:5.4px;font-weight:800;line-height:1.05;text-align:center;white-space:nowrap}.rfm-trend span{display:block;font-size:4.5px;font-weight:500;margin-top:.15mm}.rfm-trend-up{color:#15803d}.rfm-trend-down{color:#dc2626}.rfm-trend-eq{color:#64748b}.rfm-trend-na{color:#94a3b8;font-size:4.8px;font-weight:500}.rfm-card-sub{font-size:5.2px;color:#94a3b8;margin-top:.25mm}.rfm-grafico{height:47mm;margin-top:1.5mm}.rfm-grafico svg{width:100%;height:100%;display:block}.rfm-sem-dados{height:100%;display:grid;place-items:center;border:1px dashed #cbd5e1;color:#94a3b8;font-size:9px}footer{position:absolute;bottom:3mm;left:8mm;right:8mm;text-align:center;font-size:6px;color:#94a3b8}
     </style>${paginas.join('')}`;
     document.body.appendChild(wrapper);
     // Cobre o relatório temporário enquanto o html2canvas faz a captura.
