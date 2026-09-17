@@ -4132,6 +4132,270 @@ document.addEventListener('DOMContentLoaded', function(){
   #painelAlertas>div{min-height:38px!important;}
 }
 </style>
+<style id="sgq-dashboard-notebook-v3">
+/* Notebook/monitor menor: impede compressão e mantém proporções. */
+@media (min-width:901px) and (max-width:1500px){
+  #mainSystem{padding-left:198px!important;}
+  #mainHeader,.nav-tabs{width:198px!important;}
+  #mainHeader{padding-left:21px!important;padding-right:18px!important;}
+  #mainHeader .header-left>div:first-child span:first-child{font-size:21px!important;}
+  #headerSubtitle{width:155px!important;font-size:9px!important;}
+  .nav-tabs{padding-left:8px!important;padding-right:8px!important;}
+  .nav-tabs .nav-tab,.nav-tabs .nav-dropdown-btn{min-height:41px!important;padding:0 12px!important;font-size:10px!important;}
+  .nav-tabs .nav-dropdown-menu{left:182px!important;}
+  #dashQualidadeWrap{padding-left:14px!important;padding-right:14px!important;}
+  .capa-welcome{margin-left:-14px!important;margin-right:-14px!important;}
+  .capa-welcome:after{display:none!important;}
+  .capa-welcome-left:before{font-size:9px!important;}
+  .capa-welcome h2{font-size:24px!important;}
+  .capa-kpis{grid-template-columns:1.45fr repeat(3,1fr)!important;gap:10px!important;}
+  .capa-kpis .kpi-mod{padding:15px!important;}
+  .capa-kpis .kpi-mod:nth-child(4):before{
+    left:50%!important;top:31px!important;width:124px!important;height:124px!important;
+    min-width:124px!important;min-height:124px!important;max-width:124px!important;max-height:124px!important;
+    aspect-ratio:1/1!important;flex:0 0 124px!important;transform:translateX(-50%)!important;border-radius:50%!important;
+    box-sizing:border-box!important;
+  }
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-label{left:16px!important;top:14px!important;font-size:10px!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-row{left:50%!important;right:auto!important;top:77px!important;width:124px!important;transform:translateX(-50%)!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-val{font-size:30px!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-pct{left:118px!important;top:7px!important;font-size:9px!important;}
+  .capa-kpis .kpi-mod:nth-child(4)>div:last-child{left:15px!important;right:auto!important;top:auto!important;bottom:11px!important;}
+  .capa-kpis .kpi-mod:not(:nth-child(4)) .kpi-mod-val{font-size:27px!important;}
+  .capa-kpis-sec{gap:10px!important;}
+  .capa-kpis-sec .kpi-mod{padding-left:57px!important;}
+  .capa-kpis-sec .kpi-mod:before{left:12px!important;}
+  .capa-kpis-sec .kpi-mod-label{font-size:9px!important;}
+  #painelAlertas>div{font-size:10px!important;}
+}
+/* Ícones em texto: iguais em qualquer Windows, mesmo sem pacote de emojis. */
+@media (min-width:901px){
+  .capa-kpis-sec .kpi-mod:nth-child(1):before{content:"A"!important;font-family:Arial,sans-serif;font-weight:900!important;}
+  .capa-kpis-sec .kpi-mod:nth-child(2):before{content:"!"!important;font-family:Arial,sans-serif;font-weight:900!important;}
+  .capa-kpis-sec .kpi-mod:nth-child(3):before{content:"M"!important;font-family:Arial,sans-serif;font-weight:900!important;color:#d99100!important;}
+  .capa-kpis-sec .kpi-mod:nth-child(4):before{content:"S"!important;font-family:Arial,sans-serif;font-weight:900!important;color:#7251cc!important;}
+}
+</style>
+<style id="sgq-dashboard-altura-adaptativa-v4">
+/*
+ * Encaixe automático pela área útil do navegador.
+ * A regra considera a viewport (já descontadas as barras do navegador e do
+ * sistema operacional), e somente remove a rolagem quando a página inicial
+ * está ativa. As telas internas continuam com rolagem normal.
+ */
+@media (min-width:901px) and (max-height:719px){
+  html:has(#aba-capa.active),body:has(#aba-capa.active){height:100%!important;overflow:hidden!important;}
+  #mainSystem:has(#aba-capa.active){height:100dvh!important;min-height:0!important;overflow:hidden!important;}
+  #aba-capa.active{height:100dvh!important;min-height:0!important;overflow:hidden!important;padding:0!important;}
+  #dashQualidadeWrap{
+    height:100dvh!important;min-height:0!important;overflow:hidden!important;box-sizing:border-box!important;
+    padding:0 12px 6px!important;
+  }
+  .capa-welcome{height:102px!important;min-height:102px!important;margin:0 -12px 7px!important;padding:10px 24px!important;}
+  .capa-welcome-left:before{margin-bottom:3px!important;font-size:8px!important;}
+  .capa-welcome h2{font-size:23px!important;line-height:1.05!important;margin-bottom:2px!important;}
+  .capa-welcome p{font-size:10px!important;}
+  .capa-welcome>div:last-child{right:24px!important;bottom:9px!important;padding:5px 7px!important;}
+  .capa-kpis{gap:8px!important;margin-bottom:7px!important;}
+  .capa-kpis .kpi-mod{height:164px!important;min-height:164px!important;padding:12px!important;}
+  .capa-kpis .kpi-mod:nth-child(4):before{
+    top:15px!important;width:134px!important;height:134px!important;min-width:134px!important;min-height:134px!important;
+    max-width:134px!important;max-height:134px!important;flex:0 0 134px!important;aspect-ratio:1/1!important;
+    border-radius:50%!important;clip-path:circle(50% at 50% 50%)!important;box-sizing:border-box!important;
+  }
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-label{left:14px!important;top:11px!important;font-size:9px!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-row{top:66px!important;width:134px!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-val{font-size:31px!important;line-height:1!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-pct{left:126px!important;top:7px!important;}
+  .capa-kpis .kpi-mod:nth-child(4)>div:last-child{left:auto!important;right:13px!important;bottom:8px!important;}
+  .capa-kpis-sec{gap:8px!important;margin-bottom:7px!important;}
+  .capa-kpis-sec .kpi-mod{height:68px!important;min-height:68px!important;padding:7px 10px 6px 52px!important;}
+  .capa-kpis-sec .kpi-mod:before{left:10px!important;top:17px!important;width:34px!important;height:34px!important;font-size:16px!important;}
+  .capa-kpis-sec .kpi-mod-label{font-size:8px!important;line-height:1.05!important;}
+  .capa-kpis-sec .kpi-mod-val{font-size:20px!important;line-height:1!important;margin-top:2px!important;}
+  .capa-kpis-sec .kpi-mod-bar{margin-top:3px!important;margin-bottom:2px!important;height:3px!important;}
+  .capa-kpis-sec .kpi-mod-sub{font-size:8px!important;line-height:1!important;}
+  .capa-alertas{padding:7px 10px 4px!important;border-radius:11px!important;}
+  .capa-alertas-titulo{font-size:11px!important;margin-bottom:5px!important;line-height:1!important;}
+  #painelAlertas>div{height:42px!important;min-height:42px!important;margin-bottom:4px!important;padding:4px 11px!important;gap:8px!important;overflow:hidden!important;box-sizing:border-box!important;align-items:center!important;}
+  #painelAlertas .alerta-icone{font-size:13px!important;line-height:1!important;}
+  #painelAlertas .alerta-titulo{font-size:9px!important;line-height:1.1!important;margin-bottom:1px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+  #painelAlertas .alerta-desc{font-size:8px!important;line-height:1.1!important;}
+  #painelAlertas .alerta-tag{font-size:7px!important;padding:3px 7px!important;}
+}
+/* Área extremamente baixa (notebook com escala do Windows ou zoom elevado). */
+@media (min-width:901px) and (max-height:620px){
+  .capa-welcome{height:88px!important;min-height:88px!important;}
+  .capa-welcome h2{font-size:20px!important;}
+  .capa-kpis .kpi-mod{height:146px!important;min-height:146px!important;}
+  .capa-kpis .kpi-mod:nth-child(4):before{top:13px!important;width:120px!important;height:120px!important;min-width:120px!important;min-height:120px!important;max-width:120px!important;max-height:120px!important;flex:0 0 120px!important;aspect-ratio:1/1!important;border-radius:50%!important;clip-path:circle(50% at 50% 50%)!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-row{top:56px!important;width:120px!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-pct{left:113px!important;}
+  .capa-kpis-sec .kpi-mod{height:61px!important;min-height:61px!important;}
+  #painelAlertas>div{height:37px!important;min-height:37px!important;margin-bottom:3px!important;}
+}
+</style>
+<style id="sgq-conformidade-anel-v5">
+/* Conformidade geral: anel de progresso, leitura central e tendência legível. */
+@media all{
+  .capa-kpis .kpi-mod:nth-child(4):before{
+    left:15px!important;top:24px!important;transform:none!important;
+    width:114px!important;height:114px!important;min-width:114px!important;min-height:114px!important;
+    max-width:114px!important;max-height:114px!important;flex:0 0 114px!important;aspect-ratio:1/1!important;border-radius:50%!important;
+    background:conic-gradient(#ff6b6b var(--sgq-geral,50%),rgba(255,255,255,.18) 0)!important;
+    box-shadow:none!important;
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 13px),#000 0)!important;
+    mask:radial-gradient(farthest-side,transparent calc(100% - 13px),#000 0)!important;
+    clip-path:none!important;
+  }
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-row{
+    left:15px!important;right:auto!important;top:66px!important;width:114px!important;
+    transform:none!important;justify-content:center!important;overflow:visible!important;
+  }
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-val{
+    width:100%!important;text-align:center!important;font-size:32px!important;font-weight:800!important;
+    letter-spacing:-1px!important;text-shadow:0 2px 8px rgba(0,0,0,.18)!important;
+  }
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-label{
+    left:140px!important;top:22px!important;width:calc(100% - 152px)!important;
+    font-size:10px!important;line-height:1.25!important;letter-spacing:.7px!important;
+  }
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-pct{
+    left:125px!important;top:10px!important;width:94px!important;min-width:94px!important;
+    display:flex!important;align-items:flex-start!important;flex-direction:column!important;gap:2px!important;padding:7px 9px!important;
+    border-radius:9px!important;border:1px solid rgba(255,107,107,.35)!important;
+    background:rgba(255,107,107,.16)!important;color:#ffd4d4!important;
+    font-size:11px!important;font-weight:800!important;line-height:1!important;white-space:nowrap!important;
+    box-shadow:0 5px 14px rgba(0,0,0,.10)!important;
+  }
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-pct.tendencia-positiva{
+    border-color:rgba(64,215,139,.35)!important;background:rgba(35,190,112,.17)!important;color:#baf5d6!important;
+  }
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-pct small{
+    display:block!important;font-size:8px!important;font-weight:650!important;line-height:1.1!important;letter-spacing:0!important;opacity:.9!important;
+  }
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-mod-pct .kpi-trend{color:inherit!important;font-size:11px!important;font-weight:800!important;}
+  .capa-kpis .kpi-mod:nth-child(4)>div:last-child{
+    left:140px!important;right:auto!important;top:112px!important;bottom:auto!important;margin:0!important;
+  }
+}
+</style>
+<style id="sgq-conformidade-estrutura-v6">
+/* Estrutura independente: não utiliza os posicionamentos antigos do cartão. */
+.capa-kpis .kpi-mod:nth-child(4):before{content:none!important;display:none!important;}
+.capa-kpis .kpi-mod:nth-child(4) .kpi-geral-layout{
+  position:absolute!important;inset:0!important;display:grid!important;
+  grid-template-columns:140px minmax(0,1fr)!important;align-items:center!important;
+  gap:10px!important;padding:12px 14px!important;box-sizing:border-box!important;
+}
+.capa-kpis .kpi-mod:nth-child(4) .kpi-geral-anel{
+  position:relative!important;width:116px!important;height:116px!important;aspect-ratio:1/1!important;
+  justify-self:center!important;display:grid!important;place-items:center!important;border-radius:50%!important;
+  background:conic-gradient(#ff6b6b var(--sgq-geral,50%),rgba(255,255,255,.18) 0)!important;
+  box-shadow:0 9px 22px rgba(0,0,0,.16)!important;overflow:hidden!important;
+}
+.capa-kpis .kpi-mod:nth-child(4) .kpi-geral-anel:after{
+  content:""!important;position:absolute!important;inset:13px!important;border-radius:50%!important;
+  background:#0b4d8e!important;box-shadow:inset 0 0 18px rgba(0,0,0,.12)!important;
+}
+.capa-kpis .kpi-mod:nth-child(4) .kpi-geral-anel .kpi-mod-val{
+  position:relative!important;z-index:2!important;display:block!important;width:auto!important;
+  color:#fff!important;font-size:31px!important;font-weight:850!important;line-height:1!important;
+  letter-spacing:-1px!important;text-align:center!important;text-shadow:0 2px 8px rgba(0,0,0,.18)!important;
+}
+.capa-kpis .kpi-mod:nth-child(4) .kpi-geral-info{
+  position:static!important;min-width:0!important;display:flex!important;flex-direction:column!important;
+  align-items:flex-start!important;justify-content:center!important;gap:9px!important;
+}
+.capa-kpis .kpi-mod:nth-child(4) .kpi-geral-info .kpi-mod-label{
+  position:static!important;display:block!important;width:auto!important;max-width:100%!important;
+  color:#fff!important;font-size:10px!important;font-weight:800!important;line-height:1.25!important;
+  letter-spacing:.7px!important;text-transform:uppercase!important;
+}
+.capa-kpis .kpi-mod:nth-child(4) .kpi-geral-info .kpi-mod-pct{
+  position:static!important;display:flex!important;width:auto!important;min-width:0!important;max-width:100%!important;
+  flex-direction:column!important;align-items:flex-start!important;gap:2px!important;
+  padding:7px 9px!important;border-radius:9px!important;border:1px solid rgba(255,107,107,.38)!important;
+  background:rgba(255,107,107,.17)!important;color:#ffd7d7!important;box-sizing:border-box!important;
+  font-size:11px!important;font-weight:800!important;line-height:1!important;white-space:nowrap!important;
+  box-shadow:0 5px 14px rgba(0,0,0,.10)!important;
+}
+.capa-kpis .kpi-mod:nth-child(4) .kpi-geral-info .kpi-mod-pct.tendencia-positiva{
+  border-color:rgba(64,215,139,.38)!important;background:rgba(35,190,112,.18)!important;color:#c5f8dc!important;
+}
+.capa-kpis .kpi-mod:nth-child(4) .kpi-geral-info .kpi-mod-pct .kpi-trend{
+  color:inherit!important;font-size:11px!important;font-weight:850!important;
+}
+.capa-kpis .kpi-mod:nth-child(4) .kpi-geral-info .kpi-mod-pct small{
+  display:block!important;font-size:8px!important;font-weight:650!important;line-height:1.1!important;opacity:.9!important;
+}
+.capa-kpis .kpi-mod:nth-child(4) .kpi-geral-sub{position:static!important;margin:0!important;}
+.capa-kpis .kpi-mod:nth-child(4) .kpi-geral-sub #kpiConfGeralSub{
+  display:inline-block!important;padding:5px 8px!important;border-radius:7px!important;
+  color:#fff!important;font-size:9px!important;font-weight:700!important;background:rgba(255,255,255,.11)!important;
+}
+@media (max-width:1050px){
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-geral-layout{grid-template-columns:108px minmax(0,1fr)!important;gap:7px!important;padding:10px!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-geral-anel{width:98px!important;height:98px!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-geral-anel:after{inset:11px!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-geral-anel .kpi-mod-val{font-size:27px!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-geral-info{gap:6px!important;}
+  .capa-kpis .kpi-mod:nth-child(4) .kpi-geral-info .kpi-mod-label{font-size:8px!important;}
+}
+</style>
+<style id="sgq-icones-vetoriais-v7">
+/* Ícones SVG: não dependem de emoji ou fonte do computador e não desaparecem no zoom. */
+.capa-kpis-sec .kpi-mod:before{
+  content:""!important;width:clamp(34px,3vw,42px)!important;height:clamp(34px,3vw,42px)!important;
+  min-width:34px!important;min-height:34px!important;background-repeat:no-repeat!important;
+  background-position:center!important;background-size:55%!important;
+}
+.capa-kpis-sec .kpi-mod:nth-child(1):before{
+  background-color:#e4f2ff!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230875de' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 3h6M10 3v6l-5 8a3 3 0 0 0 2.6 4.5h8.8A3 3 0 0 0 19 17l-5-8V3'/%3E%3Cpath d='M8 15h8'/%3E%3C/svg%3E")!important;
+}
+.capa-kpis-sec .kpi-mod:nth-child(2):before{
+  background-color:#e4f8ee!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2311945a' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M12 4v10'/%3E%3Ccircle cx='12' cy='19' r='1' fill='%2311945a'/%3E%3C/svg%3E")!important;
+}
+.capa-kpis-sec .kpi-mod:nth-child(3):before{
+  background-color:#fff5d9!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d99100' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c4 0 6 4 6 9s-2 9-6 9-6-4-6-9 2-9 6-9Z'/%3E%3Cpath d='M9 7h6M8 11h8M8 15h8M10 4v16M14 4v16'/%3E%3Cpath d='M6 9c-2 3-2 7 1 10M18 9c2 3 2 7-1 10'/%3E%3C/svg%3E")!important;
+}
+.capa-kpis-sec .kpi-mod:nth-child(4):before{
+  background-color:#eee8ff!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%237251cc' stroke='%237251cc' stroke-width='1.4'%3E%3Cellipse cx='8' cy='9' rx='3.7' ry='5' transform='rotate(-35 8 9)'/%3E%3Cellipse cx='16' cy='9' rx='3.7' ry='5' transform='rotate(35 16 9)'/%3E%3Cellipse cx='12' cy='16' rx='4' ry='5'/%3E%3Cpath d='M6.5 9c1 0 2-.5 2.8-1.5M14.7 7.5c.8 1 1.8 1.5 2.8 1.5M10 16c1.2 0 2.2-.5 3-1.5' fill='none' stroke='white' stroke-width='1.2'/%3E%3C/svg%3E")!important;
+}
+@media (min-width:1500px){
+  .capa-kpis-sec .kpi-mod:before{width:44px!important;height:44px!important;background-size:58%!important;}
+  .capa-kpis-sec .kpi-mod-label{font-size:10px!important;line-height:1.12!important;}
+  .capa-kpis-sec .kpi-mod-val{font-size:24px!important;}
+  .capa-kpis-sec .kpi-mod-sub{font-size:9px!important;}
+}
+</style>
+<style id="sgq-icones-inline-v8">
+/* Ícones incorporados ao HTML: anulam definitivamente os pseudoícones antigos. */
+.capa-kpis-sec .kpi-mod:before{content:none!important;display:none!important;background-image:none!important;}
+.capa-kpis-sec .kpi-mod{position:relative!important;padding-left:62px!important;}
+.capa-kpis-sec .kpi-svg-icon{
+  position:absolute!important;left:13px!important;top:50%!important;transform:translateY(-50%)!important;
+  display:grid!important;place-items:center!important;width:38px!important;height:38px!important;
+  min-width:38px!important;min-height:38px!important;border-radius:50%!important;box-sizing:border-box!important;
+}
+.capa-kpis-sec .kpi-svg-icon svg{display:block!important;width:28px!important;height:28px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.35!important;stroke-linecap:round!important;stroke-linejoin:round!important;}
+.capa-kpis-sec .kpi-svg-icon.analises{color:#0069c7!important;background:#dcedff!important;}
+.capa-kpis-sec .kpi-svg-icon.nc{color:#078348!important;background:#ddf7e9!important;}
+.capa-kpis-sec .kpi-svg-icon.nc svg circle{fill:#11945a!important;stroke:none!important;}
+.capa-kpis-sec .kpi-svg-icon.milho{color:#c67d00!important;background:#fff0c2!important;}
+.capa-kpis-sec .kpi-svg-icon.milho svg{stroke-width:1.2!important;}
+.capa-kpis-sec .kpi-svg-icon.soja{color:#633bc2!important;background:#e9e0ff!important;}
+.capa-kpis-sec .kpi-svg-icon.soja svg{fill:none!important;stroke:#633bc2!important;stroke-width:1.3!important;}
+@media (min-width:1450px){
+  .capa-kpis-sec .kpi-mod{padding-left:76px!important;}
+  .capa-kpis-sec .kpi-svg-icon{left:16px!important;width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important;}
+  .capa-kpis-sec .kpi-svg-icon svg{width:34px!important;height:34px!important;stroke-width:1.5!important;}
+}
+</style>
 </head>
 <body>
 
@@ -4428,13 +4692,17 @@ document.addEventListener('DOMContentLoaded', function(){
           </div>
           <!-- Conformidade Geral -->
           <div class="kpi-mod" style="border-left-color:#1a3a9f;">
-            <div class="kpi-mod-label">Conformidade Geral (Mês)</div>
-            <div class="kpi-mod-row">
-              <span class="kpi-mod-val" id="kpiConfGeralVal">—</span>
-              <span class="kpi-mod-pct" id="kpiConfGeralTrend"></span>
+            <div class="kpi-geral-layout">
+              <div class="kpi-geral-anel">
+                <span class="kpi-mod-val" id="kpiConfGeralVal">—</span>
+              </div>
+              <div class="kpi-geral-info">
+                <div class="kpi-mod-label">Conformidade Geral (Mês)</div>
+                <span class="kpi-mod-pct" id="kpiConfGeralTrend"></span>
+                <div class="kpi-geral-sub"><span id="kpiConfGeralSub">Prod + MP + Class</span></div>
+              </div>
             </div>
             <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiConfGeralBar" style="width:0%;background:#1a3a9f;"></div></div>
-            <div style="margin-top:6px;"><span id="kpiConfGeralSub" style="font-size:9px;padding:2px 8px;border-radius:10px;font-weight:700;">Prod + MP + Class</span></div>
           </div>
         </div>
 
@@ -4442,6 +4710,7 @@ document.addEventListener('DOMContentLoaded', function(){
         <div class="capa-kpis-sec" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;">
           <!-- Análises Hoje -->
           <div class="kpi-mod" style="border-left-color:#58a6ff;">
+            <span class="kpi-svg-icon analises" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 21h12M9 18h6M10 18a6 6 0 0 1-3-10M14 6l3 3M12.5 2.5l5 5-2.5 2.5-5-5Z"/><path d="M8 11h5a4 4 0 0 1 0 8"/><circle cx="7" cy="7" r="1.5"/></svg></span>
             <div class="kpi-mod-label">Análises Hoje<br>&nbsp;</div>
             <div class="kpi-mod-row"><span class="kpi-mod-val" id="kpiAnalises">—</span></div>
             <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiAnalisesBar" style="width:0%;background:#58a6ff;"></div></div>
@@ -4449,6 +4718,7 @@ document.addEventListener('DOMContentLoaded', function(){
           </div>
           <!-- NC do Mês -->
           <div class="kpi-mod" style="border-left-color:#e74c3c;">
+            <span class="kpi-svg-icon nc" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M9 10l6 6M15 10l-6 6"/></svg></span>
             <div class="kpi-mod-label">NC do Mês<br>&nbsp;</div>
             <div class="kpi-mod-row"><span class="kpi-mod-val" id="kpiNcAbertas">—</span></div>
             <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiNcBar" style="width:0%;background:#e74c3c;"></div></div>
@@ -4456,6 +4726,7 @@ document.addEventListener('DOMContentLoaded', function(){
           </div>
           <!-- NC — Milho -->
           <div class="kpi-mod" style="border-left-color:#e74c3c;">
+            <span class="kpi-svg-icon milho" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3c3.2 0 5 3.3 5 8s-1.8 8-5 8-5-3.3-5-8 1.8-8 5-8Z"/><path d="M9 7h6M8 11h8M9 15h6M10 4.5v13M14 4.5v13M7 9c-3 3-3 8 1 12M17 9c3 3 3 8-1 12"/></svg></span>
             <div class="kpi-mod-label">Resultados não conforme<br><span id="kpiMilhoLabelMes">Mês</span> — Milho</div>
             <div class="kpi-mod-row"><span class="kpi-mod-val" id="kpiNcMilhoMes">—</span></div>
             <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiNcMilhoBar" style="width:0%;background:#e74c3c;"></div></div>
@@ -4463,6 +4734,7 @@ document.addEventListener('DOMContentLoaded', function(){
           </div>
           <!-- NC — Soja -->
           <div class="kpi-mod" style="border-left-color:#e74c3c;">
+            <span class="kpi-svg-icon soja" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 15c2-8 8-11 16-9-1 8-7 13-15 13-1-1-1.4-2.4-1-4Z"/><circle cx="9" cy="14" r="2"/><circle cx="14" cy="11" r="2"/><circle cx="18" cy="8" r="1.6"/><path d="M5 19c3-1 5-2 7-4"/></svg></span>
             <div class="kpi-mod-label">Resultados não conforme<br><span id="kpiSojaLabelMes">Mês</span> — Soja</div>
             <div class="kpi-mod-row"><span class="kpi-mod-val" id="kpiNcSojaMes">—</span></div>
             <div class="kpi-mod-bar"><div class="kpi-mod-bar-fill" id="kpiNcSojaBar" style="width:0%;background:#e74c3c;"></div></div>
@@ -11800,7 +12072,12 @@ function atualizarKpisCapa() {
         // ── Módulo Geral ──
         const corGeral = corConf(pctGeral);
         const kpiGV = document.getElementById('kpiConfGeralVal'); if(kpiGV) { kpiGV.textContent = pctGeral + '%'; kpiGV.style.color = corGeral; }
-        const kpiGT = document.getElementById('kpiConfGeralTrend'); if(kpiGT) kpiGT.innerHTML = tendencia(pctGeral, pctGeralAnt);
+        const kpiGT = document.getElementById('kpiConfGeralTrend');
+        if(kpiGT) {
+            kpiGT.innerHTML = tendencia(pctGeral, pctGeralAnt) + (pctGeralAnt !== null ? '<small>vs. mês anterior</small>' : '');
+            kpiGT.classList.toggle('tendencia-positiva', pctGeralAnt !== null && pctGeral > pctGeralAnt);
+            kpiGT.classList.toggle('tendencia-negativa', pctGeralAnt !== null && pctGeral < pctGeralAnt);
+        }
         const barG = document.getElementById('kpiConfGeralBar'); if(barG) { barG.style.width = pctGeral + '%'; barG.style.background = corGeral; }
         const kpiGSub = document.getElementById('kpiConfGeralSub'); if(kpiGSub) { kpiGSub.textContent = confTotal + ' de ' + totalTudo + ' lotes'; kpiGSub.style.background = corGeral + '22'; kpiGSub.style.color = corGeral; }
 
