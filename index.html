@@ -215,6 +215,12 @@
         .agenda-filtros {
             display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: center;
         }
+        .agenda-busca {
+            min-width: 210px; flex: 1; max-width: 340px; border: 1.5px solid #ddd;
+            border-radius: 20px; padding: 7px 14px; font-size: 12px; outline: none;
+        }
+        .agenda-busca:focus { border-color: #2980b9; }
+        html[data-theme="dark"] .agenda-busca { background:#161b22;color:#e6edf3;border-color:#30363d; }
         .agenda-filtro-btn {
             padding: 6px 14px; border-radius: 20px; border: 2px solid #ddd;
             background: white; color: #555; font-size: 11px; font-weight: 700;
@@ -233,6 +239,9 @@
         .agenda-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
         .agenda-card.hoje { border-left-color: #e74c3c; }
         .agenda-card.recorrente { border-left-color: #9b59b6; }
+        .agenda-card.atrasado { border-left-color: #e67e22; background:#fffaf4; }
+        .agenda-card.concluido { border-left-color: #27ae60; opacity:.72; }
+        html[data-theme="dark"] .agenda-card.atrasado { background:#21170d; }
         .agenda-card.inativo { opacity: 0.5; border-left-color: #95a5a6; }
         .agenda-card-info { flex: 1; }
         .agenda-card-titulo { font-size: 14px; font-weight: 800; color: #2c3e50; margin-bottom: 4px; }
@@ -250,6 +259,8 @@
         .agenda-badge-rec  { background: #f5eef8; color: #9b59b6; }
         .agenda-badge-hoje { background: #fdecea; color: #e74c3c; font-weight: 900; }
         .agenda-badge-inativo { background: #f2f3f4; color: #95a5a6; }
+        .agenda-badge-atrasado { background:#fff0dc;color:#c65f00; }
+        .agenda-badge-concluido { background:#e9f8ef;color:#168a52; }
         html[data-theme="dark"] .agenda-badge-data  { background: #0d2137; color: #58a6ff; }
         html[data-theme="dark"] .agenda-badge-hora  { background: #0a2a1a; color: #3fb950; }
         html[data-theme="dark"] .agenda-badge-rec   { background: #1e0f2e; color: #bc8cff; }
@@ -263,10 +274,12 @@
         }
         .agenda-btn-editar  { background: #ebf5fb; color: #2980b9; }
         .agenda-btn-toggle  { background: #eafaf1; color: #27ae60; }
+        .agenda-btn-concluir { background:#e9f8ef;color:#168a52; }
         .agenda-btn-excluir { background: #fdecea; color: #e74c3c; }
         .agenda-btn-acao:hover { transform: scale(1.1); }
         html[data-theme="dark"] .agenda-btn-editar  { background: #0d2137; color: #58a6ff; }
         html[data-theme="dark"] .agenda-btn-toggle  { background: #0a2a1a; color: #3fb950; }
+        html[data-theme="dark"] .agenda-btn-concluir { background:#0a2a1a;color:#3fb950; }
         html[data-theme="dark"] .agenda-btn-excluir { background: #2e0d0d; color: #f85149; }
         .agenda-empty {
             text-align: center; padding: 60px 20px; color: #aaa;
@@ -439,6 +452,25 @@
             font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.4px;
         }
         .popup-agenda-snooze-opts { display: flex; gap: 6px; flex-wrap: wrap; }
+        .popup-agenda-aviso-ativo { padding:9px 22px;background:#eaf4ff;color:#1f6fa9;font-size:11px;font-weight:800;gap:6px; }
+        @media (max-width: 600px) {
+            #aba-agenda { padding: 12px; }
+            .agenda-header { align-items:flex-start; }
+            .agenda-header-left h2 { font-size:15px; }
+            .agenda-btn-novo { width:100%;justify-content:center; }
+            .agenda-filtros { gap:6px; }
+            .agenda-busca { order:-1;max-width:none;min-width:100%; }
+            .agenda-filtro-btn { padding:6px 10px;font-size:9px; }
+            .agenda-card { padding:13px 12px;flex-direction:column; }
+            .agenda-card-acoes { width:100%;justify-content:flex-end;border-top:1px solid #edf1f4;padding-top:9px; }
+            .agenda-modal-box,.popup-agenda-box { width:calc(100vw - 20px)!important;max-height:calc(100vh - 20px);overflow-y:auto; }
+            .agenda-modal-body { padding:16px; }
+            .agenda-form-row { flex-direction:column; }
+            .agenda-modal-footer,.popup-agenda-footer { padding:12px 16px; }
+            .popup-agenda-footer { align-items:stretch;flex-direction:column; }
+            #popupBotoesNormais,#popupBotoesSnoozeAtivo { width:100%;flex-wrap:wrap; }
+            .popup-agenda-btn-abrir,.popup-agenda-btn-manter,.popup-agenda-btn-desativar { flex:1; }
+        }
         /* ========== FIM AGENDA ========== */
 
         /* ========== ABA HOMOGENEIDADE DE MISTURA ========== */
@@ -8048,10 +8080,13 @@ document.addEventListener('DOMContentLoaded', function(){
 
         <!-- Filtros -->
         <div class="agenda-filtros">
+            <input class="agenda-busca" id="agendaBusca" type="search" placeholder="🔎 Buscar título ou descrição..." oninput="agendaRenderizarLista()" autocomplete="off">
             <button class="agenda-filtro-btn active" id="agFiltroTodos"   onclick="agendaFiltrar('todos')">📋 Todos</button>
             <button class="agenda-filtro-btn"         id="agFiltroHoje"   onclick="agendaFiltrar('hoje')">📌 Hoje</button>
             <button class="agenda-filtro-btn"         id="agFiltroAtivos" onclick="agendaFiltrar('ativos')">✅ Ativos</button>
             <button class="agenda-filtro-btn"         id="agFiltroRec"    onclick="agendaFiltrar('recorrentes')">🔁 Recorrentes</button>
+            <button class="agenda-filtro-btn"         id="agFiltroAtrasados" onclick="agendaFiltrar('atrasados')">⚠️ Atrasados</button>
+            <button class="agenda-filtro-btn"         id="agFiltroConcluidos" onclick="agendaFiltrar('concluidos')">✔ Concluídos</button>
         </div>
 
         <!-- Lista -->
@@ -8111,7 +8146,7 @@ document.addEventListener('DOMContentLoaded', function(){
             </div>
             <div class="agenda-modal-footer">
                 <button class="agenda-btn-cancelar" onclick="fecharModalAgenda()">Cancelar</button>
-                <button class="agenda-btn-salvar"   onclick="salvarAgendaCompromisso()">💾 Salvar</button>
+                <button class="agenda-btn-salvar" id="agendaBtnSalvar" onclick="salvarAgendaCompromisso()">💾 Salvar</button>
             </div>
         </div>
     </div>
@@ -37138,7 +37173,40 @@ document.addEventListener('DOMContentLoaded', function() {
     let _snoozeInterval   = null;        // timer do snooze ativo
     let _snoozeAtivo      = false;       // flag: usuário escolheu "Manter"
     let _snoozeSelecionado= 15;          // valor selecionado antes de confirmar
+    let _erroCargaAvisado  = false;
+    let _salvandoAgenda    = false;
     const TABELA          = 'agenda_compromissos';
+    const META_TAG        = '\n<!--AGENDA_META:';
+
+    function _esc(valor) {
+        return String(valor == null ? '' : valor)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+    }
+    function _lerDescricaoMeta(descricao) {
+        const texto = String(descricao || '');
+        const pos = texto.lastIndexOf(META_TAG);
+        if (pos < 0 || !texto.endsWith('-->')) return { descricao:texto, meta:{} };
+        try {
+            const bruto = texto.slice(pos + META_TAG.length, -3);
+            return { descricao:texto.slice(0,pos), meta:JSON.parse(decodeURIComponent(bruto)) || {} };
+        } catch(e) { return { descricao:texto, meta:{} }; }
+    }
+    function _normalizarCompromisso(c) {
+        const lido = _lerDescricaoMeta(c.descricao);
+        return { ...c, descricao:lido.descricao, _agendaMeta:lido.meta || {} };
+    }
+    function _descricaoParaBanco(c) {
+        const descricao = String(c.descricao || '').trim();
+        const meta = c._agendaMeta || {};
+        return descricao + META_TAG + encodeURIComponent(JSON.stringify(meta)) + '-->';
+    }
+    function _status(c) { return ((c._agendaMeta || {}).status === 'concluido') ? 'concluido' : 'pendente'; }
+    function _concluido(c) {
+        const meta = c._agendaMeta || {};
+        if (c.recorrente) return (meta.concluidoEmDatas || []).includes(_hoje());
+        return _status(c) === 'concluido';
+    }
 
     // ── Data LOCAL ───────────────────────────────────────────────────
     function _hoje() {
@@ -37163,10 +37231,19 @@ document.addEventListener('DOMContentLoaded', function() {
         if (base > hoje) return false;
         if (c.recorrencia === 'diario')  return true;
         if (c.recorrencia === 'semanal') return base.getDay()  === hoje.getDay();
-        if (c.recorrencia === 'mensal')  return base.getDate() === hoje.getDate();
+        if (c.recorrencia === 'mensal') {
+            const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).getDate();
+            const diaPrevisto = Math.min(base.getDate(), ultimoDia);
+            return hoje.getDate() === diaPrevisto;
+        }
         return false;
     }
     function _eHoje(c) { return _isHoje(c.data) || _isRecorrenteHoje(c); }
+    function _atrasado(c) {
+        if (!c || c.ativo === false || _concluido(c) || c.recorrente || !c.data) return false;
+        if (c.data < _hoje()) return true;
+        return c.data === _hoje() && !!c.hora && _horaPassou(c);
+    }
 
     // ── Hora passou ──────────────────────────────────────────────────
     function _horaPassou(c) {
@@ -37176,11 +37253,21 @@ document.addEventListener('DOMContentLoaded', function() {
         return n.getHours()*60 + n.getMinutes() >= hh*60+mm;
     }
 
-    // ── Dismiss definitivo (localStorage = persiste entre sessões no mesmo dia) ─
-    // Chave: id + data. Para recorrente mensal, a desativação vale só pro mês atual.
+    // ── Dispensa diária sincronizada no próprio compromisso ─────────
+    // localStorage permanece como compatibilidade para versões anteriores.
     function _chaveDisp(c) { return 'agDisp_' + c.id + '_' + _hoje(); }
-    function _dispensado(c) { return localStorage.getItem(_chaveDisp(c)) === '1'; }
-    function _setDispensado(c) { localStorage.setItem(_chaveDisp(c), '1'); }
+    function _dispensado(c) {
+        const datas = ((c._agendaMeta || {}).dispensadoEm || []);
+        return datas.includes(_hoje()) || localStorage.getItem(_chaveDisp(c)) === '1';
+    }
+    function _setDispensado(c) {
+        const meta = { ...(c._agendaMeta || {}) };
+        const datas = Array.isArray(meta.dispensadoEm) ? meta.dispensadoEm.filter(Boolean) : [];
+        if (!datas.includes(_hoje())) datas.push(_hoje());
+        meta.dispensadoEm = datas.slice(-60);
+        c._agendaMeta = meta;
+        localStorage.setItem(_chaveDisp(c), '1');
+    }
 
     // ── Supabase ─────────────────────────────────────────────────────
     function _getUserId() {
@@ -37192,21 +37279,45 @@ document.addEventListener('DOMContentLoaded', function() {
             // Segurança: se não houver usuário identificado, não carrega nada
             if (!uid) { _compromissos = []; return; }
             const { data, error } = await _sbClient.from(TABELA).select('*')
-                .eq('user_id', uid).order('hora',{ascending:true});
+                .eq('user_id', uid)
+                .order('data',{ascending:true})
+                .order('hora',{ascending:true, nullsFirst:true});
             if (error) throw error;
-            _compromissos = data || [];
-        } catch(e) { _compromissos = []; }
+            _compromissos = (data || []).map(_normalizarCompromisso);
+            _erroCargaAvisado = false;
+        } catch(e) {
+            if (!_erroCargaAvisado) {
+                sgqToast('Não foi possível carregar a Agenda. Verifique a conexão e tente novamente.','error');
+                _erroCargaAvisado = true;
+            }
+            throw e;
+        }
     }
     async function _salvar(obj) {
         const uid = _getUserId();
-        const payload = uid ? { ...obj, user_id: uid } : obj;
-        const { data, error } = await _sbClient.from(TABELA).upsert([payload],{onConflict:'id'}).select();
+        if (!uid) throw new Error('Usuário não identificado. Entre novamente no sistema.');
+        const payload = { ...obj, user_id:uid, descricao:_descricaoParaBanco(obj) };
+        delete payload._agendaMeta;
+        let consulta;
+        if (payload.id) {
+            const id = payload.id; delete payload.id;
+            consulta = _sbClient.from(TABELA).update(payload)
+                .eq('id',id).eq('user_id',uid).select();
+        } else {
+            consulta = _sbClient.from(TABELA).insert([payload]).select();
+        }
+        const { data, error } = await consulta;
         if (error) throw error;
-        return data[0];
+        if (!data || !data[0]) throw new Error('Compromisso não encontrado ou sem permissão.');
+        return _normalizarCompromisso(data[0]);
     }
     async function _excluir(id) {
-        const { error } = await _sbClient.from(TABELA).delete().eq('id',id);
+        const uid = _getUserId();
+        if (!uid) throw new Error('Usuário não identificado.');
+        const { data, error } = await _sbClient.from(TABELA).delete()
+            .eq('id',id).eq('user_id',uid).select('id');
         if (error) throw error;
+        if (!data || !data.length) throw new Error('Compromisso não encontrado ou sem permissão.');
     }
 
     // ── Exibir popup ─────────────────────────────────────────────────
@@ -37227,10 +37338,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const rec  = c.recorrente && c.recorrencia
                     ? '<span>🔁 '+({diario:'Diário',semanal:'Semanal',mensal:'Mensal'}[c.recorrencia]||c.recorrencia)+'</span>' : '';
                 const hora = c.hora ? '<span>🕐 '+c.hora.substring(0,5)+'</span>' : '';
+                const data = '<span>📅 '+_formatarData(c.data)+'</span>';
+                const atrasado = _atrasado(c) ? '<span style="color:#c65f00;font-weight:800;">⚠ Atrasado</span>' : '';
                 return '<div class="popup-agenda-item">' +
-                    '<div class="popup-agenda-item-titulo">'+c.titulo+'</div>' +
-                    (c.descricao ? '<div style="font-size:11px;color:#888;margin-bottom:6px;">'+c.descricao+'</div>' : '') +
-                    '<div class="popup-agenda-item-meta">'+hora+rec+'</div></div>';
+                    '<div class="popup-agenda-item-titulo">'+_esc(c.titulo)+'</div>' +
+                    (c.descricao ? '<div style="font-size:11px;color:#888;margin-bottom:6px;">'+_esc(c.descricao)+'</div>' : '') +
+                    '<div class="popup-agenda-item-meta">'+data+hora+rec+atrasado+'</div></div>';
             }).join('');
         }
 
@@ -37299,22 +37412,34 @@ document.addEventListener('DOMContentLoaded', function() {
         }, _snoozeMinutos * 60 * 1000);
 
         _atualizarUISnooze();
+        window.fecharPopupAgenda();
         sgqToast('Aviso mantido — reaparece a cada ' + _snoozeMinutos + ' min.', 'info');
     };
 
     // ── Desativar aviso — dispensa todos os itens atuais hoje ────────
-    window.agendaDesativarAviso = function() {
+    window.agendaDesativarAviso = async function() {
         // Para o snooze
         _snoozeAtivo = false;
         if (_snoozeInterval) { clearInterval(_snoozeInterval); _snoozeInterval = null; }
 
         // Marca como dispensado hoje (persiste em localStorage)
-        _popupItensAtuais.forEach(c => _setDispensado(c));
+        const itens = [..._popupItensAtuais];
+        for (const c of itens) {
+            _setDispensado(c);
+            try {
+                const salvo = await _salvar(c);
+                const i = _compromissos.findIndex(x => x.id === c.id);
+                if (i >= 0) _compromissos[i] = salvo;
+            } catch(e) {
+                sgqToast('Aviso dispensado neste aparelho, mas não foi possível sincronizar.','warning');
+            }
+        }
         _popupItensAtuais = [];
 
         const p = document.getElementById('popupAgenda');
         if (p) p.classList.remove('show');
         _popupVisivel = false;
+        agendaRenderizarLista();
 
         sgqToast('Aviso desativado para hoje.', 'info');
     };
@@ -37335,7 +37460,11 @@ document.addEventListener('DOMContentLoaded', function() {
     async function _tick() {
         if (!_podeAgenda()) return;
 
-        await _carregar();
+        try { await _carregar(); } catch(e) {
+            if (_compromissos.length) agendaRenderizarLista();
+            else if (lista) lista.innerHTML = '<div class="agenda-empty"><div class="agenda-empty-icon">⚠️</div><div>Não foi possível carregar a Agenda.</div><button class="agenda-btn-novo" style="margin:14px auto 0" onclick="_agendaCarregarEExibir()">Tentar novamente</button></div>';
+            return;
+        }
         agendaRenderizarLista();
 
         if (_popupVisivel) return;
@@ -37346,10 +37475,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var candidatos = _compromissos.filter(function(c) {
             if (c.ativo === false) { return false; }
+            if (_concluido(c)) { return false; }
 
-            // Verifica se é hoje (data exata ou recorrente)
-            var eHoje = _eHoje(c);
-            if (!eHoje) { return false; }
+            // Exibe compromissos de hoje e pendências não recorrentes vencidas.
+            var deveAvisar = _eHoje(c) || _atrasado(c);
+            if (!deveAvisar) { return false; }
 
             // Verifica dismiss
             if (_dispensado(c)) { return false; }
@@ -37385,18 +37515,20 @@ document.addEventListener('DOMContentLoaded', function() {
     window._agendaInicializar     = _iniciar;
     window._agendaCarregarEExibir = async function() {
         if (!_podeAgenda()) return;
-        await _carregar();
+        const lista = document.getElementById('agendaLista');
+        if (lista && !_compromissos.length) lista.innerHTML = '<div class="agenda-empty"><div class="agenda-empty-icon">⏳</div><div>Carregando compromissos...</div></div>';
+        try { await _carregar(); } catch(e) { return; }
         agendaRenderizarLista();
     };
 
     // ── Renderização da lista ─────────────────────────────────────────
     window.agendaFiltrar = function(filtro) {
         _filtroAtual = filtro;
-        ['Todos','Hoje','Ativos','Rec'].forEach(f => {
+        ['Todos','Hoje','Ativos','Rec','Atrasados','Concluidos'].forEach(f => {
             const b = document.getElementById('agFiltro'+f);
             if (b) b.classList.remove('active');
         });
-        const mapa = {todos:'Todos',hoje:'Hoje',ativos:'Ativos',recorrentes:'Rec'};
+        const mapa = {todos:'Todos',hoje:'Hoje',ativos:'Ativos',recorrentes:'Rec',atrasados:'Atrasados',concluidos:'Concluidos'};
         const ba = document.getElementById('agFiltro'+mapa[filtro]);
         if (ba) ba.classList.add('active');
         agendaRenderizarLista();
@@ -37406,9 +37538,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const lista = document.getElementById('agendaLista');
         if (!lista) return;
         let dados = [..._compromissos];
+        const busca = ((document.getElementById('agendaBusca') || {}).value || '').trim().toLocaleLowerCase('pt-BR');
+        if (busca) dados = dados.filter(c => ((c.titulo || '')+' '+(c.descricao || '')).toLocaleLowerCase('pt-BR').includes(busca));
         if (_filtroAtual === 'hoje')        dados = dados.filter(c => _eHoje(c));
-        if (_filtroAtual === 'ativos')      dados = dados.filter(c => c.ativo !== false);
+        if (_filtroAtual === 'ativos')      dados = dados.filter(c => c.ativo !== false && !_concluido(c));
         if (_filtroAtual === 'recorrentes') dados = dados.filter(c => c.recorrente);
+        if (_filtroAtual === 'atrasados')   dados = dados.filter(_atrasado);
+        if (_filtroAtual === 'concluidos')  dados = dados.filter(_concluido);
+        dados.sort((a,b) => String(a.data||'').localeCompare(String(b.data||'')) || String(a.hora||'').localeCompare(String(b.hora||'')));
         if (dados.length === 0) {
             lista.innerHTML = '<div class="agenda-empty"><div class="agenda-empty-icon">📅</div><div>Nenhum compromisso encontrado.</div></div>';
             return;
@@ -37417,28 +37554,34 @@ document.addEventListener('DOMContentLoaded', function() {
             const ehoje  = _eHoje(c);
             const inat   = c.ativo === false;
             const disp   = _dispensado(c);
-            let cls = 'agenda-card' + (inat ? ' inativo' : disp ? ' inativo' : c.recorrente ? ' recorrente' : ehoje ? ' hoje' : '');
+            const conc   = _concluido(c);
+            const atras  = _atrasado(c);
+            let cls = 'agenda-card' + (conc ? ' concluido' : atras ? ' atrasado' : inat ? ' inativo' : disp ? ' inativo' : c.recorrente ? ' recorrente' : ehoje ? ' hoje' : '');
             const recLabel = c.recorrente && c.recorrencia
                 ? ({diario:'Diário',semanal:'Semanal',mensal:'Mensal'}[c.recorrencia]||c.recorrencia) : null;
             return '<div class="'+cls+'" id="agCard_'+c.id+'">' +
                 '<div class="agenda-card-info">' +
-                '<div class="agenda-card-titulo">'+c.titulo+'</div>' +
-                (c.descricao?'<div class="agenda-card-desc">'+c.descricao+'</div>':'') +
+                '<div class="agenda-card-titulo">'+_esc(c.titulo)+'</div>' +
+                (c.descricao?'<div class="agenda-card-desc">'+_esc(c.descricao)+'</div>':'') +
                 '<div class="agenda-card-meta">' +
                 '<span class="agenda-badge agenda-badge-data">📅 '+_formatarData(c.data)+'</span>' +
                 (c.hora?'<span class="agenda-badge agenda-badge-hora">🕐 '+c.hora.substring(0,5)+'</span>':'') +
                 (recLabel?'<span class="agenda-badge agenda-badge-rec">🔁 '+recLabel+'</span>':'') +
                 (ehoje&&!inat&&!disp?'<span class="agenda-badge agenda-badge-hoje">📌 Hoje</span>':'') +
+                (atras?'<span class="agenda-badge agenda-badge-atrasado">⚠ Atrasado</span>':'') +
+                (conc?'<span class="agenda-badge agenda-badge-concluido">✔ Concluído</span>':'') +
                 (inat?'<span class="agenda-badge agenda-badge-inativo">Inativo</span>':'') +
                 (disp&&!inat?'<span class="agenda-badge agenda-badge-inativo">✔ Dispensado hoje</span>':'') +
                 '</div></div>' +
                 '<div class="agenda-card-acoes">' +
                 '<button class="agenda-btn-acao agenda-btn-editar" title="Editar" onclick="agendaEditar(\''+c.id+'\')">✏️</button>' +
+                '<button class="agenda-btn-acao agenda-btn-concluir" title="'+(conc?'Reabrir':'Marcar como concluído')+'" onclick="agendaToggleConcluido(\''+c.id+'\')">'+(conc?'↩️':'✔️')+'</button>' +
                 '<button class="agenda-btn-acao agenda-btn-toggle" title="'+(c.ativo!==false?'Desativar':'Ativar')+'" onclick="agendaToggleAtivo(\''+c.id+'\')">'+(c.ativo!==false?'⏸️':'▶️')+'</button>' +
                 '<button class="agenda-btn-acao agenda-btn-excluir" title="Excluir" onclick="agendaExcluir(\''+c.id+'\')">🗑️</button>' +
                 '</div></div>';
         }).join('');
     }
+    window.agendaRenderizarLista = agendaRenderizarLista;
 
     // ── Modal ─────────────────────────────────────────────────────────
     window.abrirModalAgenda = function() {
@@ -37453,6 +37596,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('agendaGrupoRec').style.display = 'none';
         document.getElementById('modalAgendaTitulo').textContent = 'Novo Compromisso';
         document.getElementById('modalAgenda').classList.add('show');
+        setTimeout(() => document.getElementById('agendaTitulo')?.focus(), 40);
     };
     window.fecharModalAgenda = function() {
         document.getElementById('modalAgenda').classList.remove('show');
@@ -37474,14 +37618,17 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('agendaGrupoRec').style.display = c.recorrente?'flex':'none';
         document.getElementById('modalAgendaTitulo').textContent = 'Editar Compromisso';
         document.getElementById('modalAgenda').classList.add('show');
+        setTimeout(() => document.getElementById('agendaTitulo')?.focus(), 40);
     };
     window.salvarAgendaCompromisso = async function() {
+        if (_salvandoAgenda) return;
         const titulo = document.getElementById('agendaTitulo').value.trim();
         const data   = document.getElementById('agendaData').value;
         if (!titulo) { sgqToast('Informe o título.','warning'); return; }
         if (!data)   { sgqToast('Informe a data.','warning');   return; }
         const id  = document.getElementById('agendaEditId').value;
         const rec = document.getElementById('agendaRecorrente').checked;
+        const existente = id ? _compromissos.find(x => x.id === id) : null;
         const obj = {
             titulo, data,
             descricao:   document.getElementById('agendaDescricao').value.trim()||null,
@@ -37489,20 +37636,48 @@ document.addEventListener('DOMContentLoaded', function() {
             recorrente:  rec,
             recorrencia: rec ? document.getElementById('agendaTipoRec').value : null,
             ativo:       document.getElementById('agendaAtivo').checked,
+            _agendaMeta: existente ? { ...(existente._agendaMeta || {}) } : { status:'pendente', dispensadoEm:[] },
         };
         if (id) obj.id = id;
+        const btn = document.getElementById('agendaBtnSalvar');
         try {
+            _salvandoAgenda = true;
+            if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
             const salvo = await _salvar(obj);
             if (id) { const i=_compromissos.findIndex(x=>x.id===id); if(i>=0)_compromissos[i]=salvo; else _compromissos.push(salvo); }
             else _compromissos.push(salvo);
             fecharModalAgenda(); agendaRenderizarLista();
             sgqToast('Compromisso salvo!','success');
         } catch(e) { sgqToast('Erro ao salvar: '+e.message,'error'); }
+        finally {
+            _salvandoAgenda = false;
+            if (btn) { btn.disabled = false; btn.textContent = '💾 Salvar'; }
+        }
+    };
+    window.agendaToggleConcluido = async function(id) {
+        const c = _compromissos.find(x => x.id === id); if (!c) return;
+        const concluindo = !_concluido(c);
+        const meta = { ...(c._agendaMeta || {}) };
+        if (c.recorrente) {
+            let datas = Array.isArray(meta.concluidoEmDatas) ? [...meta.concluidoEmDatas] : [];
+            datas = concluindo ? [...new Set([...datas,_hoje()])] : datas.filter(d => d !== _hoje());
+            meta.concluidoEmDatas = datas.slice(-60);
+        } else {
+            meta.status = concluindo ? 'concluido' : 'pendente';
+            meta.concluidoEm = concluindo ? new Date().toISOString() : null;
+        }
+        const alterado = { ...c, _agendaMeta:meta };
+        try {
+            const salvo = await _salvar(alterado);
+            const i = _compromissos.findIndex(x => x.id === id); if (i >= 0) _compromissos[i] = salvo;
+            agendaRenderizarLista();
+            sgqToast(concluindo?'Compromisso concluído.':'Compromisso reaberto.','success');
+        } catch(e) { sgqToast('Erro ao atualizar: '+e.message,'error'); }
     };
     window.agendaToggleAtivo = async function(id) {
         const c=_compromissos.find(x=>x.id===id); if(!c)return;
         try {
-            const s=await _salvar({...c,ativo:!c.ativo});
+            const s=await _salvar({...c,ativo:c.ativo===false});
             const i=_compromissos.findIndex(x=>x.id===id); if(i>=0)_compromissos[i]=s;
             agendaRenderizarLista();
             sgqToast('Compromisso '+(s.ativo?'ativado':'desativado')+'.','info');
@@ -37517,6 +37692,18 @@ document.addEventListener('DOMContentLoaded', function() {
             sgqToast('Compromisso excluído.','success');
         } catch(e) { sgqToast('Erro ao excluir: '+e.message,'error'); }
     };
+
+    document.getElementById('modalAgenda')?.addEventListener('click', function(e) {
+        if (e.target === this) fecharModalAgenda();
+    });
+    document.addEventListener('keydown', function(e) {
+        const modal = document.getElementById('modalAgenda');
+        if (!modal || !modal.classList.contains('show')) return;
+        if (e.key === 'Escape') { fecharModalAgenda(); return; }
+        if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+            e.preventDefault(); salvarAgendaCompromisso();
+        }
+    });
 
     // ── _agendaInicializar é chamado diretamente pelos hooks de login ──
     // (login manual em fazerLogin() e login automático no DOMContentLoaded do sistema)
