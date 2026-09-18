@@ -10408,6 +10408,7 @@ document.addEventListener('DOMContentLoaded', function(){
                         <div class="form-group" id="grpPicadoClass"><label>Picado</label><input type="number" id="cadPicadoClass" step="0.0001" min="0" autocomplete="off"></div>
                         <div class="form-group" id="grpGessadoClass"><label>Gessado</label><input type="number" id="cadGessadoClass" step="0.0001" min="0" autocomplete="off"></div>
                         <div class="form-group" id="grpGerminadoClass"><label>Germinado</label><input type="number" id="cadGerminadoClass" step="0.0001" min="0" autocomplete="off"></div>
+                        <div class="form-group" id="grpAvariadosClass"><label>Avariados Total</label><input type="text" id="cadAvariadosTotalClass" value="0,00" readonly tabindex="-1" aria-readonly="true" style="background:#eef4fb;color:#12365b;font-weight:800;cursor:not-allowed;"></div>
                         <div class="form-group" id="grpQuebradoClass"><label>Quebrado</label><input type="number" id="cadQuebradoClass" step="0.0001" min="0" autocomplete="off"></div>
                         <div class="form-group" id="grpCarunchadoClass"><label>Carunchado</label><input type="number" id="cadCarunchadoClass" step="0.0001" min="0" autocomplete="off"></div>
                         <div class="form-group" id="grpImpurezaClass"><label>Impureza</label><input type="number" id="cadImpurezaClass" step="0.0001" min="0" autocomplete="off"></div>
@@ -12604,6 +12605,7 @@ function abrirModalEdicaoClass(id) {
     document.getElementById('cadFumonisinaClass').value           = r.fumonisinas||0;
     document.getElementById('cadZearalenonaClass').value          = r.zearalenona||0;
     document.getElementById('cadDonClass').value                  = r.don||0;
+    classAtualizarAvariadosTotal();
     // Observação
     const obsClass = document.getElementById('cadObsClass');
     obsClass.value = r.obs || '';
@@ -12648,6 +12650,7 @@ function classAtualizarCamposProduto(produto) {
                 input.setAttribute('data-skip-class', '1');
                 input.style.cursor = 'not-allowed';
                 if (grupo) {
+                    grupo.style.display = 'none';
                     grupo.style.pointerEvents = 'none';
                     grupo.title = 'Não aplicável para este produto';
                 }
@@ -12657,6 +12660,7 @@ function classAtualizarCamposProduto(produto) {
                 input.removeAttribute('data-skip-class');
                 input.style.cursor = '';
                 if (grupo) {
+                    grupo.style.display = '';
                     grupo.style.pointerEvents = '';
                     grupo.title = '';
                 }
@@ -12676,11 +12680,12 @@ function classAtualizarCamposProduto(produto) {
     }
 
     // Reordenar campos visualmente conforme o produto
-    // Ordem SOJA:  Queimado, Ardido, Mofado, Esverdeado, Fermentando, Chocho, Picado, Germinado, Quebrado, Impureza, Umidade, Densidade
-    // Ordem padrão (MILHO/outros): Queimado, Ardido, Mofado, Fermentando, Chocho, Esverdeado, Picado, Gessado, Germinado, Quebrado, Carunchado, Impureza, Umidade, Densidade
-    const ordemSoja   = ['grpQueimadoClass','grpArdidoClass','grpMofadoClass','grpEsverdeadoClass','grpFermentandoClass','grpChochoClass','grpPicadoClass','grpGerminadoClass','grpQuebradoClass','grpImpurezaClass','grpUmidadeClass','grpDensidadeClass'];
-    const ordemPadrao = ['grpQueimadoClass','grpArdidoClass','grpMofadoClass','grpFermentandoClass','grpChochoClass','grpEsverdeadoClass','grpPicadoClass','grpGessadoClass','grpGerminadoClass','grpQuebradoClass','grpCarunchadoClass','grpImpurezaClass','grpUmidadeClass','grpDensidadeClass'];
-    const ordemAtual  = isSoja ? ordemSoja : ordemPadrao;
+    // Ordem específica por grão. Campos não aplicáveis ficam ocultos e não
+    // participam da navegação por Enter.
+    const ordemSoja   = ['grpQueimadoClass','grpArdidoClass','grpMofadoClass','grpEsverdeadoClass','grpFermentandoClass','grpChochoClass','grpPicadoClass','grpGerminadoClass','grpAvariadosClass','grpQuebradoClass','grpImpurezaClass','grpUmidadeClass','grpDensidadeClass'];
+    const ordemMilho  = ['grpGessadoClass','grpCarunchadoClass','grpQueimadoClass','grpArdidoClass','grpMofadoClass','grpFermentandoClass','grpChochoClass','grpGerminadoClass','grpAvariadosClass','grpQuebradoClass','grpImpurezaClass','grpUmidadeClass','grpDensidadeClass'];
+    const ordemPadrao = ['grpQueimadoClass','grpArdidoClass','grpMofadoClass','grpFermentandoClass','grpChochoClass','grpEsverdeadoClass','grpPicadoClass','grpGessadoClass','grpGerminadoClass','grpAvariadosClass','grpQuebradoClass','grpCarunchadoClass','grpImpurezaClass','grpUmidadeClass','grpDensidadeClass'];
+    const ordemAtual  = isMilho ? ordemMilho : isSoja ? ordemSoja : ordemPadrao;
     const grpQueimado = document.getElementById('grpQueimadoClass');
     if (grpQueimado) {
         const grid = grpQueimado.parentElement;
@@ -14549,6 +14554,22 @@ async function gerarRelFabricaModeloPDF(destino='pdf') {
         if(btnPdf){btnPdf.disabled=false;btnPdf.textContent='📊 GERAR PDF - MODELO MENSAL';}
         if(btnImp){btnImp.disabled=false;btnImp.textContent='🖨️ IMPRIMIR MODELO MENSAL';}
     }
+    classAtualizarAvariadosTotal();
+}
+
+function classAtualizarAvariadosTotal() {
+    const ids = [
+        'cadQueimadoClass','cadArdidoClass','cadMofadoClass','cadFermentandoClass',
+        'cadChochoClass','cadGessadoClass','cadGerminadoClass','cadPicadoClass','cadEsverdeadoClass'
+    ];
+    const total = ids.reduce((s,id) => {
+        const el = document.getElementById(id);
+        const v = el ? parseFloat(String(el.value || '').replace(',','.')) : NaN;
+        return s + (isNaN(v) ? 0 : v);
+    }, 0);
+    const campo = document.getElementById('cadAvariadosTotalClass');
+    if (campo) campo.value = total.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    return total;
 }
 
 
@@ -36263,9 +36284,20 @@ function classLocalDestinoEnter(event) {
 function classFocarPrimeiroResultado() {
     const form = document.getElementById('formCadastroClass');
     if (!form) return;
-    const primeiro = Array.from(form.querySelectorAll('input[type="number"]'))
-        .find(el => !el.disabled && el.getAttribute('data-skip-class') !== '1' && el.offsetParent !== null);
-    if (primeiro) setTimeout(() => { primeiro.focus(); primeiro.select(); }, 0);
+    const produto = (document.getElementById('cadProdutoClass')?.value || '').toUpperCase();
+    const idPreferido = produto.includes('MILHO') ? 'cadGessadoClass'
+        : produto.includes('SOJA') ? 'cadQueimadoClass' : '';
+    setTimeout(() => {
+        let primeiro = idPreferido ? document.getElementById(idPreferido) : null;
+        if (!primeiro || primeiro.disabled || primeiro.offsetParent === null) {
+            primeiro = Array.from(form.querySelectorAll('input[type="number"]'))
+                .find(el => !el.disabled && el.getAttribute('data-skip-class') !== '1' && el.offsetParent !== null);
+        }
+        if (primeiro) {
+            primeiro.focus({preventScroll:true});
+            primeiro.select();
+        }
+    }, 220);
 }
 function classFornecedorAutoFill(valor) {
     const isAgronor = (valor||'').trim().toUpperCase() === 'AGRONOR';
@@ -36543,6 +36575,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // habilitada na ordem visual específica de SOJA ou MILHO.
     const formClass = document.getElementById('formCadastroClass');
     if (formClass) {
+        formClass.addEventListener('input', function(event) {
+            if (event.target && event.target.matches('input[type="number"]')) {
+                classAtualizarAvariadosTotal();
+            }
+        });
         formClass.addEventListener('keydown', function(event) {
             const atual = event.target;
             if (event.key !== 'Enter' || !atual || atual.type !== 'number') return;
