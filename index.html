@@ -4434,6 +4434,110 @@ document.addEventListener('DOMContentLoaded', function(){
   .capa-kpis-sec .kpi-mod .kpi-mod-sub{bottom:2px!important;font-size:7px!important;}
 }
 </style>
+<style id="sgq-dashboard-mobile-fix-v10">
+/* Celular: todos os cards permanecem no fluxo e nenhum gráfico pode escapar. */
+@media (max-width:900px){
+  #aba-capa{overflow-x:hidden!important;}
+  #dashQualidadeWrap{padding:14px 12px 24px!important;overflow-x:hidden!important;}
+
+  .capa-welcome{
+    min-height:0!important;height:auto!important;margin:0 0 14px!important;padding:16px!important;
+    display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:14px!important;
+    border-radius:14px!important;box-sizing:border-box!important;
+  }
+  .capa-welcome h2{font-size:25px!important;line-height:1.08!important;margin:0 0 5px!important;}
+  .capa-welcome p{font-size:11px!important;line-height:1.4!important;margin:0!important;}
+  .capa-welcome>div:last-child{
+    position:static!important;width:100%!important;padding:0!important;margin:0!important;
+    display:grid!important;grid-template-columns:42px 1fr 42px!important;align-items:center!important;gap:8px!important;
+    background:transparent!important;border:0!important;box-shadow:none!important;
+  }
+  .capa-welcome>div:last-child button{width:42px!important;height:36px!important;padding:0!important;}
+  #kpiNavLabel{min-width:0!important;width:auto!important;text-align:center!important;font-size:10px!important;}
+
+  .capa-kpis{
+    display:flex!important;flex-direction:column!important;gap:11px!important;margin:0 0 12px!important;
+  }
+  .capa-kpis>.kpi-mod{
+    position:relative!important;inset:auto!important;width:100%!important;height:auto!important;min-height:132px!important;
+    padding:17px 18px!important;margin:0!important;box-sizing:border-box!important;overflow:hidden!important;
+    border-radius:14px!important;background:#fff!important;
+  }
+  .capa-kpis>.kpi-mod:not(:nth-child(4)) .kpi-mod-label{
+    position:static!important;display:block!important;width:auto!important;min-height:0!important;margin:0 0 7px!important;
+    font-size:10px!important;line-height:1.25!important;
+  }
+  .capa-kpis>.kpi-mod:not(:nth-child(4)) .kpi-mod-row{
+    position:static!important;display:flex!important;width:auto!important;margin:0 0 10px!important;transform:none!important;
+    justify-content:flex-start!important;align-items:baseline!important;gap:12px!important;
+  }
+  .capa-kpis>.kpi-mod:not(:nth-child(4)) .kpi-mod-val{font-size:31px!important;line-height:1!important;}
+  .capa-kpis>.kpi-mod:not(:nth-child(4)) .kpi-mod-pct{position:static!important;width:auto!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important;}
+  .capa-kpis>.kpi-mod:not(:nth-child(4)) .kpi-mod-bar{position:static!important;width:100%!important;height:5px!important;margin:0 0 7px!important;}
+  .capa-kpis>.kpi-mod:not(:nth-child(4)) .kpi-mod-sub{position:static!important;font-size:10px!important;line-height:1.3!important;}
+
+  /* Geral volta a ser um card real. No desktop ele continua na posição executiva. */
+  .capa-kpis>.kpi-mod:nth-child(4){
+    order:-1!important;position:relative!important;inset:auto!important;height:154px!important;min-height:154px!important;
+    padding:0!important;background:linear-gradient(145deg,#073b70,#0758a8)!important;border:0!important;
+    color:#fff!important;overflow:hidden!important;
+  }
+  .capa-kpis>.kpi-mod:nth-child(4):before{content:none!important;display:none!important;}
+  .capa-kpis>.kpi-mod:nth-child(4) .kpi-geral-layout{
+    position:relative!important;inset:auto!important;width:100%!important;height:100%!important;
+    display:grid!important;grid-template-columns:118px minmax(0,1fr)!important;align-items:center!important;
+    gap:12px!important;padding:15px 16px!important;box-sizing:border-box!important;transform:none!important;
+  }
+  .capa-kpis>.kpi-mod:nth-child(4) .kpi-geral-anel{
+    position:relative!important;inset:auto!important;transform:none!important;justify-self:center!important;
+    width:108px!important;height:108px!important;min-width:108px!important;min-height:108px!important;
+    max-width:108px!important;max-height:108px!important;margin:0!important;border-radius:50%!important;
+    overflow:hidden!important;box-sizing:border-box!important;
+  }
+  .capa-kpis>.kpi-mod:nth-child(4) .kpi-geral-anel:after{inset:12px!important;}
+  .capa-kpis>.kpi-mod:nth-child(4) .kpi-geral-anel .kpi-mod-val{
+    position:relative!important;inset:auto!important;transform:none!important;width:auto!important;margin:0!important;
+    font-size:30px!important;line-height:1!important;text-align:center!important;
+  }
+  .capa-kpis>.kpi-mod:nth-child(4) .kpi-geral-info{
+    position:static!important;display:flex!important;min-width:0!important;align-items:flex-start!important;
+    flex-direction:column!important;justify-content:center!important;gap:8px!important;transform:none!important;
+  }
+  .capa-kpis>.kpi-mod:nth-child(4) .kpi-geral-info .kpi-mod-label{
+    position:static!important;inset:auto!important;width:auto!important;margin:0!important;
+    color:#fff!important;font-size:9px!important;line-height:1.3!important;
+  }
+  .capa-kpis>.kpi-mod:nth-child(4) .kpi-geral-info .kpi-mod-pct{
+    position:static!important;inset:auto!important;width:auto!important;min-width:0!important;max-width:100%!important;
+    padding:6px 8px!important;margin:0!important;transform:none!important;font-size:10px!important;
+  }
+  .capa-kpis>.kpi-mod:nth-child(4) .kpi-geral-sub,
+  .capa-kpis>.kpi-mod:nth-child(4)>div:last-child{position:static!important;inset:auto!important;margin:0!important;transform:none!important;}
+  .capa-kpis>.kpi-mod:nth-child(4) .kpi-geral-sub #kpiConfGeralSub{font-size:8px!important;padding:4px 7px!important;}
+  .capa-kpis>.kpi-mod:nth-child(4)>.kpi-mod-bar{display:none!important;}
+
+  .capa-kpis-sec{
+    display:flex!important;flex-direction:column!important;gap:10px!important;margin:0 0 13px!important;
+  }
+  .capa-kpis-sec>.kpi-mod{
+    position:relative!important;width:100%!important;height:108px!important;min-height:108px!important;
+    padding:14px 15px 12px 76px!important;margin:0!important;box-sizing:border-box!important;overflow:hidden!important;
+    border-radius:14px!important;
+  }
+  .capa-kpis-sec .kpi-svg-icon{left:17px!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;}
+  .capa-kpis-sec .kpi-svg-icon svg{width:28px!important;height:28px!important;}
+  .capa-kpis-sec .kpi-mod-label{font-size:9px!important;line-height:1.15!important;margin-bottom:4px!important;}
+  .capa-kpis-sec .kpi-mod-row{margin:0 0 5px!important;}
+  .capa-kpis-sec .kpi-mod-val{font-size:25px!important;line-height:1!important;}
+  .capa-kpis-sec .kpi-mod-bar{height:4px!important;margin:4px 0 5px!important;}
+  .capa-kpis-sec .kpi-mod-sub{font-size:9px!important;line-height:1.2!important;}
+}
+@media (max-width:390px){
+  .capa-kpis>.kpi-mod:nth-child(4) .kpi-geral-layout{grid-template-columns:102px minmax(0,1fr)!important;padding:13px!important;gap:9px!important;}
+  .capa-kpis>.kpi-mod:nth-child(4) .kpi-geral-anel{width:96px!important;height:96px!important;min-width:96px!important;min-height:96px!important;}
+  .capa-kpis>.kpi-mod:nth-child(4) .kpi-geral-anel:after{inset:11px!important;}
+}
+</style>
 </head>
 <body>
 
