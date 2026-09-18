@@ -10367,7 +10367,7 @@ document.addEventListener('DOMContentLoaded', function(){
                         <div class="form-group"><label>Hora</label><input type="text" id="cadHoraClass" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" oninput="mascaraHora(this)"></div>
                         <div class="form-group required">
                             <label>Local/Destino</label>
-                            <select id="cadLocalClass" required onchange="if(!window._scanPreenchendo) autoFornecedorClass(this.value)">
+                            <select id="cadLocalClass" required onkeydown="classLocalDestinoEnter(event)">
                                 <option value="">Selecione...</option>
                                 <option value="Silo 1 Milho">Silo 1 Milho</option>
                                 <option value="Silo 2 Milho">Silo 2 Milho</option>
@@ -10376,7 +10376,7 @@ document.addEventListener('DOMContentLoaded', function(){
                                 <option value="Produção Silo 2">Produção Silo 2</option>
                             </select>
                         </div>
-                        <div class="form-group required"><label>Nota Fiscal</label><input type="text" id="cadNFClass" autocomplete="off"></div>
+                        <div class="form-group required"><label>Nota Fiscal</label><input type="text" id="cadNFClass" autocomplete="off" oninput="classAplicarOrigemPorNF(false)" onkeydown="classNotaFiscalEnter(event)"></div>
                     </div>
                     <div class="form-grid form-grid-2">
                         <div class="form-group required"><label>Fornecedor</label><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
@@ -34358,6 +34358,8 @@ REGRAS OBRIGATÓRIAS:
    - Interpretação técnica (base conceitual)
 7. Linguagem: técnica, objetiva, padrão auditoria (ISO / controle de qualidade).
 8. Evitar frases genéricas ou vagas.
+9. Cada especialista deve emitir um parecer profissional, separando: fato observado, interpretação técnica, limitações e recomendação de verificação.
+10. Na ausência de dados específicos da área, usar conhecimento técnico apenas para contextualização qualitativa e condicional; nunca apresentar hipótese como resultado medido ou diagnóstico confirmado.
 
 ESTRUTURA DA RESPOSTA:
 1. Análise dos Dados: conformidade vs. não conformidade de cada parâmetro físico-químico com valor encontrado e limite.
@@ -34381,12 +34383,14 @@ REGRAS OBRIGATÓRIAS:
    - Interpretação técnica (base conceitual)
 7. Linguagem: técnica, objetiva, padrão auditoria.
 8. Evitar frases genéricas ou vagas.
+9. Os números e limites fornecidos pelo sistema são a única base quantitativa autorizada.
+10. Sem composição bromatológica ou desempenho medido, emitir parecer condicional e não quantificar impacto, recomendar reformulação ou presumir deficiência nutricional.
 
 ESTRUTURA DA RESPOSTA:
-1. Análise dos Dados: composição nutricional vs. referências (valor encontrado, exigência da fase, desvio).
-2. Interpretação Técnica: impacto em digestibilidade, FCR, desempenho produtivo e qualidade das matérias-primas.
-3. Conclusão: classificação do cenário (conforme / atenção / crítico).
-4. Base Técnica: citar apenas se tiver certeza. Caso contrário: "conforme literatura técnica consolidada".
+1. Fato observado: reproduzir somente resultados e limites fornecidos.
+2. Interpretação profissional: contextualização qualitativa e condicional.
+3. Limitações: dados necessários para avaliar composição e desempenho.
+4. Recomendação técnica: verificações proporcionais às evidências, sem presumir falha existente.
 
 Responda em português do Brasil. Linguagem técnica com profundidade científica. Cite valores de referência apenas quando tiver certeza.`;
 
@@ -34404,12 +34408,14 @@ REGRAS OBRIGATÓRIAS:
    - Interpretação técnica (base conceitual)
 7. Linguagem: técnica, objetiva, padrão auditoria sanitária.
 8. Evitar frases genéricas ou vagas.
+9. Os números e limites fornecidos pelo sistema são a única base quantitativa autorizada.
+10. Sem ensaios sanitários específicos, não classificar risco, diagnosticar contaminação ou presumir ausência de monitoramento; emitir parecer condicional e indicar como verificar.
 
 ESTRUTURA DA RESPOSTA:
-1. Análise dos Dados: avaliação de micotoxinas, umidade e contaminantes — valor encontrado vs. limite legal/referência.
-2. Interpretação Técnica: risco sanitário, mecanismo de ação dos contaminantes, impacto clínico esperado nos animais.
-3. Conclusão: classificação do cenário (conforme / atenção / crítico) com classificação de risco (Baixo / Médio / Alto / Crítico).
-4. Base Técnica: citar apenas se tiver certeza. Caso contrário: "conforme literatura técnica consolidada".
+1. Fato observado: reproduzir somente resultados e limites fornecidos.
+2. Interpretação profissional: esclarecer o alcance sanitário real dos dados.
+3. Limitações: ensaios necessários para diagnóstico ou classificação de risco.
+4. Recomendação técnica: verificar o programa vigente e indicar confirmações necessárias.
 
 Responda em português do Brasil. Linguagem técnica e sanitária. Cite normas e mecanismos de ação apenas quando tiver certeza da fonte.`;
 
@@ -34427,6 +34433,8 @@ REGRAS OBRIGATÓRIAS:
    - Interpretação técnica (base conceitual)
 7. Linguagem: técnica, objetiva, padrão auditoria (ISO / controle de qualidade).
 8. Evitar frases genéricas ou vagas.
+9. Cada profissional deve emitir parecer dentro de sua competência, separando fato observado, interpretação profissional, limitações e recomendação técnica.
+10. Mesmo sem ensaio específico de sua área, o profissional deve explicar o alcance técnico dos dados disponíveis em linguagem condicional e indicar o que precisa ser verificado, sem inventar resultado ou diagnóstico.
 
 ESTRUTURA DO RELATÓRIO MULTIDISCIPLINAR:
 Cada seção começa com o ícone e nome do especialista em negrito. Os especialistas dialogam sobre os mesmos dados:
@@ -34437,19 +34445,17 @@ Cada seção começa com o ícone e nome do especialista em negrito. Os especial
 - Base Técnica: apenas fontes certas ou "conforme literatura técnica consolidada".
 
 🌿 **Nutricionista Animal**
-- Análise dos Dados: composição nutricional vs. referências por fase.
-- Interpretação Técnica: impacto em digestibilidade, FCR, desempenho produtivo.
-- Base Técnica: apenas fontes certas ou "conforme literatura técnica consolidada".
+- Distinguir fatos, interpretação condicional, limitações e recomendação.
+- Não quantificar impacto em digestibilidade, FCR ou desempenho sem resultados correspondentes.
 
 🩺 **Médico Veterinário**
-- Análise dos Dados: micotoxinas, umidade, contaminantes vs. limites legais.
-- Interpretação Técnica: risco sanitário, mecanismo de ação, impacto clínico.
-- Base Técnica: apenas fontes certas ou "conforme literatura técnica consolidada".
+- Distinguir fatos, interpretação condicional, limitações e recomendação.
+- Não diagnosticar contaminação nem classificar risco sem resultados e critérios correspondentes.
 
 CONCLUSÃO INTEGRADA:
 - Diagnóstico unificado pelos três especialistas.
-- Classificação do cenário: conforme / atenção / crítico.
-- Plano de ação com embasamento normativo (citar apenas fontes certas).
+- Classificar o cenário somente quando houver critério objetivo configurado; caso contrário usar "não classificado".
+- Plano de ação proporcional aos fatos observados, sem presumir falhas não demonstradas.
 
 Responda em português do Brasil. Linguagem executiva com profundidade técnica e científica.`;
 
@@ -34929,7 +34935,7 @@ async function gerarRelatorioMensalIA() {
     btn.textContent = '⏳ Analisando...';
 
     const _nomesAtivos = [_rmlEstado.prod?'🏭 Produção':null,_rmlEstado.mp?'🌾 Mat. Prima':null,_rmlEstado.class?'🌽 Classificação':null,_rmlEstado.nc?'⚠️ NCs':null,_rmlEstado.dev?'🔄 Devoluções':null].filter(Boolean).join(', ');
-    conteudoEl.innerHTML = `<div class="rml-loading"><div class="spinner"></div>Analisando: <strong>${_nomesAtivos}</strong><br><small style="color:#aaa;">Período: ${nomeMes}${temComparacao?' vs '+nomeMesAnt:''} — consultando normas Embrapa e Compêndio Brasileiro de Nutrição Animal</small></div>`;
+    conteudoEl.innerHTML = `<div class="rml-loading"><div class="spinner"></div>Analisando: <strong>${_nomesAtivos}</strong><br><small style="color:#aaa;">Período: ${nomeMes}${temComparacao?' vs '+nomeMesAnt:''} — validando registros, medições, limites internos e desvios</small></div>`;
 
     try {
         const _usaProd  = _rmlEstado.prod;
@@ -35001,8 +35007,13 @@ async function gerarRelatorioMensalIA() {
                 if (!foraMin && !foraMax) return;
                 const limMin = cfg.min > 0    ? cfg.min : '—';
                 const limMax = cfg.max < 9999 ? cfg.max : '—';
-                const delta  = foraMax ? `+${(v - cfg.max).toFixed(3)} acima do máx (${limMax})` : `-${(cfg.min - v).toFixed(3)} abaixo do mín (${limMin})`;
-                linhas.push(`      → ${registro.data||'—'} | ${c.label}: ${v} | Limite: ${limMin}–${limMax} | [DESVIO: ${delta}]`);
+                const decimais = c.key === 'dgm' ? 0 : (c.key === 'dpg' ? 2 : 2);
+                const fmtNumero = n => Number(n).toLocaleString('pt-BR',{minimumFractionDigits:decimais,maximumFractionDigits:decimais});
+                const unidade = c.key === 'dgm' ? ' µm' : '';
+                const delta  = foraMax
+                    ? `+${fmtNumero(v-cfg.max)}${unidade} acima do máx (${fmtNumero(cfg.max)}${unidade})`
+                    : `-${fmtNumero(cfg.min-v)}${unidade} abaixo do mín (${fmtNumero(cfg.min)}${unidade})`;
+                linhas.push(`      → ${registro.data||'—'} | ${c.label}: ${fmtNumero(v)}${unidade} | Limite: ${limMin==='—'?'—':fmtNumero(limMin)+unidade}–${limMax==='—'?'—':fmtNumero(limMax)+unidade} | [DESVIO: ${delta}]`);
             });
             return linhas;
         }
@@ -35066,6 +35077,126 @@ async function gerarRelatorioMensalIA() {
                 return `  [${grupo}] LIMITES: ${limInfo} | ${regs.length} registros\n  SÉRIE DIÁRIA:\n${linhasReg}\n  ESTATÍSTICAS:\n    ${resumoEst}`;
             }).filter(Boolean);
         }
+
+        // Totais calculados pelo sistema. Estes números são a fonte oficial do
+        // relatório e evitam que a IA misture registros, medições e meses.
+        function _resumoConformidadeValidado(registros, modId, campos, chaveKey, nomeModulo) {
+            let medicoes=0, desvios=0;
+            const porParametro={};
+            registros.forEach(registro => {
+                const grupo=registro[chaveKey];
+                if(!grupo) return;
+                const chave=String(grupo).replace(/ /g,'_');
+                campos.forEach(c => {
+                    const cfg=getParam(modId,chave,c.key,registro.data);
+                    if(!cfg || !cfg.ativo) return;
+                    const bruto=c.calculado?getAvariados(registro):registro[c.key];
+                    const v=parseFloat(bruto);
+                    if(isNaN(v) || bruto==='' || bruto===null || bruto===undefined) return;
+                    if(v===0 && !_zerosValidos.has(c.key)) return;
+                    const fora=(cfg.min>0 && v<cfg.min) || (cfg.max<9999 && v>cfg.max);
+                    medicoes++;
+                    if(fora) desvios++;
+                    if(!porParametro[c.label]) porParametro[c.label]={avaliadas:0,desvios:0};
+                    porParametro[c.label].avaliadas++;
+                    if(fora) porParametro[c.label].desvios++;
+                });
+            });
+            const conformes=medicoes-desvios;
+            const taxa=medicoes?conformes/medicoes*100:null;
+            const detalhes=Object.entries(porParametro).map(([nome,x])=>{
+                const conf=x.avaliadas-x.desvios;
+                const pct=x.avaliadas?conf/x.avaliadas*100:0;
+                return `${nome}: ${conf}/${x.avaliadas} conformes (${pct.toFixed(1)}%), ${x.desvios} desvio(s)`;
+            }).join(' | ') || 'nenhuma medição com parâmetro ativo';
+            return {nomeModulo,registros:registros.length,medicoes,desvios,conformes,taxa,detalhes,porParametro};
+        }
+
+        // Consolidação determinística por produto/parâmetro. A IA recebe a tabela
+        // pronta e não pode omitir produtos nem escolher livremente o "top 5".
+        function _consolidarParametroValidado(registros, modId, campos, chaveKey, parametroKey) {
+            const campo=campos.find(c=>c.key===parametroKey);
+            if(!campo) return {linhas:[],ocorrencias:[],texto:'Nenhuma medição disponível.'};
+            const porProduto={};
+            const ocorrencias=[];
+            registros.forEach(registro=>{
+                const produto=registro[chaveKey];
+                if(!produto) return;
+                const chave=String(produto).replace(/ /g,'_');
+                const cfg=getParam(modId,chave,campo.key,registro.data);
+                if(!cfg || !cfg.ativo) return;
+                const bruto=campo.calculado?getAvariados(registro):registro[campo.key];
+                const valor=parseFloat(bruto);
+                if(isNaN(valor) || bruto==='' || bruto===null || bruto===undefined) return;
+                if(valor===0 && !_zerosValidos.has(campo.key)) return;
+                const foraMin=cfg.min>0 && valor<cfg.min;
+                const foraMax=cfg.max<9999 && valor>cfg.max;
+                if(!porProduto[produto]) porProduto[produto]={avaliadas:0,desvios:0};
+                porProduto[produto].avaliadas++;
+                if(foraMin || foraMax) {
+                    porProduto[produto].desvios++;
+                    const limite=foraMax?cfg.max:cfg.min;
+                    ocorrencias.push({
+                        produto,
+                        data:registro.data||'—',
+                        valor,
+                        min:cfg.min>0?cfg.min:null,
+                        max:cfg.max<9999?cfg.max:null,
+                        magnitude:Math.abs(valor-limite),
+                        direcao:foraMax?'acima do máximo':'abaixo do mínimo',
+                        limite
+                    });
+                }
+            });
+            const linhas=Object.entries(porProduto)
+                .map(([produto,x])=>({produto,...x,conformes:x.avaliadas-x.desvios,taxa:x.avaliadas?(x.avaliadas-x.desvios)/x.avaliadas*100:null}))
+                .sort((a,b)=>a.produto.localeCompare(b.produto,'pt-BR'));
+            ocorrencias.sort((a,b)=>b.magnitude-a.magnitude || a.data.localeCompare(b.data) || a.produto.localeCompare(b.produto,'pt-BR'));
+            const tabela=linhas.length?linhas.map(x=>`${x.produto}: ${x.avaliadas} medição(ões), ${x.desvios} desvio(s), ${x.conformes} conforme(s), taxa ${x.taxa.toFixed(1)}%`).join('\n'):'Nenhuma medição disponível.';
+            const fmt=n=>Number(n).toLocaleString('pt-BR',{maximumFractionDigits:parametroKey==='dgm'?0:2});
+            const top=ocorrencias.slice(0,5).map((x,i)=>`${i+1}. ${x.produto} | ${x.data} | valor ${fmt(x.valor)}${parametroKey==='dgm'?' µm':''} | limite ${x.min===null?'—':fmt(x.min)}–${x.max===null?'—':fmt(x.max)}${parametroKey==='dgm'?' µm':''} | desvio ${fmt(x.magnitude)}${parametroKey==='dgm'?' µm':''} ${x.direcao}`).join('\n') || 'Nenhuma ocorrência fora do limite.';
+            return {linhas,ocorrencias,texto:`QUADRO COMPLETO POR PRODUTO:\n${tabela}\nTOP 5 POR MAGNITUDE ABSOLUTA — ORDEM CALCULADA PELO SISTEMA:\n${top}`};
+        }
+
+        const _resValProd  = _usaProd  ? _resumoConformidadeValidado(prodMes,'prod',CAMPOS_PROD,'racao','Produção') : null;
+        const _resValMP    = _usaMP    ? _resumoConformidadeValidado(mpMes,'mp',CAMPOS_MP,'produto','Matéria-prima') : null;
+        const _resValClass = _usaClass ? _resumoConformidadeValidado(classMes,'class',CAMPOS_CLASS,'produto','Classificação') : null;
+        const _resValProdAnt  = temComparacao&&_usaProd  ? _resumoConformidadeValidado(prodAnt,'prod',CAMPOS_PROD,'racao','Produção') : null;
+        const _resValMPAnt    = temComparacao&&_usaMP    ? _resumoConformidadeValidado(mpAnt,'mp',CAMPOS_MP,'produto','Matéria-prima') : null;
+        const _resValClassAnt = temComparacao&&_usaClass ? _resumoConformidadeValidado(classAnt,'class',CAMPOS_CLASS,'produto','Classificação') : null;
+        const _dgmValidado = _usaProd ? _consolidarParametroValidado(prodMes,'prod',CAMPOS_PROD,'racao','dgm') : null;
+        if (_dgmValidado && _resValProd) {
+            const _dgmResumo=_resValProd.porParametro['DGM (µm)'] || _resValProd.porParametro['DGM'];
+            const _dgmAvalTabela=_dgmValidado.linhas.reduce((s,x)=>s+x.avaliadas,0);
+            const _dgmDesvTabela=_dgmValidado.linhas.reduce((s,x)=>s+x.desvios,0);
+            if (_dgmResumo && (_dgmAvalTabela!==_dgmResumo.avaliadas || _dgmDesvTabela!==_dgmResumo.desvios)) {
+                throw new Error(`Inconsistência interna no consolidado DGM: resumo ${_dgmResumo.avaliadas}/${_dgmResumo.desvios}, quadro ${_dgmAvalTabela}/${_dgmDesvTabela}. Relatório não emitido.`);
+            }
+        }
+        const _resValidados=[_resValProd,_resValMP,_resValClass].filter(Boolean);
+        const _resValidadosAnt=[_resValProdAnt,_resValMPAnt,_resValClassAnt].filter(Boolean);
+        const _totalRegistrosValidado=_resValidados.reduce((s,x)=>s+x.registros,0);
+        const _totalMedicoesValidado=_resValidados.reduce((s,x)=>s+x.medicoes,0);
+        const _totalDesviosValidado=_resValidados.reduce((s,x)=>s+x.desvios,0);
+        const _totalConformesValidado=_totalMedicoesValidado-_totalDesviosValidado;
+        const _taxaGeralValidada=_totalMedicoesValidado?(_totalConformesValidado/_totalMedicoesValidado*100):null;
+        const _totalRegistrosAnt=_resValidadosAnt.reduce((s,x)=>s+x.registros,0);
+        const _totalMedicoesAnt=_resValidadosAnt.reduce((s,x)=>s+x.medicoes,0);
+        const _totalDesviosAnt=_resValidadosAnt.reduce((s,x)=>s+x.desvios,0);
+        const _totalConformesAnt=_totalMedicoesAnt-_totalDesviosAnt;
+        const _taxaGeralAnt=_totalMedicoesAnt?(_totalConformesAnt/_totalMedicoesAnt*100):null;
+        const _resumoValidadoTexto=`
+== RESUMO NUMÉRICO VALIDADO PELO SISTEMA — MÊS ATUAL SOMENTE ==
+Registros cadastrados nos módulos selecionados: ${_totalRegistrosValidado}
+Medições efetivamente avaliadas contra parâmetros ativos: ${_totalMedicoesValidado}
+Medições conformes: ${_totalConformesValidado}
+Ocorrências de desvio: ${_totalDesviosValidado}
+Taxa geral de conformidade por MEDIÇÃO: ${_taxaGeralValidada===null?'N/D':_taxaGeralValidada.toFixed(1)+'%'}
+ATENÇÃO: registros e medições são grandezas diferentes; um registro pode conter vários parâmetros avaliados.
+${_resValidados.map(x=>`${x.nomeModulo}: ${x.registros} registro(s), ${x.medicoes} medição(ões), ${x.desvios} desvio(s), conformidade ${x.taxa===null?'N/D':x.taxa.toFixed(1)+'%'} | ${x.detalhes}`).join('\n')}
+${_dgmValidado?`\n== CONSOLIDADO DGM VALIDADO PELO SISTEMA ==\n${_dgmValidado.texto}\n== FIM DO CONSOLIDADO DGM ==`:''}
+${temComparacao?`\n== RESUMO NUMÉRICO VALIDADO — MÊS ANTERIOR SOMENTE ==\nRegistros: ${_totalRegistrosAnt}\nMedições avaliadas: ${_totalMedicoesAnt}\nMedições conformes: ${_totalConformesAnt}\nOcorrências de desvio: ${_totalDesviosAnt}\nTaxa geral de conformidade por MEDIÇÃO: ${_taxaGeralAnt===null?'N/D':_taxaGeralAnt.toFixed(1)+'%'}\n${_resValidadosAnt.map(x=>`${x.nomeModulo}: ${x.registros} registro(s), ${x.medicoes} medição(ões), ${x.desvios} desvio(s), conformidade ${x.taxa===null?'N/D':x.taxa.toFixed(1)+'%'} | ${x.detalhes}`).join('\n')}\n== FIM DO RESUMO DO MÊS ANTERIOR ==`:''}
+== FIM DO RESUMO VALIDADO ==`;
 
         const prodBlocos    = _montarBlocos(prodMes, 'prod', CAMPOS_PROD, 'racao');
         const prodBlocosAnt = temComparacao ? _montarBlocos(prodAnt, 'prod', CAMPOS_PROD, 'racao') : [];
@@ -35144,30 +35275,42 @@ Motivos: ${[...new Set(devMes.map(d=>d.motivo))].join(', ') || 'nenhuma'}`;
         const _temNut = _anAtivos.includes('nut');
         const _temVet = _anAtivos.includes('vet');
         const _multi  = _anAtivos.length > 1;
+        const _temNumero = (regs,chaves) => regs.some(r=>chaves.some(k=>{
+            const bruto=r[k]; const n=parseFloat(bruto);
+            return bruto!=='' && bruto!==null && bruto!==undefined && !isNaN(n);
+        }));
+        const _temDadosNut = _temNumero(prodMes,['proteina','fibra','mineral','calcio','fosforo'])
+            || _temNumero(mpMes,['proteina','solubil','fibra','extrato','mineral','calcio','fosforo','digestibilidade']);
+        const _temDadosVet = _temNumero(classMes,['aflatoxinas','fumonisinas','zearalenona','don'])
+            || _temNumero(mpMes,['peroxido','rancidez']);
 
         _secsRel.push(`1. RESUMO EXECUTIVO
    - Síntese do levantamento de desvios (4–6 linhas)
-   - Informar: total de registros analisados, total de ocorrências fora do padrão e taxa geral de conformidade do mês (%)
+   - Reproduzir EXATAMENTE os totais do RESUMO NUMÉRICO VALIDADO PELO SISTEMA, distinguindo registros de medições
    - Destacar o parâmetro/produto com maior frequência de desvios e o de maior magnitude absoluta
-   - Citar ao menos uma referência técnica: Rostagno et al., Embrapa, IN MAPA 07/2011, Leeson & Summers ou NRC`);
+   - Não citar norma, autor ou impacto que não esteja diretamente sustentado pelos dados fornecidos`);
         let _si = 2;
 
         if (temComparacao) {
             _secsRel.push(`${_si++}. COMPARAÇÃO MENSAL (${nomeMes} vs ${nomeMesAnt}):
-   - Tendência geral: Melhorou / Piorou / Estável — justificar com dados e norma aplicável
-   - Principais variações por módulo (valores exatos de cada período)
-   - Indicador mais crítico: citar referência que embasa o limite ou a meta`);
+   - Usar somente as duas taxas gerais presentes nos RESUMOS NUMÉRICOS VALIDADOS; é proibido estimar ou aproximar
+   - Tendência geral: Melhorou / Piorou / Estável — justificar pela diferença exata em pontos percentuais
+   - Principais variações por módulo e parâmetro usando apenas valores validados
+   - Se o mês anterior não tiver medições avaliadas, declarar que a comparação não pode ser calculada`);
         }
 
         // Seções CQ
         if (_temCQ || _multi) {
             if (_usaProd) {
                 _secsRel.push(`${_si++}. ${_multi?'🔬 CQ — ':''}PRODUTO ACABADO — GRANULOMETRIA E QUALIDADE FÍSICA
-   - LEVANTAMENTO REGISTRO A REGISTRO: listar todas as datas com DGM ou DPG fora do limite, com valor, limite e desvio exato (use a SÉRIE TEMPORAL COMPLETA fornecida)
-   - Calcular taxa de conformidade mensal por parâmetro e por ração (X/Y registros conformes = Z%)
+   - Apresentar quadro consolidado por parâmetro e produto: medições avaliadas, desvios e taxa de conformidade
+   - Para DGM, copiar TODAS as linhas do QUADRO COMPLETO POR PRODUTO do CONSOLIDADO DGM VALIDADO; não omitir produtos e não montar tabela parcial
+   - Usar exclusivamente as contagens do RESUMO NUMÉRICO VALIDADO; não recalcular denominadores
+   - Copiar exatamente o TOP 5 POR MAGNITUDE ABSOLUTA calculado pelo sistema; não substituir, reordenar ou escolher ocorrências
    - Identificar se os desvios são isolados, recorrentes ou concentrados em período/lote específico
-   - Para cada DGM fora do esperado: citar critério Embrapa Suínos e Aves e/ou Leeson & Summers para a fase
-   - Distribuição por peneiras; uniformidade de moagem; desvios físicos vs. Portaria MAPA 269/2019${temComparacao?'\n   - Comparar taxas de conformidade entre os dois meses':''}`);
+   - PARECER DO CQ: separar fato observado, interpretação do padrão, hipóteses de processo a verificar e recomendação objetiva; não apresentar hipótese como causa confirmada
+   - Não usar as expressões "controle inadequado", "ineficácia", "necessidade urgente" ou equivalentes sem critério objetivo e evidência direta
+   - Avaliar somente em relação aos limites internos ativos; não atribuir esses limites a normas externas${temComparacao?'\n   - Comparar exclusivamente as taxas validadas dos dois meses':''}`);
             }
             if (_usaNC || _usaDev) {
                 _secsRel.push(`${_si++}. ${_multi?'🔬 CQ — ':''}NÃO CONFORMIDADES${_usaDev?' E DEVOLUÇÕES':''}
@@ -35179,66 +35322,68 @@ Motivos: ${[...new Set(devMes.map(d=>d.motivo))].join(', ') || 'nenhuma'}`;
 
         // Seções Nutricionista
         if (_temNut || _multi) {
-            if (_usaProd) {
+            if (_temDadosNut && _usaProd) {
                 _secsRel.push(`${_si++}. ${_multi?'🌿 NUTRICIONISTA — ':''}COMPOSIÇÃO NUTRICIONAL DO PRODUTO ACABADO
-   - Proteína bruta, fibra bruta, extrato etéreo, cálcio, fósforo disponível, umidade por ração
-   - Para cada parâmetro: comparar com Tabelas Brasileiras Rostagno et al. para a fase; ex: "Rostagno et al. (2017) recomendam para frango inicial mínimo X% de PB..."
-   - Impacto em digestibilidade: referenciar Leeson & Summers ou NRC quando aplicável${temComparacao?'\n   - Variação entre meses':''}`);
+   - Apresentar somente parâmetros nutricionais que possuam resultado numérico no período
+   - Comparar exclusivamente com os limites internos ativos fornecidos pelo sistema
+   - Não inserir exigências por fase, referências bibliográficas ou impacto zootécnico sem dados e fonte explícita${temComparacao?'\n   - Variação entre meses somente quando houver o mesmo parâmetro avaliado nos dois períodos':''}`);
             }
-            if (_usaMP) {
+            if (_temDadosNut && _usaMP) {
                 _secsRel.push(`${_si++}. ${_multi?'🌿 NUTRICIONISTA — ':''}MATÉRIAS-PRIMAS — QUALIDADE NUTRICIONAL
    - LEVANTAMENTO REGISTRO A REGISTRO: para cada parâmetro nutricional (umidade, proteína, ureática, peróxido, etc.), listar todas as datas/lotes fora do limite, com valor, limite e magnitude do desvio (use a SÉRIE TEMPORAL COMPLETA)
    - Calcular taxa de conformidade mensal por parâmetro e por produto (X/Y registros conformes = Z%)
    - Identificar fornecedores ou lotes com maior incidência de desvios
-   - Soja extrusada: ureática (ref. 0,05–0,20) e solubilidade proteica (mín. 75%) — citar Embrapa Circular Técnica
-   - Milho: quantificar impacto na EM a partir dos desvios de umidade encontrados — referenciar Rostagno et al.
+   - Avaliar ureática, solubilidade, proteína e demais parâmetros somente contra os limites internos ativos
+   - Não quantificar energia metabolizável ou desempenho sem resultados específicos e método definido
    - Variações entre lotes/fornecedores${temComparacao?'; comparar taxas de conformidade entre meses':''}`);
             }
-            if (_usaClass) {
+            if (_temDadosNut && _usaClass) {
                 _secsRel.push(`${_si++}. ${_multi?'🌿 NUTRICIONISTA — ':''}CLASSIFICAÇÃO DE GRÃOS — ANÁLISE NUTRICIONAL
    - LEVANTAMENTO REGISTRO A REGISTRO: listar todas as datas/lotes com umidade, impurezas ou avariados fora do limite, com valor, limite e desvio exato (use a SÉRIE TEMPORAL COMPLETA)
    - Calcular taxa de conformidade mensal por parâmetro (X/Y registros conformes = Z%)
    - Identificar datas ou lotes com maior concentração de desvios
-   - Impacto na energia metabolizável: quantificar com base nos desvios de umidade encontrados — referenciar Rostagno et al. ou NRC
-   - Grãos ardidos/mofados: perda de valor nutricional por data/lote; citar Leeson & Summers sobre digestibilidade${temComparacao?'\n   - Comparar taxas de conformidade entre meses':''}`);
+   - Descrever o alcance nutricional dos resultados em linguagem condicional, sem quantificar impacto não medido
+   - Não atribuir perda de digestibilidade ou energia sem resultados específicos${temComparacao?'\n   - Comparar taxas de conformidade entre meses':''}`);
             }
-            _secsRel.push(`${_si++}. ${_multi?'🌿 NUTRICIONISTA — ':''}IMPACTO EM DESEMPENHO ANIMAL
-   - Frango de corte: FCR esperado, ganho de peso e uniformidade por fase — comparar com metas Rostagno et al.
-   - Postura: produção de ovos, qualidade de casca, persistência — referenciar Leeson & Summers (Commercial Poultry Nutrition)
-   - Ajustes de formulação: "com base em Rostagno et al. (edição mais recente), recomenda-se aumentar/reduzir X em Y%..."`);
+            _secsRel.push(`${_si++}. ${_multi?'🌿 NUTRICIONISTA — ':''}PARECER TÉCNICO NUTRICIONAL
+   - FATO OBSERVADO: resumir somente os resultados físicos e/ou nutricionais efetivamente disponíveis no período
+   - INTERPRETAÇÃO PROFISSIONAL: explicar qualitativamente o que o padrão observado pode representar para uniformidade da ração, possibilidade de seleção/segregação e consumo; usar linguagem condicional como "pode", "é compatível com" e "deve ser verificado"
+   - LIMITAÇÕES: informar quais dados faltam para quantificar efeito sobre digestibilidade, conversão alimentar, ganho de peso, postura ou formulação
+   - RECOMENDAÇÃO TÉCNICA: indicar verificações e dados complementares necessários; não prescrever reformulação, aumento de coleta ou mudança de frequência sem demonstrar lacuna no plano vigente`);
         }
 
         // Seções Veterinário
         if (_temVet || _multi) {
-            if (_usaClass || _usaMP) {
+            if (_temDadosVet && (_usaClass || _usaMP)) {
                 _secsRel.push(`${_si++}. ${_multi?'🩺 VETERINÁRIO — ':''}RISCO DE MICOTOXINAS E CONTAMINAÇÃO
-   - LEVANTAMENTO REGISTRO A REGISTRO: listar TODAS as datas/lotes analisados para aflatoxinas, fumonisinas, zearalenona e DON, com valor, limite IN MAPA 07/2011 e % do limite atingido (use a SÉRIE TEMPORAL COMPLETA)
-   - Classificar cada ocorrência: Baixo (<50% do limite) / Médio (50–100%) / Alto (>100% do limite) — critério Leeson & Summers
+   - LEVANTAMENTO REGISTRO A REGISTRO: listar datas/lotes efetivamente analisados, com valor e limite interno ativo (use a SÉRIE TEMPORAL COMPLETA)
+   - Não atribuir limite a norma externa nem classificar risco por faixas não configuradas no sistema
    - Calcular taxa de conformidade mensal por micotoxina (X/Y registros conformes = Z%)
    - Identificar padrão temporal ou de fornecedor nas ocorrências críticas
-   - Umidade de grãos: listar todas as datas com risco fúngico (>14% Aspergillus, >13,5% Fusarium) — citar Embrapa
-   - Lotes de risco: produto | data | valor | fornecedor | classificação de risco`);
+   - Umidade de grãos: avaliar somente contra o limite interno ativo; não diagnosticar crescimento fúngico
+   - Lotes com desvio: produto | data | valor | fornecedor, somente quando o fornecedor estiver registrado`);
             }
-            if (_usaMP) {
+            if (_temDadosVet && _usaMP) {
                 _secsRel.push(`${_si++}. ${_multi?'🩺 VETERINÁRIO — ':''}QUALIDADE SANITÁRIA DAS MATÉRIAS-PRIMAS
-   - LEVANTAMENTO REGISTRO A REGISTRO: listar todas as datas/lotes com índice de peróxido >20 meq/kg O₂ ou umidade >14%, com valor, data e fornecedor (use a SÉRIE TEMPORAL COMPLETA)
+   - LEVANTAMENTO REGISTRO A REGISTRO: listar ocorrências somente contra os limites internos ativos, com valor, data e fornecedor quando registrado
    - Calcular taxa de conformidade mensal para peróxido e umidade (X/Y registros conformes = Z%)
-   - Índice de peróxido elevado: mecanismo de dano oxidativo embasado em NRC (vitaminas lipossolúveis A, D, E, K)
-   - Umidade >14%: risco microbiológico e fúngico — referenciar Embrapa boas práticas de armazenamento
-   - Identificar fornecedores recorrentes nos desvios; condições de armazenamento e recomendações de BPF`);
+   - Interpretar possíveis implicações em linguagem condicional, sem diagnosticar dano, contaminação ou risco clínico
+   - Identificar fornecedores recorrentes somente quando houver fornecedor registrado; condições de armazenamento devem ser apresentadas apenas como item a verificar`);
             }
-            _secsRel.push(`${_si++}. ${_multi?'🩺 VETERINÁRIO — ':''}IMPACTO SANITÁRIO E RISCO ANIMAL
-   - Por tipo de micotoxina: mecanismo de ação clínico esperado em aves — "Leeson & Summers (2000) relatam que aflatoxinas >X ppb causam..."
-   - Imunossupressão, lesões hepáticas, queda de postura, refugagem, mortalidade: classificar por grau de risco
-   - Recomendações: descarte, sequestro de micotoxinas (adsorventes), restrição de uso, comunicação ao responsável técnico`);
+            _secsRel.push(`${_si++}. ${_multi?'🩺 VETERINÁRIO — ':''}PARECER TÉCNICO SANITÁRIO
+   - FATO OBSERVADO: declarar quais resultados sanitários existem e, se não existirem, registrar explicitamente essa ausência
+   - INTERPRETAÇÃO PROFISSIONAL: avaliar o alcance sanitário dos dados disponíveis; esclarecer que DGM isoladamente não confirma contaminação, micotoxicose ou doença
+   - LIMITAÇÕES: indicar por que não é possível classificar risco clínico ou sanitário sem análises específicas
+   - RECOMENDAÇÃO TÉCNICA: verificar se os lotes estão contemplados no programa vigente e apontar ensaios necessários para confirmar ou afastar riscos; não presumir ausência de monitoramento nem emitir diagnóstico sem evidência`);
         }
 
         // Diagnóstico integrado
         if (_multi) {
             _secsRel.push(`${_si++}. DIAGNÓSTICO INTEGRADO MULTIDISCIPLINAR
-   - CQ + Nutricionista + Veterinário: síntese sobre os mesmos dados com cada perspectiva
-   - Grau de risco global: Baixo / Médio / Alto — embasado nas referências citadas
-   - Plano de ação unificado: ações corretivas com responsabilidade e embasamento normativo (ISO 9001, MAPA, Embrapa)`);
+   - Integrar os fatos numéricos e os pareceres condicionais das áreas, mantendo explícita a diferença entre evidência, interpretação e hipótese
+   - Não atribuir grau de risco global sem critério objetivo configurado; nesse caso escrever "risco global não classificado"
+   - Usar "ponto de atenção identificado: controle físico do processo produtivo" quando somente DGM/umidade sustentarem a análise; não declarar "área crítica" sem critério configurado
+   - Plano de ação limitado ao processo diretamente relacionado aos desvios observados; não recomendar alteração de formulação com base apenas em DGM`);
         }
 
         _secsRel.push(`${_si++}. CONCLUSÃO E AÇÕES PRIORITÁRIAS
@@ -35246,7 +35391,7 @@ Motivos: ${[...new Set(devMes.map(d=>d.motivo))].join(', ') || 'nenhuma'}`;
    2) Painel consolidado: total de registros analisados | total de desvios encontrados | taxa geral de conformidade do mês (%)
    3) Top 3 parâmetros/produtos com maior frequência ou magnitude de desvios no período
    4) Área(s) mais crítica(s): Matéria-prima / Produção / Classificação
-   ${temComparacao?'5) Tendência: Melhorou / Piorou / Estável — baseado nas taxas de conformidade comparadas\n   6) Causa raiz provável dos desvios mais frequentes (embasada em referência)\n   7) Risco global: Baixo / Médio / Alto\n   8) Ações corretivas prioritárias (máx. 3) — direcionadas aos desvios mais críticos identificados, com responsável e embasamento normativo\n   9) Ações preventivas (máx. 3) — cada uma com referência normativa':'5) Causa raiz provável dos desvios mais frequentes (embasada em referência)\n   6) Risco global: Baixo / Médio / Alto\n   7) Ações corretivas prioritárias (máx. 3) — direcionadas às ocorrências mais críticas identificadas no levantamento, com responsável e embasamento normativo\n   8) Ações preventivas (máx. 3) — cada uma com referência normativa'}`);
+   ${temComparacao?'5) Tendência: Melhorou / Piorou / Estável — usar somente taxas validadas e diferença exata em pontos percentuais\n   6) Causa raiz: declarar "não determinada pelos dados disponíveis"; hipóteses devem ser rotuladas e vinculadas a verificação proposta\n   7) Risco global: usar "não classificado" se não houver critério objetivo configurado\n   8) Ações corretivas prioritárias (máx. 3) — verificar processo, registrar responsável/prazo e confirmar eficácia; nunca recomendar formulação apenas por DGM\n   9) Ações preventivas (máx. 3) — específicas, verificáveis e sem presumir ausência de procedimento, treinamento ou monitoramento':'5) Causa raiz: declarar "não determinada pelos dados disponíveis"; hipóteses devem ser rotuladas e vinculadas a verificação proposta\n   6) Risco global: usar "não classificado" se não houver critério objetivo configurado\n   7) Ações corretivas prioritárias (máx. 3) — verificar processo, registrar responsável/prazo e confirmar eficácia\n   8) Ações preventivas (máx. 3) — específicas, verificáveis e sem presumir ausência de controle existente'}`);
 
         const blocoSistema = temComparacao ? `
 SISTEMA: Análise Comparativa Mensal — Levantamento Crítico de Desvios
@@ -35273,16 +35418,25 @@ REGRAS OBRIGATÓRIAS:
 RELATÓRIO — ${nomeMes.toUpperCase()}${temComparacao?' VS '+nomeMesAnt.toUpperCase():''}
 MÓDULOS: ${_modulosNomes}
 ANALISTAS: ${_analistasStr}
+${_resumoValidadoTexto}
 ${_blocosProd}${_blocosMP}${_blocosClass}${_blocosNC}${_blocosDev}
 ---
-REGRA OBRIGATÓRIA DE CITAÇÃO — DEVE SER SEGUIDA EM TODAS AS SEÇÕES:
-Cada afirmação técnica relevante DEVE ser acompanhada da referência bibliográfica ou normativa correspondente, integrada naturalmente ao texto. Exemplos obrigatórios:
-- Granulometria (ração farelada postura): "conforme padrão interno da empresa, o DGM deve estar entre 850–950 µm (Pré-inicial/R1), 950–1050 µm (Inicial/R2) e 1050–1200 µm (Final/R3–R10); CV ≤ 5% indica processo estável, 5–8% variação moderada e > 8% alta variabilidade"
-- Nutrição: "Rostagno et al. (2017) estabelecem para frangos de corte fase inicial mínimo de 22% de proteína bruta..."
-- Micotoxinas: "conforme IN MAPA 07/2011, Anexo I, o limite máximo de aflatoxinas para aves é de 20 ppb..."
-- Armazenamento: "a Embrapa (Circular Técnica X) orienta que umidade acima de 13,5% favorece crescimento de Aspergillus..."
-- Energia: "segundo NRC (1994), cada 1% de variação de umidade no milho impacta em aproximadamente X kcal/kg de EM..."
-NÃO apresente nenhum desvio, recomendação ou diagnóstico sem citar a referência que o embasa.
+PROTOCOLO OBRIGATÓRIO DE EVIDÊNCIA E CONSISTÊNCIA:
+- O RESUMO NUMÉRICO VALIDADO PELO SISTEMA é a única fonte autorizada para totais, desvios e taxas gerais. Copie esses números sem recalcular.
+- O CONSOLIDADO DGM VALIDADO PELO SISTEMA é a única fonte autorizada para o quadro por produto e para as cinco maiores magnitudes. Copie todas as linhas e o top 5 exatamente como fornecidos.
+- Nunca some dados do mês atual com o mês anterior. O mês anterior serve somente para comparação.
+- Diferencie sempre: REGISTRO = linha cadastrada; MEDIÇÃO = parâmetro numérico avaliado; DESVIO = medição fora do limite interno ativo.
+- Para taxa por parâmetro, use somente o denominador informado no resumo validado ou conte apenas registros que tenham aquele parâmetro numérico e ativo. Nunca use o total do módulo como denominador de um parâmetro específico.
+- Os limites mostrados nos dados são PARÂMETROS INTERNOS configurados no sistema. Não atribua esses limites ao MAPA, Embrapa, Rostagno, NRC ou outro autor sem uma fonte explícita fornecida.
+- Não invente norma, número de portaria, citação, faixa recomendada, FCR, ganho de peso, energia metabolizável, exigência nutricional ou mecanismo clínico.
+- Não diagnostique falha de formulação, risco sanitário, micotoxinas, imunossupressão ou contaminação sem resultados numéricos específicos desses itens.
+- Não conclua "controle inadequado", "ineficácia", "necessidade urgente", falha de treinamento, ausência de protocolo ou falha de armazenamento sem evidência direta.
+- Mesmo sem resultados específicos de Nutrição ou Veterinária, o especialista deve emitir parecer técnico útil sobre o alcance dos dados disponíveis, separando obrigatoriamente: FATO OBSERVADO, INTERPRETAÇÃO PROFISSIONAL, LIMITAÇÕES e RECOMENDAÇÃO TÉCNICA.
+- O conhecimento da especialidade pode contextualizar efeitos possíveis e orientar verificações, sempre em linguagem condicional. Não pode criar valores, quantificar impactos não medidos nem emitir diagnóstico sem evidência.
+- Causa raiz só pode ser declarada quando houver evidência direta. Caso contrário, use "causa raiz não determinada pelos dados disponíveis" e apresente apenas hipóteses a investigar, claramente identificadas como hipóteses.
+- Não use frases contraditórias. A tendência final deve ser idêntica à tendência descrita na comparação mensal.
+- Para DGM, expresse valor e desvio em µm sem três casas decimais: 41 µm, nunca 41.000 µm.
+- Referências bibliográficas ou normativas são opcionais e somente podem ser usadas quando a relação exata com o dado estiver confirmada. Na dúvida, não cite.
 
 INSTRUÇÃO CRÍTICA DE ANÁLISE:
 Os dados incluem SÉRIE TEMPORAL COMPLETA (registro a registro) para Produção, Matéria Prima e Classificação.
@@ -35296,7 +35450,21 @@ Analise EXCLUSIVAMENTE os módulos fornecidos.
 Estruture o relatório nas seguintes seções (siga a ordem exatamente):
 ${_secsRel.join('\n')}
 ${_multi ? '\nCada seção de especialista deve começar com o ícone e nome do analista em negrito (ex: **🔬 CQ — Controle de Qualidade**).' : ''}
-Use linguagem executiva clara e técnica. Cite valores exatos dos dados. Inclua referência bibliográfica em cada ponto técnico.`;
+VALIDAÇÃO FINAL OBRIGATÓRIA ANTES DE RESPONDER:
+1. Confirme que todos os totais e percentuais coincidem exatamente com o RESUMO NUMÉRICO VALIDADO.
+2. Confirme que a soma citada se refere apenas ao mês atual.
+3. Remova qualquer afirmação sobre variável que não possua resultado numérico nos dados.
+4. Remova toda referência normativa ou bibliográfica cuja aplicação exata não possa ser demonstrada.
+5. Confirme que a conclusão não contradiz a comparação mensal.
+6. Não transforme hipótese em causa raiz confirmada.
+7. Preserve literalmente os nomes dos produtos; nunca troque CORTE por POSTURA, WISIUM por MCASSAB ou uma fase por outra.
+8. Não use as palavras "aproximadamente", "estimado" ou "considerando" para taxas: use apenas números validados.
+9. Se afirmar que existem N desvios em um parâmetro, o quadro consolidado deve mostrar exatamente o mesmo N; não é necessário listar todos individualmente.
+10. Quando somente DGM e umidade estiverem disponíveis, limite o diagnóstico a controle físico do processo; não recomende ajuste de formulação.
+11. A soma das medições e dos desvios de todas as linhas do quadro por produto deve coincidir com o total validado do parâmetro; se não coincidir, não emita o relatório e informe inconsistência.
+12. Não crie seção de composição nutricional quando não houver resultado numérico de composição; umidade e DGM isolados pertencem ao parecer físico/condicional.
+Se uma instrução de seção solicitar FCR, micotoxina, composição, impacto animal ou norma sem dados correspondentes, prevalece este protocolo: ofereça contexto técnico condicional, declare a limitação e indique os dados ou ensaios necessários, sem inventar resultado nem quantificar impacto.
+Use linguagem executiva clara e técnica. Cite apenas valores efetivamente fornecidos.`;
 
         // ---- PROMPT LIVRE: sobrescreve o prompt padrão ----
         const _usaPromptLivre = _rmlAnalistas['prompt'];
@@ -36028,40 +36196,96 @@ function imprimirRelMensalIA() {
 // AUTOCOMPLETE FORNECEDOR (MP e Classificação separados)
 // ===================================================
 
-function autoFornecedorClass(local) {
-    const mapa = {
-        'Silo 1 Milho': { fornecedor: 'AGRONOR', produto: 'MILHO ESTOQUE 01' },
-        'Silo 2 Milho': { fornecedor: 'AGRONOR', produto: 'MILHO ESTOQUE 02' },
-        'Silo 1 Soja':  { fornecedor: 'AGRONOR', produto: 'SOJA ESTOQUE 01'  },
-    };
+function classAplicarOrigemPorNF(focarFornecedor) {
+    const campNF   = document.getElementById('cadNFClass');
+    const campLocal= document.getElementById('cadLocalClass');
     const campForn = document.getElementById('cadFornecedorClass');
     const campProd = document.getElementById('cadProdutoClass');
-    if (mapa[local]) {
-        if (campForn) campForn.value = mapa[local].fornecedor;
-        if (campProd) campProd.value = mapa[local].produto;
+    if (!campNF || !campLocal || !campProd) return;
+
+    const nf = campNF.value.trim();
+    const nfNormalizada = nf.toUpperCase().replace(/[.\s_/-]+/g, '');
+    const origemEstoque = (nf === '' && focarFornecedor) || nf === '-' || ['SEMNOTA','SN','NAOTEMNOTA','SEMNF'].includes(nfNormalizada);
+    const possuiNFFornecedor = nf !== '' && !origemEstoque;
+    const local = (campLocal.value || '').toUpperCase();
+
+    if (possuiNFFornecedor) {
+        if (local.includes('SOJA')) campProd.value = 'SOJA';
+        else if (local.includes('MILHO')) campProd.value = 'MILHO';
+
+        // Limpa apenas o fornecedor colocado automaticamente para estoque.
+        // Um fornecedor digitado manualmente nunca é apagado durante a edição da NF.
+        if (campForn && (campForn.value || '').trim().toUpperCase() === 'AGRONOR') {
+            campForn.value = '';
+        }
+        classFornecedorAutoFill(campForn ? campForn.value : '');
+        classAtualizarCamposProduto(campProd.value);
+        if (focarFornecedor && campForn) {
+            setTimeout(() => { campForn.focus(); campForn.select(); }, 0);
+        }
+    } else if (origemEstoque) {
+        const mapaEstoque = {
+            'SILO 1 MILHO': 'MILHO ESTOQUE 01',
+            'SILO 2 MILHO': 'MILHO ESTOQUE 02',
+            'SILO 1 SOJA':  'SOJA ESTOQUE 01'
+        };
+        // Após reconhecer o cadastro sem nota, exibe o marcador tradicional.
+        campNF.value = '-';
+        if (campForn) campForn.value = 'AGRONOR';
+        campProd.value = mapaEstoque[local] || '';
+        classFornecedorAutoFill('AGRONOR');
+        classAtualizarCamposProduto(campProd.value);
+        if (focarFornecedor) classFocarPrimeiroResultado();
     } else {
-        if (campForn) campForn.value = '';
-        if (campProd) campProd.value = '';
+        // NF vazia: o Local/Destino não define a origem do material.
+        if (campForn && (campForn.value || '').trim().toUpperCase() === 'AGRONOR') campForn.value = '';
+        if ((campProd.value || '').toUpperCase().includes('ESTOQUE')) campProd.value = '';
+        classFornecedorAutoFill(campForn ? campForn.value : '');
+        classAtualizarCamposProduto(campProd.value);
     }
-    // Sempre atualiza NF com base no fornecedor resultante
-    classFornecedorAutoFill(campForn ? campForn.value : '');
-    // Atualiza bloqueio de campos com base no produto preenchido automaticamente
-    classAtualizarCamposProduto(campProd ? campProd.value : '');
-    // Se vínculo com AGRONOR, posiciona cursor no primeiro campo analítico
-    if (mapa[local]) {
-        setTimeout(() => {
-            const primeiro = document.getElementById('cadQueimadoClass');
-            if (primeiro) primeiro.focus();
-        }, 50);
-    }
+}
+
+function classNotaFiscalEnter(event) {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    event.stopPropagation();
+    classAplicarOrigemPorNF(true);
+}
+
+function classLocalDestinoEnter(event) {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    event.stopPropagation();
+    const campNF = document.getElementById('cadNFClass');
+    if (campNF) setTimeout(() => { campNF.focus(); campNF.select(); }, 0);
+}
+
+function classFocarPrimeiroResultado() {
+    const form = document.getElementById('formCadastroClass');
+    if (!form) return;
+    const primeiro = Array.from(form.querySelectorAll('input[type="number"]'))
+        .find(el => !el.disabled && el.getAttribute('data-skip-class') !== '1' && el.offsetParent !== null);
+    if (primeiro) setTimeout(() => { primeiro.focus(); primeiro.select(); }, 0);
 }
 function classFornecedorAutoFill(valor) {
     const isAgronor = (valor||'').trim().toUpperCase() === 'AGRONOR';
     const campNF  = document.getElementById('cadNFClass');
+    const campLocal = document.getElementById('cadLocalClass');
+    const campProd = document.getElementById('cadProdutoClass');
     const nfGrupo = campNF ? campNF.closest('.form-group') : null;
     if (!campNF) return;
     if (isAgronor) {
         campNF.value = '-';
+        const local = (campLocal ? campLocal.value : '').toUpperCase();
+        const mapaEstoque = {
+            'SILO 1 MILHO': 'MILHO ESTOQUE 01',
+            'SILO 2 MILHO': 'MILHO ESTOQUE 02',
+            'SILO 1 SOJA':  'SOJA ESTOQUE 01'
+        };
+        if (campProd && mapaEstoque[local]) {
+            campProd.value = mapaEstoque[local];
+            classAtualizarCamposProduto(campProd.value);
+        }
         campNF.readOnly = true;
         campNF.removeAttribute('required');
         campNF.style.background   = '#eaf4fb';
@@ -36075,6 +36299,11 @@ function classFornecedorAutoFill(valor) {
         campNF.style.color      = '';
         campNF.style.fontWeight = '';
         if (campNF.value === '-') campNF.value = '';
+        if (campProd && (campProd.value || '').toUpperCase().includes('ESTOQUE')) {
+            const local = (campLocal ? campLocal.value : '').toUpperCase();
+            campProd.value = local.includes('SOJA') ? 'SOJA' : local.includes('MILHO') ? 'MILHO' : '';
+            classAtualizarCamposProduto(campProd.value);
+        }
         if (nfGrupo) nfGrupo.classList.add('required');
     }
 }
@@ -36254,7 +36483,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const lista = document.getElementById(campoId + '_list');
             if (!lista) return;
             const itens = lista.querySelectorAll('li');
-            if (!itens.length) return;
+            if (!itens.length) {
+                if (campoId === 'cadFornecedorClass') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
+                    sgqAutocompleteFechar(campoId);
+                    classFocarPrimeiroResultado();
+                }
+                return;
+            }
             // Há lista aberta — bloqueia tudo e seleciona
             event.preventDefault();
             event.stopPropagation();
@@ -36264,8 +36502,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 lista._sgqNavigating = false;
                 sgqAutocompleteSelecionar(campoId, valor);
             }
+            if (campoId === 'cadFornecedorClass') {
+                sgqAutocompleteFechar(campoId);
+                classFocarPrimeiroResultado();
+            }
         }, true); // true = fase de captura, antes de qualquer outro handler
     });
+
+    // Nos resultados da classificação, Enter avança para a próxima célula
+    // habilitada na ordem visual específica de SOJA ou MILHO.
+    const formClass = document.getElementById('formCadastroClass');
+    if (formClass) {
+        formClass.addEventListener('keydown', function(event) {
+            const atual = event.target;
+            if (event.key !== 'Enter' || !atual || atual.type !== 'number') return;
+            event.preventDefault();
+            const campos = Array.from(formClass.querySelectorAll('input[type="number"]'))
+                .filter(el => !el.disabled && el.getAttribute('data-skip-class') !== '1' && el.offsetParent !== null);
+            const idx = campos.indexOf(atual);
+            const proximo = idx >= 0 ? campos[idx + 1] : null;
+            if (proximo) { proximo.focus(); proximo.select(); }
+        });
+    }
 });
 
 /* =====================================================================
