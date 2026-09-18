@@ -7999,7 +7999,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 <div style="font-size:13px;font-weight:800;color:#333;margin-bottom:14px;" id="reagConsumoNome"></div>
                 <div style="margin-bottom:12px;">
                     <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">TIPO DE OPERAÇÃO</label>
-                    <select id="reagConsumoTipo" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
+                    <select id="reagConsumoTipo" onchange="reagAtualizarPreviaConsumo()" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;">
                         <option value="consumo">📉 Consumo (saída)</option>
                         <option value="ajuste_positivo">📈 Ajuste positivo (entrada manual)</option>
                         <option value="descarte">🗑️ Descarte / Perda</option>
@@ -8007,7 +8007,18 @@ document.addEventListener('DOMContentLoaded', function(){
                 </div>
                 <div style="margin-bottom:12px;">
                     <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">QUANTIDADE</label>
-                    <input type="number" id="reagConsumoQtd" placeholder="0" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;" autocomplete="off">
+                    <input type="text" inputmode="decimal" id="reagConsumoQtd" placeholder="0,000" oninput="reagAtualizarPreviaConsumo()" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 10px;font-size:12px;" autocomplete="off">
+                </div>
+                <div id="reagConsumoPrevia" style="margin:-2px 0 13px;padding:12px 13px;border:1px solid #dce7f0;border-radius:9px;background:#f7fafc;display:none;">
+                    <div style="font-size:9px;font-weight:800;letter-spacing:.7px;color:#718096;text-transform:uppercase;margin-bottom:7px;">Saldo após a operação</div>
+                    <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:7px;text-align:center;">
+                        <div><div style="font-size:9px;color:#7b8b99;">Atual</div><b id="reagPreviaAtual" style="font-size:14px;color:#2c3e50;">—</b></div>
+                        <b id="reagPreviaOperador" style="font-size:17px;color:#95a5a6;">−</b>
+                        <div><div style="font-size:9px;color:#7b8b99;">Quantidade</div><b id="reagPreviaQtd" style="font-size:14px;color:#e67e22;">—</b></div>
+                        <b style="font-size:17px;color:#95a5a6;">=</b>
+                        <div><div style="font-size:9px;color:#7b8b99;">Restante</div><b id="reagPreviaSaldo" style="font-size:17px;color:#168a52;">—</b></div>
+                    </div>
+                    <div id="reagPreviaAviso" style="display:none;margin-top:8px;padding-top:7px;border-top:1px solid #ead8d5;color:#c0392b;font-size:9px;font-weight:700;text-align:center;"></div>
                 </div>
                 <div style="margin-bottom:4px;">
                     <label style="font-size:11px;font-weight:700;color:#555;display:block;margin-bottom:4px;">OBSERVAÇÃO</label>
@@ -28356,7 +28367,7 @@ function reagRenderTabela() {
             </td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;color:${mutedColor};">${r.lote || '—'}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;color:${mutedColor};">${r.fornecedor || '—'}</td>
-            <td style="padding:9px 8px;text-align:center;font-weight:800;color:${st==='baixo'?'#e67e22':textColor};">${r.qtdAtual} ${r.unidade}</td>
+            <td style="padding:9px 8px;text-align:center;font-weight:800;color:${st==='baixo'?'#e67e22':textColor};">${_reagFormatarSaldo(r.qtdAtual, r.unidade)}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;color:${_isDark?'#8b949e':'#888'};">${r.minimo} ${r.unidade}</td>
             <td style="padding:9px 8px;text-align:center;font-size:11px;color:${st==='vencido'?'#e74c3c':st==='vencendo'?'#e67e22':(_isDark?'#adbac7':'#555')};">
                 ${_fmtData(r.validade)}
@@ -30840,7 +30851,7 @@ ${listaProds}
             if (tipo === 'quimico') {
                 const r = _reagentes.find(x => String(x.id) === String(item.reagId));
                 if (!r) continue;
-                const novaQtd = Math.max(0, r.qtdAtual - item.qtd);
+                const novaQtd = _reagArredondarQuantidade(Math.max(0, r.qtdAtual - item.qtd));
                 const { error } = await _sbClient.from('produtos_quimicos')
                     .update({ qtd_atual: novaQtd })
                     .eq('id', item.reagId);
@@ -31253,28 +31264,77 @@ async function reagExcluir(id) {
 }
 
 // ── Modal Consumo / Ajuste ────────────────────────────────────────
+function _reagNumeroDigitado(valor) {
+    const normalizado = String(valor == null ? '' : valor).trim().replace(/\s/g, '').replace(',', '.');
+    const numero = parseFloat(normalizado);
+    return Number.isFinite(numero) && numero > 0 ? numero : 0;
+}
+
+function _reagFormatarSaldo(valor, unidade) {
+    const numero = Number(valor) || 0;
+    return numero.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 3 }) + (unidade ? ' ' + unidade : '');
+}
+
+function _reagArredondarQuantidade(valor) {
+    const numero = Number(valor) || 0;
+    return Math.round((numero + Number.EPSILON) * 1000) / 1000;
+}
+
+function reagAtualizarPreviaConsumo() {
+    const id = document.getElementById('reagConsumoId')?.value;
+    const tipo = document.getElementById('reagConsumoTipo')?.value || 'consumo';
+    const qtd = _reagNumeroDigitado(document.getElementById('reagConsumoQtd')?.value);
+    const r = (_reagentes || []).find(x => String(x.id) === String(id));
+    const previa = document.getElementById('reagConsumoPrevia');
+    if (!r || !previa) return;
+
+    const atual = Number(r.qtdAtual) || 0;
+    const saida = tipo === 'consumo' || tipo === 'descarte';
+    const saldoCalculado = saida ? atual - qtd : atual + qtd;
+    const saldoFinal = Math.max(0, saldoCalculado);
+    const unidade = r.unidade || '';
+
+    document.getElementById('reagPreviaAtual').textContent = _reagFormatarSaldo(atual, unidade);
+    document.getElementById('reagPreviaOperador').textContent = saida ? '−' : '+';
+    document.getElementById('reagPreviaQtd').textContent = qtd > 0 ? _reagFormatarSaldo(qtd, unidade) : '—';
+    document.getElementById('reagPreviaSaldo').textContent = qtd > 0 ? _reagFormatarSaldo(saldoFinal, unidade) : _reagFormatarSaldo(atual, unidade);
+    document.getElementById('reagPreviaSaldo').style.color = saldoFinal <= 0 && qtd > 0 ? '#c0392b' : (saida ? '#168a52' : '#1672b8');
+    document.getElementById('reagPreviaQtd').style.color = saida ? '#e67e22' : '#1672b8';
+
+    const aviso = document.getElementById('reagPreviaAviso');
+    if (aviso) {
+        const excedeu = saida && qtd > atual;
+        aviso.style.display = excedeu ? 'block' : 'none';
+        aviso.textContent = excedeu ? 'A quantidade informada supera o estoque atual. O saldo ficará zerado.' : '';
+    }
+    previa.style.display = 'block';
+}
+
 function reagAbrirConsumo(id) {
     const r = _reagentes.find(x => String(x.id) === String(id));
     if (!r) return;
     document.getElementById('reagConsumoId').value      = id;
-    document.getElementById('reagConsumoNome').textContent = r.nome + ' — Estoque atual: ' + r.qtdAtual + ' ' + r.unidade;
+    document.getElementById('reagConsumoNome').textContent = r.nome + ' — Estoque atual: ' + _reagFormatarSaldo(r.qtdAtual, r.unidade);
     document.getElementById('reagConsumoQtd').value     = '';
     document.getElementById('reagConsumoObs').value     = '';
     document.getElementById('reagConsumoTipo').value    = 'consumo';
     document.getElementById('reagModalConsumo').style.display = 'flex';
+    reagAtualizarPreviaConsumo();
+    setTimeout(() => document.getElementById('reagConsumoQtd')?.focus(), 30);
 }
 async function reagSalvarConsumo() {
     const id   = document.getElementById('reagConsumoId').value;
     const tipo = document.getElementById('reagConsumoTipo').value;
-    const qtd  = parseFloat(document.getElementById('reagConsumoQtd').value) || 0;
+    const qtd  = _reagNumeroDigitado(document.getElementById('reagConsumoQtd').value);
     const obs  = document.getElementById('reagConsumoObs').value.trim();
     if (!qtd) { sgqToast('⚠️ Informe a quantidade.', 'warning'); return; }
     const r = _reagentes.find(x => String(x.id) === String(id));
     if (!r) return;
 
-    const novaQtd = (tipo === 'consumo' || tipo === 'descarte')
+    const novaQtdCalculada = (tipo === 'consumo' || tipo === 'descarte')
         ? Math.max(0, r.qtdAtual - qtd)
         : r.qtdAtual + qtd;
+    const novaQtd = _reagArredondarQuantidade(novaQtdCalculada);
 
     const mov = {
         reagId: id,
