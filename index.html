@@ -10367,7 +10367,7 @@ document.addEventListener('DOMContentLoaded', function(){
                         <div class="form-group"><label>Hora</label><input type="text" id="cadHoraClass" placeholder="HH:MM" maxlength="5" inputmode="numeric" autocomplete="off" oninput="mascaraHora(this)"></div>
                         <div class="form-group required">
                             <label>Local/Destino</label>
-                            <select id="cadLocalClass" required onkeydown="classLocalDestinoEnter(event)">
+                            <select id="cadLocalClass" required onchange="classLocalDestinoAlterado()" onkeydown="classLocalDestinoEnter(event)">
                                 <option value="">Selecione...</option>
                                 <option value="Silo 1 Milho">Silo 1 Milho</option>
                                 <option value="Silo 2 Milho">Silo 2 Milho</option>
@@ -10379,7 +10379,7 @@ document.addEventListener('DOMContentLoaded', function(){
                         <div class="form-group required"><label>Nota Fiscal</label><input type="text" id="cadNFClass" autocomplete="off" oninput="classAplicarOrigemPorNF(false)" onkeydown="classNotaFiscalEnter(event)"></div>
                     </div>
                     <div class="form-grid form-grid-2">
-                        <div class="form-group required"><label>Fornecedor</label><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
+                        <div class="form-group required"><div style="display:flex;align-items:center;gap:5px;height:12px;margin-bottom:3px;"><label style="margin:0;line-height:12px;">Fornecedor</label><button type="button" onclick="abrirGerenciadorFornecedoresClass()" title="Gerenciar fornecedores" aria-label="Gerenciar fornecedores" style="width:17px;height:17px;display:grid;place-items:center;border:1px solid #b9d7f5;border-radius:5px;background:#eef6ff;color:#155a9c;font-size:10px;cursor:pointer;padding:0;line-height:1;transform:translateY(-1px);">⚙</button></div><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
 <input type="text" id="cadFornecedorClass" required autocomplete="off" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class');classFornecedorAutoFill(this.value)" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorClass','class')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorClass_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorClass');classFornecedorAutoFill(document.getElementById('cadFornecedorClass').value)},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorClass')">
 <ul id="cadFornecedorClass_list" class="sgq-autocomplete-list"></ul>
 </div></div>
@@ -10528,7 +10528,7 @@ document.addEventListener('DOMContentLoaded', function(){
                         <div class="form-group"><label>Nota Fiscal</label><input type="text" id="cadNFMP" autocomplete="off"></div>
                     </div>
                     <div class="form-grid" style="grid-template-columns:1fr 1fr;">
-                        <div class="form-group required"><label>Fornecedor</label><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
+                        <div class="form-group required"><div style="display:flex;align-items:center;gap:5px;height:12px;margin-bottom:3px;"><label style="margin:0;line-height:12px;">Fornecedor</label><button type="button" onclick="abrirGerenciadorFornecedoresMP()" title="Gerenciar fornecedores de matéria-prima" aria-label="Gerenciar fornecedores de matéria-prima" style="width:17px;height:17px;display:grid;place-items:center;border:1px solid #b9d7f5;border-radius:5px;background:#eef6ff;color:#155a9c;font-size:10px;cursor:pointer;padding:0;line-height:1;transform:translateY(-1px);">⚙</button></div><div class="sgq-autocomplete-wrap" style="position:relative;width:100%;">
 <input type="text" id="cadFornecedorMP" required autocomplete="off" style="width:100%;" oninput="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp');mpFornecedorAutoFill(this.value)" onfocus="sgqAutocompleteFiltrar(this,'cadFornecedorMP','mp')" onblur="setTimeout(()=>{const l=document.getElementById('cadFornecedorMP_list');if(l&&l._sgqNavigating)return;sgqAutocompleteFechar('cadFornecedorMP');mpFornecedorAutoFill(document.getElementById('cadFornecedorMP').value)},180)" onkeydown="sgqAutocompleteNavegar(event,'cadFornecedorMP')">
 <ul id="cadFornecedorMP_list" class="sgq-autocomplete-list"></ul>
 </div></div>
@@ -12683,7 +12683,7 @@ function classAtualizarCamposProduto(produto) {
     // Ordem específica por grão. Campos não aplicáveis ficam ocultos e não
     // participam da navegação por Enter.
     const ordemSoja   = ['grpQueimadoClass','grpArdidoClass','grpMofadoClass','grpEsverdeadoClass','grpFermentandoClass','grpChochoClass','grpPicadoClass','grpGerminadoClass','grpAvariadosClass','grpQuebradoClass','grpImpurezaClass','grpUmidadeClass','grpDensidadeClass'];
-    const ordemMilho  = ['grpGessadoClass','grpCarunchadoClass','grpQueimadoClass','grpArdidoClass','grpMofadoClass','grpFermentandoClass','grpChochoClass','grpGerminadoClass','grpAvariadosClass','grpQuebradoClass','grpImpurezaClass','grpUmidadeClass','grpDensidadeClass'];
+    const ordemMilho  = ['grpQueimadoClass','grpArdidoClass','grpMofadoClass','grpFermentandoClass','grpChochoClass','grpGessadoClass','grpGerminadoClass','grpAvariadosClass','grpQuebradoClass','grpCarunchadoClass','grpImpurezaClass','grpUmidadeClass','grpDensidadeClass'];
     const ordemPadrao = ['grpQueimadoClass','grpArdidoClass','grpMofadoClass','grpFermentandoClass','grpChochoClass','grpEsverdeadoClass','grpPicadoClass','grpGessadoClass','grpGerminadoClass','grpAvariadosClass','grpQuebradoClass','grpCarunchadoClass','grpImpurezaClass','grpUmidadeClass','grpDensidadeClass'];
     const ordemAtual  = isMilho ? ordemMilho : isSoja ? ordemSoja : ordemPadrao;
     const grpQueimado = document.getElementById('grpQueimadoClass');
@@ -12731,7 +12731,23 @@ function salvarClassificacao(event) {
     const data       = dataParaISO(document.getElementById('cadDataClass').value);
     const nf         = document.getElementById('cadNFClass').value.trim();
     const local      = document.getElementById('cadLocalClass').value;
-    const fornecedor = _sgqConfirmarFornecedorParecido('class', document.getElementById('cadFornecedorClass').value.trim());
+    const fornecedorDigitado = document.getElementById('cadFornecedorClass').value.trim().toUpperCase();
+    const fornecedoresExistentes = _sgqGetFornecedores('class');
+    const fornecedor = _sgqConfirmarFornecedorParecido('class', fornecedorDigitado);
+    if (fornecedor && fornecedor !== 'AGRONOR' && !fornecedoresExistentes.includes(fornecedor)) {
+        const confirmarNovo = confirm(
+            'Este fornecedor ainda não existe no sistema:\n\n' +
+            '"' + fornecedor + '"\n\n' +
+            'Deseja cadastrá-lo como um NOVO fornecedor?\n\n' +
+            'Confira a escrita antes de continuar.'
+        );
+        if (!confirmarNovo) {
+            const campoFornecedor = document.getElementById('cadFornecedorClass');
+            campoFornecedor.focus();
+            campoFornecedor.select();
+            return;
+        }
+    }
     const produto    = document.getElementById('cadProdutoClass').value;
     const isAgronorClass = fornecedor.toUpperCase() === 'AGRONOR';
     const nfFinal = (!nf && isAgronorClass) ? '-' : nf;
@@ -13063,7 +13079,22 @@ function salvarMateriaPrima(event) {
     event.preventDefault();
     const data       = dataParaISO(document.getElementById('cadDataMP').value);
     const produto    = document.getElementById('cadProdutoMP').value;
-    const fornecedor = _sgqConfirmarFornecedorParecido('mp', document.getElementById('cadFornecedorMP').value.trim());
+    const fornecedorDigitado = document.getElementById('cadFornecedorMP').value.trim().toUpperCase();
+    const fornecedoresExistentes = _sgqGetFornecedores('mp');
+    const fornecedor = _sgqConfirmarFornecedorParecido('mp', fornecedorDigitado);
+    if (fornecedor && fornecedor !== 'AGRONOR' && !fornecedoresExistentes.includes(fornecedor)) {
+        const confirmarNovo = confirm(
+            'Este fornecedor ainda não existe em Matéria-Prima:\n\n' +
+            '"' + fornecedor + '"\n\n' +
+            'Deseja cadastrá-lo como um NOVO fornecedor?\n\nConfira a escrita antes de continuar.'
+        );
+        if (!confirmarNovo) {
+            const campoFornecedor = document.getElementById('cadFornecedorMP');
+            campoFornecedor.focus();
+            campoFornecedor.select();
+            return;
+        }
+    }
     if (!data || !produto || !fornecedor) {
         mostrarErroMP('❌ PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS!'); return;
     }
@@ -36273,10 +36304,49 @@ function classNotaFiscalEnter(event) {
     classAplicarOrigemPorNF(true);
 }
 
+function classLocalDestinoAlterado() {
+    const campLocal = document.getElementById('cadLocalClass');
+    const campNF = document.getElementById('cadNFClass');
+    const campForn = document.getElementById('cadFornecedorClass');
+    const campProd = document.getElementById('cadProdutoClass');
+    if (!campLocal || !campProd) return false;
+
+    const local = (campLocal.value || '').toUpperCase();
+    const mapaEstoqueMilho = {
+        'SILO 1 MILHO': 'MILHO ESTOQUE 01',
+        'SILO 2 MILHO': 'MILHO ESTOQUE 02'
+    };
+
+    if (mapaEstoqueMilho[local]) {
+        if (campNF) campNF.value = '-';
+        if (campForn) campForn.value = 'AGRONOR';
+        campProd.value = mapaEstoqueMilho[local];
+        classFornecedorAutoFill('AGRONOR');
+        classAtualizarCamposProduto(campProd.value);
+        return true;
+    }
+
+    // Ao sair de um silo de estoque de milho, remove somente os valores
+    // que haviam sido preenchidos automaticamente por essa regra.
+    if (/^MILHO ESTOQUE 0[12]$/.test((campProd.value || '').toUpperCase())) {
+        campProd.value = '';
+        if (campForn && (campForn.value || '').trim().toUpperCase() === 'AGRONOR') campForn.value = '';
+        if (campNF && campNF.value.trim() === '-') campNF.value = '';
+        classFornecedorAutoFill(campForn ? campForn.value : '');
+        classAtualizarCamposProduto('');
+    }
+    return false;
+}
+
 function classLocalDestinoEnter(event) {
     if (event.key !== 'Enter') return;
     event.preventDefault();
     event.stopPropagation();
+    const destinoEstoqueMilho = classLocalDestinoAlterado();
+    if (destinoEstoqueMilho) {
+        classFocarPrimeiroResultado();
+        return;
+    }
     const campNF = document.getElementById('cadNFClass');
     if (campNF) setTimeout(() => { campNF.focus(); campNF.select(); }, 0);
 }
@@ -36285,7 +36355,7 @@ function classFocarPrimeiroResultado() {
     const form = document.getElementById('formCadastroClass');
     if (!form) return;
     const produto = (document.getElementById('cadProdutoClass')?.value || '').toUpperCase();
-    const idPreferido = produto.includes('MILHO') ? 'cadGessadoClass'
+    const idPreferido = produto.includes('MILHO') ? 'cadQueimadoClass'
         : produto.includes('SOJA') ? 'cadQueimadoClass' : '';
     setTimeout(() => {
         let primeiro = idPreferido ? document.getElementById(idPreferido) : null;
@@ -36397,6 +36467,301 @@ function _sgqConfirmarFornecedorParecido(tipo, nome) {
         'ou Cancelar para manter o nome novo (caso seja realmente um fornecedor diferente).'
     );
     return usar ? parecido : (nome || '').trim().toUpperCase();
+}
+
+// ===================================================
+// GERENCIAMENTO DE FORNECEDORES — CLASSIFICAÇÃO
+// A lista é derivada dos lançamentos; renomear/mesclar atualiza o histórico.
+// ===================================================
+let _classFornecedoresTodos = [];
+let _fornecedorGerContexto = 'class';
+
+function _classFornEsc(valor) {
+    return String(valor == null ? '' : valor)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function _classCriarModalFornecedores() {
+    if (document.getElementById('modalGerenciarFornecedoresClass')) return;
+    const modal = document.createElement('div');
+    modal.id = 'modalGerenciarFornecedoresClass';
+    modal.className = 'modal';
+    modal.style.zIndex = '10020';
+    modal.innerHTML = `
+        <style>
+            #modalGerenciarFornecedoresClass .cfg-shell{max-width:900px;width:94%;max-height:88vh;display:flex;flex-direction:column;padding:0;overflow:hidden;border:0;border-radius:18px;box-shadow:0 28px 70px rgba(8,35,64,.28);}
+            #modalGerenciarFornecedoresClass .cfg-head{display:flex;align-items:center;justify-content:space-between;padding:22px 24px;background:linear-gradient(135deg,#0d3158,#1266a8);color:#fff;}
+            #modalGerenciarFornecedoresClass .cfg-head-main{display:flex;align-items:center;gap:14px;}
+            #modalGerenciarFornecedoresClass .cfg-icon{width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,.14);display:grid;place-items:center;font-size:21px;border:1px solid rgba(255,255,255,.18);}
+            #modalGerenciarFornecedoresClass .cfg-title{margin:0;font-size:20px;font-weight:900;letter-spacing:.2px;}
+            #modalGerenciarFornecedoresClass .cfg-sub{font-size:11px;opacity:.8;margin-top:4px;}
+            #modalGerenciarFornecedoresClass .cfg-close{width:36px;height:36px;border:0;border-radius:10px;background:rgba(255,255,255,.12);color:#fff;font-size:24px;cursor:pointer;line-height:1;}
+            #modalGerenciarFornecedoresClass .cfg-close:hover{background:rgba(255,255,255,.22);}
+            #modalGerenciarFornecedoresClass .cfg-body{padding:18px 22px 20px;background:#f5f8fc;overflow:auto;}
+            #modalGerenciarFornecedoresClass .cfg-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px;}
+            #modalGerenciarFornecedoresClass .cfg-stat{background:#fff;border:1px solid #e1eaf3;border-radius:12px;padding:12px 14px;box-shadow:0 3px 10px rgba(13,49,88,.04);}
+            #modalGerenciarFornecedoresClass .cfg-stat b{display:block;color:#0d5792;font-size:21px;line-height:1;}
+            #modalGerenciarFornecedoresClass .cfg-stat span{display:block;color:#718096;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-top:6px;}
+            #modalGerenciarFornecedoresClass .cfg-search{position:relative;margin-bottom:12px;}
+            #modalGerenciarFornecedoresClass .cfg-search span{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#6c849c;font-size:16px;}
+            #modalGerenciarFornecedoresClass .cfg-search input{width:100%;height:44px;padding:0 14px 0 42px;border:1px solid #d6e2ee;border-radius:12px;background:#fff;font-size:13px;outline:none;box-shadow:0 3px 10px rgba(13,49,88,.04);}
+            #modalGerenciarFornecedoresClass .cfg-search input:focus{border-color:#2787d8;box-shadow:0 0 0 3px rgba(39,135,216,.12);}
+            #modalGerenciarFornecedoresClass .cfg-list{display:flex;flex-direction:column;gap:8px;}
+            #modalGerenciarFornecedoresClass .cfg-row{display:grid;grid-template-columns:minmax(0,1fr) 110px 100px;align-items:center;gap:12px;background:#fff;border:1px solid #e0e9f2;border-radius:12px;padding:10px 12px;transition:.16s ease;}
+            #modalGerenciarFornecedoresClass .cfg-row:hover{transform:translateY(-1px);border-color:#b9d8f2;box-shadow:0 6px 16px rgba(15,70,115,.08);}
+            #modalGerenciarFornecedoresClass .cfg-name{display:flex;align-items:center;gap:11px;min-width:0;}
+            #modalGerenciarFornecedoresClass .cfg-avatar{width:34px;height:34px;flex:0 0 34px;border-radius:10px;background:linear-gradient(135deg,#dceeff,#edf6ff);color:#1266a8;display:grid;place-items:center;font-weight:900;font-size:11px;}
+            #modalGerenciarFornecedoresClass .cfg-name strong{color:#173b60;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+            #modalGerenciarFornecedoresClass .cfg-count{text-align:center;color:#65798c;font-size:10px;font-weight:700;}
+            #modalGerenciarFornecedoresClass .cfg-count b{display:inline-block;min-width:32px;padding:4px 9px;border-radius:12px;background:#e9f3fd;color:#1266a8;font-size:12px;margin-right:4px;}
+            #modalGerenciarFornecedoresClass .cfg-edit{border:1px solid #c7def2;border-radius:8px;background:#f1f8ff;color:#1266a8;padding:7px 10px;font-size:10px;font-weight:900;cursor:pointer;}
+            #modalGerenciarFornecedoresClass .cfg-edit:hover{background:#1266a8;color:#fff;border-color:#1266a8;}
+            #modalEditarFornecedorClass .cef-card{width:min(470px,92vw);background:#fff;border-radius:17px;overflow:hidden;box-shadow:0 28px 75px rgba(7,32,57,.35);}
+            #modalEditarFornecedorClass .cef-head{padding:19px 21px;background:linear-gradient(135deg,#0d3158,#1266a8);color:#fff;display:flex;justify-content:space-between;align-items:center;}
+            #modalEditarFornecedorClass .cef-body{padding:20px 22px 22px;}
+            #modalEditarFornecedorClass .cef-old{padding:11px 13px;border-radius:10px;background:#f2f6fa;color:#526b82;font-size:11px;margin-bottom:14px;}
+            #modalEditarFornecedorClass label{display:block;color:#25445f;font-size:10px;font-weight:900;text-transform:uppercase;margin-bottom:6px;}
+            #modalEditarFornecedorClass input{width:100%;height:44px;border:1px solid #ccd9e5;border-radius:10px;padding:0 12px;font-size:13px;font-weight:800;text-transform:uppercase;outline:none;}
+            #modalEditarFornecedorClass input:focus{border-color:#2787d8;box-shadow:0 0 0 3px rgba(39,135,216,.12);}
+            #modalEditarFornecedorClass .cef-actions{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:18px;}
+            #modalEditarFornecedorClass .cef-actions-right{display:flex;gap:9px;}
+            #modalEditarFornecedorClass .cef-btn{border:0;border-radius:9px;padding:9px 15px;font-size:11px;font-weight:900;cursor:pointer;}
+            @media(max-width:640px){#modalGerenciarFornecedoresClass .cfg-row{grid-template-columns:minmax(0,1fr) 76px}.cfg-edit{grid-column:1/-1}#modalGerenciarFornecedoresClass .cfg-head{padding:17px}#modalGerenciarFornecedoresClass .cfg-body{padding:14px}}
+        </style>
+        <div class="modal-content cfg-shell">
+            <div class="cfg-head">
+                <div class="cfg-head-main">
+                    <div class="cfg-icon">🏢</div>
+                    <div>
+                        <h2 class="cfg-title" id="tituloGerenciadorFornecedores">Fornecedores</h2>
+                        <div class="cfg-sub" id="subtituloGerenciadorFornecedores">Corrija nomes e una cadastros duplicados com segurança.</div>
+                    </div>
+                </div>
+                <button type="button" class="cfg-close" onclick="fecharGerenciadorFornecedoresClass()">&times;</button>
+            </div>
+            <div class="cfg-body">
+                <div class="cfg-stats">
+                    <div class="cfg-stat"><b id="totalFornecedoresClassGer">0</b><span>Fornecedores cadastrados</span></div>
+                    <div class="cfg-stat"><b id="totalRegistrosFornecedoresClassGer">0</b><span>Lançamentos vinculados</span></div>
+                </div>
+                <div class="cfg-search"><span>⌕</span><input id="buscaFornecedorClassGer" type="text" placeholder="Pesquisar fornecedor..." oninput="renderGerenciadorFornecedoresClass()"></div>
+                <div id="listaFornecedoresClassGer" class="cfg-list"></div>
+            </div>
+        </div>
+        <div id="modalEditarFornecedorClass" style="display:none;position:fixed;inset:0;z-index:10030;background:rgba(5,22,39,.52);backdrop-filter:blur(3px);align-items:center;justify-content:center;">
+            <div class="cef-card">
+                <div class="cef-head"><div><b style="font-size:15px;">Corrigir fornecedor</b><div style="font-size:10px;opacity:.78;margin-top:3px;">A alteração será aplicada a todos os registros.</div></div><button type="button" class="cfg-close" onclick="classFecharEditorFornecedor()">&times;</button></div>
+                <div class="cef-body">
+                    <div class="cef-old">Nome atual: <b id="classFornecedorNomeAtual"></b></div>
+                    <label for="classFornecedorNovoNome">Nome correto</label>
+                    <input id="classFornecedorNovoNome" type="text" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();classSalvarFornecedorEditado();}">
+                    <div id="classFornecedorAvisoEdicao" style="display:none;margin-top:10px;padding:9px 11px;border-radius:9px;background:#fff7df;color:#855d00;font-size:10px;line-height:1.4;"></div>
+                    <div class="cef-actions"><button type="button" class="cef-btn" onclick="classExcluirFornecedorSelecionado()" style="background:#fff0f0;color:#c0392b;border:1px solid #f2c7c3;">🗑 EXCLUIR</button><div class="cef-actions-right"><button type="button" class="cef-btn" onclick="classFecharEditorFornecedor()" style="background:#edf1f5;color:#5b6d7c;">CANCELAR</button><button type="button" id="btnSalvarFornecedorClass" class="cef-btn" onclick="classSalvarFornecedorEditado()" style="background:#1266a8;color:#fff;">SALVAR ALTERAÇÃO</button></div></div>
+                </div>
+            </div>
+        </div>`;
+    modal.addEventListener('mousedown', function(e) {
+        if (e.target === modal) fecharGerenciadorFornecedoresClass();
+    });
+    document.body.appendChild(modal);
+}
+
+async function abrirGerenciadorFornecedoresClass() {
+    return _abrirGerenciadorFornecedores('class');
+}
+
+async function abrirGerenciadorFornecedoresMP() {
+    return _abrirGerenciadorFornecedores('mp');
+}
+
+async function _abrirGerenciadorFornecedores(contexto) {
+    if (perfilAtual !== 'admin') {
+        sgqToast('Somente o administrador pode corrigir fornecedores.', 'warning');
+        return;
+    }
+    _fornecedorGerContexto = contexto === 'mp' ? 'mp' : 'class';
+    _classCriarModalFornecedores();
+    const modal = document.getElementById('modalGerenciarFornecedoresClass');
+    const titulo = document.getElementById('tituloGerenciadorFornecedores');
+    const subtitulo = document.getElementById('subtituloGerenciadorFornecedores');
+    if (titulo) titulo.textContent = _fornecedorGerContexto === 'mp' ? 'Fornecedores de matéria-prima' : 'Fornecedores da classificação';
+    if (subtitulo) subtitulo.textContent = _fornecedorGerContexto === 'mp'
+        ? 'Corrija ou una fornecedores presentes nos lançamentos de matéria-prima.'
+        : 'Corrija ou una fornecedores presentes nos lançamentos de classificação.';
+    const lista = document.getElementById('listaFornecedoresClassGer');
+    if (lista) lista.innerHTML = '<div style="padding:28px;text-align:center;color:#64748b;">Carregando todo o histórico...</div>';
+    modal.classList.add('show');
+    try {
+        _classFornecedoresTodos = await dbGetAll(_fornecedorGerContexto === 'mp' ? 'materias_primas' : 'classificacoes');
+        renderGerenciadorFornecedoresClass();
+    } catch (e) {
+        if (lista) lista.innerHTML = '<div style="padding:28px;text-align:center;color:#c0392b;">Não foi possível carregar os fornecedores.</div>';
+        sgqToast('Erro ao carregar fornecedores: ' + (e.message || e), 'error');
+    }
+}
+
+function fecharGerenciadorFornecedoresClass() {
+    document.getElementById('modalGerenciarFornecedoresClass')?.classList.remove('show');
+}
+
+function renderGerenciadorFornecedoresClass() {
+    const lista = document.getElementById('listaFornecedoresClassGer');
+    if (!lista) return;
+    const busca = (document.getElementById('buscaFornecedorClassGer')?.value || '').trim().toUpperCase();
+    const contagem = new Map();
+    (_classFornecedoresTodos || []).forEach(r => {
+        const nome = (r.fornecedor || '').trim().toUpperCase();
+        if (nome) contagem.set(nome, (contagem.get(nome) || 0) + 1);
+    });
+    const itens = [...contagem.entries()]
+        .filter(([nome]) => !busca || nome.includes(busca))
+        .sort((a,b) => a[0].localeCompare(b[0], 'pt-BR'));
+    const totalFornecedores = document.getElementById('totalFornecedoresClassGer');
+    const totalRegistros = document.getElementById('totalRegistrosFornecedoresClassGer');
+    if (totalFornecedores) totalFornecedores.textContent = contagem.size;
+    if (totalRegistros) totalRegistros.textContent = (_classFornecedoresTodos || []).length;
+    if (!itens.length) {
+        lista.innerHTML = '<div style="padding:28px;text-align:center;color:#64748b;background:#fff;border:1px dashed #cbd8e4;border-radius:12px;">Nenhum fornecedor encontrado.</div>';
+        return;
+    }
+    lista.innerHTML = itens.map(([nome, qtd]) => {
+        const cod = encodeURIComponent(nome).replace(/'/g, '%27');
+        const iniciais = nome.split(/\s+/).filter(Boolean).slice(0,2).map(p => p[0]).join('');
+        return `<div class="cfg-row">
+            <div class="cfg-name"><div class="cfg-avatar">${_classFornEsc(iniciais)}</div><strong title="${_classFornEsc(nome)}">${_classFornEsc(nome)}</strong></div>
+            <div class="cfg-count"><b>${qtd}</b> registro${qtd === 1 ? '' : 's'}</div>
+            <button type="button" class="cfg-edit" onclick="classRenomearFornecedor('${cod}')">✎ EDITAR</button>
+        </div>`;
+    }).join('');
+}
+
+function classRenomearFornecedor(nomeCodificado) {
+    if (perfilAtual !== 'admin') return;
+    const antigo = decodeURIComponent(nomeCodificado).trim().toUpperCase();
+    const editor = document.getElementById('modalEditarFornecedorClass');
+    const atual = document.getElementById('classFornecedorNomeAtual');
+    const input = document.getElementById('classFornecedorNovoNome');
+    const aviso = document.getElementById('classFornecedorAvisoEdicao');
+    if (!editor || !input) return;
+    editor.dataset.fornecedorAtual = antigo;
+    editor.dataset.contexto = _fornecedorGerContexto;
+    if (atual) atual.textContent = antigo;
+    input.value = antigo;
+    if (aviso) {
+        aviso.style.display = 'none';
+        aviso.style.background = '#fff7df';
+        aviso.style.color = '#855d00';
+        aviso.textContent = '';
+    }
+    editor.style.display = 'flex';
+    setTimeout(() => { input.focus(); input.select(); }, 30);
+}
+
+function classFecharEditorFornecedor() {
+    const editor = document.getElementById('modalEditarFornecedorClass');
+    if (editor) editor.style.display = 'none';
+}
+
+function classExcluirFornecedorSelecionado() {
+    const editor = document.getElementById('modalEditarFornecedorClass');
+    const aviso = document.getElementById('classFornecedorAvisoEdicao');
+    const fornecedor = (editor?.dataset.fornecedorAtual || '').trim().toUpperCase();
+    const quantidade = (_classFornecedoresTodos || []).filter(r =>
+        (r.fornecedor || '').trim().toUpperCase() === fornecedor
+    ).length;
+
+    if (quantidade > 0) {
+        if (aviso) {
+            aviso.style.display = 'block';
+            aviso.style.background = '#fff0f0';
+            aviso.style.color = '#9f2d24';
+            aviso.innerHTML = '<b>Não é possível excluir.</b> Este fornecedor possui ' + quantidade +
+                ' lançamento(s) vinculado(s). Para não perder dados, corrija o nome ou mescle com outro fornecedor.';
+        }
+        return;
+    }
+
+    classFecharEditorFornecedor();
+    renderGerenciadorFornecedoresClass();
+    sgqToast('Fornecedor removido.', 'success');
+}
+
+async function classSalvarFornecedorEditado() {
+    const editor = document.getElementById('modalEditarFornecedorClass');
+    const input = document.getElementById('classFornecedorNovoNome');
+    const aviso = document.getElementById('classFornecedorAvisoEdicao');
+    const botao = document.getElementById('btnSalvarFornecedorClass');
+    const antigo = (editor?.dataset.fornecedorAtual || '').trim().toUpperCase();
+    const contexto = editor?.dataset.contexto === 'mp' ? 'mp' : 'class';
+    const novo = (input?.value || '').trim().toUpperCase().replace(/\s+/g, ' ');
+    if (!novo) { sgqToast('Informe o nome correto do fornecedor.', 'warning'); return; }
+    if (novo === antigo) { sgqToast('O nome não foi alterado.', 'info'); return; }
+
+    const registrosAntigo = (_classFornecedoresTodos || []).filter(r => (r.fornecedor || '').trim().toUpperCase() === antigo);
+    const registrosNovo = (_classFornecedoresTodos || []).filter(r => (r.fornecedor || '').trim().toUpperCase() === novo);
+    const mesclagem = registrosNovo.length > 0;
+
+    if (mesclagem && contexto === 'class') {
+        const nfsDestino = new Set(registrosNovo.map(r => String(r.nf || '').trim().toUpperCase()).filter(nf => nf && nf !== '-' && nf !== '0'));
+        const conflitos = [...new Set(registrosAntigo.map(r => String(r.nf || '').trim().toUpperCase()).filter(nf => nfsDestino.has(nf)))];
+        if (conflitos.length) {
+            if (aviso) {
+                aviso.style.display = 'block';
+                aviso.innerHTML = '<b>Mesclagem bloqueada.</b> A(s) NF(s) ' + _classFornEsc(conflitos.join(', ')) + ' existe(m) nos dois fornecedores. Corrija esses lançamentos primeiro.';
+            }
+            return;
+        }
+    }
+
+    if (mesclagem && aviso) {
+        aviso.style.display = 'block';
+        aviso.innerHTML = '<b>Mesclagem:</b> “' + _classFornEsc(novo) + '” já existe. Os ' + registrosAntigo.length + ' registro(s) serão unidos a esse fornecedor.';
+    }
+    const confirmarAcao = confirm(mesclagem
+        ? 'Confirmar a mesclagem de "' + antigo + '" com "' + novo + '"?'
+        : 'Confirmar a alteração de "' + antigo + '" para "' + novo + '"?');
+    if (!confirmarAcao) return;
+
+    try {
+        if (botao) { botao.disabled = true; botao.textContent = 'SALVANDO...'; }
+        const ids = registrosAntigo.map(r => r.id).filter(id => id !== null && id !== undefined);
+        if (!ids.length) throw new Error('Nenhum registro vinculado foi localizado.');
+        for (let i = 0; i < ids.length; i += 200) {
+            const tabela = contexto === 'mp' ? 'materias_primas' : 'classificacoes';
+            const { error } = await _sbClient.from(tabela).update({ fornecedor: novo }).in('id', ids.slice(i, i + 200));
+            if (error) throw new Error(error.message || String(error));
+        }
+        const tabelaAuditoria = contexto === 'mp' ? 'materias_primas' : 'classificacoes';
+        await _registrarAuditoria('EDIT', tabelaAuditoria, 'fornecedor:' + antigo, {
+            acao: mesclagem ? 'MESCLAR_FORNECEDOR' : 'RENOMEAR_FORNECEDOR',
+            fornecedor_anterior: antigo,
+            fornecedor_novo: novo,
+            registros: registrosAntigo.length
+        }).catch(() => {});
+        _classFornecedoresTodos = (_classFornecedoresTodos || []).map(r =>
+            (r.fornecedor || '').trim().toUpperCase() === antigo ? { ...r, fornecedor: novo } : r
+        );
+        if (contexto === 'mp') {
+            materiasPrimas = (materiasPrimas || []).map(r =>
+                (r.fornecedor || '').trim().toUpperCase() === antigo ? { ...r, fornecedor: novo } : r
+            );
+        } else {
+            classificacoes = (classificacoes || []).map(r =>
+                (r.fornecedor || '').trim().toUpperCase() === antigo ? { ...r, fornecedor: novo } : r
+            );
+        }
+        renderGerenciadorFornecedoresClass();
+        if (contexto === 'mp') exibirTabelaMP(); else exibirTabelaClass();
+        const campo = document.getElementById(contexto === 'mp' ? 'cadFornecedorMP' : 'cadFornecedorClass');
+        if (campo && (campo.value || '').trim().toUpperCase() === antigo) campo.value = novo;
+        classFecharEditorFornecedor();
+        sgqToast(mesclagem ? 'Fornecedores mesclados com sucesso!' : 'Fornecedor corrigido em todos os registros!', 'success');
+    } catch (e) {
+        sgqToast('Erro ao corrigir fornecedor: ' + (e.message || e), 'error');
+    } finally {
+        if (botao) { botao.disabled = false; botao.textContent = 'SALVAR ALTERAÇÃO'; }
+    }
 }
 
 function _sgqGetFornecedores(tipo) {
