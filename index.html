@@ -36299,9 +36299,20 @@ function classFornecedorAutoFill(valor) {
         campNF.style.color      = '';
         campNF.style.fontWeight = '';
         if (campNF.value === '-') campNF.value = '';
-        if (campProd && (campProd.value || '').toUpperCase().includes('ESTOQUE')) {
+        // Fornecedor externo: define o grão pelo Local/Destino. Se o destino
+        // for genérico, usa o registro mais recente do mesmo fornecedor.
+        if (campProd) {
             const local = (campLocal ? campLocal.value : '').toUpperCase();
-            campProd.value = local.includes('SOJA') ? 'SOJA' : local.includes('MILHO') ? 'MILHO' : '';
+            let produtoBase = local.includes('SOJA') ? 'SOJA' : local.includes('MILHO') ? 'MILHO' : '';
+            if (!produtoBase) {
+                const fornecedor = (valor || '').trim().toUpperCase();
+                const ultimo = (classificacoes || [])
+                    .filter(r => (r.fornecedor || '').trim().toUpperCase() === fornecedor)
+                    .sort((a,b) => String(b.data || '').localeCompare(String(a.data || '')))
+                    .find(r => /MILHO|SOJA/i.test(r.produto || ''));
+                if (ultimo) produtoBase = /MILHO/i.test(ultimo.produto || '') ? 'MILHO' : 'SOJA';
+            }
+            if (produtoBase) campProd.value = produtoBase;
             classAtualizarCamposProduto(campProd.value);
         }
         if (nfGrupo) nfGrupo.classList.add('required');
@@ -36455,7 +36466,26 @@ function sgqAutocompleteNavegar(event, campoId) {
 function sgqAutocompleteSelecionar(campoId, valor) {
     const input = document.getElementById(campoId);
     if (input) { input.value = valor; input.dispatchEvent(new Event('input')); }
+    // Garante a atualização do produto mesmo em navegadores que não executam
+    // o manipulador inline após a seleção programática do autocomplete.
+    if (campoId === 'cadFornecedorClass') classFornecedorAutoFill(valor);
     sgqAutocompleteFechar(campoId);
+}
+
+function classConfirmarFornecedorEAvancar() {
+    const input = document.getElementById('cadFornecedorClass');
+    const produto = document.getElementById('cadProdutoClass');
+    if (!input) return;
+    classFornecedorAutoFill(input.value);
+    // Confirma novamente após o fechamento do autocomplete/blur.
+    setTimeout(() => {
+        classFornecedorAutoFill(input.value);
+        if (produto && produto.value) classFocarPrimeiroResultado();
+        else {
+            input.focus();
+            if (typeof sgqToast === 'function') sgqToast('Selecione o Local/Destino correspondente ao milho ou à soja.', 'warning');
+        }
+    }, 0);
 }
 
 function sgqAutocompleteFechar(campoId) {
@@ -36489,7 +36519,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     event.stopPropagation();
                     event.stopImmediatePropagation();
                     sgqAutocompleteFechar(campoId);
-                    classFocarPrimeiroResultado();
+                    classConfirmarFornecedorEAvancar();
                 }
                 return;
             }
@@ -36504,7 +36534,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (campoId === 'cadFornecedorClass') {
                 sgqAutocompleteFechar(campoId);
-                classFocarPrimeiroResultado();
+                classConfirmarFornecedorEAvancar();
             }
         }, true); // true = fase de captura, antes de qualquer outro handler
     });
