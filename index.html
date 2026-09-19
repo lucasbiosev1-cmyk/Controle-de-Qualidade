@@ -2120,10 +2120,47 @@
         .stat-value { font-weight: bold; color: #333; font-size: 12px; }
         .msg-info-rel { background: #d6eaf8; color: #1a5490; padding: 12px; border-radius: 4px; margin-bottom: 20px; border-left: 4px solid #3498db; font-size: 12px; text-transform: uppercase; }
         .rel-filtros { background: white; border-radius: 4px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; align-items: flex-end; }
+        @media (min-width: 1000px) {
+            #aba-relatorio .rel-filtros-producao-compactos {
+                grid-template-columns: 110px 110px minmax(115px,.8fr) minmax(155px,1.25fr) minmax(115px,.9fr) max-content !important;
+            }
+            #aba-relMP .rel-filtros-mp-compactos {
+                grid-template-columns: 110px 110px minmax(125px,1fr) minmax(125px,1fr) minmax(145px,1fr) max-content !important;
+            }
+            #aba-relClass .rel-filtros-classificacao-compactos {
+                grid-template-columns: 110px 110px minmax(180px,1fr) max-content !important;
+            }
+            #aba-relatorio .rel-filtros-producao-compactos .form-group,
+            #aba-relMP .rel-filtros-mp-compactos .form-group,
+            #aba-relClass .rel-filtros-classificacao-compactos .form-group { min-width:0; }
+            #aba-relatorio .rel-filtros-producao-compactos input,
+            #aba-relatorio .rel-filtros-producao-compactos select,
+            #aba-relMP .rel-filtros-mp-compactos input,
+            #aba-relMP .rel-filtros-mp-compactos select,
+            #aba-relClass .rel-filtros-classificacao-compactos input,
+            #aba-relClass .rel-filtros-classificacao-compactos select {
+                width:100%; min-width:0; max-width:100%; box-sizing:border-box;
+            }
+            #aba-relatorio .rel-filtros-producao-compactos .btn-filtrar,
+            #aba-relatorio .rel-filtros-producao-compactos .btn-limpar,
+            #aba-relMP .rel-filtros-mp-compactos .btn-filtrar,
+            #aba-relMP .rel-filtros-mp-compactos .btn-limpar,
+            #aba-relClass .rel-filtros-classificacao-compactos .btn-filtrar,
+            #aba-relClass .rel-filtros-classificacao-compactos .btn-limpar {
+                padding-left:9px; padding-right:9px;
+            }
+        }
         .btn-pdf { background: #e74c3c; color: white; padding: 7px 14px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: all 0.2s; }
         .btn-pdf:hover { background: #c0392b; }
         .btn-print { background: #27ae60; color: white; padding: 7px 14px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: all 0.2s; }
         .btn-print:hover { background: #229954; }
+        #aba-relatorio .rel-filtros-producao-compactos .btn-print,
+        #aba-relMP .rel-filtros-mp-compactos .btn-print,
+        #aba-relClass .rel-filtros-classificacao-compactos .btn-print {
+            padding:8px 15px !important;
+            font-size:13px !important;
+            line-height:normal;
+        }
         @page { margin: 12mm 10mm; size: A4 portrait; }
         @media print {
             html, body { width: 210mm; margin: 0; padding: 0; overflow: visible; }
@@ -5208,10 +5245,6 @@ document.addEventListener('DOMContentLoaded', function(){
     <div id="aba-relatorio" class="tab-content">
         <div class="relatorio-container">
 
-            <div class="rel-topo-controles" style="display:flex;gap:10px;justify-content:flex-end;margin-bottom:10px;">
-                <button class="btn-print" onclick="imprimirRelatorio()">🖨️ IMPRIMIR</button>
-                <button class="btn-pdf"   onclick="gerarPDF()">📄 GERAR PDF</button>
-            </div>
             <!-- Dados da capa -->
             <div class="rel-dados-capa" style="border-radius:6px;padding:10px 14px;margin-bottom:10px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
                 <span class="rel-dados-capa-label" style="font-size:11px;font-weight:bold;text-transform:uppercase;white-space:nowrap;">📄 Dados da Capa:</span>
@@ -5232,7 +5265,7 @@ document.addEventListener('DOMContentLoaded', function(){
             </div>
 
             <!-- FILTROS -->
-            <div class="rel-filtros" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
+            <div class="rel-filtros rel-filtros-producao-compactos" style="grid-template-columns:110px 110px minmax(115px,.8fr) minmax(155px,1.25fr) minmax(115px,.9fr) max-content;">
                 <div class="form-group">
                     <label>DATA INÍCIO</label>
                     <input type="date" id="relDataInicio" autocomplete="off">
@@ -5245,7 +5278,7 @@ document.addEventListener('DOMContentLoaded', function(){
                     <label>VISUALIZAR POR</label>
                     <select id="relModo" onchange="alterarModoRel()">
                         <option value="todos">(TODOS)</option>
-                        <option value="fase">POR FASE</option>
+                        <option value="fase" selected>POR FASE</option>
                         <option value="racao">POR RAÇÃO</option>
                         <option value="calcario">CALCÁRIO</option>
                     </select>
@@ -5262,7 +5295,7 @@ document.addEventListener('DOMContentLoaded', function(){
                     <label>FASE / RAÇÃO</label>
                     <select id="relFase" onchange="aplicarFiltrosRel()">
                         <option value="todos_fase">(TODOS)</option>
-                        <option value="corte_pre">PRÉ INICIAL CORTE (R1 - WISIUM + MCASSAB)</option>
+                        <option value="corte_pre" selected>PRÉ INICIAL CORTE (R1 - WISIUM + MCASSAB)</option>
                         <option value="corte_ini">INICIAL CORTE (R2 - WISIUM + MCASSAB)</option>
                         <option value="corte_fin">FINAL CORTE (R3-R5 - WISIUM + MCASSAB)</option>
                         <option value="corte_all">TODAS AS FASES CORTE</option>
@@ -5339,10 +5372,10 @@ document.addEventListener('DOMContentLoaded', function(){
                         <option value="fundo">FUNDO (%)</option>
                     </select>
                 </div>
-                <div style="display:flex;gap:5px;align-items:flex-end;">
+                <div style="display:flex;gap:5px;align-items:flex-end;white-space:nowrap;">
                     <button class="btn-filtrar" onclick="aplicarFiltrosRel()">FILTRAR</button>
                     <button class="btn-limpar"  onclick="limparFiltrosRel()">LIMPAR</button>
-
+                    <button class="btn-print" onclick="imprimirRelatorio()">🖨️ IMPRIMIR</button>
                 </div>
             </div>
 
@@ -5485,24 +5518,7 @@ document.addEventListener('DOMContentLoaded', function(){
     <div id="aba-relMP" class="tab-content">
         <div class="relatorio-container">
 
-            <div style="display:flex;gap:10px;justify-content:flex-end;margin-bottom:15px;position:relative;">
-                <!-- Dropdown de impressão -->
-                <div style="position:relative;display:inline-block;" id="rmpPrintDropdownWrap">
-                    <button class="btn-print" onclick="rmpTogglePrintMenu()" style="display:flex;align-items:center;gap:6px;">
-                        🖨️ IMPRIMIR <span style="font-size:10px;opacity:0.7;">▾</span>
-                    </button>
-                    <div id="rmpPrintMenu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid #ccc;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:230px;z-index:9999;overflow:hidden;">
-                        <button onclick="imprimirRelMP();rmpTogglePrintMenu()" style="width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #eee;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:700;color:#2980b9;display:flex;align-items:center;gap:8px;">
-                            📋 Completo (como está)
-                        </button>
-                        <button onclick="imprimirRelMPAgrupado();rmpTogglePrintMenu()" style="width:100%;text-align:left;background:none;border:none;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:700;color:#27ae60;display:flex;align-items:center;gap:8px;">
-                            📦 Somente por tipo de produto
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="rel-filtros" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
+            <div class="rel-filtros rel-filtros-mp-compactos" style="grid-template-columns:110px 110px minmax(125px,1fr) minmax(125px,1fr) minmax(145px,1fr) max-content;">
                 <div class="form-group">
                     <label>DATA INÍCIO</label>
                     <input type="date" id="rmpDataInicio" autocomplete="off">
@@ -5539,10 +5555,22 @@ document.addEventListener('DOMContentLoaded', function(){
                         <option value="digestibilidade">Digestibilidade (%)</option>
                     </select>
                 </div>
-                <div style="display:flex;gap:5px;align-items:flex-end;">
+                <div style="display:flex;gap:5px;align-items:flex-end;position:relative;">
                     <button class="btn-filtrar" onclick="aplicarFiltrosRelMP()">FILTRAR</button>
                     <button class="btn-limpar"  onclick="limparFiltrosRelMP()">LIMPAR</button>
-
+                    <div style="position:relative;display:inline-block;" id="rmpPrintDropdownWrap">
+                        <button class="btn-print" onclick="rmpTogglePrintMenu()" style="display:flex;align-items:center;gap:6px;">
+                            🖨️ IMPRIMIR <span style="font-size:10px;opacity:0.7;">▾</span>
+                        </button>
+                        <div id="rmpPrintMenu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid #ccc;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:230px;z-index:9999;overflow:hidden;">
+                            <button onclick="imprimirRelMP();rmpTogglePrintMenu()" style="width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #eee;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:700;color:#2980b9;display:flex;align-items:center;gap:8px;">
+                                📋 Completo (como está)
+                            </button>
+                            <button onclick="imprimirRelMPAgrupado();rmpTogglePrintMenu()" style="width:100%;text-align:left;background:none;border:none;padding:11px 16px;cursor:pointer;font-size:12px;font-weight:700;color:#27ae60;display:flex;align-items:center;gap:8px;">
+                                📦 Somente por tipo de produto
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -5637,17 +5665,13 @@ document.addEventListener('DOMContentLoaded', function(){
                         🌽 Classificação
                     </label>
                     <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:#8e44ad;user-select:none;">
-                        <input type="checkbox" id="rcChkRelMico" checked onchange="rcAtualizarSelecaoRelatorios()" style="width:15px;height:15px;cursor:pointer;" autocomplete="off">
+                        <input type="checkbox" id="rcChkRelMico" onchange="rcAtualizarSelecaoRelatorios()" style="width:15px;height:15px;cursor:pointer;" autocomplete="off">
                         🧫 Micotoxinas
                     </label>
                 </div>
-                <div style="display:flex;gap:10px;">
-                    <button class="btn-print" onclick="imprimirRelClass()">🖨️ IMPRIMIR</button>
-                    <button class="btn-pdf"   onclick="gerarPDFClass()">📄 GERAR PDF</button>
-                </div>
             </div>
 
-            <div class="rel-filtros" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
+            <div class="rel-filtros rel-filtros-classificacao-compactos" style="grid-template-columns:110px 110px minmax(180px,1fr) max-content;">
                 <div class="form-group">
                     <label>DATA INÍCIO</label>
                     <input type="date" id="rcDataInicio" autocomplete="off">
@@ -5669,10 +5693,10 @@ document.addEventListener('DOMContentLoaded', function(){
                         <option value="SOJA ESTOQUE 01">SOJA ESTOQUE 01</option>
                     </select>
                 </div>
-                <div style="display:flex;gap:5px;align-items:flex-end;">
+                <div style="display:flex;gap:5px;align-items:flex-end;white-space:nowrap;">
                     <button class="btn-filtrar" onclick="aplicarFiltrosRelClass()">FILTRAR</button>
                     <button class="btn-limpar"  onclick="limparFiltrosRelClass()">LIMPAR</button>
-
+                    <button class="btn-print" onclick="imprimirRelClass()">🖨️ IMPRIMIR</button>
                 </div>
             </div>
 
@@ -5919,7 +5943,6 @@ document.addEventListener('DOMContentLoaded', function(){
 
             <div style="display:flex;gap:10px;justify-content:flex-end;margin-bottom:15px;">
                 <button class="btn-print" onclick="imprimirRanking()">🖨️ IMPRIMIR</button>
-                <button class="btn-pdf" onclick="gerarPDFRanking()">📄 GERAR PDF</button>
             </div>
 
             <!-- FILTROS -->
@@ -12354,7 +12377,7 @@ function _renderizarAlertas({ pctProd, pctProdAnt, pctMP, pctMPAnt, pctClass, nc
             });
             const doseTxt = dosesSafeTox.map(d => d.silo.replace(' Milho','') + ': ' + d.doseVigente.toFixed(1) + ' kg/t').join(' • ');
             const riscoAlto = dosesSafeTox.some(d => d.ultimo && d.ultimo.safe.riscoFinal === 'Alto');
-            alertas.push({ nivel: riscoAlto ? 'alto' : 'medio', icone:'🛡️', titulo: 'Dosagem vigente SAFE TOX PLUS', desc: doseTxt, tag:'DOSAGEM', tagClass: riscoAlto ? 'tag-nc-critico' : 'tag-param', acao: () => trocarAba('relClass', document.getElementById('tabRelClass')) });
+            alertas.push({ nivel: riscoAlto ? 'alto' : 'medio', icone:'🛡️', titulo: 'Dosagem vigente SAFE TOX PLUS', desc: doseTxt, tag:'DOSAGEM', tagClass: riscoAlto ? 'tag-nc-critico' : 'tag-param', acao: () => abrirHistoricoSafeTox() });
         }
     } catch(e) { console.error('alerta SAFE TOX PLUS:', e); }
 
@@ -13675,6 +13698,12 @@ function inicializarRelatorio() {
     const primeiro = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
     document.getElementById('relDataInicio').value = primeiro.toISOString().split('T')[0];
     document.getElementById('relDataFim').value    = hoje.toISOString().split('T')[0];
+    // Padrão do Relatório de Produção: modo por fase, iniciando em Pré-inicial Corte.
+    document.getElementById('relModo').value = 'fase';
+    document.getElementById('relFase').value = 'corte_pre';
+    document.getElementById('grupoFase').style.display = '';
+    document.getElementById('grupoRacao').style.display = 'none';
+    document.getElementById('grupoCalcario').style.display = 'none';
     aplicarFiltrosRel();
 }
 
@@ -15206,6 +15235,9 @@ function inicializarRelClass() {
     document.getElementById('rcDataInicio').value = ano + '-' + mes + '-01';
     document.getElementById('rcDataFim').value    = dataHojeISO();
     document.getElementById('rcProduto').value    = 'MILHO';
+    document.getElementById('rcChkRelClass').checked = true;
+    document.getElementById('rcChkRelMico').checked  = false;
+    rcAtualizarSelecaoRelatorios();
     aplicarFiltrosRelClass();
 }
 
@@ -23395,7 +23427,111 @@ function renderSafeToxControle(dadosPeriodo, dataFinal) {
     el.innerHTML=`<div style="border:1px solid #8e44ad;border-radius:8px;overflow:hidden;background:transparent;">
       <div style="padding:12px 12px 12px;"><div style="font-size:11px;font-weight:bold;color:#6c3483;margin:4px 0 8px;">🛡️ HISTÓRICO RECENTE DE DECISÕES POR SILO — SAFE TOX PLUS</div><div class="tabela-container"><table style="width:100%;border-collapse:collapse;font-size:10px;"><thead><tr style="background:#6c3483;color:white;"><th style="padding:6px;">DATA</th><th style="padding:6px;">SILO</th><th style="padding:6px;">AFLATOXINA</th><th style="padding:6px;">FUMONISINA</th><th style="padding:6px;">RISCO FINAL</th><th style="padding:6px;">DOSE-ALVO</th><th style="padding:6px;">DECISÃO</th></tr></thead><tbody>
         ${rows.length?rows.map((r,i)=>`<tr class="${i%2===0?'tr-row-even':'tr-row-odd'}"><td style="padding:6px;text-align:center;">${fmt(r.data)}</td><td style="padding:6px;text-align:center;font-weight:bold;">${r.local||'—'}</td><td style="padding:6px;text-align:center;">${Number(r.aflatoxinas).toFixed(2)} ppb<br><b>${r.safe.riscoAfla}</b></td><td style="padding:6px;text-align:center;">${Number(r.fumonisinas).toFixed(0)} ppb<br><b>${r.safe.riscoFumo}</b></td><td style="padding:6px;text-align:center;">${safeToxBadge(r.safe.riscoFinal)}</td><td style="padding:6px;text-align:center;font-weight:bold;">${r.doseAlvo.toFixed(1)} kg/t</td><td style="padding:6px;">${r.decisao}</td></tr>`).join(''):'<tr><td colspan="7" style="padding:14px;text-align:center;color:#999;">Nenhuma análise completa de processo encontrada.</td></tr>'}
-      </tbody></table></div><div style="margin-top:9px;padding:9px;border-left:4px solid #3498db;background:rgba(52,152,219,.08);font-size:10px;line-height:1.5;"><b>Regras:</b> Produção Silo 1/2 = recebimento e somente alerta; Silo 1/2 Milho = estoque e base do ajuste; mínimo de 4 análises semanais divididas entre os silos de milho em uso; aumento no dia seguinte ou no menor prazo possível; redução somente após 2 resultados consecutivos. Soja não participa desta dosagem.</div></div></div>`;
+      </tbody></table></div><div style="margin-top:9px;padding:9px;border-left:4px solid #3498db;background:rgba(52,152,219,.08);font-size:10px;line-height:1.5;"><b>Regras:</b> Produção Silo 1/2 = recebimento e somente alerta; Silo 1/2 Milho = estoque e base do ajuste; mínimo de 4 análises semanais divididas entre os silos de milho em uso; aumento no dia seguinte ou no menor prazo possível; redução somente após 2 resultados consecutivos.</div></div></div>`;
+}
+
+// Histórico operacional aberto exclusivamente pelo alerta do painel inicial.
+function safeToxPeriodoMesVigente() {
+    const hoje = new Date(), ano = hoje.getFullYear(), mes = hoje.getMonth();
+    const pad = n => String(n).padStart(2,'0');
+    return {
+        inicio: `${ano}-${pad(mes+1)}-01`,
+        fim: `${ano}-${pad(mes+1)}-${pad(new Date(ano, mes+1, 0).getDate())}`
+    };
+}
+
+function safeToxHistoricoModalHtml(dataInicial, dataFinal) {
+    const base = (typeof classificacoes !== 'undefined' && classificacoes.length) ? classificacoes : [];
+    const periodo = safeToxPeriodoMesVigente();
+    const inicio = dataInicial || periodo.inicio, fim = dataFinal || periodo.fim;
+    const historico = safeToxSilosAtivos()
+        .flatMap(silo => safeToxProcessarHistorico(base, null, [silo]).historico)
+        .filter(r => (!inicio || r.data >= inicio) && (!fim || r.data <= fim))
+        .sort((a,b) => safeToxDataHora(b).localeCompare(safeToxDataHora(a)));
+    const fmt = d => d ? new Date(d+'T12:00:00').toLocaleDateString('pt-BR') : '—';
+    const linhas = historico.length ? historico.map((r,i) => `
+        <tr style="background:${i%2===0?'#ffffff':'#f3f6f9'};">
+            <td style="padding:9px;text-align:center;white-space:nowrap;">${fmt(r.data)}</td>
+            <td style="padding:9px;text-align:center;font-weight:800;">${r.local||'—'}</td>
+            <td style="padding:9px;text-align:center;">${Number(r.aflatoxinas).toFixed(2)} ppb<br><b>${r.safe.riscoAfla}</b></td>
+            <td style="padding:9px;text-align:center;">${Number(r.fumonisinas).toFixed(0)} ppb<br><b>${r.safe.riscoFumo}</b></td>
+            <td style="padding:9px;text-align:center;">${safeToxBadge(r.safe.riscoFinal)}</td>
+            <td style="padding:9px;text-align:center;font-weight:800;white-space:nowrap;">${r.doseAlvo.toFixed(1)} kg/t</td>
+            <td style="padding:9px;min-width:280px;">${r.decisao}</td>
+        </tr>`).join('') : '<tr><td colspan="7" style="padding:24px;text-align:center;color:#777;">Nenhuma decisão de dosagem registrada.</td></tr>';
+    return `<div style="overflow:auto;border:1px solid #d7dce2;border-radius:9px;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px;">
+            <thead><tr style="background:#12365f;color:#fff;">
+                <th style="padding:10px;">DATA</th><th style="padding:10px;">SILO</th>
+                <th style="padding:10px;">AFLATOXINA</th><th style="padding:10px;">FUMONISINA</th>
+                <th style="padding:10px;">RISCO FINAL</th><th style="padding:10px;">DOSE-ALVO</th>
+                <th style="padding:10px;">DECISÃO</th>
+            </tr></thead><tbody>${linhas}</tbody>
+        </table></div>
+        <div style="margin-top:12px;padding:11px;border-left:4px solid #3498db;background:#eef7fd;font-size:11px;line-height:1.5;color:#34495e;">
+            <b>Regras:</b> Produção Silo 1/2 = recebimento e somente alerta; Silo 1/2 Milho = estoque e base do ajuste; mínimo de 4 análises semanais divididas entre os silos de milho em uso; aumento no dia seguinte ou no menor prazo possível; redução somente após 2 resultados consecutivos.
+        </div>`;
+}
+
+function abrirHistoricoSafeTox() {
+    document.getElementById('modalHistoricoSafeTox')?.remove();
+    const periodo = safeToxPeriodoMesVigente();
+    const modal = document.createElement('div');
+    modal.id = 'modalHistoricoSafeTox';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(4,18,35,.70);display:flex;align-items:center;justify-content:center;padding:16px;';
+    modal.innerHTML = `<div style="width:min(1200px,96vw);max-height:92vh;background:#fff;border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.35);overflow:hidden;display:flex;flex-direction:column;">
+        <div style="background:#12365f;color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:15px;">
+            <div><div style="font-size:16px;font-weight:900;">🛡️ HISTÓRICO DE DECISÕES — SAFE TOX PLUS</div><div style="font-size:11px;opacity:.78;margin-top:3px;">Controle operacional de dosagem por silo</div></div>
+            <button type="button" onclick="fecharHistoricoSafeTox()" title="Fechar" style="border:0;background:rgba(255,255,255,.13);color:#fff;width:36px;height:36px;border-radius:8px;font-size:22px;cursor:pointer;">×</button>
+        </div>
+        <div style="padding:14px 18px;background:#f4f7fa;border-bottom:1px solid #dce4ec;display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+            <label style="display:grid;gap:4px;font-size:10px;font-weight:800;color:#53677b;">DATA INICIAL<input id="safeToxDataInicial" type="date" value="${periodo.inicio}" style="border:1px solid #b9c8d6;border-radius:7px;padding:8px 10px;font-size:12px;"></label>
+            <label style="display:grid;gap:4px;font-size:10px;font-weight:800;color:#53677b;">DATA FINAL<input id="safeToxDataFinal" type="date" value="${periodo.fim}" style="border:1px solid #b9c8d6;border-radius:7px;padding:8px 10px;font-size:12px;"></label>
+            <button type="button" onclick="filtrarHistoricoSafeTox()" style="border:0;background:#2477b5;color:#fff;border-radius:8px;padding:9px 18px;font-weight:900;cursor:pointer;">🔎 FILTRAR</button>
+            <span id="safeToxPeriodoAviso" style="font-size:11px;color:#60758a;margin-left:auto;">Período padrão: mês vigente</span>
+        </div>
+        <div id="conteudoHistoricoSafeTox" style="padding:18px;overflow:auto;">${safeToxHistoricoModalHtml(periodo.inicio, periodo.fim)}</div>
+        <div style="padding:13px 18px;border-top:1px solid #dde4eb;display:flex;justify-content:flex-end;gap:9px;background:#f8fafc;">
+            <button type="button" onclick="fecharHistoricoSafeTox()" style="border:1px solid #bdc7d1;background:#fff;color:#34495e;border-radius:8px;padding:10px 18px;font-weight:800;cursor:pointer;">FECHAR</button>
+            <button type="button" onclick="imprimirHistoricoSafeTox()" style="border:0;background:#0f5b97;color:#fff;border-radius:8px;padding:10px 20px;font-weight:900;cursor:pointer;">🖨️ IMPRIMIR HISTÓRICO</button>
+        </div>
+    </div>`;
+    modal.addEventListener('click', e => { if (e.target === modal) fecharHistoricoSafeTox(); });
+    document.body.appendChild(modal);
+}
+
+function fecharHistoricoSafeTox() {
+    document.getElementById('modalHistoricoSafeTox')?.remove();
+}
+
+function filtrarHistoricoSafeTox() {
+    const inicio = document.getElementById('safeToxDataInicial')?.value || '';
+    const fim = document.getElementById('safeToxDataFinal')?.value || '';
+    if (inicio && fim && inicio > fim) {
+        sgqToast('A data inicial não pode ser maior que a data final.', 'warning');
+        return false;
+    }
+    const conteudo = document.getElementById('conteudoHistoricoSafeTox');
+    if (conteudo) conteudo.innerHTML = safeToxHistoricoModalHtml(inicio, fim);
+    const aviso = document.getElementById('safeToxPeriodoAviso');
+    if (aviso) aviso.textContent = `Exibindo: ${inicio ? new Date(inicio+'T12:00:00').toLocaleDateString('pt-BR') : 'início'} a ${fim ? new Date(fim+'T12:00:00').toLocaleDateString('pt-BR') : 'hoje'}`;
+    return true;
+}
+
+function imprimirHistoricoSafeTox() {
+    if (!filtrarHistoricoSafeTox()) return;
+    const periodoPadrao = safeToxPeriodoMesVigente();
+    const inicio = document.getElementById('safeToxDataInicial')?.value || periodoPadrao.inicio;
+    const fim = document.getElementById('safeToxDataFinal')?.value || periodoPadrao.fim;
+    const inicioBR = new Date(inicio+'T12:00:00').toLocaleDateString('pt-BR');
+    const fimBR = new Date(fim+'T12:00:00').toLocaleDateString('pt-BR');
+    const janela = window.open('', '_blank', 'width=1200,height=800');
+    if (!janela) { sgqToast('Permita pop-ups para imprimir o histórico.', 'warning'); return; }
+    janela.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Histórico SAFE TOX PLUS</title>
+        <style>@page{size:A4 portrait;margin:8mm}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}body{font-family:Arial,sans-serif;color:#172b3f;margin:0}h1{font-size:15px;margin:0 0 3px;color:#12365f}.sub{font-size:9px;color:#607080;margin-bottom:10px}div{overflow:visible!important}table{min-width:0!important;width:100%!important;table-layout:fixed!important;font-size:7.2px!important;page-break-inside:auto}th,td{padding:4px!important;min-width:0!important;overflow-wrap:anywhere}th:nth-child(1){width:9%}th:nth-child(2){width:11%}th:nth-child(3),th:nth-child(4){width:11%}th:nth-child(5){width:11%}th:nth-child(6){width:10%}th:nth-child(7){width:37%}tr{page-break-inside:avoid;page-break-after:auto}</style>
+        </head><body><h1>HISTÓRICO DE DECISÕES — SAFE TOX PLUS</h1><div class="sub">Período: ${inicioBR} a ${fimBR} • Controle operacional de dosagem por silo • Impresso em ${new Date().toLocaleString('pt-BR')}</div>${safeToxHistoricoModalHtml(inicio, fim)}</body></html>`);
+    janela.document.close();
+    setTimeout(() => { janela.focus(); janela.print(); }, 350);
 }
 
 function renderRCMicotoxinas(dados, di, df) {
@@ -23443,7 +23579,9 @@ function renderRCMicotoxinas(dados, di, df) {
             <div style="font-size:9px;color:#999;margin-top:4px;text-transform:uppercase;">${i.sub}</div>
         </div>`).join('');
 
-    renderSafeToxControle(dados, df);
+    // O histórico SAFE TOX é operacional e não integra nem a tela nem a impressão do relatório.
+    const safeToxNoRelatorio = document.getElementById('rcSafeToxControle');
+    if (safeToxNoRelatorio) { safeToxNoRelatorio.innerHTML = ''; safeToxNoRelatorio.style.display = 'none'; }
 
     // ---- GRÁFICO TEMPORAL ----
     const ctx = document.getElementById('rcMicoGraficoLinha').getContext('2d');
